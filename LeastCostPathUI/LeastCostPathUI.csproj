@@ -1,0 +1,212 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{8972D218-E70F-4428-9EB4-DDFE61DD7848}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>LeastCostPathUI</RootNamespace>
+    <AssemblyName>LeastCostPathUI</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>App.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>LeastCostPathUI.WdgLeastCostPath</StartupObject>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\GuiUtils.cs">
+      <Link>GuiUtils.cs</Link>
+    </Compile>
+    <Compile Include="AnalyzeImg.cs" />
+    <Compile Include="BackgroundWorker.cs" />
+    <Compile Include="CntConfig.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CntConfig.Designer.cs">
+      <DependentUpon>CntConfig.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CntConfigView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CntConfigView.Designer.cs">
+      <DependentUpon>CntConfigView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CntOutGrid.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CntOutGrid.Designer.cs">
+      <DependentUpon>CntOutGrid.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CntOutput.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CntOutput.Designer.cs">
+      <DependentUpon>CntOutput.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Common.cs" />
+    <Compile Include="Images.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Images.resx</DependentUpon>
+    </Compile>
+    <Compile Include="LeastCostPathIO.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WdgAnalyzeImg.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WdgAnalyzeImg.Designer.cs">
+      <DependentUpon>WdgAnalyzeImg.cs</DependentUpon>
+    </Compile>
+    <Compile Include="WdgCustom.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WdgCustom.Designer.cs">
+      <DependentUpon>WdgCustom.cs</DependentUpon>
+    </Compile>
+    <Compile Include="WdgLeastCostPath.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WdgLeastCostPath.Designer.cs">
+      <DependentUpon>WdgLeastCostPath.cs</DependentUpon>
+    </Compile>
+    <Compile Include="WdgOutput.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WdgOutput.Designer.cs">
+      <DependentUpon>WdgOutput.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="CntConfig.resx">
+      <DependentUpon>CntConfig.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CntConfigView.resx">
+      <DependentUpon>CntConfigView.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CntOutGrid.resx">
+      <DependentUpon>CntOutGrid.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CntOutput.resx">
+      <DependentUpon>CntOutput.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Images.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Images.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="WdgAnalyzeImg.resx">
+      <DependentUpon>WdgAnalyzeImg.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WdgCustom.resx">
+      <DependentUpon>WdgCustom.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WdgLeastCostPath.resx">
+      <DependentUpon>WdgLeastCostPath.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WdgOutput.resx">
+      <DependentUpon>WdgOutput.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="App.ico" />
+    <Content Include="Help\CourseCalc.png" />
+    <Content Include="Help\fv_5_8c.tif" />
+    <Content Include="Help\fv_5_8d.tif" />
+    <Content Include="Help\LcpUI.png" />
+    <Content Include="Help\LeastCostPath.htm" />
+    <Content Include="Help\OCourse.png" />
+    <Content Include="Help\rv_5_8c.png" />
+    <Content Include="Help\S2_254r.tif" />
+    <Content Include="Help\Velocity.png" />
+    <Content Include="Images\OpenFile.ico" />
+    <Content Include="Images\Step16.png" />
+    <Content Include="Images\Step4.png" />
+    <Content Include="Images\Step8.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Basics\Basics.csproj">
+      <Project>{200e9400-2771-4ace-a172-78ebd405b67e}</Project>
+      <Name>Basics</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Grid\Grid.csproj">
+      <Project>{feeca61e-39ed-442e-b8d9-740ec097dcc2}</Project>
+      <Name>Grid</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Shape\Shape.csproj">
+      <Project>{ec0a5266-c017-41eb-bd7b-917eb912b8a9}</Project>
+      <Name>Shape</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,0 +1,209 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <span style="font-size: 14pt;"><span style="font-family: Arial"><strong>Least Cost Path<br />
+        <br />
+    </strong><span style="font-size: 12pt">Least Cost Path can be used to calculate the
+        least cost past from one point on an orienteering map to another.<br />
+        There are four different methods to use the functions of least cost path.<br />
+    </span></span></span>
+    <ul>
+        <li><span style="font-size: 14pt"><span style="font-family: Arial"><span style="font-size: 12pt">
+            From <a href="#OCourse"><span>OCourse.exe</span></a></span></span></span></li>
+        <li><span style="font-size: 14pt"><span style="font-family: Arial"><span style="font-size: 12pt">
+            From <a href="#LcpUiConsole"><span>LeastCostPathUI.exe with Parameters</span></a>
+            as a console application</span></span></span></li>
+        <li><span style="font-size: 14pt"><span style="font-family: Arial"><span style="font-size: 12pt">
+            From <a href="#LcpUiWindows"><span>LeastCostPathUI.exe without Parameters</span></a>
+            as a windows application.</span></span></span></li>
+        <li><span style="font-size: 14pt"><span style="font-family: Arial"><span style="font-size: 12pt">
+        </span></span></span><span style="font-size: 14pt"><span style="font-family: Arial">
+            <span style="font-size: 12pt">From class <a href="#LcpClass"><span>LeastCostPath</span></a>
+                in Grid.dll</span></span></span></li>
+    </ul>
+    <p>
+        <span style="font-size: 14pt"><span style="font-family: Arial"><span style="font-size: 12pt">
+            All methods need a <a href="#HeightGrid">height grid</a> and a <a href="#Velocity">velocity
+                grid</a> as input, as well as a resolution. Further a <a href="#VelocityModel">velocity
+                    model</a> and step-directions can be provided. If these values are not given,
+            default values are taken</span></span></span><span style="font-size: 14pt"><span
+                style="font-family: Arial"><span style="font-size: 12pt">.<br />
+                    Depending on the purpose, various data can be calculated:
+                    <br />
+                    Giving a start point and an extent, a time grid and direction grid.<br />
+                    Giving an end point, an invers time grid and invers direction grid.<br />
+                    Combining start and end result, a cost grid and distinct routes.</span></span></span><span
+                        style="font-size: 14pt"><span style="font-family: Arial"><span style="font-size: 12pt">&nbsp;</span></span></span></p>
+    <p>
+        <span style="font-size: 14pt"><span style="font-family: Arial"><span style="font-size: 12pt">
+            <strong id="HeightGrid">Height grid</strong></span></span></span></p>
+    <p>
+        <span style="font-size: 14pt"><span style="font-family: Arial"><span style="font-size: 12pt">
+            <strong></strong>Height grid is a <a href="#DoubleGrid"><span>double grid</span></a>.&nbsp;
+            In the user interfaces of OCourse.exe and LeastCostPathUI.exe it is imported from
+            a standard ESRI ASCII-GRID-File. The georeference of the height grid must correspond
+            to the georeference of the velocity grid.</span></span></span><br />
+        <span style="font-family: Arial"></span>
+    </p>
+    <p>
+        <span style="font-family: Arial"><strong id="Velocity">Velocity grid</strong></span></p>
+    <p>
+        <span style="font-family: Arial">Velocity grid is a <a href="#DoubleGrid">double grid</a>.
+            In the user interfaces of OCourse.exe and LeastCostPathUI.exe &nbsp;it is generated
+            from a velocity image. This image should be a georeferenced gray scale image. Such
+            a georeferenced gray scale image can be produced from OCAD with a specific symbol
+            set (see below). Remark : An additional area must be added to the OCAD file, covering
+            the entire map area and being in the background, with a gray value corresponding
+            to the velocity on normal terrain without obstruction.&nbsp;</span></p>
+    <p>
+        <span style="font-family: Arial"></span><span style="font-family: Arial">The velocity
+            for flat terrain at a point corresponds to the gray value at the image point. Full
+            black means a relativ velocity of 1, white means a velocity of 0. For least cost
+            path calculation, it is sufficient to provide the relativ velocities, because the
+            path is independent from the absolute values. Just if you want to know times along
+            a path, the absolute values become necessary.</span></p>
+    <p>
+        <img style="border: 0;" alt="" src="Velocity.png" id="IMG1" />&nbsp;</p>
+    <span style="font-family: Arial" id="VelocityModel"><strong>Cost Model<br />
+    </strong>The cost model defines the actual cost need to get from one cell to a neighboring
+        cell given base velocity (obstruction) from velocity grid, height change in running
+        direction and slope of terrain.<br />
+        To use a specific velocity model, define a method corresponding to the delegate
+        <span style="font-family: Courier">Grid.StepCostHandler</span> and assign this method
+        to <span style="font-family: Courier">LeastCostPath.StepCost</span>.<br />
+    </span>
+    <br />
+    <span style="font-family: Arial" id="OCourse"><strong>OCourse.exe</strong>
+        <br />
+        <br />
+        OCourse.exe is to analyze entire OCAD-Course files.
+        <br />
+        <img style="border: 0;" alt="" src="OCourse.png" id="ImgOCourse" /><br />
+        <br />
+        Setting height model and velocity model is optional. If they are set, a least cost
+        path calculation is performed for the selected course and the results displayed
+        in the datagrid. Information about the currently calculated section is displayed
+        at the bottom of the window.<br />
+        The fields of the data grid correspond to the chosen course or the current selection
+        in the course window:<br />
+        -DirectLKm is the air distance along the course + 10x climb.<br />
+        -DirectKm is the air distance along the course.<br />
+        -Climb is the climb along the least cost path routes.<br />
+        -OptimalLKm is the distance along the least cost path routes + 10x climb.<br />
+        -OptimalKm is the distance along the least cost path routes.<br />
+        -OptimatC is the cost along the least cost path routes.<br />
+        <br />
+        <strong>Create Scripts</strong> generates a batch file for calculating all the cost
+        models. These batch file containes 3 sections:<br />
+        - calculating all cost and direction models for all controls<br />
+        - calculating all invers cost and direction models for all controls<br />
+        - calculating all cost and route models for all sections.<br />
+        Each line in the section file can be run individually. So parallizing on computers
+        with multiple cpu's can be achieved.<br />
+        Remark: For the third section, the first two sections must already be performed.
+        <br />
+        <strong>Back Calc</strong> performs the least cost calculation for all routes of
+        the entire course file in the background.<br />
+        <strong>Export</strong> exports the caluclated routes to a shape file.<br />
+        <strong>Import</strong> imports calculated routes from a shape file. If the imported
+        routes correspond to the routes of the course file, the imported routes are used
+        and no calculation is needed.<br />
+        <br />
+        MouseDown on first control, MouseMove, MouseUp on second control enables
+        a button for detailed analyzing of the the selected section. Pressing the the button
+        opens a similar control as in <a href="#LcpUIWindows">LeastCostPathUI without Parameters</a>
+        with height model, velocity model, resolution, step, step cost, start point and end point set corresponding to
+        the settings in OCourse.exe.</span><p>
+            <img style="border: 0;" alt="" src="CourseCalc.png" id="OCourseSection" /><br />
+            <span style="font-size: 9pt; font-family: Arial">Selecting a section for route calculation
+                be mouse down on first control (55) and mouse up on second control (37). Clicking
+                on "Calc xx-xx" activates the LeastCostPath user interface. </span>&nbsp;<br />
+            <br />
+            <span style="font-family: Arial" id="LcpUiConsole"><strong>LeastCostPathUI.exe with
+                Parameters&nbsp;</strong><br />
+                The parameters define all needed data and results to calculate.<br />
+            </span>
+            <br />
+            <span style="font-family: Arial" id="LcpUiWindows"><strong>LeastCostPathUI.exe without
+                Parameters&nbsp;</strong><br />
+                GUI with various options to do route analysis</span>
+        </p>
+    <p>
+        <img style="border: 0;" alt="" src="LcpUI.png" id="IMG3" /><br />
+        <span style="font-size: 9pt; font-family: Arial">Least cost path graphical user interface</span>&nbsp;</p>
+    <p>
+        <span style="font-family: Arial"><strong>Height Grid </strong><a href="#HeightGrid">
+            see above</a><br />
+            <strong>Velocity Grid </strong><a href="#Velocity">see above</a><br />
+            <strong>Resolution</strong> defines the cell size for the resulting grids.<br />
+            <strong>Steps</strong> defines the used step model (horizontal and vertical - with
+            diagonals - with knight-distance fields).<br />
+            <strong>Cost</strong> defines the </span><a href="#VelocityModel"><span style="font-family: Arial">
+                method</span></a><span style="font-family: Arial"> to calculate the cost to get from
+                    one cell to a neighboring cell. It can be either set by selecting a method from
+                    an assembly or by providing the text for the calculating method.<br />
+                </span><span style="font-family: Arial"><span><strong>Extent</strong> defines the calculating
+                    area. It should at least include the from (x,y) and to (x,y).<br />
+                    <strong>From</strong> x, y defines the start point and calculates the cost grid
+                    and direction grid from the start point<br />
+                    If activated, "From Cost" exports the corresponding double grid to the specified
+                    file.&nbsp;<br />
+                    If activated, "From Direction" exports the corresponding grid to the specified file.<br />
+                </span></span><span style="font-family: Arial">If activated, "From Cost Image" converts
+                    the corresponding double grid to a <a href="#Georeference">georeferenced</a> TIF-File.
+                </span>
+        <img style="border: 0;" alt="" src="fv_5_8c.tif" id="IMG4" /><br />
+        <span style="font-family: Arial">If activated, "From Dircetion Image" converts the corresponding
+            grid to a <a href="#Georeference">georeferenced</a> TIF-File. </span>
+        <img style="border: 0;" alt="" src="fv_5_8d.tif" id="Img5" /><br />
+        <span style="font-family: Arial"><strong>
+            <br />
+            To</strong> x, y defines the end point and calculates the invers cost grid and direction
+            grid to the end point. </span>
+        <br />
+        <span style="font-family: Arial">If activated, "To Cost" exports the corresponding double
+            grid to the specified file.&nbsp;<br />
+            If activated, "To Direction" exports the corresponding grid to the specified file.</span><br />
+        <span style="font-family: Arial">If activated, "To Cost Image" converts the corresponding
+            double grid to a </span><a href="#Georeference"><span style="font-family: Arial">georeferenced</span></a><span
+                style="font-family: Arial"> TIF-File.<br />
+                If activated, "To Dircetion Image" converts the corresponding grid to a <a href="#Georeference">
+                    georeferenced</a> TIF-File.</span></p>
+    <p>
+        <span></span><span style="font-family: Arial"><strong>Route<br />
+        </strong>If activated, "Route Cost" exports the corresponding double grid to the specified
+            file.&nbsp;<br />
+            If activated, "Route Cost Image" converts the corresponding grid to a <a href="#Georeference">
+                georeferenced</a> TIF-File.
+            <img style="border: 0;" alt="" src="rv_5_8c.png" id="Img6" /><br />
+            <strong>Max slower</strong> and <strong>min offset</strong> define parameters for
+            distinct routes evaluating. Max slower defines the value that a specific route can
+            be slower than the least cost route to still be a candidate for a distinct route.
+            Min offset multiplicated by the length of the least cost route is the distance a
+            distinct route must be away (at least in one point) from any distinct route with
+            less cost to be accepted as a distinct route.&nbsp;</span><span style="font-family: Arial"><br />
+                <span style="font-family: Arial"><strong></strong></span>If activated, "Route Shape"
+                exports the distinct routes to an ESRI Shapefile with Z and M coordinates. The M
+                coordinates contain the cost at each point.&nbsp;<br />
+                If activated, "Route Image" converts the distinct routes to a georeferenced TIF-File.<img
+                    style="border: 0;" alt="" src="S2_254r.tif" id="Img7" /><br />
+                &nbsp;</span></p>
+    <p>
+        <span style="font-family: Arial" id="LcpClass"><strong>Class LeastCostPath</strong></span>
+        <br />
+        <br />
+        <span style="font-family: Arial" id="DoubleGrid"><strong>Double Grid<br />
+        </strong>A double grid is a structure to store regulary spaced double data. To reduce
+            storage usage for large grids, there is a possibility to use smaller datatypes like
+            short, int, ... as base storage. At runtime, they are converted to double values.
+            &nbsp;</span><strong>&nbsp;</strong>
+    </p>
+    <p>
+        <span style="font-family: Arial"><strong id="Georeference">Georeferenced Images<br />
+        </strong>Georeferenced images can be imported to OCAD without need to adjust spatially.</span><br />
+    </p>
+</body>
+</html>

@@ -1,0 +1,665 @@
+﻿namespace OCourse.Gui
+{
+  partial class WdgOCourse
+  {
+    /// <summary>
+    /// Required designer variable.
+    /// </summary>
+    private System.ComponentModel.IContainer components = null;
+
+    /// <summary>
+    /// Clean up any resources being used.
+    /// </summary>
+    /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+    protected override void Dispose(bool disposing)
+    {
+      if (disposing && (components != null))
+      {
+        components.Dispose();
+      }
+      base.Dispose(disposing);
+    }
+
+    #region Windows Form Designer generated code
+
+    /// <summary>
+    /// Required method for Designer support - do not modify
+    /// the contents of this method with the code editor.
+    /// </summary>
+    private void InitializeComponent()
+    {
+      this.components = new System.ComponentModel.Container();
+      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+      System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+      System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WdgOCourse));
+      this.dlgOpen = new System.Windows.Forms.OpenFileDialog();
+      this.btnCourse = new System.Windows.Forms.Button();
+      this._txtCourse = new System.Windows.Forms.TextBox();
+      this.label3 = new System.Windows.Forms.Label();
+      this._lstCourses = new System.Windows.Forms.ComboBox();
+      this.label4 = new System.Windows.Forms.Label();
+      this._lblProgress = new System.Windows.Forms.Label();
+      this.btnBackCalc = new System.Windows.Forms.Button();
+      this.chkOnTop = new System.Windows.Forms.CheckBox();
+      this.pnlCourse = new System.Windows.Forms.Panel();
+      this._cntSection = new OCourse.Gui.CntSection();
+      this.btnExport = new System.Windows.Forms.Button();
+      this.btnImport = new System.Windows.Forms.Button();
+      this.dlgSave = new System.Windows.Forms.SaveFileDialog();
+      this.splCourse = new System.Windows.Forms.SplitContainer();
+      this.splVars = new System.Windows.Forms.SplitContainer();
+      this.btnExportCsv = new System.Windows.Forms.Button();
+      this.lblVariations = new System.Windows.Forms.Label();
+      this._lstVarBuilders = new System.Windows.Forms.ComboBox();
+      this.btnExportCourses = new System.Windows.Forms.Button();
+      this.dgvInfo = new System.Windows.Forms.DataGridView();
+      this.lblEstime = new System.Windows.Forms.Label();
+      this.txtEstimate = new System.Windows.Forms.TextBox();
+      this.lblCat = new System.Windows.Forms.Label();
+      this._lstCats = new System.Windows.Forms.ComboBox();
+      this.btnExportPermut = new System.Windows.Forms.Button();
+      this._txtMax = new System.Windows.Forms.TextBox();
+      this.lblMax = new System.Windows.Forms.Label();
+      this.lblMin = new System.Windows.Forms.Label();
+      this._txtMin = new System.Windows.Forms.TextBox();
+      this.lblPermuts = new System.Windows.Forms.Label();
+      this.btnCalcPermut = new System.Windows.Forms.Button();
+      this.dgvPermut = new System.Windows.Forms.DataGridView();
+      this.ttp = new System.Windows.Forms.ToolTip(this.components);
+      this.btnCreateScripts = new System.Windows.Forms.Button();
+      this.btnCalcSelection = new System.Windows.Forms.Button();
+      this._lstVelo = new System.Windows.Forms.ComboBox();
+      this.lblVelo = new System.Windows.Forms.Label();
+      this.btnRelay = new System.Windows.Forms.Button();
+      this.btnTrack = new System.Windows.Forms.Button();
+      this.btnPermutations = new System.Windows.Forms.Button();
+      this._cntConfig = new LeastCostPathUI.CntConfigView();
+      this.btnCancel = new System.Windows.Forms.Button();
+      this._lstDisplayType = new System.Windows.Forms.ComboBox();
+      this.pnlCourse.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.splCourse)).BeginInit();
+      this.splCourse.Panel1.SuspendLayout();
+      this.splCourse.Panel2.SuspendLayout();
+      this.splCourse.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.splVars)).BeginInit();
+      this.splVars.Panel1.SuspendLayout();
+      this.splVars.Panel2.SuspendLayout();
+      this.splVars.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.dgvInfo)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.dgvPermut)).BeginInit();
+      this.SuspendLayout();
+      // 
+      // btnCourse
+      // 
+      this.btnCourse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+      this.btnCourse.Location = new System.Drawing.Point(644, 4);
+      this.btnCourse.Name = "btnCourse";
+      this.btnCourse.Size = new System.Drawing.Size(26, 23);
+      this.btnCourse.TabIndex = 8;
+      this.btnCourse.Text = "...";
+      this.btnCourse.UseVisualStyleBackColor = true;
+      this.btnCourse.Click += new System.EventHandler(this.btnCourse_Click);
+      // 
+      // _txtCourse
+      // 
+      this._txtCourse.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this._txtCourse.Location = new System.Drawing.Point(88, 6);
+      this._txtCourse.Name = "_txtCourse";
+      this._txtCourse.Size = new System.Drawing.Size(550, 20);
+      this._txtCourse.TabIndex = 7;
+      // 
+      // label3
+      // 
+      this.label3.AutoSize = true;
+      this.label3.Location = new System.Drawing.Point(12, 9);
+      this.label3.Name = "label3";
+      this.label3.Size = new System.Drawing.Size(59, 13);
+      this.label3.TabIndex = 6;
+      this.label3.Text = "Course File";
+      // 
+      // _lstCourses
+      // 
+      this._lstCourses.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+      this._lstCourses.FormattingEnabled = true;
+      this._lstCourses.Location = new System.Drawing.Point(3, 3);
+      this._lstCourses.Name = "_lstCourses";
+      this._lstCourses.Size = new System.Drawing.Size(103, 21);
+      this._lstCourses.TabIndex = 9;
+      // 
+      // label4
+      // 
+      this.label4.AutoSize = true;
+      this.label4.Location = new System.Drawing.Point(12, 138);
+      this.label4.Name = "label4";
+      this.label4.Size = new System.Drawing.Size(40, 13);
+      this.label4.TabIndex = 10;
+      this.label4.Text = "Course";
+      // 
+      // _lblProgress
+      // 
+      this._lblProgress.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+      this._lblProgress.AutoSize = true;
+      this._lblProgress.Location = new System.Drawing.Point(85, 412);
+      this._lblProgress.Name = "_lblProgress";
+      this._lblProgress.Size = new System.Drawing.Size(48, 13);
+      this._lblProgress.TabIndex = 15;
+      this._lblProgress.Text = "Progress";
+      // 
+      // btnBackCalc
+      // 
+      this.btnBackCalc.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+      this.btnBackCalc.Location = new System.Drawing.Point(15, 301);
+      this.btnBackCalc.Name = "btnBackCalc";
+      this.btnBackCalc.Size = new System.Drawing.Size(54, 46);
+      this.btnBackCalc.TabIndex = 16;
+      this.btnBackCalc.Text = "Back Calc";
+      this.btnBackCalc.UseVisualStyleBackColor = true;
+      this.btnBackCalc.Click += new System.EventHandler(this.btnBackCalc_Click);
+      // 
+      // chkOnTop
+      // 
+      this.chkOnTop.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+      this.chkOnTop.AutoSize = true;
+      this.chkOnTop.Location = new System.Drawing.Point(12, 411);
+      this.chkOnTop.Name = "chkOnTop";
+      this.chkOnTop.Size = new System.Drawing.Size(62, 17);
+      this.chkOnTop.TabIndex = 17;
+      this.chkOnTop.Text = "On Top";
+      this.chkOnTop.UseVisualStyleBackColor = true;
+      this.chkOnTop.CheckedChanged += new System.EventHandler(this.chkOnTop_CheckedChanged);
+      // 
+      // pnlCourse
+      // 
+      this.pnlCourse.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.pnlCourse.AutoScroll = true;
+      this.pnlCourse.BackColor = System.Drawing.SystemColors.Window;
+      this.pnlCourse.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+      this.pnlCourse.Controls.Add(this._cntSection);
+      this.pnlCourse.Location = new System.Drawing.Point(0, 30);
+      this.pnlCourse.Name = "pnlCourse";
+      this.pnlCourse.Size = new System.Drawing.Size(172, 243);
+      this.pnlCourse.TabIndex = 19;
+      // 
+      // _cntSection
+      // 
+      this._cntSection.BackColor = System.Drawing.SystemColors.Window;
+      this._cntSection.BoldCombination = null;
+      this._cntSection.Location = new System.Drawing.Point(1, 1);
+      this._cntSection.Name = "_cntSection";
+      this._cntSection.Size = new System.Drawing.Size(160, 271);
+      this._cntSection.TabIndex = 18;
+      this._cntSection.Vm = null;
+      // 
+      // btnExport
+      // 
+      this.btnExport.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+      this.btnExport.Location = new System.Drawing.Point(15, 353);
+      this.btnExport.Name = "btnExport";
+      this.btnExport.Size = new System.Drawing.Size(54, 23);
+      this.btnExport.TabIndex = 20;
+      this.btnExport.Text = "Export";
+      this.btnExport.UseVisualStyleBackColor = true;
+      this.btnExport.Click += new System.EventHandler(this.btnExport_Click);
+      // 
+      // btnImport
+      // 
+      this.btnImport.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+      this.btnImport.Location = new System.Drawing.Point(15, 382);
+      this.btnImport.Name = "btnImport";
+      this.btnImport.Size = new System.Drawing.Size(54, 23);
+      this.btnImport.TabIndex = 21;
+      this.btnImport.Text = "Import";
+      this.btnImport.UseVisualStyleBackColor = true;
+      this.btnImport.Click += new System.EventHandler(this.btnImport_Click);
+      // 
+      // splCourse
+      // 
+      this.splCourse.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.splCourse.FixedPanel = System.Windows.Forms.FixedPanel.Panel2;
+      this.splCourse.Location = new System.Drawing.Point(88, 132);
+      this.splCourse.Name = "splCourse";
+      // 
+      // splCourse.Panel1
+      // 
+      this.splCourse.Panel1.Controls.Add(this.pnlCourse);
+      this.splCourse.Panel1.Controls.Add(this._lstCourses);
+      // 
+      // splCourse.Panel2
+      // 
+      this.splCourse.Panel2.Controls.Add(this.splVars);
+      this.splCourse.Size = new System.Drawing.Size(550, 273);
+      this.splCourse.SplitterDistance = 172;
+      this.splCourse.TabIndex = 22;
+      // 
+      // splVars
+      // 
+      this.splVars.Dock = System.Windows.Forms.DockStyle.Fill;
+      this.splVars.Location = new System.Drawing.Point(0, 0);
+      this.splVars.Name = "splVars";
+      this.splVars.Orientation = System.Windows.Forms.Orientation.Horizontal;
+      // 
+      // splVars.Panel1
+      // 
+      this.splVars.Panel1.Controls.Add(this.btnExportCsv);
+      this.splVars.Panel1.Controls.Add(this.lblVariations);
+      this.splVars.Panel1.Controls.Add(this._lstVarBuilders);
+      this.splVars.Panel1.Controls.Add(this.btnExportCourses);
+      this.splVars.Panel1.Controls.Add(this.dgvInfo);
+      // 
+      // splVars.Panel2
+      // 
+      this.splVars.Panel2.Controls.Add(this.lblEstime);
+      this.splVars.Panel2.Controls.Add(this.txtEstimate);
+      this.splVars.Panel2.Controls.Add(this.lblCat);
+      this.splVars.Panel2.Controls.Add(this._lstCats);
+      this.splVars.Panel2.Controls.Add(this.btnExportPermut);
+      this.splVars.Panel2.Controls.Add(this._txtMax);
+      this.splVars.Panel2.Controls.Add(this.lblMax);
+      this.splVars.Panel2.Controls.Add(this.lblMin);
+      this.splVars.Panel2.Controls.Add(this._txtMin);
+      this.splVars.Panel2.Controls.Add(this.lblPermuts);
+      this.splVars.Panel2.Controls.Add(this.btnCalcPermut);
+      this.splVars.Panel2.Controls.Add(this.dgvPermut);
+      this.splVars.Size = new System.Drawing.Size(374, 273);
+      this.splVars.SplitterDistance = 157;
+      this.splVars.TabIndex = 1;
+      // 
+      // btnExportCsv
+      // 
+      this.btnExportCsv.Image = global::OCourse.Properties.Resources.exp_csv;
+      this.btnExportCsv.Location = new System.Drawing.Point(198, 3);
+      this.btnExportCsv.Name = "btnExportCsv";
+      this.btnExportCsv.Size = new System.Drawing.Size(22, 23);
+      this.btnExportCsv.TabIndex = 38;
+      this.ttp.SetToolTip(this.btnExportCsv, "Export selected courses");
+      this.btnExportCsv.UseVisualStyleBackColor = true;
+      this.btnExportCsv.Click += new System.EventHandler(this.btnExportCsv_Click);
+      // 
+      // lblVariations
+      // 
+      this.lblVariations.AutoSize = true;
+      this.lblVariations.Location = new System.Drawing.Point(3, 6);
+      this.lblVariations.Name = "lblVariations";
+      this.lblVariations.Size = new System.Drawing.Size(53, 13);
+      this.lblVariations.TabIndex = 37;
+      this.lblVariations.Text = "Variations";
+      // 
+      // _lstVarBuilders
+      // 
+      this._lstVarBuilders.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+      this._lstVarBuilders.FormattingEnabled = true;
+      this._lstVarBuilders.Location = new System.Drawing.Point(62, 5);
+      this._lstVarBuilders.Name = "_lstVarBuilders";
+      this._lstVarBuilders.Size = new System.Drawing.Size(102, 21);
+      this._lstVarBuilders.TabIndex = 36;
+      // 
+      // btnExportCourses
+      // 
+      this.btnExportCourses.Image = global::OCourse.Properties.Resources.exp_course;
+      this.btnExportCourses.Location = new System.Drawing.Point(170, 3);
+      this.btnExportCourses.Name = "btnExportCourses";
+      this.btnExportCourses.Size = new System.Drawing.Size(22, 23);
+      this.btnExportCourses.TabIndex = 35;
+      this.ttp.SetToolTip(this.btnExportCourses, "Export selected courses");
+      this.btnExportCourses.UseVisualStyleBackColor = true;
+      this.btnExportCourses.Click += new System.EventHandler(this.btnExportCourses_Click);
+      // 
+      // dgvInfo
+      // 
+      this.dgvInfo.AllowUserToAddRows = false;
+      this.dgvInfo.AllowUserToOrderColumns = true;
+      this.dgvInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+      dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+      dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+      dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
+      dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+      dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+      dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+      this.dgvInfo.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+      this.dgvInfo.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+      dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+      dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
+      dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
+      dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+      dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+      dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+      this.dgvInfo.DefaultCellStyle = dataGridViewCellStyle2;
+      this.dgvInfo.Location = new System.Drawing.Point(0, 30);
+      this.dgvInfo.Name = "dgvInfo";
+      this.dgvInfo.ReadOnly = true;
+      dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+      dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
+      dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.WindowText;
+      dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+      dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+      dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+      this.dgvInfo.RowHeadersDefaultCellStyle = dataGridViewCellStyle3;
+      this.dgvInfo.RowHeadersVisible = false;
+      this.dgvInfo.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+      this.dgvInfo.Size = new System.Drawing.Size(374, 124);
+      this.dgvInfo.TabIndex = 0;
+      this.dgvInfo.CurrentCellChanged += new System.EventHandler(this.dgvInfo_CurrentCellChanged);
+      // 
+      // lblEstime
+      // 
+      this.lblEstime.AutoSize = true;
+      this.lblEstime.Location = new System.Drawing.Point(3, 28);
+      this.lblEstime.Name = "lblEstime";
+      this.lblEstime.Size = new System.Drawing.Size(14, 13);
+      this.lblEstime.TabIndex = 20;
+      this.lblEstime.Text = "~";
+      this.ttp.SetToolTip(this.lblEstime, "Estimated count of permutations");
+      // 
+      // txtEstimate
+      // 
+      this.txtEstimate.Location = new System.Drawing.Point(24, 23);
+      this.txtEstimate.Name = "txtEstimate";
+      this.txtEstimate.ReadOnly = true;
+      this.txtEstimate.Size = new System.Drawing.Size(47, 20);
+      this.txtEstimate.TabIndex = 19;
+      this.ttp.SetToolTip(this.txtEstimate, "Estimated count of permutations");
+      // 
+      // lblCat
+      // 
+      this.lblCat.AutoSize = true;
+      this.lblCat.Location = new System.Drawing.Point(94, 2);
+      this.lblCat.Name = "lblCat";
+      this.lblCat.Size = new System.Drawing.Size(49, 13);
+      this.lblCat.TabIndex = 18;
+      this.lblCat.Text = "Category";
+      // 
+      // _lstCats
+      // 
+      this._lstCats.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+      this._lstCats.FormattingEnabled = true;
+      this._lstCats.Location = new System.Drawing.Point(149, 1);
+      this._lstCats.Name = "_lstCats";
+      this._lstCats.Size = new System.Drawing.Size(103, 21);
+      this._lstCats.TabIndex = 17;
+      // 
+      // btnExportPermut
+      // 
+      this.btnExportPermut.Image = global::OCourse.Properties.Resources.exp_course;
+      this.btnExportPermut.Location = new System.Drawing.Point(349, 23);
+      this.btnExportPermut.Name = "btnExportPermut";
+      this.btnExportPermut.Size = new System.Drawing.Size(22, 22);
+      this.btnExportPermut.TabIndex = 16;
+      this.ttp.SetToolTip(this.btnExportPermut, "Export selected permutations");
+      this.btnExportPermut.UseVisualStyleBackColor = true;
+      // 
+      // _txtMax
+      // 
+      this._txtMax.Location = new System.Drawing.Point(261, 25);
+      this._txtMax.Name = "_txtMax";
+      this._txtMax.Size = new System.Drawing.Size(47, 20);
+      this._txtMax.TabIndex = 15;
+      // 
+      // lblMax
+      // 
+      this.lblMax.AutoSize = true;
+      this.lblMax.Location = new System.Drawing.Point(208, 28);
+      this.lblMax.Name = "lblMax";
+      this.lblMax.Size = new System.Drawing.Size(44, 13);
+      this.lblMax.TabIndex = 14;
+      this.lblMax.Text = "Max. Nr";
+      // 
+      // lblMin
+      // 
+      this.lblMin.AutoSize = true;
+      this.lblMin.Location = new System.Drawing.Point(94, 28);
+      this.lblMin.Name = "lblMin";
+      this.lblMin.Size = new System.Drawing.Size(41, 13);
+      this.lblMin.TabIndex = 13;
+      this.lblMin.Text = "Min. Nr";
+      // 
+      // _txtMin
+      // 
+      this._txtMin.Location = new System.Drawing.Point(149, 25);
+      this._txtMin.Name = "_txtMin";
+      this._txtMin.Size = new System.Drawing.Size(47, 20);
+      this._txtMin.TabIndex = 12;
+      // 
+      // lblPermuts
+      // 
+      this.lblPermuts.AutoSize = true;
+      this.lblPermuts.Location = new System.Drawing.Point(3, 2);
+      this.lblPermuts.Name = "lblPermuts";
+      this.lblPermuts.Size = new System.Drawing.Size(68, 13);
+      this.lblPermuts.TabIndex = 11;
+      this.lblPermuts.Text = "Permutations";
+      // 
+      // btnCalcPermut
+      // 
+      this.btnCalcPermut.Image = global::OCourse.Properties.Resources.calc_permuts;
+      this.btnCalcPermut.Location = new System.Drawing.Point(321, 23);
+      this.btnCalcPermut.Name = "btnCalcPermut";
+      this.btnCalcPermut.Size = new System.Drawing.Size(22, 22);
+      this.btnCalcPermut.TabIndex = 2;
+      this.ttp.SetToolTip(this.btnCalcPermut, "Calculate permutions");
+      this.btnCalcPermut.UseVisualStyleBackColor = true;
+      this.btnCalcPermut.Click += new System.EventHandler(this.btnCalcPermut_Click);
+      // 
+      // dgvPermut
+      // 
+      this.dgvPermut.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.dgvPermut.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+      this.dgvPermut.Location = new System.Drawing.Point(0, 51);
+      this.dgvPermut.Name = "dgvPermut";
+      this.dgvPermut.Size = new System.Drawing.Size(374, 61);
+      this.dgvPermut.TabIndex = 0;
+      this.ttp.SetToolTip(this.dgvPermut, "Select combinations to be shown in map");
+      this.dgvPermut.SelectionChanged += new System.EventHandler(this.dgvVars_SelectionChanged);
+      // 
+      // btnCreateScripts
+      // 
+      this.btnCreateScripts.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+      this.btnCreateScripts.Location = new System.Drawing.Point(15, 249);
+      this.btnCreateScripts.Name = "btnCreateScripts";
+      this.btnCreateScripts.Size = new System.Drawing.Size(54, 46);
+      this.btnCreateScripts.TabIndex = 32;
+      this.btnCreateScripts.Text = "Create\r\nScripts";
+      this.ttp.SetToolTip(this.btnCreateScripts, "Create Bat file that can be uses as input for LeastCostPathUI.exe");
+      this.btnCreateScripts.UseVisualStyleBackColor = true;
+      this.btnCreateScripts.Click += new System.EventHandler(this.btnCreateScripts_Click);
+      // 
+      // btnCalcSelection
+      // 
+      this.btnCalcSelection.Enabled = false;
+      this.btnCalcSelection.Location = new System.Drawing.Point(15, 191);
+      this.btnCalcSelection.Name = "btnCalcSelection";
+      this.btnCalcSelection.Size = new System.Drawing.Size(54, 46);
+      this.btnCalcSelection.TabIndex = 26;
+      this.btnCalcSelection.Text = "Calc ...-...";
+      this.btnCalcSelection.UseVisualStyleBackColor = true;
+      this.btnCalcSelection.Click += new System.EventHandler(this.btnCalcSelection_Click);
+      // 
+      // _lstVelo
+      // 
+      this._lstVelo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+      this._lstVelo.FormattingEnabled = true;
+      this._lstVelo.Location = new System.Drawing.Point(643, 135);
+      this._lstVelo.Name = "_lstVelo";
+      this._lstVelo.Size = new System.Drawing.Size(136, 21);
+      this._lstVelo.TabIndex = 27;
+      this._lstVelo.Visible = false;
+      // 
+      // lblVelo
+      // 
+      this.lblVelo.AutoSize = true;
+      this.lblVelo.Location = new System.Drawing.Point(422, 116);
+      this.lblVelo.Name = "lblVelo";
+      this.lblVelo.Size = new System.Drawing.Size(67, 13);
+      this.lblVelo.TabIndex = 28;
+      this.lblVelo.Text = "Velocity type";
+      // 
+      // btnRelay
+      // 
+      this.btnRelay.Location = new System.Drawing.Point(644, 179);
+      this.btnRelay.Name = "btnRelay";
+      this.btnRelay.Size = new System.Drawing.Size(75, 23);
+      this.btnRelay.TabIndex = 29;
+      this.btnRelay.Text = "Relay";
+      this.btnRelay.UseVisualStyleBackColor = true;
+      this.btnRelay.Visible = false;
+      this.btnRelay.Click += new System.EventHandler(this.btnRelay_Click);
+      // 
+      // btnTrack
+      // 
+      this.btnTrack.Location = new System.Drawing.Point(644, 237);
+      this.btnTrack.Name = "btnTrack";
+      this.btnTrack.Size = new System.Drawing.Size(75, 23);
+      this.btnTrack.TabIndex = 30;
+      this.btnTrack.Text = "Track";
+      this.btnTrack.UseVisualStyleBackColor = true;
+      this.btnTrack.Visible = false;
+      this.btnTrack.Click += new System.EventHandler(this.btnTrack_Click);
+      // 
+      // btnPermutations
+      // 
+      this.btnPermutations.Location = new System.Drawing.Point(644, 208);
+      this.btnPermutations.Name = "btnPermutations";
+      this.btnPermutations.Size = new System.Drawing.Size(80, 23);
+      this.btnPermutations.TabIndex = 31;
+      this.btnPermutations.Text = "Permutations";
+      this.btnPermutations.UseVisualStyleBackColor = true;
+      this.btnPermutations.Visible = false;
+      this.btnPermutations.Click += new System.EventHandler(this.btnPermutations_Click);
+      // 
+      // _cntConfig
+      // 
+      this._cntConfig.ConfigVm = null;
+      this._cntConfig.Location = new System.Drawing.Point(88, 29);
+      this._cntConfig.Name = "_cntConfig";
+      this._cntConfig.Size = new System.Drawing.Size(550, 100);
+      this._cntConfig.TabIndex = 33;
+      // 
+      // btnCancel
+      // 
+      this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+      this.btnCancel.Location = new System.Drawing.Point(525, 407);
+      this.btnCancel.Name = "btnCancel";
+      this.btnCancel.Size = new System.Drawing.Size(113, 23);
+      this.btnCancel.TabIndex = 34;
+      this.btnCancel.Text = "Cancel Calculation";
+      this.btnCancel.UseVisualStyleBackColor = true;
+      this.btnCancel.Visible = false;
+      this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+      // 
+      // _lstDisplayType
+      // 
+      this._lstDisplayType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+      this._lstDisplayType.FormattingEnabled = true;
+      this._lstDisplayType.Location = new System.Drawing.Point(12, 105);
+      this._lstDisplayType.Name = "_lstDisplayType";
+      this._lstDisplayType.Size = new System.Drawing.Size(62, 21);
+      this._lstDisplayType.TabIndex = 35;
+      // 
+      // WdgOCourse
+      // 
+      this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+      this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+      this.ClientSize = new System.Drawing.Size(682, 434);
+      this.Controls.Add(this._lstDisplayType);
+      this.Controls.Add(this.btnCancel);
+      this.Controls.Add(this._cntConfig);
+      this.Controls.Add(this.btnCreateScripts);
+      this.Controls.Add(this.btnPermutations);
+      this.Controls.Add(this.btnTrack);
+      this.Controls.Add(this.btnRelay);
+      this.Controls.Add(this.lblVelo);
+      this.Controls.Add(this._lstVelo);
+      this.Controls.Add(this.btnCalcSelection);
+      this.Controls.Add(this.splCourse);
+      this.Controls.Add(this.btnImport);
+      this.Controls.Add(this.btnExport);
+      this.Controls.Add(this.chkOnTop);
+      this.Controls.Add(this.btnBackCalc);
+      this.Controls.Add(this._lblProgress);
+      this.Controls.Add(this.label4);
+      this.Controls.Add(this.btnCourse);
+      this.Controls.Add(this._txtCourse);
+      this.Controls.Add(this.label3);
+      this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+      this.Name = "WdgOCourse";
+      this.Text = "OCourse";
+      this.Load += new System.EventHandler(this.WdgOCourse_Load);
+      this.pnlCourse.ResumeLayout(false);
+      this.splCourse.Panel1.ResumeLayout(false);
+      this.splCourse.Panel2.ResumeLayout(false);
+      ((System.ComponentModel.ISupportInitialize)(this.splCourse)).EndInit();
+      this.splCourse.ResumeLayout(false);
+      this.splVars.Panel1.ResumeLayout(false);
+      this.splVars.Panel1.PerformLayout();
+      this.splVars.Panel2.ResumeLayout(false);
+      this.splVars.Panel2.PerformLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.splVars)).EndInit();
+      this.splVars.ResumeLayout(false);
+      ((System.ComponentModel.ISupportInitialize)(this.dgvInfo)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.dgvPermut)).EndInit();
+      this.ResumeLayout(false);
+      this.PerformLayout();
+
+    }
+
+    #endregion
+
+    private System.Windows.Forms.OpenFileDialog dlgOpen;
+    private System.Windows.Forms.Button btnCourse;
+    private System.Windows.Forms.TextBox _txtCourse;
+    private System.Windows.Forms.Label label3;
+    private System.Windows.Forms.ComboBox _lstCourses;
+    private System.Windows.Forms.Label label4;
+    private System.Windows.Forms.Label _lblProgress;
+    private System.Windows.Forms.Button btnBackCalc;
+    private System.Windows.Forms.CheckBox chkOnTop;
+    private CntSection _cntSection;
+    private System.Windows.Forms.Panel pnlCourse;
+    private System.Windows.Forms.Button btnExport;
+    private System.Windows.Forms.Button btnImport;
+    private System.Windows.Forms.SaveFileDialog dlgSave;
+    private System.Windows.Forms.SplitContainer splCourse;
+    private System.Windows.Forms.DataGridView dgvInfo;
+    private System.Windows.Forms.SplitContainer splVars;
+    private System.Windows.Forms.DataGridView dgvPermut;
+    private System.Windows.Forms.ToolTip ttp;
+    private System.Windows.Forms.Button btnCalcSelection;
+    private System.Windows.Forms.ComboBox _lstVelo;
+    private System.Windows.Forms.Label lblVelo;
+    private System.Windows.Forms.Button btnRelay;
+    private System.Windows.Forms.Button btnTrack;
+    private System.Windows.Forms.Button btnPermutations;
+    private System.Windows.Forms.Button btnCreateScripts;
+    private LeastCostPathUI.CntConfigView _cntConfig;
+    private System.Windows.Forms.Button btnCancel;
+    private System.Windows.Forms.Button btnExportCourses;
+    private System.Windows.Forms.TextBox _txtMax;
+    private System.Windows.Forms.Label lblMax;
+    private System.Windows.Forms.Label lblMin;
+    private System.Windows.Forms.TextBox _txtMin;
+    private System.Windows.Forms.Label lblPermuts;
+    private System.Windows.Forms.Button btnCalcPermut;
+    private System.Windows.Forms.Button btnExportPermut;
+    private System.Windows.Forms.Label lblCat;
+    private System.Windows.Forms.ComboBox _lstCats;
+    private System.Windows.Forms.ComboBox _lstVarBuilders;
+    private System.Windows.Forms.Label lblVariations;
+    private System.Windows.Forms.ComboBox _lstDisplayType;
+    private System.Windows.Forms.Button btnExportCsv;
+    private System.Windows.Forms.Label lblEstime;
+    private System.Windows.Forms.TextBox txtEstimate;
+  }
+}
+

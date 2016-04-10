@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{E2DFFC41-8244-40C6-9DA6-6D695CA7466E}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>TData</RootNamespace>
+    <AssemblyName>TData</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Adapter.cs" />
+    <Compile Include="Browse.cs" />
+    <Compile Include="Data.cs" />
+    <Compile Include="DataType.cs" />
+    <Compile Include="DynCell.cs" />
+    <Compile Include="DynGrid.cs" />
+    <Compile Include="OpenConnection.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Query.cs" />
+    <Compile Include="TGrid.cs" />
+    <Compile Include="TTable.cs" />
+    <Compile Include="TTableConnection.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Utils.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ArcSde\ArcSde.csproj">
+      <Project>{7a5011bb-8649-40e8-9f98-8ac314ee93d1}</Project>
+      <Name>ArcSde</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Basics\Basics.csproj">
+      <Project>{200e9400-2771-4ace-a172-78ebd405b67e}</Project>
+      <Name>Basics</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Grid\Grid.csproj">
+      <Project>{feeca61e-39ed-442e-b8d9-740ec097dcc2}</Project>
+      <Name>Grid</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Ocad\Ocad.csproj">
+      <Project>{39b4f02a-e890-4afe-b00b-11d1e7ed5634}</Project>
+      <Name>Ocad</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Shape\Shape.csproj">
+      <Project>{ec0a5266-c017-41eb-bd7b-917eb912b8a9}</Project>
+      <Name>Shape</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
