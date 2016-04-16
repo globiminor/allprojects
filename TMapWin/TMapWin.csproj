@@ -1,0 +1,274 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{C0227271-34AF-4F8F-A930-B55F4FC31EF7}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>TMapWin</RootNamespace>
+    <AssemblyName>TMapWin</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>TMapWin.ProgramMap</StartupObject>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Attribute.cs">
+      <DependentUpon>Attribute.xsd</DependentUpon>
+    </Compile>
+    <Compile Include="Attribute.Designer.cs">
+      <DependentUpon>Attribute.xsd</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Browse\Images.Designer.cs">
+      <DependentUpon>Images.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Browse\WdgBrowse.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Browse\WdgBrowse.designer.cs">
+      <DependentUpon>WdgBrowse.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Browse\WdgOpen.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Browse\WdgOpen.designer.cs">
+      <DependentUpon>WdgOpen.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CntMap.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CntSelection.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CntSelection.Designer.cs">
+      <DependentUpon>CntSelection.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CntToc.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Div\DataGridSymbolColumn.cs" />
+    <Compile Include="Div\TMapGraphics.cs" />
+    <Compile Include="OptionButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Settings.cs" />
+    <Compile Include="WdgAuswahl.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WdgAuswahl.Designer.cs">
+      <DependentUpon>WdgAuswahl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="WdgCustom.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WdgCustom.Designer.cs">
+      <DependentUpon>WdgCustom.cs</DependentUpon>
+    </Compile>
+    <Compile Include="WdgMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WdgMain.Designer.cs">
+      <DependentUpon>WdgMain.cs</DependentUpon>
+    </Compile>
+    <Compile Include="WdgProperties.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WdgSymbol.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WdgSymbol.Designer.cs">
+      <DependentUpon>WdgSymbol.cs</DependentUpon>
+    </Compile>
+    <Content Include="Icons\Down.ico" />
+    <Content Include="Icons\Move.ico" />
+    <Content Include="Icons\Select.ico" />
+    <Content Include="Icons\Up.ico" />
+    <Content Include="Icons\ZoomIn.ico" />
+    <Content Include="Icons\ZoomOut.ico" />
+    <EmbeddedResource Include="Browse\Images.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Images.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Browse\WdgBrowse.resx">
+      <DependentUpon>WdgBrowse.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Browse\WdgOpen.resx">
+      <DependentUpon>WdgOpen.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CntMap.resx">
+      <DependentUpon>CntMap.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CntSelection.resx">
+      <DependentUpon>CntSelection.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CntToc.resx">
+      <DependentUpon>CntToc.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="OptionButton.resx">
+      <DependentUpon>OptionButton.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <EmbeddedResource Include="WdgAuswahl.resx">
+      <DependentUpon>WdgAuswahl.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WdgCustom.resx">
+      <DependentUpon>WdgCustom.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WdgMain.resx">
+      <DependentUpon>WdgMain.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WdgProperties.resx">
+      <DependentUpon>WdgProperties.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WdgSymbol.resx">
+      <DependentUpon>WdgSymbol.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Content Include="Attribute.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>Attribute.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </Content>
+    <None Include="Attribute.xsc">
+      <DependentUpon>Attribute.xsd</DependentUpon>
+    </None>
+    <None Include="Attribute.xss">
+      <DependentUpon>Attribute.xsd</DependentUpon>
+    </None>
+    <None Include="Attribute.xsx">
+      <DependentUpon>Attribute.xsd</DependentUpon>
+    </None>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Basics\Basics.csproj">
+      <Project>{200e9400-2771-4ace-a172-78ebd405b67e}</Project>
+      <Name>Basics</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TData\TData.csproj">
+      <Project>{e2dffc41-8244-40c6-9da6-6d695ca7466e}</Project>
+      <Name>TData</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TMap\TMap.csproj">
+      <Project>{0afadaab-0036-47a0-b8a2-d41ccd77a4e0}</Project>
+      <Name>TMap</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Browse\Images\AllIcones.png" />
+    <Content Include="Browse\Images\db.png" />
+    <Content Include="Browse\Images\db_anno.png" />
+    <Content Include="Browse\Images\db_connected.png" />
+    <Content Include="Browse\Images\db_disconnected.png" />
+    <Content Include="Browse\Images\db_geom.png" />
+    <Content Include="Browse\Images\db_grid.png" />
+    <Content Include="Browse\Images\db_line.png" />
+    <Content Include="Browse\Images\db_meas.png" />
+    <Content Include="Browse\Images\db_net.png" />
+    <Content Include="Browse\Images\db_patch.png" />
+    <Content Include="Browse\Images\db_point.png" />
+    <Content Include="Browse\Images\db_poly.png" />
+    <Content Include="Browse\Images\db_rel.png" />
+    <Content Include="Browse\Images\db_route.png" />
+    <Content Include="Browse\Images\db_set.png" />
+    <Content Include="Browse\Images\db_tbl.png" />
+    <Content Include="Browse\Images\db_tin.png" />
+    <Content Include="Browse\Images\db_view.png" />
+    <Content Include="Browse\Images\folder_closed.png" />
+    <Content Include="Browse\Images\folder_open.png" />
+    <Content Include="Browse\Images\new_file_gdb.png" />
+    <Content Include="Browse\Images\new_folder.png" />
+    <Content Include="Browse\Images\new_pers_gdb.png" />
+    <Content Include="Browse\Images\new_set.png" />
+    <Content Include="Browse\Images\shp_line.png" />
+    <Content Include="Browse\Images\shp_patch.png" />
+    <Content Include="Browse\Images\shp_point.png" />
+    <Content Include="Browse\Images\shp_poly.png" />
+    <Content Include="Browse\Images\shp_route.png" />
+    <Content Include="Browse\Images\shp_tbl.png" />
+    <Content Include="Browse\Images\shp_unknown.png" />
+    <Content Include="Browse\Images\Unbenannt.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

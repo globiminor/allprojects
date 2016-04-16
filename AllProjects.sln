@@ -32,6 +32,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linked", "Linked", "{F6CA3B
 		GuiUtils.cs = GuiUtils.cs
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TMapWin", "TMapWin\TMapWin.csproj", "{C0227271-34AF-4F8F-A930-B55F4FC31EF7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -86,6 +88,10 @@ Global
 		{7A5011BB-8649-40E8-9F98-8AC314EE93D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7A5011BB-8649-40E8-9F98-8AC314EE93D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7A5011BB-8649-40E8-9F98-8AC314EE93D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C0227271-34AF-4F8F-A930-B55F4FC31EF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0227271-34AF-4F8F-A930-B55F4FC31EF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C0227271-34AF-4F8F-A930-B55F4FC31EF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0227271-34AF-4F8F-A930-B55F4FC31EF7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
