@@ -36,6 +36,9 @@
   <PropertyGroup>
     <StartupObject>TMapWin.ProgramMap</StartupObject>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>App.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -122,6 +125,7 @@
     <Compile Include="WdgSymbol.Designer.cs">
       <DependentUpon>WdgSymbol.cs</DependentUpon>
     </Compile>
+    <Content Include="App.ico" />
     <Content Include="Icons\Down.ico" />
     <Content Include="Icons\Move.ico" />
     <Content Include="Icons\Select.ico" />
