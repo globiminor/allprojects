@@ -1,0 +1,154 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace Basics.Geom.Process
+{
+  internal class RowEnumerator
+  {
+    private class Tile
+    {
+      private Box _box;
+      public IBox Box { get { return _box; } }
+
+      public void LoadData(ISpatialTable table, TableActions actions, SearchEngine searchEngine)
+      {
+        string dbConstraint = null;
+        if (actions.Actions.Count == 1)
+        { dbConstraint = actions.Actions[0].DbConstraint; }
+
+        IBox searchBox = _box;
+        if (actions.MaxSearchDistance > 0)
+        {
+          Point2D p = new Point2D(actions.MaxSearchDistance, actions.MaxSearchDistance);
+          searchBox = new Box(_box.Min - p, _box.Max + p);
+        }
+        table.Search(searchBox, dbConstraint);
+      }
+    }
+
+    private class TableActions
+    {
+      public readonly List<TableAction> Actions = new List<TableAction>();
+      public bool IsExecuted { get; set; }
+      public bool IsQueried { get; set; }
+      public double MaxSearchDistance { get; set; }
+
+      private List<TableAction> _executeActions;
+
+      public List<TableAction> ExecuteActions
+      {
+        get
+        {
+          if (_executeActions == null)
+          {
+            List<TableAction> executeActions = new List<TableAction>();
+            foreach (TableAction action in Actions)
+            {
+              if (action.Execute == null) { continue; }
+              executeActions.Add(action);
+            }
+          }
+          return _executeActions;
+        }
+
+      }
+    }
+
+    private readonly SearchEngine _searchEngine = new SearchEngine();
+    private readonly List<ITablesProcessor> _processors;
+
+    public RowEnumerator(List<ITablesProcessor> processors)
+    {
+      _processors = processors;
+    }
+
+    internal ISearchEngine GetSearchEngine()
+    {
+      return _searchEngine;
+    }
+
+    public IEnumerable<ProcessRow> GetProcessRows()
+    {
+      Dictionary<ISpatialTable, TableActions> involvedTables = new Dictionary<ISpatialTable, TableActions>();
+      foreach (ITablesProcessor processor in _processors)
+      {
+        foreach (TableAction tableAction in processor.InvolvedTables)
+        {
+          TableActions involved;
+          ISpatialTable table = (ISpatialTable)tableAction.Table;
+          if (involvedTables.TryGetValue(table, out involved))
+          {
+            involved = new TableActions();
+            involvedTables.Add(table, involved);
+          }
+          involved.Actions.Add(tableAction);
+          if (tableAction.Execute == null)
+          {
+            // if not executed, it implicitly is queried
+            involved.IsQueried = true;
+          }
+          else
+          {
+            involved.IsExecuted = true;
+            if (tableAction.IsQueried)
+            {
+              involved.IsQueried = true;
+            }
+          }
+          involved.MaxSearchDistance = Math.Max(tableAction.SearchDistance, tableAction.SearchDistance);
+        }
+      }
+
+      foreach (Tile tile in GetTiles())
+      {
+        foreach (var pair in involvedTables)
+        {
+          ISpatialTable table = pair.Key;
+          TableActions actions = pair.Value;
+          if (actions.IsQueried)
+          {
+            tile.LoadData(table, actions, _searchEngine);
+          }
+        }
+
+        foreach (var pair in involvedTables)
+        {
+          ISpatialTable table = pair.Key;
+          TableActions actions = pair.Value;
+          if (!actions.IsExecuted)
+          {
+            continue;
+          }
+
+          if (actions.IsQueried)
+          {
+            foreach (IRow row in _searchEngine.Search(table, tile.Box))
+            {
+              yield return new ProcessRow(row, actions.ExecuteActions);
+            }
+          }
+          else
+          {
+            string dbConstraint = null;
+            if (actions.Actions.Count == 1)
+            { dbConstraint = actions.Actions[0].DbConstraint; }
+
+            foreach (ISpatialRow row in table.Search(tile.Box, dbConstraint))
+            {
+              yield return new ProcessRow(row, actions.ExecuteActions);
+            }
+          }
+        }
+
+        CompleteTile();
+      }
+    }
+    private void CompleteTile()
+    { }
+
+    private IEnumerable<Tile> GetTiles()
+    {
+      yield break;
+    }
+  }
+}

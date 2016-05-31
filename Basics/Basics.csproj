@@ -93,6 +93,7 @@
     <Compile Include="Geom\Mesh.cs" />
     <Compile Include="Geom\MeshEnum.cs" />
     <Compile Include="Geom\MeshNested.cs" />
+    <Compile Include="Geom\MeshUtils.cs" />
     <Compile Include="Geom\Network\DirectedRow.cs" />
     <Compile Include="Geom\Network\LeastCostPath.cs" />
     <Compile Include="Geom\Network\LineList.cs" />
@@ -110,6 +111,12 @@
     <Compile Include="Geom\PointCollection.cs" />
     <Compile Include="Geom\Polyline.cs" />
     <Compile Include="Geom\PolylineCollection.cs" />
+    <Compile Include="Geom\Process\Interfaces.cs" />
+    <Compile Include="Geom\Process\Processor.cs" />
+    <Compile Include="Geom\Process\ProcessorContainer.cs" />
+    <Compile Include="Geom\Process\ProcessRow.cs" />
+    <Compile Include="Geom\Process\RowEnumerator.cs" />
+    <Compile Include="Geom\Process\SearchEngine.cs" />
     <Compile Include="Geom\Projection\Datum.cs" />
     <Compile Include="Geom\Projection\Ellipsoid.cs" />
     <Compile Include="Geom\Projection\Geographic.cs" />

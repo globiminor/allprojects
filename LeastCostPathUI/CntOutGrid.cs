@@ -112,7 +112,7 @@ namespace LeastCostPathUI
       chkDirImg.Checked = check;
     }
 
-    public void Export(DoubleGrid costGrid, IntGrid dirGrid, Steps step)
+    public void Export(DoubleBaseGrid costGrid, IntGrid dirGrid, Steps step)
     {
       byte[] r = new byte[256];
       byte[] g = new byte[256];

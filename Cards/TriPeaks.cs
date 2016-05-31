@@ -328,7 +328,7 @@ namespace Cards
 
     [DataMember]
     private List<CardPosition> RawPositions
-      {
+    {
       get
       {
         List<CardPosition> posList = new List<CardPosition>();
@@ -339,8 +339,24 @@ namespace Cards
         return posList;
       }
       set
-      { }
+      {
+        List<CardPosition> posList = value;
+        Dictionary<Position, Position> startDict = new Dictionary<Position, Position>();
+        foreach (Position p in StartPositions)
+        {
+          startDict.Add(p, p);
+        }
+
+        Dictionary<Position, Card> positions = new Dictionary<Position, Card>();
+        foreach (CardPosition cardPos in posList)
+        {
+          Position p = new Position(cardPos.Left, cardPos.Top);
+          positions.Add(startDict[p], cardPos.Card);
+        }
+
+        Positions = positions;
       }
+    }
 
     [DataMember]
     public List<Card> Stack { get; private set; }
@@ -358,8 +374,27 @@ namespace Cards
     public int ColumnCount { get; private set; }
     public string Title { get; private set; }
 
-    private readonly Cache<Stand<Move>, TriPeaks> _cache =
-      new Cache<Stand<Move>, TriPeaks>();
+    private Cache<Stand<Move>, TriPeaks> _cache;
+
+    public TriPeaks()
+    {
+      InitMembers();
+    }
+
+    [OnDeserializing]
+    private void OnDeserializing(StreamingContext c)
+    {
+      InitMembers();
+    }
+    private void InitMembers()
+    {
+      _x0 = 0.5;
+      _dx = 1.2;
+      _y0 = 2;
+      _dy = 0.5;
+      _yStack = 6;
+      _cache = new Cache<Stand<Move>, TriPeaks>();
+    }
 
     public void Init()
     {
@@ -386,14 +421,14 @@ namespace Cards
       Init(shuffled);
     }
 
-    private static List<Position> _pos;
-    private static List<Position> Pos
+    private static List<Position> _startPos;
+    private static List<Position> StartPositions
     {
       get
       {
-        if (_pos == null)
+        if (_startPos == null)
         {
-          double[,] posArray = new double[,] { 
+          double[,] posArray = new double[,] {
             { 1.5, 0 }, {4.5, 0}, {7.5, 0},
             {1, 1}, {2, 1}, {4, 1}, {5, 1}, {7,1}, {8,1},
             {0.5, 2}, {1.5, 2}, {2.5, 2}, {3.5, 2}, {4.5,2}, {5.5,2}, {6.5,2}, {7.5,2}, {8.5,2},
@@ -416,9 +451,9 @@ namespace Cards
               }
             }
           }
-          _pos = pos;
+          _startPos = pos;
         }
-        return _pos;
+        return _startPos;
       }
     }
     public void Init(List<Card> cards)
@@ -426,9 +461,9 @@ namespace Cards
       Positions = new Dictionary<Position, Card>();
       Stack = new List<Card>();
 
-      for (int t = 0; t < Pos.Count; t++)
+      for (int t = 0; t < StartPositions.Count; t++)
       {
-        Positions.Add(Pos[t], cards[t]);
+        Positions.Add(StartPositions[t], cards[t]);
       }
 
       for (int t = Positions.Count; t < cards.Count; t++)
@@ -476,7 +511,7 @@ namespace Cards
       }
       else
       {
-        Position p = Pos[move.From];
+        Position p = StartPositions[move.From];
         Card card = clone.Positions[p];
         clone.Completed.Add(card);
         clone.Positions[p] = null;

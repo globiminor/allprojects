@@ -389,7 +389,7 @@ namespace LeastCostPathUI
 
       if (startCostGrid == null || endCostGrid == null)
       { return; }
-      DoubleGrid grdSum = null;
+      DoubleBaseGrid grdSum = null;
       if (lcp.sCostGrd != null)
       {
         if (grdSum == null) grdSum = GetSum(startCostGrid, endCostGrid, costPath.GetGridExtent());
@@ -421,7 +421,7 @@ namespace LeastCostPathUI
       }
     }
 
-    private static DoubleGrid GetSum(DoubleGrid startCostGrid, DoubleGrid endCostGrid, GridExtent extent)
+    private static DoubleBaseGrid GetSum(DoubleGrid startCostGrid, DoubleGrid endCostGrid, GridExtent extent)
     {
       if (extent.EqualExtent(startCostGrid.Extent) && extent.EqualExtent(endCostGrid.Extent))
       {
@@ -544,7 +544,7 @@ namespace LeastCostPathUI
       return value;
     }
 
-    internal static void CreateRouteShapes(RouteTable routes, DoubleGrid sum, DoubleGrid heightGrd, string fileName)
+    internal static void CreateRouteShapes(RouteTable routes, DoubleBaseGrid sum, DoubleGrid heightGrd, string fileName)
     {
       RouteTable copy = new RouteTable();
       foreach (RouteTable.Row row in routes.Rows)

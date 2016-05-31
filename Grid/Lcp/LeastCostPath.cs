@@ -317,7 +317,7 @@ namespace Grid.Lcp
         return _stop(ix, iy);
       }
     }
-    public static RouteTable CalcBestRoutes(DoubleGrid sum,
+    public static RouteTable CalcBestRoutes(DoubleBaseGrid sum,
       DoubleGrid fromCost, IntGrid fromDir, Steps fromStep,
       DoubleGrid toCost, IntGrid toDir, Steps toStep,
       double maxLengthFactor, double minDiffFactor, StatusEventHandler Status)

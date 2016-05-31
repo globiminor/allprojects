@@ -110,6 +110,27 @@ namespace Cards.Vm
 
     }
 
+    public void Load(string fileName)
+    {
+      if (_game == null)
+      { return; }
+
+      DataContractSerializer ser = new DataContractSerializer(_game.GetType());
+      using (Stream reader = new FileStream(fileName, FileMode.Open))
+      {
+        GameBase game = (GameBase)ser.ReadObject(reader);
+
+        if (game is TriPeaks)
+        {
+          SetGame((TriPeaks)game);
+        }
+        else
+        {
+          throw new NotImplementedException(string.Format( "unhandled type {0}", game.GetType()));
+        }
+      }
+    }
+
     public void ToggleSolve()
     {
       if (Cards == null)

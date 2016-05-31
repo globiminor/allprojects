@@ -3,9 +3,25 @@ using System.Diagnostics;
 
 namespace Basics.Geom
 {
+  public interface IMeshTri
+  {
+
+  }
+
+  public interface IMeshLine
+  {
+    IPoint Start { get; }
+    IPoint End { get; }
+
+    IMeshLine GetNextTriLine();
+    IMeshLine GetPreviousTriLine();
+
+    IMeshLine Invers();
+  }
+
   public partial class Mesh
   {
-    public abstract class Tri : IGeometry
+    public abstract class Tri : IGeometry, IMeshTri
     {
       private Point2D _center;
       private double _radius2;
@@ -85,7 +101,7 @@ namespace Basics.Geom
 
       public int Dimension
       {
-        get        { return 2; }
+        get { return 2; }
       }
 
       public int Topology
@@ -98,7 +114,7 @@ namespace Basics.Geom
         IPoint p0 = this[0].Start;
         double dx = point.X - p0.X;
         double dy = point.Y - p0.Y;
-    
+
         IPoint p = this[1].Start;
         double x = p.X - p0.X;
         double y = p.Y - p0.Y;
@@ -299,7 +315,7 @@ namespace Basics.Geom
       }
     }
 
-    public abstract class MeshLine : Line
+    public abstract class MeshLine : Line, IMeshLine
     {
       public abstract Tri LeftTri { get; }
       public abstract Tri RightTri { get; }
@@ -309,13 +325,17 @@ namespace Basics.Geom
       public bool IsReverse { get; protected set; }
 
       public abstract bool HasEqualBaseLine(MeshLine line);
-      public abstract MeshLine Inverse();
+      IMeshLine IMeshLine.Invers()
+      { return Invers(); }
+      public abstract MeshLine Invers();
 
       public static MeshLine operator -(MeshLine line)
       {
-        return line.Inverse();
+        return line.Invers();
       }
 
+      IMeshLine IMeshLine.GetNextTriLine()
+      { return GetNextTriLine(); }
       /// <summary>
       /// M2GetNextLine_
       /// </summary>
@@ -327,6 +347,8 @@ namespace Basics.Geom
         return tri.GetNextLine(this);
       }
 
+      IMeshLine IMeshLine.GetPreviousTriLine()
+      { return GetPreviousTriLine(); }
       /// <summary>
       /// M2GetPreviosLine_
       /// </summary>
@@ -447,7 +469,7 @@ namespace Basics.Geom
         IsReverse = isReverse;
       }
 
-      public override MeshLine Inverse()
+      public override MeshLine Invers()
       {
         return new MeshLineEx(BaseLine, !(IsReverse));
       }
@@ -660,7 +682,7 @@ namespace Basics.Geom
       public override void ChangeDiag(int rec)
       {
         if (rec > 100)
-        {}
+        { }
 
         TriEx lTri = LeftTriEx;
         TriEx rTri = RightTriEx;

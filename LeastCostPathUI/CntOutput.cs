@@ -154,8 +154,8 @@ namespace LeastCostPathUI
       private readonly double _offset;
       private readonly ThreadStart _resetDlg;
 
-      private DoubleGrid _sum;
-      private DoubleGrid _route;
+      private DoubleBaseGrid _sum;
+      private DoubleBaseGrid _route;
       private RouteTable _routes;
 
       public CalcCostWorker(CntOutput parent, LeastCostPathBase costPath,

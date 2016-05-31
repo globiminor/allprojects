@@ -2,10 +2,12 @@ using System.Collections.Generic;
 
 namespace Basics.Geom
 {
-
-  public interface IGeometry
+  public interface IDimension
   {
     int Dimension { get; }
+  }
+  public interface IGeometry : IDimension
+  {
     int Topology { get; }
     bool IsWithin(IPoint point);
     IBox Extent { get; }

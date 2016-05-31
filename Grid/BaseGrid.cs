@@ -10,6 +10,93 @@ namespace Grid
     void UnlockBits();
   }
 
+  public class Dir : IComparable<Dir>
+  {
+    public class Comparer : IComparer<Dir>, IEqualityComparer<Dir>
+    {
+      public int Compare(Dir x, Dir y)
+      {
+        return x.CompareTo(y);
+      }
+
+      public bool Equals(Dir x, Dir y)
+      {
+        return Compare(x, y) == 0;
+      }
+
+      public int GetHashCode(Dir obj)
+      {
+        return obj.Dx.GetHashCode() ^ (7 * (obj.Dy.GetHashCode()));
+      }
+    }
+
+    public int Dx { get; private set; }
+    public int Dy { get; private set; }
+    public Dir(int dx, int dy)
+    {
+      Dx = dx;
+      Dy = dy;
+    }
+
+    public int CompareTo(Dir other)
+    {
+      int d = Dx.CompareTo(other.Dx);
+      if (d != 0) { return d; }
+      return Dy.CompareTo(other.Dy);
+    }
+
+    public static readonly Dir N = new Dir(0, 1);
+    public static readonly Dir W = new Dir(-1, 0);
+    public static readonly Dir Sw = new Dir(-1, -1);
+    public static readonly Dir S = new Dir(0, -1);
+    public static readonly Dir E = new Dir(1, 0);
+    public static readonly Dir Ne = new Dir(1, 1);
+
+    private static LinkedList<Dir> _meshDirs;
+    private static LinkedList<Dir> MeshDirs
+    { get { return _meshDirs ?? (_meshDirs = new LinkedList<Dir>(new[] { N, W, Sw, S, E, Ne })); } }
+    private static Dictionary<Dir, LinkedListNode<Dir>> _meshDirDict;
+    private static Dictionary<Dir, LinkedListNode<Dir>> MeshDirDict
+    {
+      get
+      {
+        if (_meshDirDict == null)
+        {
+          Dictionary<Dir, LinkedListNode<Dir>> dict = new Dictionary<Dir, LinkedListNode<Dir>>(new Comparer());
+          LinkedListNode<Dir> n = MeshDirs.First;
+          while (n != null)
+          {
+            dict.Add(n.Value, n);
+            n = n.Next;
+          }
+          _meshDirDict = dict;
+        }
+        return _meshDirDict;
+      }
+    }
+
+    public static Dir GetNextTriDir(Dir dir)
+    {
+      LinkedListNode<Dir> node;
+      if (!MeshDirDict.TryGetValue(dir, out node))
+      {
+        return null;
+      }
+      LinkedListNode<Dir> next = node.Next ?? node.List.First;
+      return new Dir(-next.Value.Dx, -next.Value.Dy);
+    }
+    public static Dir GetPreTriDir(Dir dir)
+    {
+      LinkedListNode<Dir> node;
+      if (!MeshDirDict.TryGetValue(dir, out node))
+      {
+        return null;
+      }
+      LinkedListNode<Dir> pre = node.Previous ?? node.List.Last;
+      return new Dir(-pre.Value.Dx, -pre.Value.Dy);
+    }
+  }
+
   public abstract class BaseGrid
   {
     private GridExtent _extent;
@@ -25,6 +112,20 @@ namespace Grid
       int ix, iy;
       _extent.GetNearest(x, y, out ix, out iy);
       return this[ix, iy]; // this[ix, iy];
+    }
+
+    protected class GridPoint : Point3D
+    {
+      private readonly BaseGrid _grid;
+      private readonly int _x;
+      private readonly int _y;
+      public GridPoint(BaseGrid grid, int x, int y)
+        : base(grid.Extent.X0 + x * grid.Extent.Dx, grid.Extent.Y0 + y * grid.Extent.Dx, 0)
+      {
+        _grid = grid;
+        _x = x;
+        _y = y;
+      }
     }
 
     public T Offset<T>(int ix, int iy) where T : BaseGrid

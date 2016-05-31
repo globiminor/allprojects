@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using Basics.Geom;
+using System.Collections.Generic;
 
 namespace Grid
 {
@@ -11,10 +12,517 @@ namespace Grid
     double Value(double x, double y, EGridInterpolation interpol);
     double Slope2(double x, double y);
   }
+
+  public abstract class DoubleBaseGrid : BaseGrid<double>, IDoubleGrid
+  {
+    private class DoubleOpGrid : DoubleBaseGrid
+    {
+      EOperator _eOperator;
+      private DoubleBaseGrid _dGrd0;
+      private DoubleBaseGrid _dGrd1;
+      private double _dOperator;
+      private IntGrid _iGrd;
+
+      private double[] _dArray;
+
+      public DoubleOpGrid(DoubleBaseGrid grd, double val, EOperator op)
+      : base(grd.Extent)
+      {
+        _dGrd0 = grd;
+        _dOperator = val;
+        _eOperator = op;
+      }
+
+      public DoubleOpGrid(DoubleBaseGrid grd0, DoubleBaseGrid grd1, EOperator op)
+      : base(grd0.Extent)
+      {
+        _dGrd0 = grd0;
+        _dGrd1 = grd1;
+        _eOperator = op;
+      }
+
+      public DoubleOpGrid(double[] dArray, IntGrid grd)
+      : base(grd.Extent)
+      {
+        _dArray = dArray;
+        _iGrd = grd;
+        _eOperator = EOperator.bracket;
+      }
+
+
+      public override double this[int ix, int iy]
+      {
+        get
+        {
+          // operators
+          if (_eOperator == EOperator.addVal) return _dGrd0[ix, iy] + _dOperator;
+          else if (_eOperator == EOperator.addGrd) return _dGrd0[ix, iy] + _dGrd1[ix, iy];
+          else if (_eOperator == EOperator.multVal) return _dGrd0[ix, iy] * _dOperator;
+          else if (_eOperator == EOperator.bracket) return _dArray[_iGrd[ix, iy]];
+          else throw new InvalidOperationException("Unhandled operator " + _eOperator);
+        }
+        set
+        { throw new InvalidOperationException("Cannot set value to a calculated grid"); }
+      }
+
+    }
+
+    protected DoubleBaseGrid(GridExtent extent)
+      : base(extent)
+    { }
+
+    public static DoubleBaseGrid Create(double[] dArray, IntGrid grd)
+    {
+      return new DoubleOpGrid(dArray, grd);
+    }
+
+    public static DoubleBaseGrid operator +(DoubleBaseGrid grd, double val)
+    {
+      return new DoubleOpGrid(grd, val, EOperator.addVal);
+    }
+    public static DoubleBaseGrid operator +(DoubleBaseGrid grd0, DoubleGrid grd1)
+    {
+      return new DoubleOpGrid(grd0, grd1, EOperator.addGrd);
+    }
+    public static DoubleBaseGrid operator -(DoubleBaseGrid grd, double val)
+    {
+      return new DoubleOpGrid(grd, -val, EOperator.addVal);
+    }
+    public static DoubleBaseGrid operator *(DoubleBaseGrid grd, double val)
+    {
+      return new DoubleOpGrid(grd, val, EOperator.multVal);
+    }
+    public static DoubleBaseGrid operator /(DoubleBaseGrid grd, double val)
+    {
+      return new DoubleOpGrid(grd, 1.0 / val, EOperator.multVal);
+    }
+
+    public IntGrid ToIntGrid()
+    {
+      return new IntGrid(this);
+    }
+
+    public void SaveASCII(string name, string format)
+    {
+      using (TextWriter w = new StreamWriter(name, false))
+      {
+        w.WriteLine("NCOLS {0}", Extent.Nx);
+        w.WriteLine("NROWS {0}", Extent.Ny);
+        w.WriteLine("XLLCORNER {0}", Extent.X0);
+        w.WriteLine("YLLCORNER {0}", Extent.Y0 + (Extent.Ny - 1) * Extent.Dy);
+        w.WriteLine("CELLSIZE {0}", Extent.Dx);
+        w.WriteLine("NODATA_VALUE {0}", Extent.NN);
+        for (int iy = 0; iy < Extent.Ny; iy++)
+        {
+          for (int ix = 0; ix < Extent.Nx; ix++)
+          {
+            double val = this[ix, iy];
+            if (double.IsNaN(val)) val = Extent.NN;
+            w.Write("{0} ", val.ToString(format));
+          }
+          w.WriteLine();
+        }
+      }
+    }
+
+    public void Save(string name)
+    {
+      short iLength;
+      double z0;
+      double dz;
+      GetStoreProps(out iLength, out z0, out dz);
+
+      using (BinaryWriter writer = new BinaryWriter(new FileStream(name, FileMode.Create)))
+      {
+        BinarGrid.PutHeader(writer.BaseStream, Extent.Nx, Extent.Ny,
+          BinarGrid.EGridType.eDouble, iLength, Extent.X0, Extent.Y0, Extent.Dx,
+          z0, dz);
+        writer.Seek(BinarGrid.START_DATA, SeekOrigin.Begin);
+
+        int nx = Extent.Nx;
+        int ny = Extent.Ny;
+        for (int iy = 0; iy < ny; iy++)
+        {
+          for (int ix = 0; ix < nx; ix++)
+          {
+            WriteValue(writer, ix, iy);
+          }
+        }
+        writer.Close();
+      }
+    }
+
+    protected virtual void GetStoreProps(out short iLength, out double z0, out double dz)
+    {
+      iLength = 8;
+      z0 = 0;
+      dz = 0;
+    }
+
+    protected virtual void WriteValue(BinaryWriter writer, int ix, int iy)
+    {
+      writer.Write(this[ix, iy]);
+    }
+
+    public Polyline GetContour(double x0, double y0)
+    {
+      int ix, iy;
+      double dx, dy;
+
+      Extent.GetBilinear(x0, y0, out ix, out iy, out dx, out dy);
+
+      double hContour = Value(x0, y0, EGridInterpolation.bilinear);
+      if (double.IsNaN(hContour))
+      { return null; }
+
+      double h00 = this[ix, iy];
+      double h01 = this[ix, iy + 1];
+
+      IMeshLine start;
+      double h0;
+      double h1;
+      if (h00.CompareTo(hContour) != h01.CompareTo(hContour))
+      {
+        h0 = h00;
+        h1 = h01;
+        start = new MeshLine(this, ix, iy, Dir.N);
+      }
+      else if (h01.CompareTo(hContour) != (h1 = this[ix + 1, iy + 1]).CompareTo(hContour))
+      {
+        h0 = h01;
+        start = new MeshLine(this, ix, iy + 1, Dir.E);
+      }
+      else if (h00.CompareTo(hContour) != (h1 = this[ix + 1, iy]).CompareTo(hContour))
+      {
+        h0 = h00;
+        start = new MeshLine(this, ix + 1, iy, Dir.E);
+      }
+      else
+      { return null; }
+
+      if (h0 > h1)
+      { start = start.Invers(); }
+
+      double f = (hContour - h0) / (h1 - h0);
+      return MeshUtils.GetContour(start, f, new MeshLine.Comparer());
+    }
+
+    private class MeshLine : IMeshLine
+    {
+      private static Dir.Comparer _dirCmp = new Dir.Comparer();
+      public class Comparer : IComparer<MeshLine>, IComparer<IMeshLine>
+      {
+        int IComparer<IMeshLine>.Compare(IMeshLine x, IMeshLine y)
+        { return Compare(x as MeshLine, y as MeshLine); }
+        public int Compare(MeshLine x, MeshLine y)
+        {
+          if (x == null) { if (y == null) return 0; return 1; }
+          if (y == null) return -1;
+
+          int d = x._x0.CompareTo(y._x0);
+          if (d != 0) return d;
+
+          d = x._y0.CompareTo(y._y0);
+          if (d != 0) return d;
+
+          d = _dirCmp.Compare(x._dir, y._dir);
+          return d;
+        }
+      }
+
+      private readonly DoubleBaseGrid _grid;
+      private readonly int _x0;
+      private readonly int _y0;
+      private readonly int _x1;
+      private readonly Dir _dir;
+
+      private GridPoint _start;
+      private GridPoint _end;
+
+      public MeshLine(DoubleBaseGrid grid, int x0, int y0, Dir dir)
+      {
+        _grid = grid;
+        _x0 = x0;
+        _y0 = y0;
+        _dir = dir;
+      }
+
+      public IPoint Start
+      {
+        get { return _start ?? (_start = CreatePoint(_x0, _y0)); }
+      }
+
+      public IPoint End
+      {
+        get { return _end ?? (_end = CreateEndPoint()); }
+      }
+
+      IMeshLine IMeshLine.Invers()
+      {
+        MeshLine invers = new MeshLine(_grid, _x0 + _dir.Dx, _y0 + _dir.Dy, new Dir(-_dir.Dx, -_dir.Dy));
+        invers._start = _end;
+        invers._end = _start;
+        return invers;
+      }
+      IMeshLine IMeshLine.GetNextTriLine()
+      {
+        Dir nextDir = Dir.GetNextTriDir(_dir);
+        int x1 = _x0 + _dir.Dx;
+        int x2 = x1 + nextDir.Dx;
+        if (x2 < 0 || x2 >= _grid.Extent.Nx)
+        { return null; }
+
+        int y1 = _y0 + _dir.Dy;
+        int y2 = y1 + nextDir.Dy;
+        if (y2 < 0 || y2 >= _grid.Extent.Ny)
+        { return null; }
+        MeshLine next = new MeshLine(_grid, x1, y1, nextDir);
+        next._start = _end;
+
+        return next;
+      }
+
+      IMeshLine IMeshLine.GetPreviousTriLine()
+      {
+        Dir preDir = Dir.GetPreTriDir(_dir);
+        int x2 = _x0 - preDir.Dx;
+        if (x2 < 0 || x2 >= _grid.Extent.Nx)
+        { return null; }
+
+        int y2 = _y0 - preDir.Dy;
+        if (y2 < 0 || y2 >= _grid.Extent.Ny)
+        { return null; }
+        MeshLine next = new MeshLine(_grid, x2, y2, preDir);
+        next._end = _start;
+
+        return next;
+      }
+
+
+      private GridPoint CreateEndPoint()
+      {
+        GridPoint end = CreatePoint(_x0 + _dir.Dx, _y0 + _dir.Dy);
+        return end;
+      }
+      private GridPoint CreatePoint(int ix, int iy)
+      {
+        GridPoint p = new GridPoint(_grid, ix, iy) { Z = _grid[ix, iy] };
+        return p;
+      }
+    }
+
+    public double Value(double x, double y, EGridInterpolation eInter)
+    {
+      if (eInter == EGridInterpolation.nearest)
+      {
+        return Value(x, y);
+      }
+      else if (eInter == EGridInterpolation.bilinear)
+      {
+        int ix, iy;
+        double dx, dy;
+        double h00, h01, h10, h11;
+        double h0, h1;
+
+        Extent.GetBilinear(x, y, out ix, out iy, out dx, out dy);
+
+        h00 = this[ix, iy];
+        if (dx == 0)
+        {
+          if (dy == 0)
+          {
+            return h00;
+          }
+          h01 = this[ix, iy + 1];
+          return h00 + (h01 - h00) * dy;
+        }
+        if (dy == 0)
+        {
+          h10 = this[ix + 1, iy];
+          return h00 + (h10 - h00) * dx;
+        }
+
+        h01 = this[ix, iy + 1];
+        h10 = this[ix + 1, iy];
+        h11 = this[ix + 1, iy + 1];
+
+        h0 = h00 + (h10 - h00) * dx;
+        h1 = h01 + (h11 - h01) * dx;
+        return h0 + (h1 - h0) * dy;
+      }
+      else
+      {
+        throw new Exception("Unhandled Interpolation method " + eInter);
+      }
+    }
+
+    public double Slope2(double x, double y)
+    {
+      Point3D vertical = Vertical(x, y);
+
+      return (vertical.X * vertical.X + vertical.Y * vertical.Y);
+    }
+
+    public Point3D Vertical(double x, double y)
+    {
+      int ix, iy;
+      double dx, dy;
+
+      Extent.GetBilinear(x, y, out ix, out iy, out dx, out dy);
+
+      Point3D p = Vertical(ix, iy, dx, dy);
+      return p;
+    }
+
+    private Point3D Vertical(int ix, int iy, double dx, double dy)
+    {
+      double h00 = this[ix, iy];
+      double h01 = this[ix, iy + 1];
+      double h10 = this[ix + 1, iy];
+      double h11 = this[ix + 1, iy + 1];
+
+      double h0 = h00 + (h10 - h00) * dx;
+      double h1 = h01 + (h11 - h01) * dx;
+
+      double dhy = h1 - h0;
+      double dhx = (h10 + (h11 - h10) * dy) - (h00 + (h01 - h00) * dy);
+
+      double h = h0 + dhy * dy;
+
+      dhy = dhy / Extent.Dy;
+      dhx = dhx / Extent.Dx;
+
+      Point3D p = new Point3D(dhx, dhy, h);
+
+      return p;
+    }
+
+    public delegate double HillShadingFunction(Point3D vertical);
+
+    public DoubleGrid HillShading(HillShadingFunction shadeFunction)
+    {
+      int nx = Extent.Nx;
+      int ny = Extent.Ny;
+
+      DoubleGrid shade = new DoubleGrid(nx - 1, ny - 1, typeof(double),
+        Extent.X0, Extent.Y0, Extent.Dx);
+
+      for (int ix = 0; ix < nx - 1; ix++)
+      {
+        for (int iy = 0; iy < ny - 1; iy++)
+        {
+          Point3D v = Vertical(ix, iy, 0, 0);
+
+          double s = shadeFunction(v);
+
+          shade.SetThis(ix, iy, s);
+        }
+      }
+
+      return shade;
+    }
+
+    public double Min()
+    {
+      double m;
+      m = this[0, 0];
+      for (int j = 0; j < Extent.Ny; j++)
+      {
+        for (int i = 0; i < Extent.Nx; i++)
+        {
+          double t = this[i, j];
+          if (t < m)
+          {
+            m = t;
+          }
+        }
+      }
+      return m;
+    }
+
+    public Polyline Profil(Polyline line)
+    {
+      Polyline profile = new Polyline();
+      IPoint pos;
+
+      double sumDist = 0;
+      double h;
+      pos = line.Points.First.Value;
+      h = Value(pos.X, pos.Y, EGridInterpolation.bilinear);
+      profile.Add(new Point2D(0, h));
+      foreach (Curve segment in line.Segments)
+      {
+        double dist = segment.Length();
+        sumDist += dist;
+
+        pos = segment.End;
+        h = Value(pos.X, pos.Y, EGridInterpolation.bilinear);
+
+        profile.Add(new Point2D(sumDist, h));
+      }
+      return profile;
+    }
+
+    public double CalcDh(int i0, int j0, int n)
+    {
+      double h0, h1, h2;
+      double a0, b0, c0, d0;
+      double a1, b1, c1, d1;
+      double dhMax;
+      int i1, j1;
+      i1 = i0 + n;
+      j1 = j0 + n;
+      dhMax = 0;
+
+      // first triangle, must correspond to triangles in drawCell
+      h0 = this[i0, j0];
+      h1 = this[i1, j0];
+      h2 = this[i0, j1];
+      a0 = -(h1 - h0); // eliminated common factor n !!!
+      b0 = -(h2 - h0);
+      c0 = n;
+      d0 = -(a0 * i0 + b0 * j0 + c0 * h0);
+
+      // second triangle, must correspond to triangles in drawCell
+      h0 = this[i1, j1];
+      a1 = (h2 - h0); // eliminated common factor n !!!
+      b1 = (h1 - h0);
+      c1 = n;
+      d1 = -(a1 * i1 + b1 * j1 + c1 * h0);
+
+      for (int i = i0; i <= i1; i++)
+      {
+        for (int j = j0; j <= j1; j++)
+        {
+          double dhTemp;
+          double h;
+          h = this[i, j];
+          if (double.IsNaN(h) || h < 0)
+          {
+            return double.NaN;
+          }
+          if (i - i0 + j - j0 <= n)
+          {
+            dhTemp = Math.Abs(h + (a0 * i + b0 * j + d0) / c0);
+          }
+          else
+          {
+            dhTemp = Math.Abs(h + (a1 * i + b1 * j + d1) / c1);
+          }
+          if (dhTemp > dhMax)
+          {
+            dhMax = dhTemp;
+          }
+        }
+      }
+
+      return dhMax;
+    }
+  }
   /// <summary>
   /// Double Grid
   /// </summary>
-  public class DoubleGrid : BaseGrid<double>, IDoubleGrid
+  public class DoubleGrid : DoubleBaseGrid
   {
     public enum FileType
     {
@@ -30,13 +538,6 @@ namespace Grid
     private int[,] _iValue;
     private float[,] _fValue;
     private double[,] _dValue;
-
-    EOperator _eOperator;
-    private DoubleGrid _dGrd0;
-    private DoubleGrid _dGrd1;
-    private double _dOperator;
-    private IntGrid _iGrd;
-    private double[] _dArray;
 
     private class GetLine
     {
@@ -54,6 +555,7 @@ namespace Grid
         return _parts[_index - 1];
       }
     }
+
     public static FileType GetFileType(string fileName)
     {
       if (!File.Exists(fileName))
@@ -85,57 +587,10 @@ namespace Grid
       }
       return FileType.Unknown;
     }
+
     protected DoubleGrid(GridExtent extent)
       : base(extent)
-    {
-      _eOperator = EOperator.none;
-    }
-    private DoubleGrid(DoubleGrid grd, double val, EOperator op)
-      : base(grd.Extent)
-    {
-      _dGrd0 = grd;
-      _dOperator = val;
-      _eOperator = op;
-    }
-    private DoubleGrid(DoubleGrid grd0, DoubleGrid grd1, EOperator op)
-      : base(grd0.Extent)
-    {
-      _dGrd0 = grd0;
-      _dGrd1 = grd1;
-      _eOperator = op;
-    }
-    public DoubleGrid(double[] dArray, IntGrid grd)
-      : base(grd.Extent)
-    {
-      _dArray = dArray;
-      _iGrd = grd;
-      _eOperator = EOperator.bracket;
-    }
-    public static DoubleGrid operator +(DoubleGrid grd, double val)
-    {
-      return new DoubleGrid(grd, val, EOperator.addVal);
-    }
-    public static DoubleGrid operator +(DoubleGrid grd0, DoubleGrid grd1)
-    {
-      return new DoubleGrid(grd0, grd1, EOperator.addGrd);
-    }
-    public static DoubleGrid operator -(DoubleGrid grd, double val)
-    {
-      return new DoubleGrid(grd, -val, EOperator.addVal);
-    }
-    public static DoubleGrid operator *(DoubleGrid grd, double val)
-    {
-      return new DoubleGrid(grd, val, EOperator.multVal);
-    }
-    public static DoubleGrid operator /(DoubleGrid grd, double val)
-    {
-      return new DoubleGrid(grd, 1.0 / val, EOperator.multVal);
-    }
-
-    public IntGrid ToIntGrid()
-    {
-      return new IntGrid(this);
-    }
+    { }
 
     private void Init(int nx, int ny, Type type, double z0, double dz)
     {
@@ -269,7 +724,6 @@ namespace Grid
       return grd;
     }
 
-
     /// <summary>
     /// Grid from ASCII file
     /// </summary>
@@ -322,77 +776,27 @@ namespace Grid
       return grd;
     }
 
-    public void SaveASCII(string name, string format)
+    protected override void GetStoreProps(out short iLength, out double z0, out double dz)
     {
-      using (TextWriter w = new StreamWriter(name, false))
-      {
-        w.WriteLine("NCOLS {0}", Extent.Nx);
-        w.WriteLine("NROWS {0}", Extent.Ny);
-        w.WriteLine("XLLCORNER {0}", Extent.X0);
-        w.WriteLine("YLLCORNER {0}", Extent.Y0 + (Extent.Ny - 1) * Extent.Dy);
-        w.WriteLine("CELLSIZE {0}", Extent.Dx);
-        w.WriteLine("NODATA_VALUE {0}", Extent.NN);
-        for (int iy = 0; iy < Extent.Ny; iy++)
-        {
-          for (int ix = 0; ix < Extent.Nx; ix++)
-          {
-            double val = this[ix, iy];
-            if (double.IsNaN(val)) val = Extent.NN;
-            w.Write("{0} ", val.ToString(format));
-          }
-          w.WriteLine();
-        }
-      }
+      iLength = _iLength;
+      z0 = _z0;
+      dz = _dz;
     }
 
-    public void Save(string name)
+    protected override void WriteValue(BinaryWriter writer, int ix, int iy)
     {
-      short iLength;
-      Type pType;
-      // check for operator grids
-      if (_type == null)
-      {
-        pType = typeof(double);
-        iLength = 8;
-      }
-      else
-      {
-        pType = _type;
-        iLength = _iLength;
-      }
-
-      BinaryWriter writer = new BinaryWriter(new FileStream(name, FileMode.Create));
-      BinarGrid.PutHeader(writer.BaseStream, Extent.Nx, Extent.Ny,
-        BinarGrid.EGridType.eDouble, iLength, Extent.X0, Extent.Y0, Extent.Dx,
-        _z0, _dz);
-      writer.Seek(BinarGrid.START_DATA, SeekOrigin.Begin);
-
-      int nx = Extent.Nx;
-      int ny = Extent.Ny;
-      for (int iy = 0; iy < ny; iy++)
-      {
-        for (int ix = 0; ix < nx; ix++)
-        {
-          if (pType == typeof(byte)) writer.Write(_bValue[ix, iy]);
-          else if (pType == typeof(short)) writer.Write(_sValue[ix, iy]);
-          else if (pType == typeof(int)) writer.Write(_iValue[ix, iy]);
-          else if (pType == typeof(float)) writer.Write(_fValue[ix, iy]);
-          else if (pType == typeof(double)) writer.Write(this[ix, iy]); // normal and operator
-          else throw new Exception("Unhandled Type " + pType);
-        }
-      }
-      writer.Close();
+      if (_type == typeof(byte)) writer.Write(_bValue[ix, iy]);
+      else if (_type == typeof(short)) writer.Write(_sValue[ix, iy]);
+      else if (_type == typeof(int)) writer.Write(_iValue[ix, iy]);
+      else if (_type == typeof(float)) writer.Write(_fValue[ix, iy]);
+      else if (_type == typeof(double)) writer.Write(this[ix, iy]);
+      else throw new Exception("Unhandled Type " + _type);
     }
 
     public override double this[int ix, int iy]
     {
       get
       {
-        // operators
-        if (_eOperator == EOperator.addVal) return _dGrd0[ix, iy] + _dOperator;
-        else if (_eOperator == EOperator.addGrd) return _dGrd0[ix, iy] + _dGrd1[ix, iy];
-        else if (_eOperator == EOperator.multVal) return _dGrd0[ix, iy] * _dOperator;
-        else if (_eOperator == EOperator.bracket) return _dArray[_iGrd[ix, iy]];
         // data
         try
         {
@@ -425,216 +829,5 @@ namespace Grid
         }
       }
     }
-
-    public double Value(double x, double y, EGridInterpolation eInter)
-    {
-      if (eInter == EGridInterpolation.nearest)
-      {
-        return Value(x, y);
-      }
-      else if (eInter == EGridInterpolation.bilinear)
-      {
-        int ix, iy;
-        double dx, dy;
-        double h00, h01, h10, h11;
-        double h0, h1;
-
-        Extent.GetBilinear(x, y, out ix, out iy, out dx, out dy);
-
-        h00 = this[ix, iy];
-        if (dx == 0)
-        {
-          if (dy == 0)
-          {
-            return h00;
-          }
-          h01 = this[ix, iy + 1];
-          return h00 + (h01 - h00) * dy;
-        }
-        if (dy == 0)
-        {
-          h10 = this[ix + 1, iy];
-          return h00 + (h10 - h00) * dx;
-        }
-
-        h01 = this[ix, iy + 1];
-        h10 = this[ix + 1, iy];
-        h11 = this[ix + 1, iy + 1];
-
-        h0 = h00 + (h10 - h00) * dx;
-        h1 = h01 + (h11 - h01) * dx;
-        return h0 + (h1 - h0) * dy;
-      }
-      else
-      {
-        throw new Exception("Unhandled Interpolation method " + eInter);
-      }
-    }
-
-    public Point3D Vertical(double x, double y)
-    {
-      int ix, iy;
-      double dx, dy;
-
-      Extent.GetBilinear(x, y, out ix, out iy, out dx, out dy);
-
-      Point3D p = Vertical(ix, iy, dx, dy);
-      return p;
-    }
-
-    private Point3D Vertical(int ix, int iy, double dx, double dy)
-    {
-      double h00 = this[ix, iy];
-      double h01 = this[ix, iy + 1];
-      double h10 = this[ix + 1, iy];
-      double h11 = this[ix + 1, iy + 1];
-
-      double h0 = h00 + (h10 - h00) * dx;
-      double h1 = h01 + (h11 - h01) * dx;
-
-      double dhy = h1 - h0;
-      double dhx = (h10 + (h11 - h10) * dy) - (h00 + (h01 - h00) * dy);
-
-      double h = h0 + dhy * dy;
-
-      dhy = dhy / Extent.Dy;
-      dhx = dhx / Extent.Dx;
-
-      Point3D p = new Point3D(dhx, dhy, h);
-
-      return p;
-    }
-
-    public double Slope2(double x, double y)
-    {
-      Point3D vertical = Vertical(x, y);
-
-      return (vertical.X * vertical.X + vertical.Y * vertical.Y);
-    }
-
-    public delegate double HillShadingFunction(Point3D vertical);
-
-    public DoubleGrid HillShading(HillShadingFunction shadeFunction)
-    {
-      int nx = Extent.Nx;
-      int ny = Extent.Ny;
-
-      DoubleGrid shade = new DoubleGrid(nx - 1, ny - 1, typeof(double),
-        Extent.X0, Extent.Y0, Extent.Dx);
-
-      for (int ix = 0; ix < nx - 1; ix++)
-      {
-        for (int iy = 0; iy < ny - 1; iy++)
-        {
-          Point3D v = Vertical(ix, iy, 0, 0);
-
-          double s = shadeFunction(v);
-
-          shade.SetThis(ix, iy, s);
-        }
-      }
-
-      return shade;
-    }
-
-    public double Min()
-    {
-      double m;
-      m = this[0, 0];
-      for (int j = 0; j < Extent.Ny; j++)
-      {
-        for (int i = 0; i < Extent.Nx; i++)
-        {
-          double t = this[i, j];
-          if (t < m)
-          {
-            m = t;
-          }
-        }
-      }
-      return m;
-    }
-
-    public Polyline Profil(Polyline line)
-    {
-      Polyline profile = new Polyline();
-      IPoint pos;
-
-      double sumDist = 0;
-      double h;
-      pos = line.Points.First.Value;
-      h = Value(pos.X, pos.Y, EGridInterpolation.bilinear);
-      profile.Add(new Point2D(0, h));
-      foreach (Curve segment in line.Segments)
-      {
-        double dist = segment.Length();
-        sumDist += dist;
-
-        pos = segment.End;
-        h = Value(pos.X, pos.Y, EGridInterpolation.bilinear);
-
-        profile.Add(new Point2D(sumDist, h));
-      }
-      return profile;
-    }
-
-
-    public double CalcDh(int i0, int j0, int n)
-    {
-      double h0, h1, h2;
-      double a0, b0, c0, d0;
-      double a1, b1, c1, d1;
-      double dhMax;
-      int i1, j1;
-      i1 = i0 + n;
-      j1 = j0 + n;
-      dhMax = 0;
-
-      // first triangle, must correspond to triangles in drawCell
-      h0 = this[i0, j0];
-      h1 = this[i1, j0];
-      h2 = this[i0, j1];
-      a0 = -(h1 - h0); // eliminated common factor n !!!
-      b0 = -(h2 - h0);
-      c0 = n;
-      d0 = -(a0 * i0 + b0 * j0 + c0 * h0);
-
-      // second triangle, must correspond to triangles in drawCell
-      h0 = this[i1, j1];
-      a1 = (h2 - h0); // eliminated common factor n !!!
-      b1 = (h1 - h0);
-      c1 = n;
-      d1 = -(a1 * i1 + b1 * j1 + c1 * h0);
-
-      for (int i = i0; i <= i1; i++)
-      {
-        for (int j = j0; j <= j1; j++)
-        {
-          double dhTemp;
-          double h;
-          h = this[i, j];
-          if (double.IsNaN(h) || h < 0)
-          {
-            return double.NaN;
-          }
-          if (i - i0 + j - j0 <= n)
-          {
-            dhTemp = Math.Abs(h + (a0 * i + b0 * j + d0) / c0);
-          }
-          else
-          {
-            dhTemp = Math.Abs(h + (a1 * i + b1 * j + d1) / c1);
-          }
-          if (dhTemp > dhMax)
-          {
-            dhMax = dhTemp;
-          }
-        }
-      }
-
-      return dhMax;
-    }
-
-
   }
 }

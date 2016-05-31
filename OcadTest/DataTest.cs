@@ -24,6 +24,25 @@ namespace OcadTest
         w.Overwrite(elem, 264);
       }
     }
+
+    [TestMethod]
+    public void SetRasterOrientation()
+    {
+      using (OcadWriter w = Ocad9Writer.AppendTo(@"C:\daten\felix\kapreolo\karten\hardwald\2016\Hardwald_2016.ocd"))
+      {
+        foreach (ElementIndex idx in w.Reader.GetIndices())
+        {
+          ElementV9 elem = (ElementV9)w.Reader.ReadElement(idx);
+          if (elem != null && elem.Geometry is Area)
+          {
+            elem.Angle = 0;
+            w.Overwrite(elem, idx.Index);
+          }
+        }
+      }
+    }
+
+
     [TestMethod]
     public void TestBoxTree()
     {

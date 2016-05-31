@@ -30,7 +30,7 @@ namespace Basics.Geom
         base[index] = value;
       }
     }
-    int IGeometry.Dimension
+    int IDimension.Dimension
     {
       get
       {

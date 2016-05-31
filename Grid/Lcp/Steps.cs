@@ -4,18 +4,15 @@ using Basics.Geom;
 
 namespace Grid.Lcp
 {
-  public class Step
+  public class Step : Dir
   {
     public readonly int Index;
-    public readonly int Dx;
-    public readonly int Dy;
     public readonly double Angle;
     public readonly double Distance;
     public Step(int index, int dx, int dy)
+      : base(dx, dy)
     {
       Index = index;
-      Dx = dx;
-      Dy = dy;
 
       Distance = Math.Sqrt(dx * dx + dy * dy);
       Angle = Math.Atan2(dy, dx);
@@ -114,14 +111,14 @@ namespace Grid.Lcp
       get { return _count; }
     }
 
-    public DoubleGrid this[IntGrid grd]
+    public DoubleBaseGrid this[IntGrid grd]
     {
       get
       {
         double[] angles = new double[_count];
         foreach (Step step in _steps)
         { angles[step.Index] = step.Angle; }
-        return new DoubleGrid(angles, grd);
+        return DoubleBaseGrid.Create(angles, grd);
       }
     }
 

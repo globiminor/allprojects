@@ -43,12 +43,12 @@
       this.mniSpider = new System.Windows.Forms.ToolStripMenuItem();
       this.mniSpider4 = new System.Windows.Forms.ToolStripMenuItem();
       this.mniTriPeaks = new System.Windows.Forms.ToolStripMenuItem();
-      this.txtPoints = new System.Windows.Forms.TextBox();
-      this.lblPoints = new System.Windows.Forms.Label();
-      this.cntCards = new Cards.Gui.CntCards();
       this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
       this.mniSave = new System.Windows.Forms.ToolStripMenuItem();
       this.mniLoad = new System.Windows.Forms.ToolStripMenuItem();
+      this.txtPoints = new System.Windows.Forms.TextBox();
+      this.lblPoints = new System.Windows.Forms.Label();
+      this.cntCards = new Cards.Gui.CntCards();
       this.mnuCards.SuspendLayout();
       this.SuspendLayout();
       // 
@@ -188,6 +188,25 @@
       this.mniTriPeaks.Text = "Tri Peaks";
       this.mniTriPeaks.Click += new System.EventHandler(this.mniTriPeaks_Click);
       // 
+      // toolStripSeparator1
+      // 
+      this.toolStripSeparator1.Name = "toolStripSeparator1";
+      this.toolStripSeparator1.Size = new System.Drawing.Size(149, 6);
+      // 
+      // mniSave
+      // 
+      this.mniSave.Name = "mniSave";
+      this.mniSave.Size = new System.Drawing.Size(152, 22);
+      this.mniSave.Text = "Save";
+      this.mniSave.Click += new System.EventHandler(this.mniSave_Click);
+      // 
+      // mniLoad
+      // 
+      this.mniLoad.Name = "mniLoad";
+      this.mniLoad.Size = new System.Drawing.Size(152, 22);
+      this.mniLoad.Text = "Load";
+      this.mniLoad.Click += new System.EventHandler(this.mniLoad_Click);
+      // 
       // txtPoints
       // 
       this.txtPoints.Location = new System.Drawing.Point(213, 33);
@@ -219,24 +238,6 @@
       this.cntCards.Name = "cntCards";
       this.cntCards.Size = new System.Drawing.Size(796, 334);
       this.cntCards.TabIndex = 0;
-      // 
-      // toolStripSeparator1
-      // 
-      this.toolStripSeparator1.Name = "toolStripSeparator1";
-      this.toolStripSeparator1.Size = new System.Drawing.Size(149, 6);
-      // 
-      // mniSave
-      // 
-      this.mniSave.Name = "mniSave";
-      this.mniSave.Size = new System.Drawing.Size(152, 22);
-      this.mniSave.Text = "Save";
-      this.mniSave.Click += new System.EventHandler(this.mniSave_Click);
-      // 
-      // mniLoad
-      // 
-      this.mniLoad.Name = "mniLoad";
-      this.mniLoad.Size = new System.Drawing.Size(152, 22);
-      this.mniLoad.Text = "Load";
       // 
       // FrmCards
       // 
