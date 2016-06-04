@@ -19,6 +19,16 @@ namespace Basics.Geom.Process
 
   public class TableAction
   {
+    public static TableAction Create<T>(ISpatialTable<T> table, Action<T> execute)
+      where T : ISpatialRow
+    {
+      TableAction created = new TableAction();
+      created.Table = table;
+      created.Execute = (x) => { execute((T)x); };
+      return created;
+    }
+    private TableAction()
+    { }
     public ITable Table { get; private set; }
     public string DbConstraint { get; private set; }
     public Func<IRow, bool> Constraint { get; private set; }

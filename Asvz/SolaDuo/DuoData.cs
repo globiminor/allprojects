@@ -424,13 +424,13 @@ namespace Asvz.SolaDuo
       finally
       { pTemplate.Close(); }
 
-      writer.DeleteElements(new int[] { SymDD.Start, 
+      writer.DeleteElements(new int[] { SymDD.Start,
         SymDD.Strecke, SymDD.StreckeBisAbzweigung, SymDD.StreckeBisAbzweigung, SymDD.StreckeBisEnde, SymDD.StreckeOhneDtm,
         SymDD.Uebergabe, SymDD.Verzweigung, SymDD.Helfer, SymDD.Ziel});
 
       writer.SymbolsSetState(null, Ocad.Symbol.SymbolStatus.Hidden);
 
-      writer.SymbolsSetState(new int[] { SymDD.Start, 
+      writer.SymbolsSetState(new int[] { SymDD.Start,
         SymDD.Strecke, SymDD.Uebergabe, SymDD.Verzweigung, SymDD.Helfer, SymDD.Ziel,
         SymDD.Verpflegung, SymDD.Text}, Ocad.Symbol.SymbolStatus.Protected);
 
@@ -460,9 +460,9 @@ namespace Asvz.SolaDuo
 
     public static void CreateDtm()
     {
-      IList<Grid.BaseGrid> grids = new Grid.DoubleGrid[] 
-      { 
-        Grid.DoubleGrid.FromAsciiFile("C:\\Daten\\ASVZ\\Daten\\exp00001.agr", 0, 1, typeof(double)),
+      IList<Grid.BaseGrid> grids = new Grid.DataDoubleGrid[]
+      {
+        Grid.DataDoubleGrid.FromAsciiFile("C:\\Daten\\ASVZ\\Daten\\exp00001.agr", 0, 1, typeof(double)),
         //Grid.DoubleGrid.FromAsciiFile("C:\\Daten\\ASVZ\\Daten\\Dhm\\mm1051.agr", 0, 1, typeof(double)),
         //Grid.DoubleGrid.FromAsciiFile("C:\\Daten\\ASVZ\\Daten\\Dhm\\mm1052.agr", 0, 1, typeof(double)),
         //Grid.DoubleGrid.FromAsciiFile("C:\\Daten\\ASVZ\\Daten\\Dhm\\mm1053.agr", 0, 1, typeof(double)),
@@ -470,8 +470,8 @@ namespace Asvz.SolaDuo
         //Grid.DoubleGrid.FromAsciiFile("C:\\Daten\\ASVZ\\Daten\\Dhm\\mm1055.agr", 0, 1, typeof(double)),
         //Grid.DoubleGrid.FromAsciiFile("C:\\Daten\\ASVZ\\Daten\\Dhm\\mm1056.agr", 0, 1, typeof(double)),
         //Grid.DoubleGrid.FromAsciiFile("C:\\Daten\\ASVZ\\Daten\\Dhm\\mm1071.agr", 0, 1, typeof(double)),
-        Grid.DoubleGrid.FromAsciiFile("C:\\Daten\\ASVZ\\Daten\\Dhm\\mm1091.agr", 0, 1, typeof(double)),
-        Grid.DoubleGrid.FromAsciiFile("C:\\Daten\\ASVZ\\Daten\\Dhm\\mm1092.agr", 0, 1, typeof(double)),
+        Grid.DataDoubleGrid.FromAsciiFile("C:\\Daten\\ASVZ\\Daten\\Dhm\\mm1091.agr", 0, 1, typeof(double)),
+        Grid.DataDoubleGrid.FromAsciiFile("C:\\Daten\\ASVZ\\Daten\\Dhm\\mm1092.agr", 0, 1, typeof(double)),
         //Grid.DoubleGrid.FromAsciiFile("C:\\Daten\\ASVZ\\Daten\\Dhm\\mm1111.agr", 0, 1, typeof(double)),
         //Grid.DoubleGrid.FromAsciiFile("C:\\Daten\\ASVZ\\Daten\\Dhm\\mm1112.agr", 0, 1, typeof(double)),
         //Grid.DoubleGrid.FromAsciiFile("C:\\Daten\\ASVZ\\Daten\\Dhm\\mm1113.agr", 0, 1, typeof(double)),
@@ -507,7 +507,7 @@ namespace Asvz.SolaDuo
 
       double nx = (extent.Max.X - extent.Min.X) / dx + 1;
       double ny = (extent.Max.Y - extent.Min.Y) / dx + 1;
-      Grid.DoubleGrid total = new Grid.DoubleGrid((int)nx, (int)ny,
+      Grid.IDoubleGrid total = new Grid.DataDoubleGrid((int)nx, (int)ny,
         typeof(double), extent.Min.X, extent.Min.Y + ny * dx, dx, 0, 1);
 
       int iNx = total.Extent.Nx;
@@ -520,7 +520,7 @@ namespace Asvz.SolaDuo
 
           int n = 0;
           double sumD = 0;
-          foreach (Grid.DoubleGrid grid in grids)
+          foreach (Grid.IDoubleGrid grid in grids)
           {
             int gx, gy;
             bool inside = grid.Extent.GetNearest(p, out gx, out gy);
@@ -544,9 +544,7 @@ namespace Asvz.SolaDuo
           total[ix, iy] = d0;
         }
       }
-
-      total.Save("C:\\Daten\\ASVZ\\Daten\\Dhm\\solaDuo.grd");
-
+      Grid.DoubleGrid.Save(total, "C:\\Daten\\ASVZ\\Daten\\Dhm\\solaDuo.grd");
     }
   }
 }

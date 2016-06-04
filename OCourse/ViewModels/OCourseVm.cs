@@ -675,7 +675,7 @@ namespace OCourse.ViewModels
     internal RouteCalculator InitHeightVelo()
     {
       string veloGrid = null;
-      DoubleGrid heightGrid = null;
+      IDoubleGrid heightGrid = null;
       bool isNew = false;
       if (_routeCalc != null)
       {

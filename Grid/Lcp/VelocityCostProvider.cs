@@ -10,7 +10,7 @@ namespace Grid.Lcp
     }
 
     private string _velocityName;
-    private DoubleGrid _velocityGrid;
+    private IDoubleGrid _velocityGrid;
 
     LeastCostPathBase ICostProvider.Build(IBox box, double dx, Steps step, string velocityData)
     { return Build(box, dx, step, velocityData); }

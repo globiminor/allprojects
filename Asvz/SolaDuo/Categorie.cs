@@ -25,12 +25,12 @@ namespace Asvz
         get { return _onDtm; }
       }
 
-      public Polyline Profil(Grid.DoubleGrid dhm)
+      public Polyline Profil(Grid.IDoubleGrid dhm)
       {
         Polyline profil;
         if (_onDtm)
         {
-          profil = dhm.Profil(_line);
+          profil = Grid.DoubleGrid.Profil(dhm, _line);
         }
         else
         {
@@ -39,7 +39,7 @@ namespace Asvz
           double h0 = dhm.Value(p.X, p.Y);
           p = _line.Points.Last.Value;
           double h1 = dhm.Value(p.X, p.Y);
-          profil = Polyline.Create(new [] {
+          profil = Polyline.Create(new[] {
                 new Point2D(0, h0),
                 new Point2D(_line.Length(), h1)
           });

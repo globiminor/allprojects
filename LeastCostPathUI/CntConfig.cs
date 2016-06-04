@@ -54,7 +54,7 @@ namespace LeastCostPathUI
 
     public string HeightName
     { get { return txtHeight.Text; } }
-    public DoubleGrid HeightGrid
+    public IDoubleGrid HeightGrid
     {
       get
       {
@@ -62,7 +62,7 @@ namespace LeastCostPathUI
         {
           if (File.Exists(txtHeight.Text))
           {
-            _grdHeight = DoubleGrid.FromAsciiFile(txtHeight.Text, 0, 0.01, typeof(double));
+            _grdHeight = DataDoubleGrid.FromAsciiFile(txtHeight.Text, 0, 0.01, typeof(double));
           }
         }
         return _grdHeight;
@@ -86,7 +86,7 @@ namespace LeastCostPathUI
         return step.Step;
       }
     }
-    private DoubleGrid _grdHeight;
+    private IDoubleGrid _grdHeight;
 
     private ICostProvider _costProvider;
 

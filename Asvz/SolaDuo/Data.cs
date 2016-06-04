@@ -217,22 +217,22 @@ namespace Asvz
 
     // Dhm
     private readonly string _dhmName;
-    private Grid.DoubleGrid _dhm;
+    private Grid.IDoubleGrid _dhm;
 
     protected Data(string dhmName)
     {
       _dhmName = dhmName;
     }
 
-    public Grid.DoubleGrid Dhm
+    public Grid.IDoubleGrid Dhm
     {
       get
       {
         if (_dhm == null)
         {
-          _dhm = Grid.DoubleGrid.FromAsciiFile(_dhmName, 0, 1, typeof(double));
+          _dhm = Grid.DataDoubleGrid.FromAsciiFile(_dhmName, 0, 1, typeof(double));
           if (_dhm == null)
-          { _dhm = Grid.DoubleGrid.FromBinaryFile(_dhmName); }
+          { _dhm = Grid.DataDoubleGrid.FromBinaryFile(_dhmName); }
         }
         return _dhm;
       }

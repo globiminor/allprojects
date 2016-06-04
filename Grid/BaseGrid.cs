@@ -97,7 +97,20 @@ namespace Grid
     }
   }
 
-  public abstract class BaseGrid
+  public interface IGrid
+  {
+    GridExtent Extent { get; }
+    Type Type { get; }
+    object this[int ix, int iy] { get; set; }
+  }
+
+  public interface IGrid<T> : IGrid
+  {
+    T Value(double x, double y);
+    new T this[int ix, int iy] { get; set; }
+  }
+
+  public abstract class BaseGrid : IGrid
   {
     private GridExtent _extent;
     private Type _type;
@@ -116,10 +129,10 @@ namespace Grid
 
     protected class GridPoint : Point3D
     {
-      private readonly BaseGrid _grid;
+      private readonly IGrid _grid;
       private readonly int _x;
       private readonly int _y;
-      public GridPoint(BaseGrid grid, int x, int y)
+      public GridPoint(IGrid grid, int x, int y)
         : base(grid.Extent.X0 + x * grid.Extent.Dx, grid.Extent.Y0 + y * grid.Extent.Dx, 0)
       {
         _grid = grid;
@@ -317,7 +330,7 @@ namespace Grid
     }
   }
 
-  public abstract class BaseGrid<T> : BaseGrid
+  public abstract class BaseGrid<T> : BaseGrid, IGrid<T>
   {
     public BaseGrid(GridExtent extent)
       : base(extent, typeof(T))

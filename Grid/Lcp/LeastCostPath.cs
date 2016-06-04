@@ -6,7 +6,7 @@ namespace Grid.Lcp
 {
   public class StatusEventArgs
   {
-    private DoubleGrid _costGrid;
+    private DataDoubleGrid _costGrid;
     private IntGrid _dirGrid;
 
     private int _currentStep;
@@ -17,7 +17,7 @@ namespace Grid.Lcp
 
     private bool _cancel;
 
-    public StatusEventArgs(DoubleGrid costGrid, IntGrid dirGrid,
+    public StatusEventArgs(DataDoubleGrid costGrid, IntGrid dirGrid,
       int ix, int iy, int currentStep, int totalStep)
     {
       _costGrid = costGrid;
@@ -29,7 +29,7 @@ namespace Grid.Lcp
       _currentStep = currentStep;
       _totalStep = totalStep;
     }
-    public DoubleGrid CostGrid
+    public DataDoubleGrid CostGrid
     { get { return _costGrid; } }
     public IntGrid DirGrid
     { get { return _dirGrid; } }
@@ -86,7 +86,7 @@ namespace Grid.Lcp
     protected int _xMax, _yMax;
     protected double _x0, _y0, _dx, _dy;
     private IDoubleGrid _heightGrid;
-    private BaseGrid _veloBase;
+    private IGrid _veloBase;
 
     public Steps Step
     { get { return _step; } }
@@ -97,7 +97,7 @@ namespace Grid.Lcp
       set { _heightGrid = value; }
     }
 
-    protected BaseGrid VeloBase
+    protected IGrid VeloBase
     {
       get { return _veloBase; }
       set { _veloBase = value; }
@@ -133,19 +133,19 @@ namespace Grid.Lcp
     }
 
     public void CalcCost(IPoint start,
-      out DoubleGrid costGrid, out IntGrid dirGrid)
+      out DataDoubleGrid costGrid, out IntGrid dirGrid)
     {
       CalcCost(start, out costGrid, out dirGrid, false);
     }
     public void CalcCost(IPoint start, IPoint end,
-      out DoubleGrid costGrid, out IntGrid dirGrid)
+      out DataDoubleGrid costGrid, out IntGrid dirGrid)
     {
       CalcCost(start, new IPoint[] { end },
         out costGrid, out dirGrid);
     }
 
     public void CalcCost(IPoint start, IList<IPoint> endList,
-      out DoubleGrid costGrid, out IntGrid dirGrid)
+      out DataDoubleGrid costGrid, out IntGrid dirGrid)
     {
       List<int[]> stopList = new List<int[]>(endList.Count);
       foreach (Point end in endList)
@@ -161,13 +161,13 @@ namespace Grid.Lcp
       CalcCost(start, out costGrid, out dirGrid, false, stopList);
     }
     public void CalcCost(IPoint start,
-      out DoubleGrid costGrid, out IntGrid dirGrid, bool invers)
+      out DataDoubleGrid costGrid, out IntGrid dirGrid, bool invers)
     {
       CalcCost(start, out costGrid, out dirGrid, invers, null);
     }
 
     public Polyline CalcCost(IPoint start, IPoint end, Polyline nearLine, double corridorWidth,
-      out DoubleGrid costGrid, out IntGrid dirGrid)
+      out DataDoubleGrid costGrid, out IntGrid dirGrid)
     {
       CalcCorridor(start, end, nearLine, corridorWidth, out costGrid, out dirGrid);
       Polyline path = GetPath(dirGrid, Step, costGrid, end);
@@ -175,10 +175,10 @@ namespace Grid.Lcp
     }
 
     protected abstract void CalcCorridor(IPoint start, IPoint end,
-      Polyline nearLine, double corridorWidth, out DoubleGrid costGrid, out IntGrid dirGrid);
+      Polyline nearLine, double corridorWidth, out DataDoubleGrid costGrid, out IntGrid dirGrid);
 
     protected abstract void CalcCost(IPoint start,
-      out DoubleGrid costGrid, out IntGrid dirGrid, bool invers,
+      out DataDoubleGrid costGrid, out IntGrid dirGrid, bool invers,
       IList<int[]> stop);
 
     public bool EqualSettings(LeastCostPathBase other)
@@ -190,12 +190,12 @@ namespace Grid.Lcp
 
     private delegate bool StopMethod(int ix, int iy);
 
-    public static Polyline GetPath(IntGrid dirGrid, Steps step, DoubleGrid costGrid, IPoint end)
+    public static Polyline GetPath(IntGrid dirGrid, Steps step, IDoubleGrid costGrid, IPoint end)
     {
       Polyline line = GetPath(dirGrid, step, costGrid, end, null);
       return line;
     }
-    private static Polyline GetPath(IntGrid dirGrid, Steps step, DoubleGrid costGrid, IPoint end,
+    private static Polyline GetPath(IntGrid dirGrid, Steps step, IDoubleGrid costGrid, IPoint end,
       StopMethod stop)
     {
       int ix;
@@ -214,7 +214,7 @@ namespace Grid.Lcp
       return line;
     }
 
-    private static Polyline GetGridPath(IntGrid dirGrid, Steps step, DoubleGrid costGrid,
+    private static Polyline GetGridPath(IntGrid dirGrid, Steps step, IDoubleGrid costGrid,
       int endX, int endY, StopMethod stopMethod)
     {
       int ix = endX;
@@ -268,13 +268,13 @@ namespace Grid.Lcp
     private class PathStop
     {
       private readonly IntGrid _dirGrid;
-      private readonly DoubleGrid _stopGrid;
+      private readonly IDoubleGrid _stopGrid;
       private readonly StopMethod _stop;
 
       private readonly int _dx;
       private readonly int _dy;
 
-      public PathStop(IntGrid dirGrid, DoubleGrid stopGrid)
+      public PathStop(IntGrid dirGrid, IDoubleGrid stopGrid)
       {
         _dirGrid = dirGrid;
         _stopGrid = stopGrid;
@@ -317,9 +317,9 @@ namespace Grid.Lcp
         return _stop(ix, iy);
       }
     }
-    public static RouteTable CalcBestRoutes(DoubleBaseGrid sum,
-      DoubleGrid fromCost, IntGrid fromDir, Steps fromStep,
-      DoubleGrid toCost, IntGrid toDir, Steps toStep,
+    public static RouteTable CalcBestRoutes(IDoubleGrid sum,
+      IDoubleGrid fromCost, IntGrid fromDir, Steps fromStep,
+      IDoubleGrid toCost, IntGrid toDir, Steps toStep,
       double maxLengthFactor, double minDiffFactor, StatusEventHandler Status)
     {
       if (fromStep == null)
@@ -328,12 +328,12 @@ namespace Grid.Lcp
       { toStep = Steps.ReverseEngineer(toDir, toCost); }
 
       GridExtent e = sum.Extent;
-      DoubleGrid routeGrid = new DoubleGrid(e.Nx, e.Ny, typeof(double), e.X0, e.Y0, e.Dx);
+      DataDoubleGrid routeGrid = new DataDoubleGrid(e.Nx, e.Ny, typeof(double), e.X0, e.Y0, e.Dx);
       IntGrid closeGrid = new IntGrid(e.Nx, e.Ny, typeof(byte), e.X0, e.Y0, e.Dx);
 
       double rClose = -1;
 
-      double sumMin = sum.Min();
+      double sumMin = DoubleGrid.Min(sum);
       double vMax = sumMin * maxLengthFactor;
       List<RouteInfo> cands = new List<RouteInfo>(e.Nx * 5);
       for (int iX = 1; iX < e.Nx - 1; iX++)
@@ -582,7 +582,7 @@ namespace Grid.Lcp
     }
 
     public delegate double DoubleFct(double value);
-    public static void Assign(Polyline line, DoubleGrid routeGrid, DoubleFct valueFct)
+    public static void Assign(Polyline line, DataDoubleGrid routeGrid, DoubleFct valueFct)
     {
       if (line.Points.Count == 0)
       {
@@ -636,7 +636,7 @@ namespace Grid.Lcp
       }
     }
 
-    private static void PutValue(int x, int y, DoubleGrid grid, int x0, int y0, int x1, int y1, double z0, double z1)
+    private static void PutValue(int x, int y, DataDoubleGrid grid, int x0, int y0, int x1, int y1, double z0, double z1)
     {
       if (grid[x, y] > 0)
       { return; }
@@ -660,12 +660,12 @@ namespace Grid.Lcp
   {
     private class CorridorGrid : BaseGrid<T>, ILockable
     {
-      private readonly BaseGrid<T> _velo;
+      private readonly IGrid<T> _velo;
       private readonly IntGrid _blockGrid;
-      public CorridorGrid(LeastCostPathBase<T> parent, BaseGrid<T> velocityGrid, Polyline nearLine, double corridorWidth)
+      public CorridorGrid(LeastCostPathBase<T> parent, IGrid<T> velocityGrid, Polyline nearLine, double corridorWidth)
         : this(velocityGrid, nearLine, corridorWidth, parent.GetGridExtent())
       { }
-      public CorridorGrid(BaseGrid<T> velocityGrid, Polyline nearLine, double corridorWidth, GridExtent extent)
+      public CorridorGrid(IGrid<T> velocityGrid, Polyline nearLine, double corridorWidth, GridExtent extent)
         : base(extent)
       {
         _velo = velocityGrid;
@@ -754,9 +754,9 @@ namespace Grid.Lcp
     private SortedList<Field, object> _costList;
     private SortedList<Field, Field> _fieldList;
 
-    public BaseGrid<T> VelocityGrid
+    public IGrid<T> VelocityGrid
     {
-      get { return (BaseGrid<T>)VeloBase; }
+      get { return (IGrid<T>)VeloBase; }
       set { VeloBase = value; }
     }
 
@@ -856,7 +856,8 @@ namespace Grid.Lcp
     }
 
     public LeastCostPathBase(IBox box, double dx)
-      : this(box, dx, Steps.Step16) { }
+      : this(box, dx, Steps.Step16)
+    { }
     public LeastCostPathBase(IBox box, double dx, Steps step)
       : base(box, dx, step)
     {
@@ -871,23 +872,23 @@ namespace Grid.Lcp
     }
 
     public void CalcCost(IPoint start,
-      IDoubleGrid heightGrid, BaseGrid<T> velocityGrid,
-      out DoubleGrid costGrid, out IntGrid dirGrid)
+      IDoubleGrid heightGrid, IGrid<T> velocityGrid,
+      out DataDoubleGrid costGrid, out IntGrid dirGrid)
     {
       CalcCost(start, heightGrid, velocityGrid, out costGrid, out dirGrid, false);
     }
 
     public void CalcCost(IPoint start, IPoint end,
-      IDoubleGrid heightGrid, BaseGrid<T> velocityGrid,
-      out DoubleGrid costGrid, out IntGrid dirGrid)
+      IDoubleGrid heightGrid, IGrid<T> velocityGrid,
+      out DataDoubleGrid costGrid, out IntGrid dirGrid)
     {
       CalcCost(start, new IPoint[] { end }, heightGrid, velocityGrid,
         out costGrid, out dirGrid);
     }
 
     public void CalcCost(IPoint start, IList<IPoint> endList,
-      IDoubleGrid heightGrid, BaseGrid<T> velocityGrid,
-      out DoubleGrid costGrid, out IntGrid dirGrid)
+      IDoubleGrid heightGrid, IGrid<T> velocityGrid,
+      out DataDoubleGrid costGrid, out IntGrid dirGrid)
     {
       List<int[]> stopList = new List<int[]>(endList.Count);
       foreach (Point end in endList)
@@ -906,15 +907,15 @@ namespace Grid.Lcp
     }
 
     public void CalcCost(IPoint start,
-      IDoubleGrid heightGrid, BaseGrid<T> velocityGrid,
-      out DoubleGrid costGrid, out IntGrid dirGrid, bool invers)
+      IDoubleGrid heightGrid, IGrid<T> velocityGrid,
+      out DataDoubleGrid costGrid, out IntGrid dirGrid, bool invers)
     {
       HeightGrid = heightGrid;
       VelocityGrid = velocityGrid;
       CalcCost(start, out costGrid, out dirGrid, invers, null);
     }
 
-    public void AssignCost(Polyline line, int costDim, DoubleGrid heightGrid, BaseGrid<T> velocityGrid)
+    public void AssignCost(Polyline line, int costDim, IDoubleGrid heightGrid, BaseGrid<T> velocityGrid)
     {
       IPoint p = line.Points.First.Value;
       double h1 = heightGrid.Value(p.X, p.Y, EGridInterpolation.bilinear);
@@ -941,7 +942,7 @@ namespace Grid.Lcp
     }
 
     protected override void CalcCorridor(IPoint start, IPoint end,
-      Polyline nearLine, double corridorWidth, out DoubleGrid costGrid, out IntGrid dirGrid)
+      Polyline nearLine, double corridorWidth, out DataDoubleGrid costGrid, out IntGrid dirGrid)
     {
       BaseGrid<T> corridorGrid = new CorridorGrid(this, VelocityGrid, nearLine, corridorWidth);
       LeastCostPathBase<T> corridorLcp = new LeastCostPathBase<T>(
@@ -952,7 +953,7 @@ namespace Grid.Lcp
       corridorLcp.CalcCost(start, new IPoint[] { end }, out costGrid, out dirGrid);
     }
     protected override void CalcCost(IPoint start,
-      out DoubleGrid costGrid, out IntGrid dirGrid, bool invers, IList<int[]> stop)
+      out DataDoubleGrid costGrid, out IntGrid dirGrid, bool invers, IList<int[]> stop)
     {
       try
       {
@@ -966,7 +967,7 @@ namespace Grid.Lcp
         _costList = new SortedList<Field, object>(costComparer);
         _fieldList = new SortedList<Field, Field>(fieldComparer);
 
-        costGrid = new DoubleGrid(_xMax, _yMax, typeof(float),
+        costGrid = new DataDoubleGrid(_xMax, _yMax, typeof(float),
           _x0, _y0, _dx);
         dirGrid = new IntGrid(_xMax, _yMax, typeof(sbyte), _x0, _y0, _dx);
 

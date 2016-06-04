@@ -4,12 +4,12 @@ namespace TData
 {
   public class TGrid : Data
   {
-    Grid.BaseGrid _grd;
-    public TGrid(Grid.BaseGrid image)
+    Grid.IGrid _grd;
+    public TGrid(Grid.IGrid image)
     {
       _grd = image;
     }
-    public static TGrid FromGrid(Grid.BaseGrid grid)
+    public static TGrid FromGrid(Grid.IGrid grid)
     {
       return new TGrid(grid);
     }
@@ -18,7 +18,7 @@ namespace TData
       get
       { return _grd.Extent.Extent; }
     }
-    public Grid.BaseGrid Raster
+    public Grid.IGrid Raster
     {
       get
       { return _grd; }
@@ -26,16 +26,16 @@ namespace TData
 
     public static TGrid FromFile(string filePath)
     {
-      Grid.DoubleGrid.FileType type = Grid.DoubleGrid.GetFileType(filePath);
-      if (type == Grid.DoubleGrid.FileType.Ascii)
+      Grid.DataDoubleGrid.FileType type = Grid.DataDoubleGrid.GetFileType(filePath);
+      if (type == Grid.DataDoubleGrid.FileType.Ascii)
       {
-        Grid.DoubleGrid dgrd = Grid.DoubleGrid.FromAsciiFile(filePath, 0, 0.001, typeof(double));
+        Grid.DataDoubleGrid dgrd = Grid.DataDoubleGrid.FromAsciiFile(filePath, 0, 0.001, typeof(double));
         TGrid data = FromData(dgrd);
         return data;
       }
-      else if (type == Grid.DoubleGrid.FileType.Binary)
+      else if (type == Grid.DataDoubleGrid.FileType.Binary)
       {
-        Grid.DoubleGrid dgrd = Grid.DoubleGrid.FromBinaryFile(filePath);
+        Grid.DataDoubleGrid dgrd = Grid.DataDoubleGrid.FromBinaryFile(filePath);
         TGrid data = FromData(dgrd);
         return data;        
       }
@@ -49,12 +49,12 @@ namespace TData
       return null;
     }
 
-    public static TGrid FromData(Grid.BaseGrid grid)
+    public static TGrid FromData(Grid.IGrid grid)
     {
       return FromGrid(grid);
     }
 
-    public Grid.BaseGrid BaseData
+    public Grid.IGrid BaseData
     {
       get { return _grd; }
       set { _grd = value; }

@@ -16,7 +16,6 @@ namespace Basics.Geom.Process
   public interface ISpatialTable<T> : ITable<T>, ISpatialTable
     where T : ISpatialRow
   {
-    IEnumerable<T> Search(IBox extent);
   }
   public interface IRow
   {

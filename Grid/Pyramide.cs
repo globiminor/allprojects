@@ -58,7 +58,7 @@ namespace Grid
       }
     }
 
-    private DoubleGrid _grid;
+    private IDoubleGrid _grid;
     private Block _parentBlock;
 
     private int _nMax;
@@ -66,7 +66,7 @@ namespace Grid
     private Pyramide()
     { }
 
-    public static Pyramide Create(DoubleGrid grid)
+    public static Pyramide Create(IDoubleGrid grid)
     {
       Pyramide p = new Pyramide();
       p._grid = grid;
@@ -77,7 +77,7 @@ namespace Grid
 
       return p;
     }
-    public DoubleGrid Grid
+    public IDoubleGrid Grid
     {
       get { return _grid; }
     }
@@ -189,7 +189,7 @@ namespace Grid
           }
         }
       }
-      parentBlock.Dh = _grid.CalcDh(i0, j0, n);
+      parentBlock.Dh = DoubleGrid.CalcDh(_grid, i0, j0, n);
     }
 
 

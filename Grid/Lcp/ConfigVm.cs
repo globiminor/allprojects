@@ -28,7 +28,7 @@ namespace Grid.Lcp
     private double _resolution;
     private Steps _steps;
     private ICostProvider _costProvider;
-    private DoubleGrid _grdHeight;
+    private IDoubleGrid _grdHeight;
 
     public ConfigVm()
     {
@@ -91,7 +91,7 @@ namespace Grid.Lcp
       get { return _costProvider; }
     }
 
-    public DoubleGrid HeightGrid
+    public IDoubleGrid HeightGrid
     {
       get
       {
@@ -99,7 +99,7 @@ namespace Grid.Lcp
         {
           if (File.Exists(HeightPath))
           {
-            _grdHeight = DoubleGrid.FromAsciiFile(HeightPath, 0, 0.01, typeof(double));
+            _grdHeight = DataDoubleGrid.FromAsciiFile(HeightPath, 0, 0.01, typeof(double));
           }
         }
         return _grdHeight;

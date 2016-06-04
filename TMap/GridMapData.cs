@@ -23,7 +23,7 @@ namespace TMap
       set { _symbol = value; }
     }
 
-    public static GridMapData FromData(BaseGrid grid)
+    public static GridMapData FromData(IGrid grid)
     {
       GridMapData mapData = new GridMapData("grid", TGrid.FromData(grid));
 
@@ -67,7 +67,7 @@ namespace TMap
     public Color? Color(double x, double y)
     {
       int ix, iy;
-      BaseGrid grd = _data.Raster;
+      IGrid grd = _data.Raster;
       if (grd.Extent.GetNearest(x, y, out ix, out iy) == false)
       { return null; }
 

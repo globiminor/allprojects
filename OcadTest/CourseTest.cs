@@ -16,19 +16,19 @@ namespace OcadTest
     [TestMethod]
     public void CombChaefer()
     {
-      List<DoubleGrid> grs = new List<DoubleGrid>();
-      grs.Add(DoubleGrid.FromAsciiFile(@"D:\daten\ASVZ\Daten\Dhm\109112_dtm_grid2_03_02.asc", 0, 0.01, typeof(double)));
-      grs.Add(DoubleGrid.FromAsciiFile(@"D:\daten\ASVZ\Daten\Dhm\109114_dtm_grid2_03_02.asc", 0, 0.01, typeof(double)));
-      grs.Add(DoubleGrid.FromAsciiFile(@"D:\daten\ASVZ\Daten\Dhm\109121_dtm_grid2_03_02.asc", 0, 0.01, typeof(double)));
-      grs.Add(DoubleGrid.FromAsciiFile(@"D:\daten\ASVZ\Daten\Dhm\109123_dtm_grid2_03_02.asc", 0, 0.01, typeof(double)));
+      List<DataDoubleGrid> grs = new List<DataDoubleGrid>();
+      grs.Add(DataDoubleGrid.FromAsciiFile(@"D:\daten\ASVZ\Daten\Dhm\109112_dtm_grid2_03_02.asc", 0, 0.01, typeof(double)));
+      grs.Add(DataDoubleGrid.FromAsciiFile(@"D:\daten\ASVZ\Daten\Dhm\109114_dtm_grid2_03_02.asc", 0, 0.01, typeof(double)));
+      grs.Add(DataDoubleGrid.FromAsciiFile(@"D:\daten\ASVZ\Daten\Dhm\109121_dtm_grid2_03_02.asc", 0, 0.01, typeof(double)));
+      grs.Add(DataDoubleGrid.FromAsciiFile(@"D:\daten\ASVZ\Daten\Dhm\109123_dtm_grid2_03_02.asc", 0, 0.01, typeof(double)));
 
-      DoubleGrid comb = new DoubleGrid(1500, 1000, typeof(double), 680001, 251999, 2);
+      DataDoubleGrid comb = new DataDoubleGrid(1500, 1000, typeof(double), 680001, 251999, 2);
       for (int ix = 0; ix < comb.Extent.Nx; ix++)
       {
         for (int iy = 0; iy < comb.Extent.Ny; iy++)
         {
           IPoint p = comb.Extent.CellCenter(ix, iy);
-          foreach (DoubleGrid gr in grs)
+          foreach (DataDoubleGrid gr in grs)
           {
             int tx, ty;
             bool inside = gr.Extent.GetNearest(p, out tx, out ty);
@@ -53,19 +53,19 @@ namespace OcadTest
       { r[i] = (byte)i; g[i] = (byte)i; b[i] = (byte)i; }
 
       string dir = @"D:\daten\felix\kapreolo\karten\chaeferberg\2012\GlattalOL2012\";
-      List<DoubleGrid> grs = new List<DoubleGrid>();
-      grs.Add(DoubleGrid.FromAsciiFile(dir + "ETH_Hoenggerberg_velo_e.agr", 0, 0.01, typeof(double)));
-      grs.Add(DoubleGrid.FromAsciiFile(dir + "Chaeferberg_velo_e.agr", 0, 0.01, typeof(double)));
+      List<DataDoubleGrid> grs = new List<DataDoubleGrid>();
+      grs.Add(DataDoubleGrid.FromAsciiFile(dir + "ETH_Hoenggerberg_velo_e.agr", 0, 0.01, typeof(double)));
+      grs.Add(DataDoubleGrid.FromAsciiFile(dir + "Chaeferberg_velo_e.agr", 0, 0.01, typeof(double)));
       ImageGrid.GridToTif((grs[0] * 10).ToIntGrid() % 256, dir + "dhm0.tif", r, g, b);
       ImageGrid.GridToTif((grs[1] * 10).ToIntGrid() % 256, dir + "dhm1.tif", r, g, b);
 
-      DoubleGrid comb = new DoubleGrid(1500, 1000, typeof(double), 680001, 251999, 2);
+      DataDoubleGrid comb = new DataDoubleGrid(1500, 1000, typeof(double), 680001, 251999, 2);
       for (int ix = 0; ix < comb.Extent.Nx; ix++)
       {
         for (int iy = 0; iy < comb.Extent.Ny; iy++)
         {
           IPoint p = comb.Extent.CellCenter(ix, iy);
-          foreach (DoubleGrid gr in grs)
+          foreach (DataDoubleGrid gr in grs)
           {
             if (p.X > 681006 && gr == grs[0])
             { continue; }

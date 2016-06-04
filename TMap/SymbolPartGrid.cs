@@ -14,7 +14,7 @@ namespace TMap
     public SymbolPartGrid(GridSymbolisation sym)
     {
       _sym = sym;
-      DoubleGrid grd = new DoubleGrid(1, 1, typeof(double), 0, 0, 1);
+      IDoubleGrid grd = new DataDoubleGrid(1, 1, typeof(double), 0, 0, 1);
       _data = GridMapData.FromData(grd);
     }
 

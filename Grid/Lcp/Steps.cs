@@ -111,14 +111,14 @@ namespace Grid.Lcp
       get { return _count; }
     }
 
-    public DoubleBaseGrid this[IntGrid grd]
+    public DoubleGrid this[IntGrid grd]
     {
       get
       {
         double[] angles = new double[_count];
         foreach (Step step in _steps)
         { angles[step.Index] = step.Angle; }
-        return DoubleBaseGrid.Create(angles, grd);
+        return DoubleGrid.Create(angles, grd);
       }
     }
 
@@ -175,7 +175,7 @@ namespace Grid.Lcp
       private readonly List<VVelo> _velos;
       StepInfo _assigned = new StepInfo(0, 0, 0, 0);
 
-      public StepInfoBuilder(DoubleGrid grid)
+      public StepInfoBuilder(IDoubleGrid grid)
       {
         _velos = new List<VVelo>(grid.Extent.Nx * grid.Extent.Ny / 4);
       }
@@ -204,7 +204,7 @@ namespace Grid.Lcp
         return false;
       }
 
-      public void Analyze(StepInfo step, DoubleGrid costGrid)
+      public void Analyze(StepInfo step, IDoubleGrid costGrid)
       {
         for (int iDir = 0; iDir < Candidates.Count; iDir++)
         {
@@ -293,7 +293,7 @@ namespace Grid.Lcp
         VVelo mean = new VVelo(vX / sumW, vY / sumW, 0);
         return mean;
       }
-      public void AddVelo(DoubleGrid grid, int ix, int iy)
+      public void AddVelo(IDoubleGrid grid, int ix, int iy)
       {
         if (ix < 1 || iy < 1 || ix + 2 > grid.Extent.Nx || iy + 2 > grid.Extent.Ny)
         {
@@ -328,7 +328,7 @@ namespace Grid.Lcp
         _velos.Add(velo);
       }
     }
-    public static Steps ReverseEngineer(IntGrid dirGrid, DoubleGrid costGrid)
+    public static Steps ReverseEngineer(IntGrid dirGrid, IDoubleGrid costGrid)
     {
       const int size = 1024;
       SortedList<double, IList<StepInfo>> costs = new SortedList<double, IList<StepInfo>>();
@@ -449,7 +449,7 @@ namespace Grid.Lcp
       return new Steps(result);
     }
 
-    private static void LoadAnalyzeData(IntGrid dirGrid, DoubleGrid costGrid,
+    private static void LoadAnalyzeData(IntGrid dirGrid, IDoubleGrid costGrid,
       Dictionary<int, StepInfoBuilder> dirs,
       SortedList<double, IList<StepInfo>> costs, int size)
     {

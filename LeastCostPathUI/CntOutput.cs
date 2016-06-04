@@ -57,20 +57,20 @@ namespace LeastCostPathUI
       txtRoute.Text = from + "_" + to + "r.tif";
     }
 
-    private DoubleGrid _grdHeight;
+    private IDoubleGrid _grdHeight;
     private string _grdVelo;
 
-    private DoubleGrid _fromCost;
+    private IDoubleGrid _fromCost;
     private IntGrid _fromDir;
 
-    private DoubleGrid _toCost;
+    private IDoubleGrid _toCost;
     private IntGrid _toDir;
 
     private Point2D _from;
     private Point2D _to;
 
     public void Calc(ICostProvider provider,
-      DoubleGrid grHeight, string grVelo, double resolution, Steps step, ThreadStart resetDlg)
+      IDoubleGrid grHeight, string grVelo, double resolution, Steps step, ThreadStart resetDlg)
     {
       _cancelled = false;
 
@@ -145,7 +145,7 @@ namespace LeastCostPathUI
     {
       private readonly CntOutput _parent;
       private readonly LeastCostPathBase _costPath;
-      private readonly DoubleGrid _grHeight;
+      private readonly IDoubleGrid _grHeight;
       private readonly Point2D _from;
       private readonly Point2D _to;
       private readonly Steps _step;
@@ -154,12 +154,12 @@ namespace LeastCostPathUI
       private readonly double _offset;
       private readonly ThreadStart _resetDlg;
 
-      private DoubleBaseGrid _sum;
-      private DoubleBaseGrid _route;
+      private DoubleGrid _sum;
+      private DoubleGrid _route;
       private RouteTable _routes;
 
       public CalcCostWorker(CntOutput parent, LeastCostPathBase costPath,
-        DoubleGrid grHeight, Point2D from, Point2D to, Steps step,
+        IDoubleGrid grHeight, Point2D from, Point2D to, Steps step,
         bool calcRoute, double lengthFact, double offset, ThreadStart resetDlg)
       {
         _parent = parent;
@@ -192,7 +192,7 @@ namespace LeastCostPathUI
         _parent.SetStepLabel(this, "FROM:");
         if (_parent._from == null || _from.Dist2(_parent._from) != 0 || _parent._fromCost == null)
         {
-          DoubleGrid cost;
+          DataDoubleGrid cost;
           IntGrid dir;
           _costPath.CalcCost(_from, out cost, out dir, false);
           _parent._fromCost = cost;
@@ -208,7 +208,7 @@ namespace LeastCostPathUI
         _parent.SetStepLabel(this, "TO:");
         if (_parent._to == null || _to.Dist2(_parent._to) != 0 || _parent._toCost == null)
         {
-          DoubleGrid cost;
+          DataDoubleGrid cost;
           IntGrid dir;
           _costPath.CalcCost(_to, out cost, out dir, true);
           _parent._toCost = cost;
@@ -220,7 +220,7 @@ namespace LeastCostPathUI
 
         _parent.SetStepLabel(this, "SUM:");
         _parent.costPath_Status(this, new StatusEventArgs(null, null, 0, 0, 0, 0));
-        _sum = _parent._fromCost + _parent._toCost;
+        _sum = DoubleGrid.Sum(_parent._fromCost, _parent._toCost);
         _route = _sum - _sum.Min();
 
         if (_parent._cancelled)

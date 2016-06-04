@@ -282,10 +282,10 @@ namespace LeastCostPathUI
       byte[] b = new byte[256];
       Common.InitColors(r, g, b);
 
-      DoubleGrid startCostGrid = null;
+      DataDoubleGrid startCostGrid = null;
       IntGrid startDirGrid = null;
 
-      DoubleGrid endCostGrid = null;
+      DataDoubleGrid endCostGrid = null;
       IntGrid endDirGrid = null;
 
       Steps step;
@@ -298,13 +298,13 @@ namespace LeastCostPathUI
       Box box = new Box(new Point2D(lcp.x0, lcp.y0), new Point2D(lcp.x1, lcp.y1));
       costPath = new LeastCostPath(box, lcp.dx, step);
 
-      DoubleGrid heightGrid = null;
+      IDoubleGrid heightGrid = null;
       if (!string.IsNullOrEmpty(lcp.sHeight))
-      { heightGrid = DoubleGrid.FromAsciiFile(lcp.sHeight, 0, 0.01, typeof(double)); }
+      { heightGrid = DataDoubleGrid.FromAsciiFile(lcp.sHeight, 0, 0.01, typeof(double)); }
 
       if (lcp.bFullCalc)
       {
-        DoubleGrid velocityGrid = VelocityGrid.FromImage(lcp.sVelo);
+        IDoubleGrid velocityGrid = VelocityGrid.FromImage(lcp.sVelo);
 
         if (lcp.sCostAssembley != null)
         {
@@ -343,7 +343,7 @@ namespace LeastCostPathUI
         if (startCostGrid != null)
         { startCostGrid.Save(lcp.ssCostGrd); }
         else
-        { startCostGrid = DoubleGrid.FromBinaryFile(lcp.ssCostGrd); }
+        { startCostGrid = DataDoubleGrid.FromBinaryFile(lcp.ssCostGrd); }
       }
       if (lcp.ssDirGrd != null)
       {
@@ -367,7 +367,7 @@ namespace LeastCostPathUI
         if (endCostGrid != null)
         { endCostGrid.Save(lcp.seCostGrd); }
         else
-        { endCostGrid = DoubleGrid.FromBinaryFile(lcp.seCostGrd); }
+        { endCostGrid = DataDoubleGrid.FromBinaryFile(lcp.seCostGrd); }
       }
       if (lcp.seDirGrd != null)
       {
@@ -389,7 +389,7 @@ namespace LeastCostPathUI
 
       if (startCostGrid == null || endCostGrid == null)
       { return; }
-      DoubleBaseGrid grdSum = null;
+      DoubleGrid grdSum = null;
       if (lcp.sCostGrd != null)
       {
         if (grdSum == null) grdSum = GetSum(startCostGrid, endCostGrid, costPath.GetGridExtent());
@@ -421,14 +421,14 @@ namespace LeastCostPathUI
       }
     }
 
-    private static DoubleBaseGrid GetSum(DoubleGrid startCostGrid, DoubleGrid endCostGrid, GridExtent extent)
+    private static DoubleGrid GetSum(IDoubleGrid startCostGrid, IDoubleGrid endCostGrid, GridExtent extent)
     {
       if (extent.EqualExtent(startCostGrid.Extent) && extent.EqualExtent(endCostGrid.Extent))
       {
-        return startCostGrid + endCostGrid;
+        return DoubleGrid.Sum(startCostGrid, endCostGrid);
       }
       EGridInterpolation inter = EGridInterpolation.bilinear;
-      DoubleGrid sum = new DoubleGrid(extent.Nx, extent.Ny, typeof(double), extent.X0, extent.Y0, extent.Dx);
+      DataDoubleGrid sum = new DataDoubleGrid(extent.Nx, extent.Ny, typeof(double), extent.X0, extent.Y0, extent.Dx);
       for (int ix = 0; ix < extent.Nx; ix++)
       {
         for (int iy = 0; iy < extent.Ny; iy++)
@@ -452,7 +452,7 @@ namespace LeastCostPathUI
 
     internal static void CreateRouteImage(RouteTable routes, GridExtent e, string routeName)
     {
-      DoubleGrid routeGrid = new DoubleGrid(e.Nx, e.Ny, typeof(double), e.X0, e.Y0, e.Dx);
+      DataDoubleGrid routeGrid = new DataDoubleGrid(e.Nx, e.Ny, typeof(double), e.X0, e.Y0, e.Dx);
       bool first = true;
       foreach (RouteTable.Row row in routes.Rows)
       {
@@ -544,7 +544,7 @@ namespace LeastCostPathUI
       return value;
     }
 
-    internal static void CreateRouteShapes(RouteTable routes, DoubleBaseGrid sum, DoubleGrid heightGrd, string fileName)
+    internal static void CreateRouteShapes(RouteTable routes, IDoubleGrid sum, IDoubleGrid heightGrd, string fileName)
     {
       RouteTable copy = new RouteTable();
       foreach (RouteTable.Row row in routes.Rows)

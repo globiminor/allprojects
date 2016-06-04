@@ -15,12 +15,12 @@ namespace Grid
     private IntGrid _iGrid;
     private int _operator;
     private EOperator _eOperator;
-    private DoubleBaseGrid _dGrid;
+    private IDoubleGrid _dGrid;
 
 
     #region operators
 
-    internal IntGrid(DoubleBaseGrid grd)
+    internal IntGrid(IDoubleGrid grd)
       : base(grd.Extent)
     {
       _dGrid = grd;

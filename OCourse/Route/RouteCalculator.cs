@@ -66,12 +66,12 @@ namespace OCourse.Route
 
     private readonly ICostProvider _costProvider;
     private readonly string _veloGrid;
-    private readonly DoubleGrid _heightGrid;
+    private readonly IDoubleGrid _heightGrid;
     private readonly Steps _step;
 
     private readonly Dictionary<CostFromTo, CostFromTo> _calcList;
 
-    public RouteCalculator(ICostProvider costProvider, DoubleGrid heightGrid, string veloGrid,
+    public RouteCalculator(ICostProvider costProvider, IDoubleGrid heightGrid, string veloGrid,
       Steps step)
     {
       _costProvider = costProvider;
@@ -84,7 +84,7 @@ namespace OCourse.Route
 
     public string VeloGrid
     { get { return _veloGrid; } }
-    public DoubleGrid HeightGrid
+    public IDoubleGrid HeightGrid
     { get { return _heightGrid; } }
     public Steps Step
     { get { return _step; } }
@@ -366,7 +366,7 @@ namespace OCourse.Route
         return new List<CostFromTo>();
       }
 
-      DoubleGrid costGrid;
+      DataDoubleGrid costGrid;
       IntGrid dirGrid;
 
       List<IPoint> endList = new List<IPoint>();
@@ -444,7 +444,7 @@ namespace OCourse.Route
       Box box = GetBox(start, end, l);
 
       IntGrid dirGrid;
-      DoubleGrid costGrid;
+      DataDoubleGrid costGrid;
 
       //GridTest.LeastCostPath path = new GridTest.LeastCostPath(new GridTest.Step16(), box, resolution);
       LeastCostPathBase path = _costProvider.Build(box, resol, _step, _veloGrid);
@@ -475,7 +475,7 @@ namespace OCourse.Route
 
     //private Polyline GetRoute(GridTest.LeastCostPath path, 
     private Polyline GetRoute(LeastCostPathBase path,
-      IntGrid dir, DoubleGrid costGrid, IPoint start, IPoint end, out double climb, out double optimal)
+      IntGrid dir, IDoubleGrid costGrid, IPoint start, IPoint end, out double climb, out double optimal)
     {
       Polyline line = LeastCostPath.GetPath(dir, path.Step, costGrid, end);
 
