@@ -77,7 +77,7 @@ namespace Asvz.Sola
 
         Uebergabe.Info uebergabe = new Uebergabe.Info(name, from, vorlage, karte);
 
-        Transport.Info trans = GetTransport(node);
+        UebergabeTransport.Info trans = GetTransport(node);
         uebergabe.Transport = trans;
 
         _uebergabe.Add(uebergabe);
@@ -89,7 +89,7 @@ namespace Asvz.Sola
     {
       return (T)Enum.Parse(typeof(T), value, true);
     }
-    private static Transport.Info GetTransport(XmlNode uebergabe)
+    private static UebergabeTransport.Info GetTransport(XmlNode uebergabe)
     {
       XmlNodeList list = uebergabe.SelectNodes("./Transport");
       if (list == null || list.Count != 1)
@@ -99,15 +99,15 @@ namespace Asvz.Sola
 
       XmlAttribute attr;
 
-      Transport.Info transInfo = new Transport.Info();
+      UebergabeTransport.Info transInfo = new UebergabeTransport.Info();
 
       attr = transNode.Attributes["vonTyp"];
       if (attr != null)
-      { transInfo.VonTyp = ParseEnum<Transport.Typ>(attr.Value); }
+      { transInfo.VonTyp = ParseEnum<UebergabeTransport.Typ>(attr.Value); }
 
       attr = transNode.Attributes["hatNach"];
       if (attr != null)
-      { transInfo.NachTyp = ParseEnum<Transport.Typ>(attr.Value); }
+      { transInfo.NachTyp = ParseEnum<UebergabeTransport.Typ>(attr.Value); }
 
       attr = transNode.Attributes["von"];
       if (attr != null)

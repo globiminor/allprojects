@@ -9,6 +9,10 @@ namespace Basics.Geom.Process
     {
       private Box _box;
       public IBox Box { get { return _box; } }
+      public Tile(Box box)
+      {
+        _box = box;
+      }
 
       public void LoadData(ISpatialTable table, TableActions actions, SearchEngine searchEngine)
       {
@@ -47,6 +51,7 @@ namespace Basics.Geom.Process
               if (action.Execute == null) { continue; }
               executeActions.Add(action);
             }
+            _executeActions = executeActions;
           }
           return _executeActions;
         }
@@ -56,10 +61,14 @@ namespace Basics.Geom.Process
 
     private readonly SearchEngine _searchEngine = new SearchEngine();
     private readonly List<ITablesProcessor> _processors;
+    private readonly IBox _extent;
+    private readonly double _tileSize;
 
-    public RowEnumerator(List<ITablesProcessor> processors)
+    public RowEnumerator(List<ITablesProcessor> processors, IBox extent, double tileSize)
     {
       _processors = processors;
+      _extent = extent;
+      _tileSize = tileSize;
     }
 
     internal ISearchEngine GetSearchEngine()
@@ -72,11 +81,11 @@ namespace Basics.Geom.Process
       Dictionary<ISpatialTable, TableActions> involvedTables = new Dictionary<ISpatialTable, TableActions>();
       foreach (ITablesProcessor processor in _processors)
       {
-        foreach (TableAction tableAction in processor.InvolvedTables)
+        foreach (TableAction tableAction in processor.TableActions)
         {
           TableActions involved;
           ISpatialTable table = (ISpatialTable)tableAction.Table;
-          if (involvedTables.TryGetValue(table, out involved))
+          if (!involvedTables.TryGetValue(table, out involved))
           {
             involved = new TableActions();
             involvedTables.Add(table, involved);
@@ -99,7 +108,12 @@ namespace Basics.Geom.Process
         }
       }
 
-      foreach (Tile tile in GetTiles())
+      if (involvedTables.Count == 0)
+      { yield break; }
+
+      IBox extent = _extent ?? GetExtent(involvedTables.Keys);
+
+      foreach (Tile tile in GetTiles(extent))
       {
         foreach (var pair in involvedTables)
         {
@@ -143,12 +157,59 @@ namespace Basics.Geom.Process
         CompleteTile();
       }
     }
+
+    private IBox GetExtent(IEnumerable<ISpatialTable> tables)
+    {
+      IBox allExtent = null;
+      foreach (ISpatialTable table in tables)
+      {
+        if (allExtent == null)
+        { allExtent = table.Extent; }
+        else
+        { allExtent.Include(table.Extent); }
+      }
+      return allExtent;
+    }
     private void CompleteTile()
     { }
 
-    private IEnumerable<Tile> GetTiles()
+    private IEnumerable<Tile> GetTiles(IBox extent)
     {
-      yield break;
+      int dim = extent.Dimension;
+      if (dim <= 0)
+      {
+        yield break;
+      }
+
+      Point min = Point.Create(dim);
+      Point max = Point.Create(dim);
+      foreach (Tile tile in GetTiles(extent, min, max, 0))
+      {
+        yield return tile;
+      }
+    }
+
+    private IEnumerable<Tile> GetTiles(IBox extent, IPoint min, IPoint max, int dim)
+    {
+      double d0 = extent.Min[dim];
+      double d1 = extent.Max[dim];
+      for (double d = d0; d < d1; d += _tileSize)
+      {
+        min[dim] = d;
+        max[dim] = Math.Min(d1, d + _tileSize);
+
+        if (dim + 1 < extent.Dimension)
+        {
+          foreach (Tile tile in GetTiles(extent, min, max, dim + 1))
+          {
+            yield return tile;
+          }
+        }
+        else
+        {
+          yield return new Tile(new Box(Point.Create(min), Point.Create(max)));
+        }
+      }
     }
   }
 }

@@ -14,7 +14,7 @@ namespace Basics.Geom.Process
   { }
   public interface ITablesProcessor
   {
-    IList<TableAction> InvolvedTables { get; }
+    IList<TableAction> TableActions { get; }
   }
 
   public class TableAction
@@ -46,7 +46,7 @@ namespace Basics.Geom.Process
     private ISearchEngine _searchEngine;
     private IList<TableAction> _involvedTables;
 
-    public IList<TableAction> InvolvedTables
+    public IList<TableAction> TableActions
     {
       get { return _involvedTables ?? (_involvedTables = Init()); }
     }

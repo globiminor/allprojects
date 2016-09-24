@@ -70,18 +70,8 @@ namespace Asvz
 
     private void ExportKml(string path, IEnumerable<T> strecken)
     {
-      XmlDocument doc = new XmlDocument();
-      doc.LoadXml(
-        //        "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
-        //        "<kml xmlns=\"http://earth.google.com/kml/2.1\"/>");
-        "<kml xmlns=\"http://www.opengis.net/kml/2.2\"/>");
-      XmlNode node = doc.LastChild;
-
-      XmlNode dc = doc.CreateElement("Document");
-      AppendElement(doc, dc, "name", Name);
-      AppendElement(doc, dc, "open", "1");
-
-      node.AppendChild(dc);
+      XmlElement dc = KmlUtils.InitDoc(Name);
+      XmlDocument doc = dc.OwnerDocument;
 
       if (KmlConfig.IncludeLookAt)
       {
@@ -92,14 +82,8 @@ namespace Asvz
         }
       }
 
+      TransferProjection prj = KmlUtils.GetTransferProjection(new Ch1903());
       Projection wgs = new Geographic();
-      Ellipsoid ell = new Ellipsoid.Wgs84();
-      ell.Datum = new Datum.ITRS();
-      ell.Datum.Center.X = -0;
-      ell.Datum.Center.Y = 0;
-      ell.Datum.Center.Z = 0.0;
-      wgs.SetEllipsoid(ell);
-      TransferProjection prj = new TransferProjection(new Ch1903(), wgs);
 
       CreateStyles(doc, dc);
 
@@ -142,31 +126,14 @@ namespace Asvz
 
     public void ExportGpx(string path, Categorie cat)
     {
-      Projection wgs = new Geographic();
-      Ellipsoid ell = new Ellipsoid.Wgs84();
-      ell.Datum = new Datum.ITRS();
-      ell.Datum.Center.X = -0;
-      ell.Datum.Center.Y = 0;
-      ell.Datum.Center.Z = 0.0;
-      wgs.SetEllipsoid(ell);
-      TransferProjection prj = new TransferProjection(new Ch1903(), wgs);
-
+      TransferProjection prj = GpxUtils.GetTransferProjection(new Ch1903());
 
       Trk trk = new Trk { Segments = new List<TrkSeg>() };
-      TrkSeg seg = GetStreckeGpx(cat, prj);
+      TrkSeg seg = GpxUtils.GetStreckeGpx(cat.Strecke, prj);
       trk.Segments.Add(seg);
 
       Gpx gpx = new Gpx { Trk = trk };
-      XmlSerializer ser = new XmlSerializer(typeof(Gpx));
-      using (TextWriter w = new StreamWriter(path))
-      {
-        XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
-        //ns.Add("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        //ns.Add("ogr", "http://osgeo.org/gdal");
-        //xmlns = "http://www.topografix.com/GPX/1/1" xsi:
-        // schemaLocation = "http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" >
-        ser.Serialize(w, gpx, ns);
-      }
+      GpxUtils.Write(path, gpx);
     }
 
     private void ExportGpxDoc(string path, IEnumerable<T> strecken)
@@ -180,14 +147,7 @@ namespace Asvz
 
       node.AppendChild(dc);
 
-      Projection wgs = new Geographic();
-      Ellipsoid ell = new Ellipsoid.Wgs84();
-      ell.Datum = new Datum.ITRS();
-      ell.Datum.Center.X = -0;
-      ell.Datum.Center.Y = 0;
-      ell.Datum.Center.Z = 0.0;
-      wgs.SetEllipsoid(ell);
-      TransferProjection prj = new TransferProjection(new Ch1903(), wgs);
+      TransferProjection prj = GpxUtils.GetTransferProjection(new Ch1903());
 
       foreach (Strecke strecke in strecken)
       {
@@ -423,55 +383,28 @@ namespace Asvz
       }
     }
 
-    protected TrkSeg GetStreckeGpx(Categorie cat, TransferProjection prj)
-    {
-      Polyline line = cat.Strecke;
-      Polyline s = line.Linearize(3.0);
-      s = s.Project(prj);
-
-      TrkSeg seg = new TrkSeg { Points = new List<TrkPt>() };
-      foreach (IPoint p in s.Points)
-      {
-        TrkPt pt = new TrkPt { Lat = p.Y, Lon = p.X };
-        seg.Points.Add(pt);
-      }
-      return seg;
-    }
-
     protected void WriteStreckeKml(XmlDocument doc, XmlNode parent,
       Strecke strecke, Categorie cat,
       TransferProjection prj)
     {
       Polyline line = cat.Strecke;
-      Polyline s = line.Linearize(3.0);
-      s = s.Project(prj);
-      StringBuilder builder = new StringBuilder();
-      foreach (Point p in s.Points)
-      {
-        builder.AppendFormat("{0:F6},{1:F6},0 ", p.X, p.Y);
-      }
 
       XmlElement elem = doc.CreateElement("Placemark");
-      AppendElement(doc, elem, "name", strecke.Name(cat));
+      XmlUtils.AppendElement(doc, elem, "name", strecke.Name(cat));
 
       string k = string.Format("{0}", cat.Name);
       k = k.Replace("Default, ", "");
-      AppendElement(doc, elem, "description",
+      XmlUtils.AppendElement(doc, elem, "description",
         string.Format("{1}{0}Länge {2:N2} km{0}Steigung {3:N0} m",
         Environment.NewLine,
         k, cat.Laenge() / 1000.0,
         cat.SteigungRound(5.0)));
 
-      AppendElement(doc, elem, "styleUrl", "#" + cat.KmlStyle);
+      XmlUtils.AppendElement(doc, elem, "styleUrl", "#" + cat.KmlStyle);
 
       parent.AppendChild(elem);
 
-      XmlElement xmlLine = doc.CreateElement("LineString");
-      AppendElement(doc, xmlLine, "extrude", "1");
-      AppendElement(doc, xmlLine, "tessellate", "1");
-      AppendElement(doc, xmlLine, "coordinates", builder.ToString());
-
-      elem.AppendChild(xmlLine);
+      KmlUtils.AppendLine(elem, line, prj);
     }
 
     protected virtual void WriteMarks(XmlDocument doc, XmlNode parent,
@@ -499,52 +432,5 @@ namespace Asvz
       }
       l.Add(-(iStrecke + 1));
     }
-    public static void AppendElement(XmlDocument doc, XmlNode element, string name, string value)
-    {
-      XmlElement app = doc.CreateElement(name);
-      XmlText text = doc.CreateTextNode(value);
-      app.AppendChild(text);
-      element.AppendChild(app);
-    }
-
-    protected static XmlElement GetStyle(XmlDocument doc, string id, string color, int width)
-    {
-      XmlElement style = doc.CreateElement("Style");
-      {
-        XmlAttribute attr = doc.CreateAttribute("id");
-        attr.Value = id;
-        style.Attributes.Append(attr);
-      }
-
-      XmlElement lineStyle = doc.CreateElement("LineStyle");
-      AppendElement(doc, lineStyle, "color", color);
-      AppendElement(doc, lineStyle, "width", width.ToString());
-
-      style.AppendChild(lineStyle);
-      return style;
-    }
-  }
-  [XmlRoot("gpx")]
-  public class Gpx
-  {
-    [XmlElement("trk")]
-    public Trk Trk { get; set; }
-  }
-  public class Trk
-  {
-    [XmlElement("trkseg")]
-    public List<TrkSeg> Segments { get; set; }
-  }
-  public class TrkSeg
-  {
-    [XmlElement("trkpt")]
-    public List<TrkPt> Points { get; set; }
-  }
-  public class TrkPt
-  {
-    [XmlAttribute("lat")]
-    public double Lat { get; set; }
-    [XmlAttribute("lon")]
-    public double Lon { get; set; }
   }
 }

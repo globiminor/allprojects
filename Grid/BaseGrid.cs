@@ -53,7 +53,7 @@ namespace Grid
     public static readonly Dir Ne = new Dir(1, 1);
 
     private static LinkedList<Dir> _meshDirs;
-    private static LinkedList<Dir> MeshDirs
+    public static LinkedList<Dir> MeshDirs
     { get { return _meshDirs ?? (_meshDirs = new LinkedList<Dir>(new[] { N, W, Sw, S, E, Ne })); } }
     private static Dictionary<Dir, LinkedListNode<Dir>> _meshDirDict;
     private static Dictionary<Dir, LinkedListNode<Dir>> MeshDirDict
@@ -103,6 +103,10 @@ namespace Grid
     Type Type { get; }
     object this[int ix, int iy] { get; set; }
   }
+  public interface IExtractable
+  {
+    IGrid Extract(IBox extent);
+  }
 
   public interface IGrid<T> : IGrid
   {
@@ -110,11 +114,88 @@ namespace Grid
     new T this[int ix, int iy] { get; set; }
   }
 
+  public class OffsetGrid<T> : OffsetGrid, IGrid<T>
+  {
+    public OffsetGrid(IGrid<T> master, int ox, int oy, int nx, int ny)
+      : base(master, ox, oy, nx, ny)
+    { }
+
+    protected new IGrid<T> Master { get { return (IGrid<T>)base.Master; } }
+
+    T IGrid<T>.this[int ix, int iy]
+    {
+      get { return (T)base[ix, iy]; }
+      set { base[ix, iy] = value; }
+    }
+
+    public T Value(double x, double y)
+    {
+      return Master.Value(x, y);
+    }
+  }
+  public class OffsetGrid : IGrid
+  {
+    private readonly IGrid _master;
+    private readonly int _ox;
+    private readonly int _oy;
+    private readonly GridExtent _offsetExtent;
+    public OffsetGrid(IGrid master, int ox, int oy, int nx, int ny)
+    {
+      _master = master;
+      _ox = ox;
+      _oy = oy;
+
+      GridExtent m = master.Extent;
+      _offsetExtent = new GridExtent(nx, ny, m.X0 + ox * m.Dx, m.Y0 + oy * m.Dy, m.Dx, m.Dy);
+    }
+
+    protected IGrid Master { get { return _master; } }
+
+    public GridExtent Extent { get { return _offsetExtent; } }
+    public Type Type { get { return _master.Type; } }
+
+    public object this[int ix, int iy]
+    {
+      get
+      {
+        int tx = ix + _ox;
+        int ty = iy + _oy;
+        if (tx < 0 || ty < 0 || tx >= _master.Extent.Nx || ty >= _master.Extent.Ny)
+        { return _master.Extent.NN; }
+        return _master[ix, iy];
+      }
+      set
+      {
+        int tx = ix + _ox;
+        int ty = iy + _oy;
+        _master[tx, ty] = value;
+      }
+    }
+  }
+
   public abstract class BaseGrid : IGrid
   {
     private GridExtent _extent;
     private Type _type;
 
+    public static GridExtent GetOffsetExtent(IGrid master, IBox extent, out int offsetX, out int offsetY)
+    {
+      double t0 = master.Extent.Dx > 0 ? extent.Min.X : extent.Max.X;
+      int ox = (int)Math.Floor((t0 - master.Extent.X0) / master.Extent.Dx);
+      t0 = master.Extent.Dy > 0 ? extent.Min.Y : extent.Max.Y;
+      int oy = (int)Math.Floor((t0 - master.Extent.Y0) / master.Extent.Dy);
+
+      double x0 = master.Extent.X0 + ox * master.Extent.Dx;
+      double y0 = master.Extent.Y0 + oy * master.Extent.Dy;
+
+      int nx = (int)Math.Ceiling((Math.Max(x0, extent.Max.X) - Math.Min(x0, extent.Min.X)) / Math.Abs(master.Extent.Dx));
+      int ny = (int)Math.Ceiling((Math.Max(y0, extent.Max.Y) - Math.Min(y0, extent.Min.Y)) / Math.Abs(master.Extent.Dy));
+      GridExtent gridExtent = new GridExtent(nx, ny, x0, y0, master.Extent.Dx, master.Extent.Dy);
+
+      offsetX = ox;
+      offsetY = oy;
+      return gridExtent;
+    }
     public BaseGrid(GridExtent extent, Type type)
     {
       _extent = extent;
@@ -125,20 +206,6 @@ namespace Grid
       int ix, iy;
       _extent.GetNearest(x, y, out ix, out iy);
       return this[ix, iy]; // this[ix, iy];
-    }
-
-    protected class GridPoint : Point3D
-    {
-      private readonly IGrid _grid;
-      private readonly int _x;
-      private readonly int _y;
-      public GridPoint(IGrid grid, int x, int y)
-        : base(grid.Extent.X0 + x * grid.Extent.Dx, grid.Extent.Y0 + y * grid.Extent.Dx, 0)
-      {
-        _grid = grid;
-        _x = x;
-        _y = y;
-      }
     }
 
     public T Offset<T>(int ix, int iy) where T : BaseGrid

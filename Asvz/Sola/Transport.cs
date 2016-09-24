@@ -5,13 +5,129 @@ using Basics.Geom;
 using Ocad;
 using System.IO;
 using Ocad.StringParams;
+using Basics.Geom.Projection;
+using System.Xml;
 
 namespace Asvz.Sola
 {
-  /// <summary>
-  /// Summary description for Uebergabe.
-  /// </summary>
   public class Transport
+  {
+    private List<Element> _sorted;
+    private Polyline _combined;
+
+    public int From { get; private set; }
+    public int To { get; private set; }
+    public List<Element> Elements { get; private set; }
+
+    public Polyline Combined { get { return _combined ?? (_combined = GetCombined()); } }
+    public List<Element> SortedElements { get { return _sorted ?? (_sorted = SortElements()); } }
+
+    public Transport(int from, int to)
+    {
+      From = from;
+      To = to;
+      Elements = new List<Element>();
+    }
+
+    private Polyline GetCombined()
+    {
+      Polyline combined = new Polyline();
+      foreach (Element elem in SortedElements)
+      {
+        Polyline add = (Polyline)elem.Geometry;
+        combined.Add(add.Points.First.Value);
+        foreach (Curve seg in add.Segments)
+        { combined.Add(seg); }
+      }
+      return combined;
+    }
+
+    private List<Element> SortElements()
+    {
+      Dictionary<Element, Element> lines = new Dictionary<Element, Element>();
+      foreach (Element elem in Elements)
+      { lines.Add(elem, null); }
+
+      List<Element> startLines = new List<Element>();
+      foreach (Element elem in Elements)
+      {
+        Point start = Point.CastOrCreate(((Polyline)elem.Geometry).Points.First.Value);
+        double minDist = double.MaxValue;
+        Element pre = null;
+        foreach (Element nb in Elements)
+        {
+          IPoint end = ((Polyline)nb.Geometry).Points.Last.Value;
+          double d2 = start.Dist2(end);
+          if (d2 < 2000 && d2 < minDist)
+          {
+            minDist = d2;
+            pre = nb;
+          }
+        }
+        if (pre != null)
+        { lines[pre] = elem; }
+        else
+        { startLines.Add(elem); }
+      }
+      if (startLines.Count == 0)
+      { throw new InvalidOperationException("No start element found"); }
+      if (startLines.Count > 1)
+      { throw new InvalidOperationException(string.Format("Found {0} start elements", startLines.Count)); }
+
+      List<Element> sorted = new List<Element>();
+      Element next = startLines[0];
+      while (next != null)
+      {
+        if (sorted.Contains(next))
+        { throw new InvalidOperationException("Element already added"); }
+        sorted.Add(next);
+        if (!lines.TryGetValue(next, out next))
+        { next = null; }
+      }
+      if (sorted.Count != Elements.Count)
+      { throw new InvalidOperationException(string.Format("Sorted has {0} elements, expected", sorted.Count, Elements.Count)); }
+
+      return sorted;
+    }
+
+    public void ExportKml(string path, string from, string to)
+    {
+      XmlElement dc = KmlUtils.InitDoc("SOLA Kleidertransport");
+      XmlDocument doc = dc.OwnerDocument;
+
+      TransferProjection prj = KmlUtils.GetTransferProjection(new Ch1903());
+      Projection wgs = new Geographic();
+
+      XmlElement style = KmlUtils.GetStyle(doc, "transport", "C0ff0000", 3);
+      dc.AppendChild(style);
+
+      XmlElement elem = doc.CreateElement("Placemark");
+      XmlUtils.AppendElement(doc, elem, "name", "Transport");
+
+      XmlUtils.AppendElement(doc, elem, "description",
+        string.Format("Kleidertransport von {0} nach {1}", from, to));
+
+      XmlUtils.AppendElement(doc, elem, "styleUrl", "#" + "transport");
+
+      dc.AppendChild(elem);
+
+      KmlUtils.AppendLine(elem, Combined, prj);
+      doc.Save(path);
+    }
+    public void ExportGpx(string path)
+    {
+      TransferProjection prj = GpxUtils.GetTransferProjection(new Ch1903());
+
+      Trk trk = new Trk { Segments = new List<TrkSeg>() };
+      TrkSeg seg = GpxUtils.GetStreckeGpx(Combined, prj);
+      trk.Segments.Add(seg);
+
+      Gpx gpx = new Gpx { Trk = trk };
+      GpxUtils.Write(path, gpx);
+    }
+  }
+
+  public class UebergabeTransport
   {
     public enum Typ { Normal, Spezial, Kein }
     public class Info
@@ -67,7 +183,6 @@ namespace Asvz.Sola
         else
         { throw new InvalidProgramException("Not handled"); }
       }
-
     }
 
     private Polyline _transportBox;
@@ -100,8 +215,8 @@ namespace Asvz.Sola
 
     private readonly Polyline _runFrom;
     private readonly Polyline _runTo;
-    private readonly IList<Element> _transFrom;
-    private readonly IList<Element> _transTo;
+    private readonly Transport _transFrom;
+    private readonly Transport _transTo;
     private readonly int _strecke;
 
     private Setup _templateSetup;
@@ -119,10 +234,13 @@ namespace Asvz.Sola
       }
     }
 
+    public Transport TransFrom { get { return _transFrom; } }
+    public Transport TransTo { get { return _transTo; } }
+
     public static void GetLayout(int strecke, out Polyline box, out Point legendPos,
       bool checkEqualUebergabe)
     {
-      Transport t = new Transport(null, strecke);
+      UebergabeTransport t = new UebergabeTransport(null, strecke);
       string template = Ddx.Uebergabe[strecke].Vorlage;
 
       Ocad9Reader pTemplate = (Ocad9Reader)OcadReader.Open(template);
@@ -144,7 +262,7 @@ namespace Asvz.Sola
       }
     }
 
-    public Transport(SolaData data, int idStrecke)
+    public UebergabeTransport(SolaData data, int idStrecke)
     {
       if (data == null)
       { return; }
@@ -394,7 +512,7 @@ namespace Asvz.Sola
 
       if (_transFrom != null)
       {
-        foreach (Element elem in _transFrom)
+        foreach (Element elem in _transFrom.Elements)
         {
           GeometryCollection col = GeometryOperator.Intersection(elem.Geometry, box);
           if (col == null)
@@ -418,7 +536,7 @@ namespace Asvz.Sola
       }
       if (_transTo != null)
       {
-        foreach (Element elem in _transTo)
+        foreach (Element elem in _transTo.Elements)
         {
           GeometryCollection col = GeometryOperator.Intersection(elem.Geometry, box);
           if (col == null)
@@ -870,7 +988,7 @@ namespace Asvz.Sola
       pElem = Common.CreateText("50 m", p.X, p.Y, _legendText, _templateSetup);
       writer.Append(pElem);
 
-      Polyline pScale = Polyline.Create(new [] { new Point2D(0, 0), new Point2D(50, 0) });
+      Polyline pScale = Polyline.Create(new[] { new Point2D(0, 0), new Point2D(50, 0) });
       pScale = pScale.Project(_templateSetup.Prj2Map);
       dx = pScale.Project(Geometry.ToXY).Length() / 2.0;
 

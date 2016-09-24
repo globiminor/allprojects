@@ -57,6 +57,7 @@
     <Compile Include="DataTest.cs" />
     <Compile Include="LcpTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SchartenhoeheTest.cs" />
     <Compile Include="SdeDataTest.cs" />
     <Compile Include="SectionCollectionTest.cs" />
     <Compile Include="ShapeDataTest.cs" />

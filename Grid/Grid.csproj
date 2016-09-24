@@ -46,6 +46,7 @@
     <Compile Include="BinarGrid.cs" />
     <Compile Include="DoubleGrid.cs" />
     <Compile Include="GridExtent.cs" />
+    <Compile Include="GridMesh.cs" />
     <Compile Include="ImageGrid.cs" />
     <Compile Include="IntGrid.cs" />
     <Compile Include="Lcp\Config.cs" />

@@ -6,18 +6,26 @@ namespace Basics.Geom.Process
   public class ProcessorContainer
   {
     private readonly List<IProcessor> _processors;
-    public ProcessorContainer(IEnumerable<IProcessor> processors)
+    private readonly double _tileSize;
+    public ProcessorContainer(IEnumerable<IProcessor> processors, double tileSize)
     {
       _processors = new List<IProcessor>(processors);
+      _tileSize = tileSize;
     }
+    public double TileSize { get { return _tileSize; } }
+
 
     public void Execute()
+    {
+      Execute(null);
+    }
+    private void Execute(IBox extent)
     {
       List<IProcessor> nonSpatialProcs = new List<IProcessor>();
       List<ITablesProcessor> spatialProcs = new List<ITablesProcessor>();
       SortProcs(_processors, nonSpatialProcs, spatialProcs);
 
-      RowEnumerator rowEnumerator = new RowEnumerator(spatialProcs);
+      RowEnumerator rowEnumerator = new RowEnumerator(spatialProcs, extent, _tileSize);
       ISearchEngine searchEngine = rowEnumerator.GetSearchEngine();
       foreach (ITablesProcessor spatialProc in spatialProcs)
       {
@@ -47,9 +55,9 @@ namespace Basics.Geom.Process
         }
 
         bool isSpatial = true;
-        foreach (ITable table in tablesProc.InvolvedTables)
+        foreach (TableAction action in tablesProc.TableActions)
         {
-          if (!(table is ISpatialTable))
+          if (!(action.Table is ISpatialTable))
           {
             isSpatial = false;
             break;

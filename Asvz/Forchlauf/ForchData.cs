@@ -265,13 +265,13 @@ namespace Asvz.Forchlauf
 
     protected override void CreateStyles(XmlDocument doc, XmlNode dc)
     {
-      XmlElement style = GetStyle(doc, Kategorie.Kurz.ToString(), "C0ff00ff", 3);
+      XmlElement style = KmlUtils.GetStyle(doc, Kategorie.Kurz.ToString(), "C0ff00ff", 3);
       dc.AppendChild(style);
 
-      style = GetStyle(doc, Kategorie.Mittel.ToString(), "C0ff0000", 3);
+      style = KmlUtils.GetStyle(doc, Kategorie.Mittel.ToString(), "C0ff0000", 3);
       dc.AppendChild(style);
 
-      style = GetStyle(doc, Kategorie.Lang.ToString(), "C00000ff", 3);
+      style = KmlUtils.GetStyle(doc, Kategorie.Lang.ToString(), "C00000ff", 3);
       dc.AppendChild(style);
 
       style = doc.CreateElement("Style");

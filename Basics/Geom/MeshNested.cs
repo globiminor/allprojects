@@ -1,8 +1,23 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace Basics.Geom
 {
+
+  public interface IMesh
+  {
+    /// <summary>
+    /// enumerates all points of mesh, with point being p.Start of the returned IMeshLine p
+    /// </summary>
+    IEnumerable<IMeshLine> Points { get; }
+    IComparer<IMeshLine> LineComparer { get; }
+  }
+  public interface ITileMesh : IMesh
+  {
+    IBox TileExtent { get; }
+  }
+
   public interface IMeshTri
   {
 

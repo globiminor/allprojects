@@ -142,16 +142,16 @@ namespace Asvz.Sola
     {
       XmlElement style;
 
-      style = GetStyle(doc, "einfach", "C000ff00", 3);
+      style = KmlUtils.GetStyle(doc, "einfach", "C000ff00", 3);
       dc.AppendChild(style);
 
-      style = GetStyle(doc, "mittel", "C00080ff", 3);
+      style = KmlUtils.GetStyle(doc, "mittel", "C00080ff", 3);
       dc.AppendChild(style);
 
-      style = GetStyle(doc, "schwierig", "C00000ff", 3);
+      style = KmlUtils.GetStyle(doc, "schwierig", "C00000ff", 3);
       dc.AppendChild(style);
 
-      style = GetStyle(doc, "special", "80ff0000", 5);
+      style = KmlUtils.GetStyle(doc, "special", "80ff0000", 5);
       dc.AppendChild(style);
 
       style = doc.CreateElement("Style");
@@ -167,7 +167,7 @@ namespace Asvz.Sola
       //iconStyle.Attributes.Append(attr);
 
       XmlElement icon = doc.CreateElement("Icon");
-      AppendElement(doc, icon, "href", "sola.png");
+      XmlUtils.AppendElement(doc, icon, "href", "sola.png");
       //attr.Value = "http://maps.google.com/mapfiles/kml/pal3/icon21.png";
 
       iconStyle.AppendChild(icon);
@@ -280,19 +280,21 @@ namespace Asvz.Sola
     /// spezialStrecke; falls streckeFrom == streckeTo
     /// Transportstrecke; sonst
     /// </returns>
-    public IList<Element> Transport(int streckeFrom, int streckeTo)
+    public Transport Transport(int streckeFrom, int streckeTo)
     {
       if (streckeFrom < 0 || streckeTo < 0)
       { return null; }
       if (streckeFrom >= Ddx.Uebergabe.Count || streckeTo >= Ddx.Uebergabe.Count)
       { return null; }
 
+      Transport t = new Transport(streckeFrom, streckeTo);
+
       Point legendPos;
       Polyline borderFrom;
-      Sola.Transport.GetLayout(streckeFrom, out borderFrom, out legendPos);
+      UebergabeTransport.GetLayout(streckeFrom, out borderFrom, out legendPos);
 
       Polyline borderTo;
-      Sola.Transport.GetLayout(streckeTo, out borderTo, out legendPos);
+      UebergabeTransport.GetLayout(streckeTo, out borderTo, out legendPos);
 
 
       IBox boxFrom = null;
@@ -312,7 +314,8 @@ namespace Asvz.Sola
           if (boxFrom.IsWithin(trans.Points.First.Value)
             && boxTo.IsWithin(trans.Points.Last.Value))
           {
-            return CombineTransport(trans, pair.Value);
+            t.Elements.AddRange(CombineTransport(trans, pair.Value));
+            return t;
           }
         }
       }
@@ -325,7 +328,9 @@ namespace Asvz.Sola
 
           Polyline trans = pair.Key;
           if (boxFrom.IsWithin(trans.Points.First.Value))
-          { return CombineTransport(trans, SymT.Transport); }
+          { t.Elements.AddRange(CombineTransport(trans, SymT.Transport));
+            return t;
+          }
         }
       }
       else if (boxTo != null && streckeFrom == streckeTo)
@@ -337,7 +342,10 @@ namespace Asvz.Sola
 
           Polyline trans = pair.Key;
           if (boxTo.IsWithin(trans.Points.Last.Value))
-          { return CombineTransport(trans, SymT.Transport); }
+          {
+            t.Elements.AddRange(CombineTransport(trans, SymT.Transport));
+            return t;
+          }
         }
       }
       return null;
@@ -432,12 +440,12 @@ namespace Asvz.Sola
     protected override XmlElement CreateLookAt(XmlDocument doc)
     {
       XmlElement elem = doc.CreateElement("LookAt");
-      AppendElement(doc, elem, "longitude", "8.5750");
-      AppendElement(doc, elem, "latitude", "47.3400");
-      AppendElement(doc, elem, "altitude", "1000");
-      AppendElement(doc, elem, "range", "22888");
-      AppendElement(doc, elem, "tilt", "26");
-      AppendElement(doc, elem, "heading", "17");
+      XmlUtils.AppendElement(doc, elem, "longitude", "8.5750");
+      XmlUtils.AppendElement(doc, elem, "latitude", "47.3400");
+      XmlUtils.AppendElement(doc, elem, "altitude", "1000");
+      XmlUtils.AppendElement(doc, elem, "range", "22888");
+      XmlUtils.AppendElement(doc, elem, "tilt", "26");
+      XmlUtils.AppendElement(doc, elem, "heading", "17");
       return elem;
     }
 
@@ -525,20 +533,13 @@ namespace Asvz.Sola
         }
 
         elem = doc.CreateElement("Placemark");
-        AppendElement(doc, elem, "name", name);
-        AppendElement(doc, elem, "description", desc);
-        AppendElement(doc, elem, "styleUrl", "#pin");
+        XmlUtils.AppendElement(doc, elem, "name", name);
+        XmlUtils.AppendElement(doc, elem, "description", desc);
+        XmlUtils.AppendElement(doc, elem, "styleUrl", "#pin");
 
         parent.AppendChild(elem);
 
-        XmlElement pp = doc.CreateElement("Point");
-        AppendElement(doc, pp, "extrude", "1");
-
-        IPoint x = pair.Key;
-        x = x.Project(prj);
-        AppendElement(doc, pp, "coordinates", string.Format("{0:F6},{1:F6},0 ", x.X, x.Y));
-
-        elem.AppendChild(pp);
+        KmlUtils.AppendPoint(elem, pair.Key, prj);
       }
     }
 

@@ -40,7 +40,7 @@ namespace Asvz.Sola
 
       public string Karte { get; }
 
-      public Transport.Info Transport { get; set; }
+      public UebergabeTransport.Info Transport { get; set; }
 
       public int CompareTo(Info other)
       {

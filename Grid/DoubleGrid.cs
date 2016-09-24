@@ -202,7 +202,6 @@ namespace Grid
       dz = 0;
     }
 
-
     protected virtual void WriteValue(BinaryWriter writer, int ix, int iy)
     {
       writer.Write(this[ix, iy]);
@@ -229,17 +228,17 @@ namespace Grid
       {
         h0 = h00;
         h1 = h01;
-        start = new MeshLine(this, ix, iy, Dir.N);
+        start = new GridMeshLine(this, ix, iy, Dir.N);
       }
       else if (h01.CompareTo(hContour) != (h1 = this[ix + 1, iy + 1]).CompareTo(hContour))
       {
         h0 = h01;
-        start = new MeshLine(this, ix, iy + 1, Dir.E);
+        start = new GridMeshLine(this, ix, iy + 1, Dir.E);
       }
       else if (h00.CompareTo(hContour) != (h1 = this[ix + 1, iy]).CompareTo(hContour))
       {
         h0 = h00;
-        start = new MeshLine(this, ix + 1, iy, Dir.E);
+        start = new GridMeshLine(this, ix + 1, iy, Dir.E);
       }
       else
       { return null; }
@@ -248,111 +247,7 @@ namespace Grid
       { start = start.Invers(); }
 
       double f = (hContour - h0) / (h1 - h0);
-      return MeshUtils.GetContour(start, f, new MeshLine.Comparer());
-    }
-
-    private class MeshLine : IMeshLine
-    {
-      private static Dir.Comparer _dirCmp = new Dir.Comparer();
-      public class Comparer : IComparer<MeshLine>, IComparer<IMeshLine>
-      {
-        int IComparer<IMeshLine>.Compare(IMeshLine x, IMeshLine y)
-        { return Compare(x as MeshLine, y as MeshLine); }
-        public int Compare(MeshLine x, MeshLine y)
-        {
-          if (x == null) { if (y == null) return 0; return 1; }
-          if (y == null) return -1;
-
-          int d = x._x0.CompareTo(y._x0);
-          if (d != 0) return d;
-
-          d = x._y0.CompareTo(y._y0);
-          if (d != 0) return d;
-
-          d = _dirCmp.Compare(x._dir, y._dir);
-          return d;
-        }
-      }
-
-      private readonly IDoubleGrid _grid;
-      private readonly int _x0;
-      private readonly int _y0;
-      private readonly int _x1;
-      private readonly Dir _dir;
-
-      private GridPoint _start;
-      private GridPoint _end;
-
-      public MeshLine(IDoubleGrid grid, int x0, int y0, Dir dir)
-      {
-        _grid = grid;
-        _x0 = x0;
-        _y0 = y0;
-        _dir = dir;
-      }
-
-      public IPoint Start
-      {
-        get { return _start ?? (_start = CreatePoint(_x0, _y0)); }
-      }
-
-      public IPoint End
-      {
-        get { return _end ?? (_end = CreateEndPoint()); }
-      }
-
-      IMeshLine IMeshLine.Invers()
-      {
-        MeshLine invers = new MeshLine(_grid, _x0 + _dir.Dx, _y0 + _dir.Dy, new Dir(-_dir.Dx, -_dir.Dy));
-        invers._start = _end;
-        invers._end = _start;
-        return invers;
-      }
-      IMeshLine IMeshLine.GetNextTriLine()
-      {
-        Dir nextDir = Dir.GetNextTriDir(_dir);
-        int x1 = _x0 + _dir.Dx;
-        int x2 = x1 + nextDir.Dx;
-        if (x2 < 0 || x2 >= _grid.Extent.Nx)
-        { return null; }
-
-        int y1 = _y0 + _dir.Dy;
-        int y2 = y1 + nextDir.Dy;
-        if (y2 < 0 || y2 >= _grid.Extent.Ny)
-        { return null; }
-        MeshLine next = new MeshLine(_grid, x1, y1, nextDir);
-        next._start = _end;
-
-        return next;
-      }
-
-      IMeshLine IMeshLine.GetPreviousTriLine()
-      {
-        Dir preDir = Dir.GetPreTriDir(_dir);
-        int x2 = _x0 - preDir.Dx;
-        if (x2 < 0 || x2 >= _grid.Extent.Nx)
-        { return null; }
-
-        int y2 = _y0 - preDir.Dy;
-        if (y2 < 0 || y2 >= _grid.Extent.Ny)
-        { return null; }
-        MeshLine next = new MeshLine(_grid, x2, y2, preDir);
-        next._end = _start;
-
-        return next;
-      }
-
-
-      private GridPoint CreateEndPoint()
-      {
-        GridPoint end = CreatePoint(_x0 + _dir.Dx, _y0 + _dir.Dy);
-        return end;
-      }
-      private GridPoint CreatePoint(int ix, int iy)
-      {
-        GridPoint p = new GridPoint(_grid, ix, iy) { Z = _grid[ix, iy] };
-        return p;
-      }
+      return MeshUtils.GetContour(start, f, new GridMeshLine.Comparer());
     }
 
     public double Value(double x, double y, EGridInterpolation eInter)
@@ -575,9 +470,7 @@ namespace Grid
       return dhMax;
     }
   }
-  /// <summary>
-  /// Double Grid
-  /// </summary>
+
   public class DataDoubleGrid : DoubleGrid
   {
     public enum FileType

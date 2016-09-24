@@ -952,12 +952,36 @@ namespace Asvz
         if (Directory.Exists(dir) == false)
         { Directory.CreateDirectory(dir); }
 
+        List<string> ocdFiles = new List<string>();
         for (int iStrecke = iVon; iStrecke <= iBis; iStrecke++)
         {
-          Transport pTrans = new Transport(data, iStrecke);
-          pTrans.CompleteStrecken();
-          pTrans.Write(Path.Combine(dir,
-            "Tra_" + Path.GetFileNameWithoutExtension(Ddx.Uebergabe[iStrecke].Vorlage) + ".ocd"));
+          UebergabeTransport trans = new UebergabeTransport(data, iStrecke);
+          string name = Path.GetFileNameWithoutExtension(Ddx.Uebergabe[iStrecke].Vorlage);
+
+          trans.CompleteStrecken();
+          string ocdFile = Path.Combine(dir, "Tra_" + name + ".ocd");
+          trans.Write(ocdFile);
+
+          ocdFiles.Add(ocdFile);
+
+          if (trans.TransFrom != null)
+          {
+            string from = Path.GetFileNameWithoutExtension(Ddx.Uebergabe[trans.TransFrom.From].Vorlage);
+            string gpxName = string.Format("Tra_gpx_von_{0}_nach_{1}.gpx", from, name);
+            trans.TransFrom.ExportGpx(Path.Combine(dir, gpxName));
+
+            string kmlName = string.Format("Tra_kml_von_{0}_nach_{1}.kml", from, name);
+            trans.TransFrom.ExportKml(Path.Combine(dir, kmlName), from, name);
+          }
+          if (trans.TransTo != null)
+          {
+            string to = Path.GetFileNameWithoutExtension(Ddx.Uebergabe[trans.TransTo.To].Vorlage);
+            string gpxName = string.Format("Tra_gpx_von_{0}_nach_{1}.gpx", name, to);
+            trans.TransTo.ExportGpx(Path.Combine(dir, gpxName));
+
+            string kmlName = string.Format("Tra_kml_von_{0}_nach_{1}.kml", name, to);
+            trans.TransTo.ExportKml(Path.Combine(dir, kmlName), name, to);
+          }
         }
         Ocad.Scripting.Utils.CreatePdf(dir);
       }

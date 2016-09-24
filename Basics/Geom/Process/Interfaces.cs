@@ -7,6 +7,7 @@ namespace Basics.Geom.Process
   }
   public interface ISpatialTable : ITable
   {
+    IBox Extent { get; }
     IEnumerable<ISpatialRow> Search(IBox extent, string filter);
   }
   public interface ITable<T> : ITable

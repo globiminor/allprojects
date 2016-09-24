@@ -200,7 +200,7 @@ namespace Asvz.SolaDuo
       XmlAttribute attr;
       XmlElement style;
 
-      style = GetStyle(doc, Kategorie.Strecke.ToString(), "C00000ff", 3);
+      style = KmlUtils.GetStyle(doc, Kategorie.Strecke.ToString(), "C00000ff", 3);
       dc.AppendChild(style);
 
       style = doc.CreateElement("Style");
