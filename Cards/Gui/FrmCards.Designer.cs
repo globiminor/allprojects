@@ -49,6 +49,7 @@
       this.txtPoints = new System.Windows.Forms.TextBox();
       this.lblPoints = new System.Windows.Forms.Label();
       this.cntCards = new Cards.Gui.CntCards();
+      this.mniNew = new System.Windows.Forms.ToolStripMenuItem();
       this.mnuCards.SuspendLayout();
       this.SuspendLayout();
       // 
@@ -160,7 +161,8 @@
             this.mniTriPeaks,
             this.toolStripSeparator1,
             this.mniSave,
-            this.mniLoad});
+            this.mniLoad,
+            this.mniNew});
       this.mniSettings.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.mniSettings.Name = "mniSettings";
       this.mniSettings.Size = new System.Drawing.Size(61, 20);
@@ -230,14 +232,21 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
       this.cntCards.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-      this.cntCards.CardHeight = 20;
+      this.cntCards.CardHeight = 30;
       this.cntCards.CardsVm = null;
-      this.cntCards.CardWidth = 20;
+      this.cntCards.CardWidth = 30;
       this.cntCards.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.cntCards.Location = new System.Drawing.Point(12, 61);
       this.cntCards.Name = "cntCards";
       this.cntCards.Size = new System.Drawing.Size(796, 334);
       this.cntCards.TabIndex = 0;
+      // 
+      // mniNew
+      // 
+      this.mniNew.Name = "mniNew";
+      this.mniNew.Size = new System.Drawing.Size(152, 22);
+      this.mniNew.Text = "New";
+      this.mniNew.Click += new System.EventHandler(this.mniNew_Click);
       // 
       // FrmCards
       // 
@@ -292,6 +301,7 @@
     private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
     private System.Windows.Forms.ToolStripMenuItem mniSave;
     private System.Windows.Forms.ToolStripMenuItem mniLoad;
+    private System.Windows.Forms.ToolStripMenuItem mniNew;
   }
 }
 

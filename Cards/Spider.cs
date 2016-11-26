@@ -633,13 +633,13 @@ namespace Cards
     private readonly Cache<Stand<Move>, Spider> _cache =
       new Cache<Stand<Move>, Spider>();
 
-    public void Init()
+    public override List<Card> Init()
     {
       ColumnCount = 10;
-      Init(Suite.Suites, (int)DateTime.Now.Ticks);
+      return Init(Suite.Suites, (int)DateTime.Now.Ticks);
     }
 
-    public void Init(IEnumerable<Suite> suites, int seed)
+    public List<Card> Init(IEnumerable<Suite> suites, int seed)
     {
       if (System.Diagnostics.Debugger.IsAttached)
       { seed = -1061797517; }
@@ -657,9 +657,10 @@ namespace Cards
       List<Card> shuffled = Card.Shuffle(cards, r);
 
       Init(shuffled);
+      return shuffled;
     }
 
-    public void Init(List<Card> cards)
+    public override void Init(List<Card> cards)
     {
       int iCard = 0;
       for (int i = 0; i < 44; i++)
@@ -787,7 +788,9 @@ namespace Cards
       return clone;
     }
 
-    private Spider Clone()
+    protected override GameBase CloneRaw()
+    { return Clone(); }
+    private new Spider Clone()
     {
       Spider clone = new Spider();
       clone.ColumnCount = ColumnCount;

@@ -150,5 +150,20 @@ namespace Cards.Gui
 
       Vm.Load(load);
     }
+
+    private void mniNew_Click(object sender, System.EventArgs e)
+    {
+      if (Vm == null)
+      { return; }
+      string load;
+      using (SaveFileDialog dlg = new SaveFileDialog())
+      {
+        if (dlg.ShowDialog() != DialogResult.OK)
+        { return; }
+        load = dlg.FileName;
+      }
+
+      Vm.New(load);
+    }
   }
 }

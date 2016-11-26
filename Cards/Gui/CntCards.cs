@@ -14,8 +14,8 @@ namespace Cards.Gui
   {
     public CntCards()
     {
-      CardWidth = 20;
-      CardHeight = 30;
+      CardWidth = 30;
+      CardHeight = 45;
       InitializeComponent();
     }
 
@@ -44,7 +44,11 @@ namespace Cards.Gui
     {
       Brush b;
       if (card.Visible)
-      { b = Brushes.White; }
+      {
+        b = Brushes.White;
+        if (card.Card.Suite == null)
+        { b = Brushes.Orange; }
+      }
       else
       { b = Brushes.DarkGray; }
       Pen p = Pens.Black;
@@ -58,20 +62,37 @@ namespace Cards.Gui
       if (card.Visible)
       {
         Color suiteColor;
-        string suite = card.Card.Suite.Code;
-        if (suite == "H")
-        { suiteColor = Color.Red; }
-        else if (suite == "E")
-        { suiteColor = Color.Blue; }
-        else if (suite == "K")
-        { suiteColor = Color.Green; }
-        else if (suite == "S")
-        { suiteColor = Color.Black; }
-        else
-        { suiteColor = Color.Gray; }
+        if (card.Card.Suite != null)
+        {
+          string suite = card.Card.Suite.Code;
+          string symbol = string.Empty;
+          if (suite == "H")
+          {
+            suiteColor = Color.Red;
+            symbol = "\u2665";
+          }
+          else if (suite == "E")
+          {
+            suiteColor = Color.Blue;
+            symbol = "\u2666";
+          }
+          else if (suite == "K")
+          {
+            suiteColor = Color.Green;
+            symbol = "\u2663";
+          }
+          else if (suite == "S")
+          {
+            suiteColor = Color.Black;
+            symbol = "\u2660";
+          }
+          else
+          { suiteColor = Color.Gray; }
 
-        rect.Height = Font.Height;
-        TextRenderer.DrawText(e.Graphics, card.Card.Height.Code, Font, rect, suiteColor);
+          string txt = symbol + card.Card.Height.Code;
+          rect.Height = Font.Height;
+          TextRenderer.DrawText(e.Graphics, txt, Font, rect, suiteColor);
+        }
       }
     }
 
@@ -83,18 +104,67 @@ namespace Cards.Gui
 
     private void CntCards_MouseUp(object sender, MouseEventArgs e)
     {
-      Move(_down, e.Location);
+      MoveCard(_down, e.Location);
     }
 
-    private void Move(Point from, Point to)
+    private ComboBox _txtEdit;
+    private ComboBox TxtEdit
+    {
+      get { return _txtEdit ?? (_txtEdit = InitEdit()); }
+    }
+    private ComboBox InitEdit()
+    {
+      ComboBox txt = new ComboBox();
+      txt.DropDownStyle = ComboBoxStyle.DropDownList;
+      txt.DrawMode = DrawMode.OwnerDrawVariable;
+      txt.DrawItem += Txt_DrawItem;
+      return txt;
+    }
+
+    private void Txt_DrawItem(object sender, DrawItemEventArgs e)
+    {
+      throw new NotImplementedException();
+    }
+
+    private void MoveCard(Point from, Point to)
     {
       if (CardsVm == null)
       { return; }
 
-      CardsVm.Move((double)from.X / CardWidth, (double)from.Y / CardHeight,
-        (double)to.X / CardWidth, (double)to.Y / CardHeight);
+      double fx = (double)from.X / CardWidth;
+      double fy = (double)from.Y / CardHeight;
+      double tx = (double)to.X / CardWidth;
+      double ty = (double)to.Y / CardHeight;
+
+      if (fx == tx && fy == ty)
+      {
+        CardPosition unknown = CardsVm.GetUnknownCard(fx, fy);
+        if (unknown != null)
+        {
+          ComboBox txt = TxtEdit;
+          if (!Controls.Contains(txt))
+          { Controls.Add(txt); }
+
+          EditVm vm = new EditVm();
+          txt.Top = (int)(unknown.Top * CardHeight);
+          txt.Left = (int)(unknown.Left * CardWidth);
+          txt.Width = CardWidth;
+          txt.Height = CardHeight;
+          txt.Visible = true;
+          txt.DataSource = vm.Cards;
+          return;
+        }
+      }
+
+      CardsVm.Move(fx, fy, tx, ty);
 
       Invalidate();
+    }
+
+    private class EditVm
+    {
+      private List<string> _suites = new List<string> { "H,E,K,S" };
+      public List<string> Cards { get { return _suites; } }
     }
   }
 }

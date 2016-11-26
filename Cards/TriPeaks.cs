@@ -103,7 +103,7 @@ namespace Cards
           index++;
           Position p = pair.Key;
           Card c = pair.Value;
-          if (c == null)
+          if (c == null || c.Suite == null)
           { continue; }
           bool visible = true;
           foreach (Position pre in p.Pres)
@@ -396,13 +396,13 @@ namespace Cards
       _cache = new Cache<Stand<Move>, TriPeaks>();
     }
 
-    public void Init()
+    public override List<Card> Init()
     {
       ColumnCount = 10;
-      Init(Suite.Suites, (int)DateTime.Now.Ticks);
+      return Init(Suite.Suites, (int)DateTime.Now.Ticks);
     }
 
-    public void Init(IEnumerable<Suite> suites, int seed)
+    public List<Card> Init(IEnumerable<Suite> suites, int seed)
     {
       if (System.Diagnostics.Debugger.IsAttached)
       { seed = -1061797517; }
@@ -419,6 +419,8 @@ namespace Cards
       List<Card> shuffled = Card.Shuffle(cards, r);
 
       Init(shuffled);
+
+      return shuffled;
     }
 
     private static List<Position> _startPos;
@@ -456,7 +458,7 @@ namespace Cards
         return _startPos;
       }
     }
-    public void Init(List<Card> cards)
+    public override void Init(List<Card> cards)
     {
       Positions = new Dictionary<Position, Card>();
       Stack = new List<Card>();
@@ -520,7 +522,9 @@ namespace Cards
       return clone;
     }
 
-    private TriPeaks Clone()
+    protected override GameBase CloneRaw()
+    { return Clone(); }
+    private new TriPeaks Clone()
     {
       TriPeaks clone = new TriPeaks();
       clone.ColumnCount = ColumnCount;

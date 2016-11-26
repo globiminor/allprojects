@@ -10,7 +10,53 @@ namespace Cards
   [DataContract]
   public abstract class GameBase
   {
+    public ShuffledCards ShuffledCards { get; private set; }
+    public string FileName { get; private set; }
+
     public abstract void Solve();
+    public abstract List<Card> Init();
+    public abstract void Init(List<Card> shuffledCards);
+    public GameBase Clone()
+    {
+      return CloneRaw();
+    }
+    protected abstract GameBase CloneRaw();
+
+    public GameBase CreateEmpty(string fileName)
+    {
+      GameBase empty = CloneRaw();
+      List<Card> cards = empty.Init();
+      Card.EmptyCards(cards);
+
+      empty.ShuffledCards = new ShuffledCards { Cards = cards };
+      empty.FileName = fileName;
+
+      return empty;
+    }
+  }
+
+  [DataContract]
+  public class ShuffledCards
+  {
+    public List<Card> Cards { get; set; }
+    [DataMember]
+    public List<string> CardCode
+    {
+      get
+      {
+        List<string> codes = new List<string>();
+        foreach (Card card in Cards)
+        { codes.Add(card.Code); }
+        return codes;
+      }
+      set
+      {
+        List<Card> cards = new List<Card>(value.Count);
+        foreach (string code in value)
+        { cards.Add(new Card(code)); }
+        Cards = cards;
+      }
+    }
   }
 
   public class StandArgs

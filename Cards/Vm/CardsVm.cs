@@ -126,7 +126,35 @@ namespace Cards.Vm
         }
         else
         {
-          throw new NotImplementedException(string.Format( "unhandled type {0}", game.GetType()));
+          throw new NotImplementedException(string.Format("unhandled type {0}", game.GetType()));
+        }
+      }
+    }
+
+    public void New(string fileName)
+    {
+      if (_game == null)
+      { return; }
+
+      DataContractSerializer ser = new DataContractSerializer(typeof(ShuffledCards));
+      using (Stream writer = new FileStream(fileName, FileMode.Create))
+      {
+        ser.WriteObject(writer, _game.CreateEmpty(fileName).ShuffledCards);
+      }
+
+      using (Stream reader = new FileStream(fileName, FileMode.Open))
+      {
+        ShuffledCards cards = (ShuffledCards)ser.ReadObject(reader);
+        GameBase game = _game.Clone();
+        game.Init(cards.Cards);
+
+        if (game is TriPeaks)
+        {
+          SetGame((TriPeaks)game);
+        }
+        else
+        {
+          throw new NotImplementedException(string.Format("unhandled type {0}", game.GetType()));
         }
       }
     }
@@ -246,6 +274,19 @@ namespace Cards.Vm
       { yield return card; }
     }
 
+    public CardPosition GetUnknownCard(double fx, double fy)
+    {
+      foreach (CardPosition pos in GetCardPositions())
+      {
+        if (!pos.Visible)
+        { continue; }
+        if (pos.Card.Suite != null)
+        { continue; }
+        if (pos.Left < fx && pos.Left + 1 > fx && pos.Top < fy && pos.Top + 1 > fy)
+        { return pos; }
+      }
+      return null;
+    }
     public bool Move(double fx, double fy, double tx, double ty)
     {
       if (Cards == null)
