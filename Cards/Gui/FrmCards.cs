@@ -164,6 +164,9 @@ namespace Cards.Gui
       }
 
       Vm.New(load);
+
+      Invalidate();
+      cntCards.Invalidate();
     }
   }
 }

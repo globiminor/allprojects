@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Runtime.Serialization;
 namespace Cards
 {
@@ -14,8 +16,54 @@ namespace Cards
     public string FileName { get; private set; }
 
     public abstract void Solve();
-    public abstract List<Card> Init();
-    public abstract void Init(List<Card> shuffledCards);
+
+    public abstract List<Card> GetDeck();
+    private int GetSeed()
+    {
+      if (System.Diagnostics.Debugger.IsAttached)
+      { return -1061797517; }
+      return (int)DateTime.Now.Ticks;
+    }
+
+    public void Save(string fileName = null)
+    {
+      fileName = fileName ?? FileName;
+      if (string.IsNullOrEmpty(fileName))
+      { return; }
+
+      DataContractSerializer ser = new DataContractSerializer(typeof(ShuffledCards));
+      using (Stream writer = new FileStream(fileName, FileMode.Create))
+      { ser.WriteObject(writer, ShuffledCards); }
+    }
+
+    public static ShuffledCards Load(string fileName)
+    {
+      DataContractSerializer ser = new DataContractSerializer(typeof(ShuffledCards));
+      using (Stream reader = new FileStream(fileName, FileMode.Open))
+      {
+        ShuffledCards cards = (ShuffledCards)ser.ReadObject(reader);
+        return cards;
+      }
+    }
+
+    public List<Card> Init(int? seed = null)
+    {
+      List<Card> cards = GetDeck();
+
+      int s = seed ?? GetSeed();
+      Random r = new Random(s);
+      List<Card> shuffled = Card.Shuffle(cards, r);
+
+      Init(shuffled, string.Format("# {0}", s));
+
+      return cards;
+    }
+    public void Init(ShuffledCards shuffledCards)
+    {
+      ShuffledCards = shuffledCards;
+      Init(shuffledCards.Cards, shuffledCards.Name);
+    }
+    public abstract void Init(List<Card> shuffledCards, string seed = null);
     public GameBase Clone()
     {
       return CloneRaw();
@@ -38,6 +86,9 @@ namespace Cards
   [DataContract]
   public class ShuffledCards
   {
+    [DataMember]
+    public string Name { get; set; }
+
     public List<Card> Cards { get; set; }
     [DataMember]
     public List<string> CardCode

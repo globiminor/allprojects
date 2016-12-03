@@ -396,31 +396,15 @@ namespace Cards
       _cache = new Cache<Stand<Move>, TriPeaks>();
     }
 
-    public override List<Card> Init()
+    public override List<Card> GetDeck()
     {
-      ColumnCount = 10;
-      return Init(Suite.Suites, (int)DateTime.Now.Ticks);
-    }
-
-    public List<Card> Init(IEnumerable<Suite> suites, int seed)
-    {
-      if (System.Diagnostics.Debugger.IsAttached)
-      { seed = -1061797517; }
-
-      Title = string.Format("Tri Peaks # {0}", seed);
       List<Card> cards = new List<Card>();
 
-      foreach (Suite suite in suites)
+      foreach (Suite suite in Suite.Suites)
       {
         cards.AddRange(suite.CreateCards());
       }
-
-      Random r = new Random(seed);
-      List<Card> shuffled = Card.Shuffle(cards, r);
-
-      Init(shuffled);
-
-      return shuffled;
+      return cards;
     }
 
     private static List<Position> _startPos;
@@ -458,8 +442,11 @@ namespace Cards
         return _startPos;
       }
     }
-    public override void Init(List<Card> cards)
+    public override void Init(List<Card> cards, string name = null)
     {
+      ColumnCount = 10;
+      Title = string.Format("Tri Peaks {0}", name);
+
       Positions = new Dictionary<Position, Card>();
       Stack = new List<Card>();
 

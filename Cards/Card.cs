@@ -20,6 +20,7 @@ namespace Cards
     {
       return new Card(UnknownSuite, UnknownHeight);
     }
+
     internal Card(string code)
     {
       Code = code;
@@ -33,7 +34,15 @@ namespace Cards
 
     public override string ToString()
     {
+      if (Suite == null)
+      { return "??"; }
       return string.Format("{0}{1}", Suite.Code, Height.Code);
+    }
+
+    public void Replace(Card newValues)
+    {
+      Suite = newValues.Suite;
+      Height = newValues.Height;
     }
 
     public int GetCardCode()
@@ -48,7 +57,8 @@ namespace Cards
     internal string Code
     {
       get { return ToString(); }
-      set {
+      set
+      {
         if (value.Length < 2)
         { throw new InvalidOperationException(value); }
         string suiteCode = value[0].ToString();
@@ -71,18 +81,27 @@ namespace Cards
       }
     }
 
+    public class CardComparer : IComparer<Card>
+    {
+      public int Compare(Card x, Card y)
+      { return Card.Compare(x, y); }
+    }
+
+    public static int Compare(Card x, Card y)
+    {
+      int d = x.Suite.Code.CompareTo(y.Suite.Code);
+      if (d != 0)
+      { return d; }
+
+      d = x.Height.H.CompareTo(y.Height.H);
+      return d;
+    }
     public bool EqualsCard(Card other)
     {
       if (other == null)
       { return false; }
 
-      if (Suite.Code != other.Suite.Code)
-      { return false; }
-
-      if (Height.H != other.Height.H)
-      { return false; }
-
-      return true;
+      return Compare(this, other) == 0;
     }
 
     public static void EmptyCards(List<Card> cards)
@@ -95,7 +114,7 @@ namespace Cards
     }
     public static List<Card> Shuffle(List<Card> cards, Random r = null)
     {
-      if (r == null) 
+      if (r == null)
       { r = new Random((int)DateTime.Now.Ticks); }
 
       List<int> randoms = new List<int>(cards.Count);

@@ -34,6 +34,8 @@ namespace Cards.Vm
       get { return _cards; }
       set { _cards = value; OnPropertyChanged(null); }
     }
+    public GameBase Game
+    { get { return _game; } }
 
     public string Title { get { return Cards.Title; } }
     public int Moves
@@ -136,27 +138,21 @@ namespace Cards.Vm
       if (_game == null)
       { return; }
 
-      DataContractSerializer ser = new DataContractSerializer(typeof(ShuffledCards));
-      using (Stream writer = new FileStream(fileName, FileMode.Create))
-      {
-        ser.WriteObject(writer, _game.CreateEmpty(fileName).ShuffledCards);
-      }
+      GameBase game = _game.CreateEmpty(fileName);
 
-      using (Stream reader = new FileStream(fileName, FileMode.Open))
-      {
-        ShuffledCards cards = (ShuffledCards)ser.ReadObject(reader);
-        GameBase game = _game.Clone();
-        game.Init(cards.Cards);
+      game.Save();
+      ShuffledCards cards = GameBase.Load(fileName);
 
-        if (game is TriPeaks)
-        {
-          SetGame((TriPeaks)game);
-        }
-        else
-        {
-          throw new NotImplementedException(string.Format("unhandled type {0}", game.GetType()));
-        }
+      game.Init(cards);
+
+      if (game is TriPeaks)
+      {
+        SetGame((TriPeaks)game);
       }
+      else
+      { throw new NotImplementedException(string.Format("unhandled type {0}", game.GetType())); }
+
+      OnPropertyChanged(null);
     }
 
     public void ToggleSolve()

@@ -61,13 +61,26 @@ namespace Grid.Processors
       }
     }
 
-    private class CulmLinePoint : ICulmPoint
+    private class FlatLinePoint : ICulmPoint
     { }
-    private class CulmBorderPoint : ICulmPoint
+    private class FlatBorderPoint : ICulmPoint
     { }
+    private class FlatArea : ITopoGeometry
+    {
+      private IMeshLine _init;
+      public FlatArea(IMeshLine init)
+      {
+        _init = init;
+      }
+      private List<ITopoPoint> _border;
+      public IList<ITopoPoint> Border { get { return _border ?? (_border = GetBorder()); } }
 
-    private class CulmEnd : ICulmPoint
-    { }
+      private List<ITopoPoint> GetBorder()
+      {
+        // TODO: init from _init;
+        throw new NotImplementedException();
+      }
+    }
 
     private class TileHandler
     {
@@ -176,11 +189,11 @@ namespace Grid.Processors
             if (isoLineNodes.Count == 1)
             {
               if (dhPos[0].Count == 1)
-              { return new CulmEnd(); }
+              { return new FlatLinePoint(); }
 
-              return new CulmBorderPoint();
+              return new FlatBorderPoint();
             }
-            return new CulmLinePoint();
+            return new FlatLinePoint();
           }
           if (isoLineNodes.Count == 2)
           { return null; }
@@ -200,10 +213,10 @@ namespace Grid.Processors
           if (isoLineNodes.Count == 1)
           {
             if (dhPos[0].Count == 1)
-            { return new CulmEnd(); }
-            return new CulmBorderPoint();
+            { return new FlatLinePoint(); }
+            return new FlatBorderPoint();
           }
-          return new CulmLinePoint();
+          return new FlatLinePoint();
         }
 
         if (isoLineNodes.Count > 1)
