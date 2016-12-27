@@ -479,7 +479,7 @@ namespace Basics.Geom
     {
       return this;
     }
-    System.Collections.IEnumerable IMultipartGeometry.Subparts()
+    IEnumerable<IGeometry> IMultipartGeometry.Subparts()
     { return Subparts(); }
 
     #endregion

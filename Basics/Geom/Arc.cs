@@ -474,7 +474,7 @@ namespace Basics.Geom
       { return null; }
       return new _SubpartsEnumerable(this);
     }
-    System.Collections.IEnumerable IMultipartGeometry.Subparts()
+    IEnumerable<IGeometry> IMultipartGeometry.Subparts()
     { return Subparts(); }
 
     private class _SubpartsEnumerator : IEnumerator<Arc>

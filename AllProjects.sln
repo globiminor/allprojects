@@ -40,6 +40,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dhm", "Dhm\Dhm.csproj", "{F
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cards", "Cards\Cards.csproj", "{6D94DA0A-69B9-4502-8D79-A0B9B18293CD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BasicsTest", "BasicsTest\BasicsTest.csproj", "{EE410E43-848B-41DD-8426-6D8CA43F9A57}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -176,6 +178,14 @@ Global
 		{6D94DA0A-69B9-4502-8D79-A0B9B18293CD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6D94DA0A-69B9-4502-8D79-A0B9B18293CD}.Release|x86.ActiveCfg = Release|Any CPU
 		{6D94DA0A-69B9-4502-8D79-A0B9B18293CD}.Release|x86.Build.0 = Release|Any CPU
+		{EE410E43-848B-41DD-8426-6D8CA43F9A57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE410E43-848B-41DD-8426-6D8CA43F9A57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE410E43-848B-41DD-8426-6D8CA43F9A57}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EE410E43-848B-41DD-8426-6D8CA43F9A57}.Debug|x86.Build.0 = Debug|Any CPU
+		{EE410E43-848B-41DD-8426-6D8CA43F9A57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE410E43-848B-41DD-8426-6D8CA43F9A57}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE410E43-848B-41DD-8426-6D8CA43F9A57}.Release|x86.ActiveCfg = Release|Any CPU
+		{EE410E43-848B-41DD-8426-6D8CA43F9A57}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

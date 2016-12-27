@@ -37,7 +37,7 @@ namespace Basics.Geom
   {
     bool IsContinuous { get; }
     bool HasSubparts { get; }
-    System.Collections.IEnumerable Subparts();
+    IEnumerable<IGeometry> Subparts();
   }
 
   public interface IPoint : IGeometry

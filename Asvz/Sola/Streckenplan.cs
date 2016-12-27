@@ -460,10 +460,10 @@ namespace Asvz.Sola
       }
 
       IBox box = point.Extent.Clone();
-      box.Min.X -= 800;
-      box.Min.Y -= 800;
-      box.Max.X += 800;
-      box.Max.Y += 800;
+      box.Min.X -= 700;
+      box.Min.Y -= 700;
+      box.Max.X += 700;
+      box.Max.Y += 700;
 
       foreach (Element e in _elemUeKreis)
       {

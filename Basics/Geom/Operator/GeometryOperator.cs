@@ -985,6 +985,78 @@ namespace Basics.Geom
 
     #endregion
 
+    public static IPoint ClosestPoint(IPoint p, IGeometry g)
+    {
+      if (IsMultipart(g))
+      {
+        IMultipartGeometry xMulti = (IMultipartGeometry)g;
+        return ClosestPoint(p, xMulti);
+      }
+      IParamGeometry pg = g as IParamGeometry;
+      if (pg == null)
+      { throw new InvalidOperationException("IGeometry is not of type " + typeof(IParamGeometry)); }
+
+      if (pg.IsWithin(p))
+      { return null; }
+
+      if (pg.IsLinear)
+      {
+        Gaga gaga = new Gaga(pg, null);
+        Axis a = gaga.OrthoSys.GetOrthogonal(p);
+        // TODO
+      }
+
+      return null;
+    }
+
+    private static IPoint ClosestPoint(IPoint p, IMultipartGeometry xMulti)
+    {
+      IPoint pMin = null;
+      double d2 = 0;
+      foreach (IGeometry part in xMulti.Subparts())
+      {
+        if (pMin == null)
+        {
+          pMin = ClosestPoint(p, part);
+          d2 = PntOp.Dist2(p, pMin);
+        }
+        else
+        {
+          IPoint pExtent = ClosestPoint(p, part.Extent);
+          if (PntOp.Dist2(pExtent, p) < d2)
+          {
+            IPoint pPart = ClosestPoint(p, part);
+            double dPart2 = PntOp.Dist2(pPart, p);
+
+            if (dPart2 < d2)
+            {
+              pMin = pPart;
+              d2 = dPart2;
+            }
+          }
+        }
+      }
+      return pMin;
+    }
+
+    public static IPoint ClosestPoint(IPoint p, IBox b)
+    {
+      int dim = Math.Min(p.Dimension, b.Dimension);
+      Point c = Point.Create(dim);
+      for (int i = 0; i < dim; i++)
+      {
+        double t;
+        if (p[i] < b.Min[i])
+        { t = b.Min[i]; }
+        else if (p[i] < b.Max[i])
+        { t = p[i]; }
+        else
+        { t = b.Max[i]; }
+        p[i] = t;
+      }
+      return p;
+    }
+
     public static bool Intersects(IGeometry x, IGeometry y)
     {
       TrackOperatorProgress track = new TrackOperatorProgress();
@@ -1006,7 +1078,7 @@ namespace Basics.Geom
 
     public static GeometryCollection Intersection(IGeometry x, IGeometry y)
     {
-      IList<ParamGeometryRelation> list = CreateRelations(x, y, null);
+      IList<ParamGeometryRelation> list = CreateRelations(x, y);
       if (list == null)
       { return null; }
 
@@ -1015,11 +1087,6 @@ namespace Basics.Geom
       { result.Add(rel.Intersection); }
 
       return result;
-    }
-
-    public static IList<ParamGeometryRelation> CreateRelations(IGeometry x, IGeometry y, TrackOperatorProgress track)
-    {
-      return CreateRelations(x, y, track, false);
     }
 
     /// <summary>
@@ -1033,7 +1100,7 @@ namespace Basics.Geom
     /// IParamGeom implementieren</param>
     /// <returns></returns>
     public static IList<ParamGeometryRelation> CreateRelations(
-      IGeometry x, IGeometry y, TrackOperatorProgress track, bool calcLinearized)
+      IGeometry x, IGeometry y, TrackOperatorProgress track = null, bool calcLinearized = false)
     {
       if (y.Topology > x.Topology)
       { return CreateRelations(y, x, track, calcLinearized); }
@@ -1136,8 +1203,8 @@ namespace Basics.Geom
     private static IList<ParamGeometryRelation> IntersectReduce(
       IGeometry x, IGeometry y, TrackOperatorProgress track, bool calcLinearized)
     {
-      if (!(x.Topology >= y.Topology)) throw new InvalidProgramException("Topology");
-      if (!(IsMultipart(x) == false)) throw new InvalidProgramException("multipart"); ;
+      if (!(x.Topology >= y.Topology)) throw new InvalidOperationException("Topology");
+      if (!(IsMultipart(x) == false)) throw new InvalidOperationException("multipart"); ;
 
       if (x.Topology < x.Dimension)
       {

@@ -3,6 +3,7 @@ using Basics.Geom.Process;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace Grid.Processors
 {
@@ -144,9 +145,8 @@ namespace Grid.Processors
           dzLines.AddLast(new LineDz(line));
         }
 
-        Dictionary<int, List<LinkedListNode<LineDz>>> dhPos =
-          new Dictionary<int, List<LinkedListNode<LineDz>>>();
-        List<LinkedListNode<LineDz>> isoLineNodes = new List<LinkedListNode<LineDz>>();
+        Dictionary<int, LineDzGroups> dhPos = new Dictionary<int, LineDzGroups>();
+        LineDzGroups isoLineNodes = new LineDzGroups();
         LinkedListNode<LineDz> preNode = dzLines.Last;
         for (LinkedListNode<LineDz> lineNode = dzLines.First; lineNode != null; lineNode = lineNode.Next)
         {
@@ -154,14 +154,19 @@ namespace Grid.Processors
 
           int dh = line.DzSign;
 
-          if (dh != preNode.Value.Dz && !isoLineNodes.Contains(preNode))
-          { isoLineNodes.Add(lineNode); }
+          if (dh != preNode.Value.DzSign && !isoLineNodes.Contains(preNode))
+          {
+            if (dh != 0)
+            { isoLineNodes.Add(preNode); }
+            else
+            { isoLineNodes.Add(lineNode); }
+          }
           preNode = lineNode;
 
-          List<LinkedListNode<LineDz>> dhLines;
+          LineDzGroups dhLines;
           if (!dhPos.TryGetValue(dh, out dhLines))
           {
-            dhLines = new List<LinkedListNode<LineDz>>();
+            dhLines = new LineDzGroups();
             dhPos.Add(dh, dhLines);
           }
           dhLines.Add(lineNode);
@@ -623,6 +628,31 @@ namespace Grid.Processors
         Iy = iy;
       }
     }
+
+    private class LineDzGroups : List<LinkedListNode<LineDz>>
+    {
+      public override string ToString()
+      {
+        int n = Count;
+        if (n <= 0)
+        { return base.ToString(); }
+
+        LinkedListNode<LineDz> pre = this[n - 1];
+        StringBuilder s = new StringBuilder();
+        foreach (LinkedListNode<LineDz> node in this)
+        {
+          if (pre == node.Previous)
+          { s.Append(";"); }
+          else
+          { s.Append("|"); }
+          s.AppendFormat("{0}", node.Value.ToString());
+
+          pre = node;
+        }
+        return s.ToString();
+      }
+    }
+
     private class GagaComparer : IComparer<GagaPoint>
     {
       public int Compare(GagaPoint x, GagaPoint y)

@@ -520,7 +520,7 @@ namespace Basics.Geom
     {
       return _segmentList;
     }
-    System.Collections.IEnumerable IMultipartGeometry.Subparts()
+    IEnumerable<IGeometry> IMultipartGeometry.Subparts()
     { return Subparts(); }
 
     #endregion

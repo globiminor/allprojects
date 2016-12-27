@@ -1,5 +1,5 @@
 
-using System.Collections;
+using System.Collections.Generic;
 
 namespace Basics.Geom
 {
@@ -98,7 +98,10 @@ namespace Basics.Geom
         return m.IsContinuous;
       }
     }
-    public IEnumerable Subparts()
+
+    IEnumerable<IGeometry> IMultipartGeometry.Subparts()
+    { return Subparts(); }
+    public IEnumerable<IMultipartGeometry> Subparts()
     {
       IMultipartGeometry m = _base as IMultipartGeometry;
       if (m == null)
