@@ -24,8 +24,8 @@ namespace Basics.Geom.Network
     {
       if (geom is IPoint)
       { return new NetPoint((IPoint)geom); }
-      else if (geom is Polyline)
-      { return new DirectedRow((Polyline)geom, false); }
+      else if (geom is ICurve)
+      { return new DirectedRow((ICurve)geom, false); }
       else
       { throw new ArgumentException("Invalid geometry type " + geom.GetType()); }
     }

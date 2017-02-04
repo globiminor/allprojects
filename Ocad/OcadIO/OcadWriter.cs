@@ -53,7 +53,7 @@ namespace Ocad
         element.IsGeometryProjected = false;
       }
 
-      ElementIndex idx = element.GetIndex();
+      ElementIndex idx = element.GetIndex(Reader);
       idx.Position = (int)_reader.BaseStream.Seek(0, SeekOrigin.End);
 
       if (!Reader.SeekIndex(index))
@@ -151,7 +151,7 @@ namespace Ocad
       { return -1; }
 
       Init();
-      ElementIndex index = element.GetIndex();
+      ElementIndex index = element.GetIndex(Reader);
 
       int pos = Append(element, index);
       return pos;
@@ -314,9 +314,9 @@ namespace Ocad
       Writer.Write((int)0); // reserved 4
     }
 
-    public void WriteSymData(SymbolData sym)
+    public void WriteSymData(SymbolData sym, FileParam fileParam)
     {
-      Writer.BaseStream.Seek(FileParam.HEADER_LENGTH, SeekOrigin.Begin);
+      Writer.BaseStream.Seek(fileParam.HEADER_LENGTH, SeekOrigin.Begin);
 
       Writer.Write((short)sym.ColorCount);
       Writer.Write((short)sym.ColorSeparationCount);
@@ -394,7 +394,7 @@ namespace Ocad
       data.FirstSymbolBlock = 0;
       data.FirstIndexBlock = 0;
 
-      data.SetupPosition = FileParam.HEADER_LENGTH + FileParam.SYM_BLOCK_LENGTH +
+      data.SetupPosition = data.HEADER_LENGTH + FileParam.SYM_BLOCK_LENGTH +
         FileParam.MAX_COLORS * FileParam.COLORINFO_LENGTH +
         FileParam.MAX_SEPS * FileParam.COLORSEP_LENGTH;
       data.SetupSize = 1348;
@@ -409,7 +409,7 @@ namespace Ocad
 
       WriteHeader(data);
 
-      WriteSymData(sym);
+      WriteSymData(sym, data);
 
       /* colors */
       for (i = 0; i < FileParam.MAX_COLORS; i++)
@@ -537,7 +537,7 @@ namespace Ocad
       base.Write(index);
 
       Writer.Write((int)index.Position);
-      Writer.Write((short)index.Length);
+      Writer.Write((short) index.Length);
       Writer.Write((short)index.Symbol);
     }
 
@@ -561,25 +561,12 @@ namespace Ocad
 
     protected override void WriteElementHeader(Element element)
     {
-      ElementV8 elem8 = element as ElementV8;
-      WriteElementSymbol(element.Symbol);
-      Writer.Write((byte)element.Type);
-      Writer.Write((byte)(element.UnicodeText ? 1 : 0));
-      Writer.Write((short)element.PointCount());
-      Writer.Write((short)element.TextCount());
-      Writer.Write((short)(element.Angle * 180 / Math.PI)); // 1 Degrees
-      Writer.Write((short)0);
-      if (elem8 != null)
-      { Writer.Write((int)elem8.ReservedHeight); }
-      else
-      { Writer.Write((int)0); }
-      for (int i = 0; i < 16; i++)
-      { Writer.Write(' '); }
+      OcdReader.WriteElementHeader(Writer, element);
     }
 
     protected override void WriteElementSymbol(int symbol)
     {
-      Writer.Write((short)symbol);
+      OcdReader.WriteElementSymbol(Writer, symbol);
     }
   }
   #endregion
@@ -879,46 +866,12 @@ namespace Ocad
 
     protected override void WriteElementHeader(Element element)
     {
-      ElementV9 elem9 = element as ElementV9;
-
-      WriteElementSymbol(element.Symbol);
-      Writer.Write((byte)element.Type);
-      Writer.Write((byte)0);
-
-      Writer.Write((short)(element.Angle * 1800 / Math.PI)); // 0.1 Degrees
-
-      Writer.Write((int)element.PointCount());
-      int nText = 0;
-      if (element.Text.Length > 0)
-      { nText = ElementV9.TextCount(element.Text) / 8; }
-      Writer.Write((short)nText);
-      Writer.Write((short)0); // reserved
-
-      if (elem9 != null)
-      {
-        Writer.Write((int)elem9.Color);
-        Writer.Write((short)elem9.LineWidth);
-        Writer.Write((short)elem9.Flags);
-      }
-      else
-      {
-        Writer.Write((int)0);
-        Writer.Write((short)0);
-        Writer.Write((short)0);
-      }
-
-      Writer.Write((double)0); // reserved
-      // OCAD 10
-      Writer.Write((byte)0); // mark
-      Writer.Write((byte)0); // reserved
-      Writer.Write((short)0); // reserved;
-      int heightMm = (int)(element.Height * 1000);
-      Writer.Write((int)heightMm); // reserved;
+      OcdReader.WriteElementHeader(Writer, element);
     }
 
     protected override void WriteElementSymbol(int symbol)
     {
-      Writer.Write((int)symbol);
+      OcdReader.WriteElementSymbol(Writer, symbol);
     }
 
     public void WriteSymbolStatus(Symbol.SymbolStatus status, int symbolStartPosition)

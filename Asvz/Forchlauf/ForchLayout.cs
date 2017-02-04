@@ -316,7 +316,7 @@ namespace Asvz.Forchlauf
 
     private Polyline ReducedStrecke(Polyline full, Polyline startClip)
     {
-      IList<ParamGeometryRelation> splits = GeometryOperator.CreateRelations(full, startClip, null);
+      IList<ParamGeometryRelation> splits = GeometryOperator.CreateRelations(full, startClip);
       if (splits != null && splits.Count > 0)
       {
         IList<Polyline> parts = full.Split(splits);

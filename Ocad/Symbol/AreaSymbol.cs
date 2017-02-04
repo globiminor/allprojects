@@ -12,9 +12,7 @@ namespace Ocad.Symbol
     private short _hatchAngle2;
     private bool _fillOn;
     private bool _borderOn;
-    private EStructMode _structMode;
     private short _structWidth;
-    private short _structHeight;
 
     public AreaSymbol(int symbol)
       : base(symbol)
@@ -25,6 +23,8 @@ namespace Ocad.Symbol
 
     public enum EStructMode
     { None = 0, Aligned = 1, Shifted = 2 }
+    public enum EStructDraw
+    { Clip = 0, FullWithin = 1, CenterWithin = 2, PartlyWithin = 3 }
 
     public int BorderSym
     {
@@ -86,11 +86,8 @@ namespace Ocad.Symbol
       set { _borderOn = value; }
     }
 
-    public EStructMode StructMode
-    {
-      get { return _structMode; }
-      set { _structMode = value; }
-    }
+    public EStructMode StructMode { get; set; }
+    public EStructDraw StructDraw { get; set; }
 
     public short StructWidth
     {
@@ -98,10 +95,11 @@ namespace Ocad.Symbol
       set { _structWidth = value; }
     }
 
-    public short StructHeight
-    {
-      get { return _structHeight; }
-      set { _structHeight = value; }
-    }
+    public short StructHeight { get; set; }
+
+    public short StructAngle { get; set; }
+    public byte StructIrregularVarX { get; set; }
+    public byte StructIrregularVarY { get; set; }
+    public short StructIrregularMinDist { get; set; }
   }
 }

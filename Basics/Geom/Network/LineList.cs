@@ -270,7 +270,7 @@ namespace Basics.Geom.Network
       Polyline border = new Polyline();
       foreach (DirectedRow pRow in _directedRows)
       {
-        Polyline nextPart = pRow.Line();
+        ICurve nextPart = pRow.Line();
         foreach (Curve c in nextPart.Segments)
         {
           border.Add(c);
@@ -298,7 +298,7 @@ namespace Basics.Geom.Network
       Polyline ring = new Polyline();
       foreach (DirectedRow pRow in _directedRows)
       {
-        Polyline nextPart = pRow.Line();
+        ICurve nextPart = pRow.Line();
         foreach (Curve c in nextPart.Segments)
         {
           ring.Add(c);

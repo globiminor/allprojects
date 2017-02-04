@@ -59,8 +59,15 @@
     <Compile Include="Element.cs" />
     <Compile Include="ElementIndex.cs" />
     <Compile Include="OcadElemsInfo.cs" />
-    <Compile Include="OcadReader.cs" />
-    <Compile Include="OcadWriter.cs" />
+    <Compile Include="OcadIO\FileParam.cs" />
+    <Compile Include="OcadIO\Ocad11Reader.cs" />
+    <Compile Include="OcadIO\Ocad12Reader.cs" />
+    <Compile Include="OcadIO\Ocad8Reader.cs" />
+    <Compile Include="OcadIO\Ocad9Reader.cs" />
+    <Compile Include="OcadIO\OcadReader.cs" />
+    <Compile Include="OcadIO\OcadWriter.cs" />
+    <Compile Include="OcadIO\StringIndexEventArgs.cs" />
+    <Compile Include="OcadIO\SymbolData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scripting\Enums.cs" />
     <Compile Include="Scripting\Node.cs" />

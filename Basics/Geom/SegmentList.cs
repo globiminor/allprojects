@@ -7,75 +7,6 @@ namespace Basics.Geom
   /// </summary>
   public class SegmentList : IEnumerable<Curve>
   {
-    #region nested classes
-    internal class _SegEnumerator : IEnumerator<Curve>
-    {
-      private Polyline _polyline;
-      private LinkedListNode<IPoint> _point;
-      private LinkedListNode<InnerCurve> _innerNode;
-      private InnerCurve _innerCurve;
-
-      private Curve _line;
-
-      public _SegEnumerator(Polyline polyline)
-      {
-        _polyline = polyline;
-        Reset();
-      }
-      #region IEnumerator Members
-
-      public void Dispose()
-      {  }
-
-      public void Reset()
-      {
-        _point = _polyline.Points.First;
-        _innerNode = null;
-
-        if (_polyline.InnerCurves != null)
-        {
-          _innerNode = _polyline.InnerCurves.First;
-          _innerCurve = _innerNode.Value; 
-        }
-      }
-
-      public Curve Current
-      {
-        get
-        { return _line; }
-      }
-      object System.Collections.IEnumerator.Current
-			{ get { return Current; } }
-
-      public bool MoveNext()
-      {
-        if (_point == null)
-        { return false; }
-        if (_point.Next == null)
-        { return false; }
-
-        _line = Curve.Create(_point.Value, _point.Next.Value, _innerCurve);
-
-        // prepare next value
-        _point = _point.Next;
-        if (_innerNode != null)
-        {
-          _innerNode = _innerNode.Next;
-          if (_innerNode != null)
-          { _innerCurve = _innerNode.Value; }
-          else
-          { System.Diagnostics.Debug.Assert(_point.Next == null); }
-        }
-
-        return true;
-      }
-
-      #endregion
-
-    }
-
-    #endregion nested classes
-
     private Polyline _polyline;
 
     public SegmentList(Polyline polyline)
@@ -116,7 +47,7 @@ namespace Basics.Geom
         InnerCurve ic = null;
         if (c != null)
         { ic = c.Value; }
-        return Curve.Create(p0.Value,p0.Next.Value,ic);
+        return Curve.Create(p0.Value, p0.Next.Value, ic);
       }
     }
     public Curve Last
@@ -130,15 +61,28 @@ namespace Basics.Geom
       }
     }
 
-    #region IEnumerable Members
 
+    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+    { return GetEnumerator(); }
     public IEnumerator<Curve> GetEnumerator()
     {
-      return new _SegEnumerator(_polyline);
-    }
-    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{ return GetEnumerator(); }
+      LinkedListNode<InnerCurve> innerNode = null;
+      InnerCurve innerCurve = null;
+      if (_polyline.InnerCurves != null)
+      {
+        innerNode = _polyline.InnerCurves.First;
+        innerCurve = innerNode.Value;
+      }
 
-    #endregion
+      for (LinkedListNode<IPoint> pointNode = _polyline.Points.First; pointNode.Next != null; pointNode = pointNode.Next)
+      {
+        if (innerNode != null)
+        { innerCurve = innerNode.Value; }
+        yield return Curve.Create(pointNode.Value, pointNode.Next.Value, innerCurve);
+
+        if (innerNode != null)
+        { innerNode = innerNode.Next; }
+      }
+    }
   }
 }

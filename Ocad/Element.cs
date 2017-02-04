@@ -126,14 +126,13 @@ namespace Ocad
       : base(isGeometryProjected)
     { }
 
-    public override ElementIndex GetIndex()
+    public override ElementIndex GetIndex(OcadReader reader)
     {
       ElementIndex index = new ElementIndex(Geometry.Extent);
 
       index.Symbol = Symbol;
-      int nText = TextCount();
 
-      index.Length = 40 + 8 * PointCount() + nText;
+      index.CalcElementLength(reader, this);
 
       index.ObjectType = (short)Type;
       index.Status = 1;
@@ -189,12 +188,12 @@ namespace Ocad
       { mdReservedHeight = value; }
     }
 
-    public override ElementIndex GetIndex()
+    public override ElementIndex GetIndex(OcadReader reader)
     {
       ElementIndex index = new ElementIndex(Geometry.Extent);
 
       index.Symbol = Symbol;
-      index.Length = PointCount() + TextCount();
+      index.CalcElementLength(reader, this);
 
       index.ObjectType = (short)Type;
       index.Status = 1;
@@ -328,9 +327,11 @@ namespace Ocad
     public IGeometry Geometry
     {
       [System.Diagnostics.DebuggerStepThrough]
-      get { return _geometry; }
+      get
+      { return _geometry; }
       [System.Diagnostics.DebuggerStepThrough]
-      set { _geometry = value; }
+      set
+      { _geometry = value; }
     }
 
     public string Text
@@ -351,6 +352,21 @@ namespace Ocad
       set { _height = value; }
     }
 
+    public int ServerObjectId { get; set; }
+    private DateTime? _creationDate;
+    public DateTime CreationDate
+    {
+      get { return _creationDate ?? (_creationDate = DateTime.Now).Value; }
+      set { _creationDate = value; }
+    }
+    private DateTime? _modifyDate;
+    public DateTime ModificationDate
+    {
+      get { return _modifyDate ?? (_creationDate = CreationDate).Value; }
+      set { _modifyDate = value; }
+    }
+    public int MultirepresenationId { get; set; }
+
     public override string ToString()
     {
       string s = string.Format(
@@ -369,7 +385,7 @@ namespace Ocad
       return s;
     }
 
-    public abstract ElementIndex GetIndex();
+    public abstract ElementIndex GetIndex(OcadReader reader);
 
     public static explicit operator Symbol.SymbolGraphics(Element element)
     {

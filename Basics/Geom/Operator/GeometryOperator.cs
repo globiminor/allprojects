@@ -153,24 +153,22 @@ namespace Basics.Geom
 
     private class ParamInfo
     {
-      private IParamGeometry _geometry;
+      private readonly IRelParamGeometry _paramGeom;
       private IPoint _min;
       private IPoint _delta;
       private SortedList<IPoint, IPoint> _pointsAt;
 
-      public ParamInfo(IParamGeometry geometry)
+      public ParamInfo(IRelParamGeometry paraGeom)
       {
-        _geometry = geometry;
+        _paramGeom = paraGeom;
       }
 
-      public IParamGeometry BaseGeometry
-      {
-        get { return _geometry; }
-      }
+      public IRelParamGeometry BaseGeometry
+      { get { return _paramGeom; } }
 
       public int Topology
       {
-        get { return _geometry.Topology; }
+        get { return _paramGeom.Topology; }
       }
 
       /// <summary>
@@ -188,7 +186,7 @@ namespace Basics.Geom
         if (_pointsAt.TryGetValue(param, out pointAt) == false)
         {
           IPoint paramAt = GeometryParamAt(param);
-          pointAt = _geometry.PointAt(paramAt);
+          pointAt = _paramGeom.PointAt(paramAt);
           _pointsAt.Add(param, pointAt);
         }
 
@@ -200,7 +198,7 @@ namespace Basics.Geom
         get
         {
           if (_min == null)
-          { _min = _geometry.ParameterRange.Min; }
+          { _min = _paramGeom.ParameterRange.Min; }
           return _min;
         }
       }
@@ -209,7 +207,7 @@ namespace Basics.Geom
         get
         {
           if (_delta == null)
-          { _delta = PntOp.Sub(_geometry.ParameterRange.Max, Min); }
+          { _delta = PntOp.Sub(_paramGeom.ParameterRange.Max, Min); }
           return _delta;
         }
       }
@@ -702,7 +700,7 @@ namespace Basics.Geom
           OrthogonalSystem xSys = XSystem(xGeom, xParam, xBox, xAt);
 
           IList<IPoint> yApprox;
-          ITangentParamGeometry yTan = yGeom as ITangentParamGeometry;
+          ITangentGeometry yTan = yGeom as ITangentGeometry;
           if (yTan != null)
           {
             yApprox = yTan.TangentAt(yParam);
@@ -796,7 +794,7 @@ namespace Basics.Geom
       private static OrthogonalSystem XSystem(IParamGeometry xGeom, IPoint xParam, IBox xBox, IPoint xAt)
       {
         IList<IPoint> xApprox;
-        ITangentParamGeometry xTan = xGeom as ITangentParamGeometry;
+        ITangentGeometry xTan = xGeom as ITangentGeometry;
         OrthogonalSystem xSys = null;
         if (xTan != null)
         {
@@ -992,9 +990,9 @@ namespace Basics.Geom
         IMultipartGeometry xMulti = (IMultipartGeometry)g;
         return ClosestPoint(p, xMulti);
       }
-      IParamGeometry pg = g as IParamGeometry;
+      IRelParamGeometry pg = g as IRelParamGeometry;
       if (pg == null)
-      { throw new InvalidOperationException("IGeometry is not of type " + typeof(IParamGeometry)); }
+      { throw new InvalidOperationException("IGeometry is not of type " + typeof(IRelParamGeometry)); }
 
       if (pg.IsWithin(p))
       { return null; }
@@ -1204,30 +1202,30 @@ namespace Basics.Geom
       IGeometry x, IGeometry y, TrackOperatorProgress track, bool calcLinearized)
     {
       if (!(x.Topology >= y.Topology)) throw new InvalidOperationException("Topology");
-      if (!(IsMultipart(x) == false)) throw new InvalidOperationException("multipart"); ;
+      if (!(IsMultipart(x) == false)) throw new InvalidOperationException("multipart");
 
       if (x.Topology < x.Dimension)
       {
         if (IsMultipart(y))
         { return MpRelations(y, x, track); }
 
-        IParamGeometry xParam = x as IParamGeometry;
+        IRelParamGeometry xParam = x as IRelParamGeometry;
         if (xParam == null && x is IBox)
         { xParam = new ParamBox((IBox)x); }
 
-        IParamGeometry yParam = y as IParamGeometry;
+        IRelParamGeometry yParam = y as IRelParamGeometry;
         if (yParam == null && y is IBox)
         { yParam = new ParamBox((IBox)y); }
 
         if (xParam == null || yParam == null)
         {
           throw new NotImplementedException("Base geometry parts are not typeof " +
-          typeof(IParamGeometry));
+          typeof(IRelParamGeometry));
         }
 
         if (calcLinearized)
         {
-          IList<ParamGeometryRelation> list = CreateRelations(xParam, yParam, track);
+          IList<ParamGeometryRelation> list = CreateRelParamRelations(xParam, yParam, track);
           return list;
         }
 
@@ -1292,7 +1290,7 @@ namespace Basics.Geom
       return multi != null && multi.HasSubparts;
     }
 
-    private class ParamBox : ITangentParamGeometry
+    private class ParamBox : IRelTanParamGeometry
     {
       private IBox _box;
       private IBox _paramRange;
@@ -1384,6 +1382,10 @@ namespace Basics.Geom
       public IList<ParamGeometryRelation> CreateRelations(IParamGeometry other,
         TrackOperatorProgress trackProgress)
       {
+        IRelParamGeometry relOther = other as IRelParamGeometry;
+        if (relOther != null)
+        { return GeometryOperator.CreateRelParamRelations(this, relOther, trackProgress); }
+
         return GeometryOperator.CreateRelations(this, other, trackProgress);
       }
 
@@ -1409,7 +1411,7 @@ namespace Basics.Geom
       { return _box == other; }
     }
 
-    private static IList<ParamGeometryRelation> CreateRelations(IParamGeometry x, IParamGeometry y,
+    private static IList<ParamGeometryRelation> CreateRelParamRelations(IRelParamGeometry x, IRelParamGeometry y,
       TrackOperatorProgress track)
     {
       ParamInfo xInfo = new ParamInfo(x);
@@ -1481,7 +1483,7 @@ namespace Basics.Geom
 
     private class Gaga
     {
-      private IParamGeometry _geom;
+      private readonly IRelParamGeometry _geom;
       private IBox _paramRange;
       private IBox _extent;
 
@@ -1491,12 +1493,12 @@ namespace Basics.Geom
       private IList<IPoint> _axes;
       private IPoint _origin;
 
-      public Gaga(IParamGeometry geom, object x)
+      public Gaga(IRelParamGeometry geom, IRelationGeometry rel)
       {
         _geom = geom;
       }
 
-      private Gaga(IParamGeometry geom, IBox paramRange, IBox extent)
+      private Gaga(IRelParamGeometry geom, IBox paramRange, IBox extent)
       {
         _geom = geom;
         _paramRange = paramRange;
@@ -1561,7 +1563,7 @@ namespace Basics.Geom
         }
       }
 
-      public IParamGeometry BaseGeom
+      public IRelParamGeometry BaseGeom
       {
         get { return _geom; }
       }
@@ -1885,7 +1887,7 @@ namespace Basics.Geom
     }
     [Obsolete("make private")]
     public static IList<ParamGeometryRelation> CreateRelations1(
-      IParamGeometry x, IParamGeometry y, TrackOperatorProgress track)
+      IRelParamGeometry x, IRelParamGeometry y, TrackOperatorProgress track)
     {
       List<ParamGeometryRelation> result = null;
 

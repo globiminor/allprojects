@@ -6,7 +6,7 @@ namespace Basics.Geom
   /// <summary>
   /// Summary description for Line2D.
   /// </summary>
-  public class Polyline : Geometry, IMultipartGeometry
+  public class Polyline : Geometry, IMultipartGeometry, ICurve
   {
     private readonly LinkedList<IPoint> _pointList;
     private readonly SegmentList _segmentList;
@@ -28,6 +28,36 @@ namespace Basics.Geom
       return p;
     }
 
+    IBox IParamGeometry.ParameterRange
+    {
+      get
+      {
+        Point min = Point.Create(1);
+        Point max = Point.Create(1);
+        min[0] = 0;
+        max[0] = Points.Count - 1;
+        return new Box(min, max);
+      }
+    }
+    IPoint IParamGeometry.PointAt(IPoint parameters)
+    {
+      double at = parameters[0];
+      int iSeg = (int)at;
+      if (iSeg >= Points.Count - 1)
+      { iSeg--; }
+
+      return Segments[iSeg].PointAt(at - iSeg);
+    }
+    IList<IPoint> ITangentGeometry.TangentAt(IPoint parameters)
+    {
+      double at = parameters[0];
+      int iSeg = (int)at;
+      if (iSeg >= Points.Count - 1)
+      { iSeg--; }
+
+      return new[] { Segments[iSeg].TangentAt(at - iSeg) };
+    }
+
     private void AddRange<T>(IEnumerable<T> pointList) where T : IPoint
     {
       foreach (T point in pointList)
@@ -41,10 +71,11 @@ namespace Basics.Geom
       { return _innerCurveList; }
     }
 
+    IEnumerable<Curve> ICurve.Segments
+    { get { return Segments; } }
     public SegmentList Segments
     {
-      get
-      { return _segmentList; }
+      get { return _segmentList; }
     }
 
     public void Add(IPoint point)
@@ -611,6 +642,8 @@ namespace Basics.Geom
       return poly;
     }
 
+    ICurve ICurve.Invert()
+    { return Invert(); }
     public Polyline Invert()
     {
       Polyline invert = new Polyline();

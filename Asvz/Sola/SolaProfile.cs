@@ -20,14 +20,12 @@ namespace Asvz.Sola
     {
       string sText;
 
-      Ocad9Writer writer;
       string dir = Path.GetDirectoryName(result);
       if (Directory.Exists(dir) == false)
       { Directory.CreateDirectory(dir); }
       File.Copy(template, result, true);
 
-      writer = Ocad9Writer.AppendTo(result);
-      try
+      using (Ocad9Writer writer = Ocad9Writer.AppendTo(result))
       {
 
         Ocad9Reader pTemplate = (Ocad9Reader)OcadReader.Open(template);
@@ -83,9 +81,6 @@ namespace Asvz.Sola
         WriteLayout(writer, sumDist);
         WriteParams(writer, sumDist);
       }
-      finally
-      { writer.Close(); }
     }
-
   }
 }

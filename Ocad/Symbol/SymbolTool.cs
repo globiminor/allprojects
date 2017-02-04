@@ -9,6 +9,8 @@ namespace Ocad.Symbol
     LineRectangle = 4,
     AreaRectangle = 5,
     Straight = 6,
-    Freehand = 7
+    Freehand = 7,
+    Numeric = 8,
+    Stairway = 9
   }
 }

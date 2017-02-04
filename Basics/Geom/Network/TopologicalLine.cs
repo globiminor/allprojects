@@ -5,12 +5,10 @@ namespace Basics.Geom.Network
 {
   public class TopologicalLine
   {
-    private Polyline _line;
+    private ICurve _line;
 
-    private bool _fromAngleKnown;
-    private double _fromAngle;
-    private bool _toAngleKnown;
-    private double _toAngle;
+    private double? _fromAngle;
+    private double? _toAngle;
 
     private LineListPolygon _leftPoly;
     private LineListPolygon _rightPoly;
@@ -21,62 +19,57 @@ namespace Basics.Geom.Network
     private MaxCode _maxCode = 0;
     private double _yMax;
 
-    internal enum MaxCode { 
-      StartMax = -2, 
-      ClockWise = -1, 
-      Unknown = 0, 
+    internal enum MaxCode
+    {
+      StartMax = -2,
+      ClockWise = -1,
+      Unknown = 0,
       CounterClockWise = 1,
-      EndMax = 2 
+      EndMax = 2
     }
 
-    public TopologicalLine(Polyline line)
+    public TopologicalLine(ICurve line)
     {
       _line = line;
     }
 
-    public Polyline Line
+    public ICurve Line
     {
       get { return _line; }
     }
 
     public IPoint FromPoint
     {
-      get { return _line.Points.First.Value; }
+      get { return _line.PointAt(_line.ParameterRange.Min); }
     }
 
     public IPoint ToPoint
     {
-      get { return _line.Points.Last.Value; }
+      get { return _line.PointAt(_line.ParameterRange.Max); }
     }
 
     public double FromAngle
     {
       get
       {
-        if (_fromAngleKnown == false)
+        if (!_fromAngle.HasValue)
         {
-          IPoint t0 = _line.Segments.First.TangentAt(0);
-
+          IPoint t0 = _line.TangentAt(_line.ParameterRange.Min)[0];
           _fromAngle = Math.Atan2(t0.Y, t0.X);
-          _fromAngleKnown = true;
         }
-
-        return _fromAngle;
+        return _fromAngle.Value;
       }
     }
     public double ToAngle
     {
       get
       {
-        if (_toAngleKnown == false)
+        if (!_toAngle.HasValue)
         {
-          IPoint t0 = _line.Segments.Last.TangentAt(1);
-
+          IPoint t0 = _line.TangentAt(_line.ParameterRange.Max)[0];
           _toAngle = Math.Atan2(-t0.Y, -t0.X);
-          _toAngleKnown = true;
         }
-
-        return _toAngle;
+        return _toAngle.Value;
       }
     }
 
@@ -125,47 +118,59 @@ namespace Basics.Geom.Network
       box.Max.X = xMax + 1;
       box.Min.X = xMax;
 
-      LinkedListNode<IPoint> n = _line.Points.First;
-      while (n.Value.X < xMax) // TODO select box
+      Curve pre = null;
+      Curve at = null;
+      Curve next = null;
+      foreach (Curve seg in _line.Segments)
       {
-        n = n.Next;
+        if (at != null)
+        {
+          next = seg;
+          break;
+        }
+        if (seg.Extent.Max.X == xMax)
+        {
+          at = seg;
+          continue;
+        }
+        pre = seg;
       }
-
-      LinkedListNode<IPoint> n_ = n.Previous;
-      if (n_ == null)
+      if (pre == null && at.PointAt(0).X == xMax)
       {
         _maxCode = MaxCode.StartMax;
         return _maxCode;
       }
-      LinkedListNode<IPoint> n1 = n.Next;
-      if (n1 == null)
+      if (next == null && at.PointAt(1).X == xMax)
       {
         _maxCode = MaxCode.EndMax;
         return _maxCode;
       }
 
-      IPoint p;
-
-      p = n.Value;
-      xMax = p.X;
-      _yMax = p.Y;
-
-
-      p = n_.Value;
-      double dx0 = p.X - xMax;
-      double dy0 = p.Y - _yMax;
-
-      p = n1.Value;
-      double dx1 = p.X - xMax;
-      double dy1 = p.Y - _yMax;
-
-      int sign = Math.Sign(dx0 * dy1 - dy0 * dx1);
-      if (sign < 0)
-      {
-        _maxCode = MaxCode.ClockWise;
+      if (at.PointAt(1).X == xMax)   // if all curves are linear, and in several other cases
+      {  
+        Point atTan = at.TangentAt(1);
+        Point nextTan = next.TangentAt(0);
+        double p = PointOperator.VectorProduct(atTan, nextTan);
+        int sign = Math.Sign(p);
+        if (sign < 0)
+        { _maxCode = MaxCode.ClockWise; }
+        else if (sign > 0)
+        { _maxCode = MaxCode.CounterClockWise; }
+        else if (atTan.Y > 0)
+        { _maxCode = MaxCode.CounterClockWise; }
+        else
+        { _maxCode = MaxCode.ClockWise; }
       }
       else
-      { _maxCode = MaxCode.CounterClockWise; }
+      {
+        IRelParamGeometry g = at;
+        IBox range = g.ParameterRange;
+        IPoint s = g.PointAt(range.Min);
+        IPoint e = g.PointAt(range.Max);
+
+        throw new NotImplementedException();
+        //g.NormedMaxOffset;
+      }
 
       return _maxCode;
     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Text;
 
 namespace Ocad.Scripting
@@ -27,7 +28,7 @@ namespace Ocad.Scripting
       RunScript(script, exe);
     }
 
-    private static void RunScript(string script, string exe)
+    private static void RunScript(string script, string exe, bool setAccess = true)
     {
       if (exe == null)
       {
@@ -41,7 +42,26 @@ namespace Ocad.Scripting
       proc.Start();
 
       proc.WaitForExit();
+
+      SetAccessControl(Environment.CurrentDirectory);
     }
+
+    private static void SetAccessControl(string dir)
+    {
+      foreach (string path in Directory.GetDirectories(dir))
+      {
+        SetAccessControl(path);
+      }
+      foreach (string path in Directory.GetFiles(dir))
+      {
+        FileSecurity sec = File.GetAccessControl(path);
+        FileSystemAccessRule access_rule = new FileSystemAccessRule(@"Benutzer",
+            FileSystemRights.FullControl, AccessControlType.Allow);
+        sec.AddAccessRule(access_rule);
+        File.SetAccessControl(path, sec);
+      }
+    }
+
 
     private static string CreatePdfScript(IEnumerable<string> files, string script)
     {

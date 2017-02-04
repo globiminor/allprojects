@@ -62,7 +62,7 @@ namespace Asvz.Sola
       _elemStrecke = new List<Element>();
     }
 
-    public void Update(Kategorie kat)
+    public void Update(Kategorie kat, bool updateStartZiel)
     {
       bool verkuerzt = (kat == Kategorie.Damen);
 
@@ -79,26 +79,30 @@ namespace Asvz.Sola
 
       try
       {
+        List<int> delElems;
         if (verkuerzt)
         {
-          writer.DeleteElements(new[]
-          { 
-            SymS.Verkuerzt, SymS.Laufrichtung, SymS.VorherNachher, 
-            SymS.UebergabeTeil, SymS.ZielTeil, 
+          delElems = new List<int>
+          {
+            SymS.Verkuerzt, SymS.Laufrichtung, SymS.VorherNachher,
             SymS.TextStrecke, SymS.TextInfo,
             SymS.Verpflegung, SymS.LinieBreit
-          });
+          };
         }
         else
         {
-          writer.DeleteElements(new[]
-          { 
+          delElems = new List<int>
+          {
             SymS.Strecke, SymS.Verkuerzt, SymS.Laufrichtung, SymS.VorherNachher,
-            SymS.UebergabeTeil, SymS.ZielTeil, 
             SymS.TextStrecke, SymS.TextInfo, SymS.KmStrich, SymS.TextKm,
             SymS.Verpflegung, SymS.LinieBreit
-          });
+          };
         }
+        if (updateStartZiel)
+        { delElems.AddRange(new[] { SymS.UebergabeTeil, SymS.ZielTeil }); }
+
+
+        writer.DeleteElements(delElems);
 
         bool first = true;
         foreach (SolaCategorie cat in _data.Strecken[_iStrecke - 1].Categories)
@@ -113,8 +117,8 @@ namespace Asvz.Sola
           writer.Append(pElem);
 
           WriteKm(writer, cat, _kmTxtSymbol, _templateSetup, !first);
-          WriteUe(writer, cat.Strecke.Points.First.Value, _streckePre, -1);
-          WriteUe(writer, cat.Strecke.Points.Last.Value, _streckeNext, 0);
+          WriteUe(writer, cat.Strecke.Points.First.Value, _streckePre, -1, updateStartZiel);
+          WriteUe(writer, cat.Strecke.Points.Last.Value, _streckeNext, 0, updateStartZiel);
 
           WriteInfo(writer, cat.Typ);
           first = false;
@@ -124,10 +128,10 @@ namespace Asvz.Sola
 
         writer.SymbolsSetState(null, Ocad.Symbol.SymbolStatus.Hidden);
         writer.SymbolsSetState(new[] {
-          SymS.TextUebergabe, SymS.TextInfo, SymS.TextStreckeNr, 
+          SymS.TextUebergabe, SymS.TextInfo, SymS.TextStreckeNr,
           SymS.Verpflegung, SymS.VorherNachher, SymS.LinieBreit,
           SymS.Nordpfeil }, Ocad.Symbol.SymbolStatus.Normal);
-        writer.SymbolsSetState(new[] { 
+        writer.SymbolsSetState(new[] {
           SymS.UebergabeTeil, SymS.ZielTeil, SymS.Strecke, SymS.Verkuerzt,
           SymS.TextKm, SymS.KmStrich }, Ocad.Symbol.SymbolStatus.Protected);
       }
@@ -151,9 +155,9 @@ namespace Asvz.Sola
 
       try
       {
-        writer.DeleteElements(new[] { 
-          SymS.RahmenText, SymS.TextStreckeNr, 
-          SymS.BoxStreckeNr, SymS.RahmenStrecke, 
+        writer.DeleteElements(new[] {
+          SymS.RahmenText, SymS.TextStreckeNr,
+          SymS.BoxStreckeNr, SymS.RahmenStrecke,
           SymS.TextBewilligung, SymS.TextBewilligungVoid});
 
         List<Element> infoElements = AdaptText(writer, setup, _elemInfo, _infoSymbol);
@@ -177,16 +181,16 @@ namespace Asvz.Sola
         { _templateSetup = orig; }
 
         writer.SymbolsSetState(null, Ocad.Symbol.SymbolStatus.Hidden);
-        writer.SymbolsSetState(new[] { 
-          SymS.TextUebergabe, SymS.RahmenText, SymS.TextInfo, 
-          SymS.TextStreckeNr, SymS.BoxStreckeNr, SymS.RahmenStrecke, 
+        writer.SymbolsSetState(new[] {
+          SymS.TextUebergabe, SymS.RahmenText, SymS.TextInfo,
+          SymS.TextStreckeNr, SymS.BoxStreckeNr, SymS.RahmenStrecke,
           SymS.Verpflegung, SymS.VorherNachher, SymS.LinieBreit, SymS.Nordpfeil,
           SymS.UebergabeTeil, SymS.ZielTeil, SymS.Strecke, SymS.Verkuerzt,
           SymS.TextKm, SymS.KmStrich, SymS.TextBewilligung }, Ocad.Symbol.SymbolStatus.Protected);
 
         if (plantyp == Plantyp.Begleiter)
         {
-          writer.SymbolsSetState(new[] { 
+          writer.SymbolsSetState(new[] {
             SymS.Sanitaet, SymS.SanitaetPfeil, SymS.SanitaetText, SymS.Treffpunkt, SymS.Treffpunkt,
             SymS.TreffpunktText, SymS.StreckenHinweis, SymS.AchtungPfeil,
             SymS.AchtungZeichen}, Ocad.Symbol.SymbolStatus.Protected);
@@ -346,7 +350,7 @@ namespace Asvz.Sola
       writer.Append(elem);
 
       elem = new ElementV9(false);
-      elem.Geometry = Polyline.Create(new [] { new Point2D(p0.X, p0.Y), new Point2D(p0.X + dx, p0.Y) });
+      elem.Geometry = Polyline.Create(new[] { new Point2D(p0.X, p0.Y), new Point2D(p0.X + dx, p0.Y) });
       elem.Symbol = -2;
       elem.LineWidth = _symStrecke.LineWidth;
       elem.Color = topRed.Number;
@@ -363,7 +367,7 @@ namespace Asvz.Sola
       double y0 = p0.Y - 0.3 * dy;
       elem = new ElementV9(false);
       elem.Geometry = new Area(
-        Polyline.Create(new [] { new Point2D(x0, y0), new Point2D(x1, y0),
+        Polyline.Create(new[] { new Point2D(x0, y0), new Point2D(x1, y0),
         new Point2D(x1, y1), new Point2D(x0, y1), new Point2D(x0, y0)}));
       elem.Symbol = SymS.RahmenStrecke;
       elem.Type = GeomType.area;
@@ -429,7 +433,7 @@ namespace Asvz.Sola
       }
     }
 
-    private void WriteUe(OcadWriter writer, IPoint point, Polyline strecke, int iPoint)
+    private void WriteUe(OcadWriter writer, IPoint point, Polyline strecke, int iPoint, bool updateStartZiel)
     {
       Element pElem;
       if (strecke != null)
@@ -445,7 +449,7 @@ namespace Asvz.Sola
         Arc arc = new Arc(p, 800, 0, 2 * Math.PI);
 
         IList<ParamGeometryRelation> intersects =
-          GeometryOperator.CreateRelations(strecke, arc, null);
+          GeometryOperator.CreateRelations(strecke, arc);
         IList<Polyline> parts = strecke.Split(intersects);
         if (iPoint == 0)
         { strecke = parts[0]; }
@@ -459,32 +463,35 @@ namespace Asvz.Sola
         writer.Append(pElem);
       }
 
-      IBox box = point.Extent.Clone();
-      box.Min.X -= 700;
-      box.Min.Y -= 700;
-      box.Max.X += 700;
-      box.Max.Y += 700;
+      if (updateStartZiel)
+      {
+        IBox box = point.Extent.Clone();
+        box.Min.X -= 700;
+        box.Min.Y -= 700;
+        box.Max.X += 700;
+        box.Max.Y += 700;
 
-      foreach (Element e in _elemUeKreis)
-      {
-        if (e.Geometry.Extent.Intersects(box))
+        foreach (Element e in _elemUeKreis)
         {
-          pElem = new ElementV9(true);
-          pElem.Geometry = e.Geometry;
-          pElem.Symbol = SymS.UebergabeTeil;
-          pElem.Type = GeomType.line;
-          writer.Append(pElem);
+          if (e.Geometry.Extent.Intersects(box))
+          {
+            pElem = new ElementV9(true);
+            pElem.Geometry = e.Geometry;
+            pElem.Symbol = SymS.UebergabeTeil;
+            pElem.Type = GeomType.line;
+            writer.Append(pElem);
+          }
         }
-      }
-      foreach (Element e in _elemUeZiel)
-      {
-        if (e.Geometry.Extent.Intersects(box))
+        foreach (Element e in _elemUeZiel)
         {
-          pElem = new ElementV9(true);
-          pElem.Geometry = e.Geometry;
-          pElem.Symbol = SymS.ZielTeil;
-          pElem.Type = GeomType.line;
-          writer.Append(pElem);
+          if (e.Geometry.Extent.Intersects(box))
+          {
+            pElem = new ElementV9(true);
+            pElem.Geometry = e.Geometry;
+            pElem.Symbol = SymS.ZielTeil;
+            pElem.Type = GeomType.line;
+            writer.Append(pElem);
+          }
         }
       }
     }

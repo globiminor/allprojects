@@ -4,10 +4,12 @@ using System.Diagnostics;
 
 namespace Basics.Geom
 {
-  /// <summary>
-  /// Summary description for LineBase.
-  /// </summary>
-  public abstract class Curve : Geometry, ITangentParamGeometry
+  public interface ICurve : ITanParamGeometry
+  {
+    ICurve Invert();
+    IEnumerable<Curve> Segments { get; }
+  }
+  public abstract class Curve : Geometry, ICurve, IRelTanParamGeometry
   {
     public class GeometryEquality : IEqualityComparer<Curve>
     {
@@ -31,6 +33,9 @@ namespace Basics.Geom
       _paramBox = new Box(min, max);
     }
 
+    IEnumerable<Curve> ICurve.Segments
+    { get { yield return this; } }
+
     public enum CurveAtType
     { Parameter, Distance }
 
@@ -53,7 +58,7 @@ namespace Basics.Geom
       {
         double d2 = offset * offset;
 
-        ITangentParamGeometry paramGeom = this;
+        IRelationGeometry paramGeom = this;
         double normed = paramGeom.NormedMaxOffset;
         double l2 = Point.Sub(End, Start).OrigDist2();
         if (normed * normed * l2 > d2)
@@ -93,7 +98,7 @@ namespace Basics.Geom
     IBox IParamGeometry.ParameterRange
     { get { return _paramBox; } }
 
-    ParamRelate IParamGeometry.Relation(IBox paramRange)
+    ParamRelate IRelationGeometry.Relation(IBox paramRange)
     {
       double min = paramRange.Min[0];
       double max = paramRange.Max[0];
@@ -149,7 +154,7 @@ namespace Basics.Geom
 
     public abstract bool IsLinear { get; }
 
-    double IParamGeometry.NormedMaxOffset
+    double IRelationGeometry.NormedMaxOffset
     { get { return NormedMaxOffsetCore; } }
     protected abstract double NormedMaxOffsetCore { get; }
 
@@ -157,7 +162,7 @@ namespace Basics.Geom
     {
       return PointAt(param[0]);
     }
-    IList<IPoint> ITangentParamGeometry.TangentAt(IPoint param)
+    IList<IPoint> ITangentGeometry.TangentAt(IPoint param)
     {
       return new IPoint[] { TangentAt(param[0]) };
     }
@@ -470,8 +475,10 @@ namespace Basics.Geom
       { return innerCurve.Complete(start, end); }
     }
 
+    ICurve ICurve.Invert() { return Invert(); }
     public Curve Invert()
     { return Invert_(); }
+
     protected abstract Curve Invert_();
   }
 

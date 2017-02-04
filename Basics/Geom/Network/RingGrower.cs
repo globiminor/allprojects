@@ -7,12 +7,12 @@ namespace Basics.Geom.Network
 
   public class RingGrower
   {
-    private IComparer<Polyline> _comparer;
+    private IComparer<ICurve> _comparer;
 
     private class DirectedRowComparer : IComparer<DirectedRow>
     {
-      IComparer<Polyline> _subComparer;
-      public DirectedRowComparer(IComparer<Polyline> subComparer)
+      IComparer<ICurve> _subComparer;
+      public DirectedRowComparer(IComparer<ICurve> subComparer)
       {
         _subComparer = subComparer;
       }
@@ -35,7 +35,7 @@ namespace Basics.Geom.Network
 
     public event GeometryCompletedEventHandler<RingGrower> GeometryCompleted;
 
-    public RingGrower(IComparer<Polyline> comparer)
+    public RingGrower(IComparer<ICurve> comparer)
     {
       _comparer = comparer;
       DirectedRowComparer cmp = new DirectedRowComparer(_comparer);
@@ -181,11 +181,12 @@ namespace Basics.Geom.Network
       return insideList;
     }
 
-    private List<DirectedRow> DirectedRows(IPoint point,
-      IEnumerable<Polyline> intersects, Polyline mainRow)
+    private List<DirectedRow> DirectedRows<TCurve>(IPoint point,
+      IEnumerable<TCurve> intersects, ICurve mainRow)
+      where TCurve : ICurve
     {
       List<TopologicalLine> tList = new List<TopologicalLine>();
-      foreach (Polyline row in intersects)
+      foreach (ICurve row in intersects)
       {
         if (mainRow != null && _comparer.Compare(mainRow, row) > 0)
         { return null; }
@@ -212,8 +213,9 @@ namespace Basics.Geom.Network
       { dirList.Sort(new DirectedRow.RowByLineAngleComparer()); }
     }
 
-    public IList<DirectedRow> SortedDirectedRows(IPoint point,
-      IEnumerable<Polyline> pIntersects, Polyline mainRow)
+    public IList<DirectedRow> SortedDirectedRows<TCurve>(IPoint point,
+      IEnumerable<TCurve> pIntersects, TCurve mainRow)
+      where TCurve: ICurve
     {
       List<DirectedRow> dirList = DirectedRows(point, pIntersects, mainRow);
 

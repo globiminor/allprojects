@@ -18,7 +18,7 @@ namespace Basics.Geom.Network
     private bool _isBackward;
     private TopologicalLine _topologicalLine;
 
-    public DirectedRow(Polyline line, bool isBackward)
+    public DirectedRow(ICurve line, bool isBackward)
     {
       _isBackward = isBackward;
       _topologicalLine = new TopologicalLine(line);
@@ -94,9 +94,9 @@ namespace Basics.Geom.Network
       return new DirectedRow(_topologicalLine, !_isBackward);
     }
 
-    public Polyline Line()
+    public ICurve Line()
     {
-      Polyline line;
+      ICurve line;
       if (_isBackward)
       { line = _topologicalLine.Line.Invert(); }
       else

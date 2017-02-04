@@ -1,4 +1,5 @@
 ﻿using Basics.Geom;
+using Basics.Geom.Network;
 using Basics.Geom.Process;
 using System;
 using System.Collections.Generic;
@@ -40,6 +41,7 @@ namespace Grid.Processors
     { }
     private interface ITopoPoint : ITopoGeometry
     {
+      IList<TopoLine> IsoLines { get; }
     }
     private interface ITopoLine : ITopoGeometry
     {
@@ -49,23 +51,83 @@ namespace Grid.Processors
     private interface ICulmLine
     { }
 
+    private class TopoPoint : ITopoPoint
+    {
+      private readonly IList<TopoLine> _lines;
+      public TopoPoint(IList<TopoLine> lines)
+      { _lines = lines; }
+
+      public IList<TopoLine> IsoLines { get { return _lines; } }
+
+      public static TopoPoint Create(LineDzNodes isoLineNodes)
+      {
+        List<TopoLine> lines = new List<TopoLine>(isoLineNodes.Count);
+        foreach (LinkedListNode<LineDz> node in isoLineNodes)
+        {
+          TopoLine line;
+          if (node.Value.DzSign != 0)
+          { line = new TopoLine(node.Value.Line, false); }
+          else
+          {
+            IMeshLine meshLine = node.Value.Line;
+            if (meshLine.GetPreviousTriLine() == null || meshLine.GetNextTriLine() == null)
+            { line = new TopoLine(meshLine, true); }
+            else
+            {
+              int pre = node.Previous.Value.DzSign;
+              int next = node.Next.Value.DzSign;
+              if (pre == 0 || next == 0 || pre == next)
+              { line = new TopoLine(meshLine, true); }
+              else
+              { line = new TopoLine(meshLine, false); }
+            }
+          }
+          lines.Add(line);
+        }
+
+        return new TopoPoint(lines);
+      }
+    }
+
+    private class TopoLine : ITopoLine
+    {
+      private readonly IMeshLine _line;
+      private readonly bool _isFlat;
+      public TopoLine(IMeshLine line, bool isFlat)
+      {
+        _line = line;
+        _isFlat = isFlat;
+      }
+
+      public IMeshLine MeshLine { get { return _line; } }
+      public bool IsFlat { get { return _isFlat; } }
+    }
+
+    [Obsolete]
     private class SaddlePoint : ITopoPoint
     {
+      IList<TopoLine> ITopoPoint.IsoLines { get { return null; } }
     }
     private class CulmPoint : ICulmPoint
     {
       private IMeshLine _start;
 
       public CulmPoint(IMeshLine start)
-      {
-        _start = start;
-      }
+      { _start = start; }
+
+      IList<TopoLine> ITopoPoint.IsoLines { get { return null; } }
     }
 
+    [Obsolete]
     private class FlatLinePoint : ICulmPoint
-    { }
+    {
+      IList<TopoLine> ITopoPoint.IsoLines { get { return null; } }
+    }
+    [Obsolete]
     private class FlatBorderPoint : ICulmPoint
-    { }
+    {
+      IList<TopoLine> ITopoPoint.IsoLines { get { return null; } }
+    }
     private class FlatArea : ITopoGeometry
     {
       private IMeshLine _init;
@@ -116,23 +178,91 @@ namespace Grid.Processors
         _topoPoints = new Dictionary<IPoint, ITopoPoint>(new PointComparer());
       }
 
+      private RingGrower _ringGrower;
       public void ProcessPoints()
       {
+        List<ITopoPoint> topoPoints = new List<ITopoPoint>();
         foreach (IMeshLine start in _mesh.Points)
         {
           ITopoPoint topoPt;
 
           // ProcessPoint(start);
 
-          if (!_topoPoints.TryGetValue(start.Start, out topoPt))
-          {
-            topoPt = InitTopoPt(start);
-            if (topoPt == null)
-            { continue; }
+          topoPt = InitTopoPt(start);
+          if (topoPt == null)
+          { continue; }
 
-            _topoPoints.Add(start.Start, topoPt);
+          _topoPoints.Add(start.Start, topoPt);
+        }
+
+        foreach (ITopoPoint topo in topoPoints)
+        {
+          List<DirectedRow> dirRows = new List<DirectedRow>();
+          foreach (TopoLine line in topo.IsoLines)
+          {
+            DirectedRow r;
+            if (line.IsFlat)
+            {
+              Polyline l = Polyline.Create(new[] { line.MeshLine.Start, line.MeshLine.End });
+              TopologicalLine tl = new TopologicalLine(l);
+              r = new DirectedRow(tl, isBackward: false);
+            }
+            else
+            {
+              double h0 = line.MeshLine.Start.Z;
+              double h1 = line.MeshLine.End.Z;
+              double h2 = line.MeshLine.GetPreviousTriLine().Start.Z;
+              double f = (h0 - h1) / (h2 - h1);
+              Polyline l = MeshUtils.GetContour(line.MeshLine, f, _mesh.LineComparer);
+              TopologicalLine tl = new TopologicalLine(l);
+              r = new DirectedRow(tl, isBackward: false);
+            }
+            dirRows.Add(r);
           }
 
+          DirectedRow pre = dirRows.Last();
+          foreach (DirectedRow line in dirRows)
+          {
+            _ringGrower.Add(pre.Reverse(), line);
+            pre = line;
+          }
+
+        }
+      }
+
+      private void Process(ITopoPoint topoPt)
+      {
+        if (topoPt.IsoLines != null && topoPt.IsoLines.Count > 0)
+        {
+          List<DirectedRow> dirRows = new List<DirectedRow>(topoPt.IsoLines.Count);
+          foreach (TopoLine line in topoPt.IsoLines)
+          {
+            DirectedRow r;
+            if (line.IsFlat)
+            {
+              Polyline l = Polyline.Create(new[] { line.MeshLine.Start, line.MeshLine.End });
+              TopologicalLine tl = new TopologicalLine(l);
+              r = new DirectedRow(tl, isBackward: false);
+            }
+            else
+            {
+              double h0 = line.MeshLine.Start.Z;
+              double h1 = line.MeshLine.End.Z;
+              double h2 = line.MeshLine.GetPreviousTriLine().Start.Z;
+              double f = (h0 - h1) / (h2 - h1);
+              Polyline l = MeshUtils.GetContour(line.MeshLine, f, _mesh.LineComparer);
+              TopologicalLine tl = new TopologicalLine(l);
+              r = new DirectedRow(tl, isBackward: false);
+            }
+            dirRows.Add(r);
+          }
+
+          DirectedRow pre = dirRows.Last();
+          foreach (DirectedRow line in dirRows)
+          {
+            _ringGrower.Add(pre.Reverse(), line);
+            pre = line;
+          }
         }
       }
 
@@ -145,8 +275,8 @@ namespace Grid.Processors
           dzLines.AddLast(new LineDz(line));
         }
 
-        Dictionary<int, LineDzGroups> dhPos = new Dictionary<int, LineDzGroups>();
-        LineDzGroups isoLineNodes = new LineDzGroups();
+        Dictionary<int, LineDzNodes> dhPos = new Dictionary<int, LineDzNodes>();
+        LineDzNodes isoLineNodes = new LineDzNodes();
         LinkedListNode<LineDz> preNode = dzLines.Last;
         for (LinkedListNode<LineDz> lineNode = dzLines.First; lineNode != null; lineNode = lineNode.Next)
         {
@@ -163,10 +293,10 @@ namespace Grid.Processors
           }
           preNode = lineNode;
 
-          LineDzGroups dhLines;
+          LineDzNodes dhLines;
           if (!dhPos.TryGetValue(dh, out dhLines))
           {
-            dhLines = new LineDzGroups();
+            dhLines = new LineDzNodes();
             dhPos.Add(dh, dhLines);
           }
           dhLines.Add(lineNode);
@@ -191,19 +321,12 @@ namespace Grid.Processors
         {
           if (dhPos.Count == 2 && dhPos.ContainsKey(0))
           {
-            if (isoLineNodes.Count == 1)
-            {
-              if (dhPos[0].Count == 1)
-              { return new FlatLinePoint(); }
-
-              return new FlatBorderPoint();
-            }
-            return new FlatLinePoint();
+            return TopoPoint.Create(isoLineNodes);
           }
           if (isoLineNodes.Count == 2)
           { return null; }
 
-          return new SaddlePoint();
+          return TopoPoint.Create(isoLineNodes);
         }
 
         if (dhPos.Count == 2)
@@ -215,22 +338,16 @@ namespace Grid.Processors
 
         if (dhPos.Count == 3 && dhPos.ContainsKey(0))
         {
-          if (isoLineNodes.Count == 1)
-          {
-            if (dhPos[0].Count == 1)
-            { return new FlatLinePoint(); }
-            return new FlatBorderPoint();
-          }
-          return new FlatLinePoint();
+          return TopoPoint.Create(isoLineNodes);
         }
 
         if (isoLineNodes.Count > 1)
-        { return new SaddlePoint(); }
+        { return TopoPoint.Create(isoLineNodes); }
 
         Point d = _center - start.Start;
         double de = Math.Abs(d.X) + Math.Abs(d.Y);
         if (Math.Abs(_diag - de) < 1e-6)
-        { return new SaddlePoint(); }
+        { return TopoPoint.Create(isoLineNodes); }
 
         return null;
       }
@@ -629,7 +746,7 @@ namespace Grid.Processors
       }
     }
 
-    private class LineDzGroups : List<LinkedListNode<LineDz>>
+    private class LineDzNodes : List<LinkedListNode<LineDz>>
     {
       public override string ToString()
       {

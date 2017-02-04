@@ -279,14 +279,14 @@ namespace Asvz.Sola
       if (_strecke > 0)
       {
         streckeEnd = _streckenList[_strecke - 1].GetCategorie(Kategorie.Default).Strecke;
-        pEnd = GeometryOperator.CreateRelations(symBorder, streckeEnd, null);
+        pEnd = GeometryOperator.CreateRelations(symBorder, streckeEnd);
         Trace.Assert(pEnd != null);
       }
 
       if (_strecke < _streckenList.Count)
       {
         streckeStart = _streckenList[_strecke].GetCategorie(Kategorie.Default).Strecke;
-        pStart = GeometryOperator.CreateRelations(symBorder, streckeStart, null);
+        pStart = GeometryOperator.CreateRelations(symBorder, streckeStart);
         Trace.Assert(pStart != null);
       }
 
@@ -310,7 +310,7 @@ namespace Asvz.Sola
       {
         cutBorder = pEnd[pEnd.Count - 1];
         circle = Circle(centerEnd, Radius(_symUeCircle));
-        IList<ParamGeometryRelation> pList = GeometryOperator.CreateRelations(streckeEnd, circle, null);
+        IList<ParamGeometryRelation> pList = GeometryOperator.CreateRelations(streckeEnd, circle);
         cutCircle = pList[pList.Count - 1];
         partEnd = streckeEnd.Split(new[] { cutBorder, cutCircle })[1];
       }
@@ -321,7 +321,7 @@ namespace Asvz.Sola
         if (centerStart != centerEnd)
         { circle = Circle(centerStart, Radius(_symUeNeustart)); }
 
-        IList<ParamGeometryRelation> pList = GeometryOperator.CreateRelations(streckeStart, circle, null);
+        IList<ParamGeometryRelation> pList = GeometryOperator.CreateRelations(streckeStart, circle);
         cutCircle = pList[0];
         partStart = streckeStart.Split(new[] { cutCircle, cutBorder })[1];
       }

@@ -55,6 +55,9 @@ namespace Asvz
     private Button _btnBegleit;
     private TextBox _txtBegleit;
     private Button _btnGpx;
+    private ToolTip ttp;
+    private System.ComponentModel.IContainer components;
+    private CheckBox chkStartZiel;
 
     /// <summary>
     /// Required designer variable.
@@ -103,6 +106,7 @@ namespace Asvz
     /// </summary>
     private void InitializeComponent()
     {
+      this.components = new System.ComponentModel.Container();
       System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WdgStart));
       this._btnGetClipboard = new System.Windows.Forms.Button();
       this._lblFormat = new System.Windows.Forms.Label();
@@ -135,6 +139,7 @@ namespace Asvz
       this._btnKml = new System.Windows.Forms.Button();
       this._grpUebergabe = new System.Windows.Forms.GroupBox();
       this._grpStrecke = new System.Windows.Forms.GroupBox();
+      this.chkStartZiel = new System.Windows.Forms.CheckBox();
       this._btnBegleit = new System.Windows.Forms.Button();
       this._txtBegleit = new System.Windows.Forms.TextBox();
       this._grpGesamt = new System.Windows.Forms.GroupBox();
@@ -142,12 +147,13 @@ namespace Asvz
       this._btnTestForch = new System.Windows.Forms.Button();
       this._btnTestDuo = new System.Windows.Forms.Button();
       this._btnGpx = new System.Windows.Forms.Button();
+      this.ttp = new System.Windows.Forms.ToolTip(this.components);
       this._grpUebergabe.SuspendLayout();
       this._grpStrecke.SuspendLayout();
       this._grpGesamt.SuspendLayout();
       this.SuspendLayout();
       // 
-      // btnGetClipboard
+      // _btnGetClipboard
       // 
       this._btnGetClipboard.Location = new System.Drawing.Point(16, 48);
       this._btnGetClipboard.Name = "_btnGetClipboard";
@@ -156,7 +162,7 @@ namespace Asvz
       this._btnGetClipboard.Text = "Make hole";
       this._btnGetClipboard.Click += new System.EventHandler(this.btnGetClipboard_Click);
       // 
-      // lblFormat
+      // _lblFormat
       // 
       this._lblFormat.Location = new System.Drawing.Point(8, 397);
       this._lblFormat.Name = "_lblFormat";
@@ -164,7 +170,7 @@ namespace Asvz
       this._lblFormat.TabIndex = 1;
       this._lblFormat.Text = "Format";
       // 
-      // toSymbol
+      // _toSymbol
       // 
       this._toSymbol.Location = new System.Drawing.Point(16, 80);
       this._toSymbol.Name = "_toSymbol";
@@ -173,7 +179,7 @@ namespace Asvz
       this._toSymbol.Text = "Object To Symbol";
       this._toSymbol.Click += new System.EventHandler(this.toSymbol_Click);
       // 
-      // btnClip
+      // _btnClip
       // 
       this._btnClip.Location = new System.Drawing.Point(16, 16);
       this._btnClip.Name = "_btnClip";
@@ -182,7 +188,7 @@ namespace Asvz
       this._btnClip.Text = "Clip";
       this._btnClip.Click += new System.EventHandler(this.btnClip_Click);
       // 
-      // btnCreate
+      // _btnCreate
       // 
       this._btnCreate.Location = new System.Drawing.Point(9, 97);
       this._btnCreate.Name = "_btnCreate";
@@ -191,7 +197,7 @@ namespace Asvz
       this._btnCreate.Text = "Profil";
       this._btnCreate.Click += new System.EventHandler(this.btnCreate_Click);
       // 
-      // txtCreate
+      // _txtCreate
       // 
       this._txtCreate.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -201,11 +207,11 @@ namespace Asvz
       this._txtCreate.TabIndex = 5;
       this._txtCreate.Text = "OCAD Vorlagen\\sola10k.ocd";
       // 
-      // dlgOpen
+      // _dlgOpen
       // 
       this._dlgOpen.Filter = "OCAD files|*.ocd";
       // 
-      // btnOpen
+      // _btnOpen
       // 
       this._btnOpen.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
       this._btnOpen.Location = new System.Drawing.Point(445, 16);
@@ -215,7 +221,7 @@ namespace Asvz
       this._btnOpen.Text = "...";
       this._btnOpen.Click += new System.EventHandler(this.btnOpen_Click);
       // 
-      // btnTest
+      // _btnTest
       // 
       this._btnTest.Location = new System.Drawing.Point(16, 126);
       this._btnTest.Name = "_btnTest";
@@ -224,7 +230,7 @@ namespace Asvz
       this._btnTest.Text = "Test";
       this._btnTest.Click += new System.EventHandler(this.btnTest_Click);
       // 
-      // btnUebergabe
+      // _btnUebergabe
       // 
       this._btnUebergabe.Location = new System.Drawing.Point(9, 19);
       this._btnUebergabe.Name = "_btnUebergabe";
@@ -233,7 +239,7 @@ namespace Asvz
       this._btnUebergabe.Text = "Übergabe";
       this._btnUebergabe.Click += new System.EventHandler(this.btnUebergabe_Click);
       // 
-      // txtStrecke
+      // _txtStrecke
       // 
       this._txtStrecke.Location = new System.Drawing.Point(192, 48);
       this._txtStrecke.Name = "_txtStrecke";
@@ -243,7 +249,7 @@ namespace Asvz
       this._txtStrecke.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
       this._txtStrecke.TextChanged += new System.EventHandler(this.txtStrecke_TextChanged);
       // 
-      // label1
+      // _label1
       // 
       this._label1.Location = new System.Drawing.Point(109, 52);
       this._label1.Name = "_label1";
@@ -251,7 +257,7 @@ namespace Asvz
       this._label1.TabIndex = 10;
       this._label1.Text = "Strecke";
       // 
-      // btnDetail
+      // _btnDetail
       // 
       this._btnDetail.Location = new System.Drawing.Point(9, 49);
       this._btnDetail.Name = "_btnDetail";
@@ -260,7 +266,7 @@ namespace Asvz
       this._btnDetail.Text = "Detail";
       this._btnDetail.Click += new System.EventHandler(this.btnDetail_Click);
       // 
-      // txtUebergabe
+      // _txtUebergabe
       // 
       this._txtUebergabe.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -270,7 +276,7 @@ namespace Asvz
       this._txtUebergabe.TabIndex = 12;
       this._txtUebergabe.Text = "Exp_Uebergabe";
       // 
-      // txtDetail
+      // _txtDetail
       // 
       this._txtDetail.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -280,14 +286,14 @@ namespace Asvz
       this._txtDetail.TabIndex = 13;
       this._txtDetail.Text = "Exp_Detail";
       // 
-      // txtDetNr
+      // _txtDetNr
       // 
       this._txtDetNr.Location = new System.Drawing.Point(87, 78);
       this._txtDetNr.Name = "_txtDetNr";
       this._txtDetNr.Size = new System.Drawing.Size(32, 20);
       this._txtDetNr.TabIndex = 14;
       // 
-      // txtBis
+      // _txtBis
       // 
       this._txtBis.Location = new System.Drawing.Point(256, 48);
       this._txtBis.Name = "_txtBis";
@@ -296,7 +302,7 @@ namespace Asvz
       this._txtBis.Text = "1";
       this._txtBis.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
       // 
-      // chkDistance
+      // _chkDistance
       // 
       this._chkDistance.Checked = true;
       this._chkDistance.CheckState = System.Windows.Forms.CheckState.Checked;
@@ -306,7 +312,7 @@ namespace Asvz
       this._chkDistance.TabIndex = 16;
       this._chkDistance.Text = "Totaldistanz";
       // 
-      // btnFull
+      // _btnFull
       // 
       this._btnFull.Location = new System.Drawing.Point(9, 19);
       this._btnFull.Name = "_btnFull";
@@ -315,16 +321,17 @@ namespace Asvz
       this._btnFull.Text = "Gesamtplan";
       this._btnFull.Click += new System.EventHandler(this.btnFull_Click);
       // 
-      // btnStrecke
+      // _btnStrecke
       // 
       this._btnStrecke.Location = new System.Drawing.Point(9, 13);
       this._btnStrecke.Name = "_btnStrecke";
       this._btnStrecke.Size = new System.Drawing.Size(115, 26);
       this._btnStrecke.TabIndex = 18;
       this._btnStrecke.Text = "Strecke aufdatieren";
+      this.ttp.SetToolTip(this._btnStrecke, "Strecke aus Gesamtplan übernehmen");
       this._btnStrecke.Click += new System.EventHandler(this.btnStrecke_Click);
       // 
-      // btnStreckeExp
+      // _btnStreckeExp
       // 
       this._btnStreckeExp.Location = new System.Drawing.Point(9, 45);
       this._btnStreckeExp.Name = "_btnStreckeExp";
@@ -333,7 +340,7 @@ namespace Asvz
       this._btnStreckeExp.Text = "Strecke exportieren";
       this._btnStreckeExp.Click += new System.EventHandler(this.btnStreckeExp_Click);
       // 
-      // txtExpStrecke
+      // _txtExpStrecke
       // 
       this._txtExpStrecke.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -343,15 +350,16 @@ namespace Asvz
       this._txtExpStrecke.TabIndex = 20;
       this._txtExpStrecke.Text = "Exp_Strecke";
       // 
-      // chkDamen
+      // _chkDamen
       // 
-      this._chkDamen.Location = new System.Drawing.Point(266, 15);
+      this._chkDamen.AutoSize = true;
+      this._chkDamen.Location = new System.Drawing.Point(130, 19);
       this._chkDamen.Name = "_chkDamen";
-      this._chkDamen.Size = new System.Drawing.Size(88, 24);
+      this._chkDamen.Size = new System.Drawing.Size(60, 17);
       this._chkDamen.TabIndex = 21;
       this._chkDamen.Text = "Damen";
       // 
-      // txtTransport
+      // _txtTransport
       // 
       this._txtTransport.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -361,7 +369,7 @@ namespace Asvz
       this._txtTransport.TabIndex = 23;
       this._txtTransport.Text = "Exp_Transport";
       // 
-      // btnTransport
+      // _btnTransport
       // 
       this._btnTransport.Location = new System.Drawing.Point(9, 101);
       this._btnTransport.Name = "_btnTransport";
@@ -370,7 +378,7 @@ namespace Asvz
       this._btnTransport.Text = "Transport";
       this._btnTransport.Click += new System.EventHandler(this.btnTransport_Click);
       // 
-      // btnEinsatz
+      // _btnEinsatz
       // 
       this._btnEinsatz.Location = new System.Drawing.Point(9, 48);
       this._btnEinsatz.Name = "_btnEinsatz";
@@ -379,7 +387,7 @@ namespace Asvz
       this._btnEinsatz.Text = "Einsatzplan";
       this._btnEinsatz.Click += new System.EventHandler(this.btnEinsatz_Click);
       // 
-      // txtBewilligung
+      // _txtBewilligung
       // 
       this._txtBewilligung.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -388,7 +396,7 @@ namespace Asvz
       this._txtBewilligung.Size = new System.Drawing.Size(270, 20);
       this._txtBewilligung.TabIndex = 25;
       // 
-      // dtLaufdatum
+      // _dtLaufdatum
       // 
       this._dtLaufdatum.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -397,7 +405,7 @@ namespace Asvz
       this._dtLaufdatum.Size = new System.Drawing.Size(270, 20);
       this._dtLaufdatum.TabIndex = 26;
       // 
-      // btnKml
+      // _btnKml
       // 
       this._btnKml.Location = new System.Drawing.Point(112, 494);
       this._btnKml.Name = "_btnKml";
@@ -406,7 +414,7 @@ namespace Asvz
       this._btnKml.Text = "Kml";
       this._btnKml.Click += new System.EventHandler(this.btnKml_Click);
       // 
-      // grpUebergabe
+      // _grpUebergabe
       // 
       this._grpUebergabe.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -424,10 +432,11 @@ namespace Asvz
       this._grpUebergabe.TabStop = false;
       this._grpUebergabe.Text = "Übergabestellen";
       // 
-      // grpStrecke
+      // _grpStrecke
       // 
       this._grpStrecke.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
+      this._grpStrecke.Controls.Add(this.chkStartZiel);
       this._grpStrecke.Controls.Add(this._btnBegleit);
       this._grpStrecke.Controls.Add(this._txtBegleit);
       this._grpStrecke.Controls.Add(this._btnCreate);
@@ -443,7 +452,17 @@ namespace Asvz
       this._grpStrecke.TabStop = false;
       this._grpStrecke.Text = "Strecke";
       // 
-      // btnBegleit
+      // chkStartZiel
+      // 
+      this.chkStartZiel.AutoSize = true;
+      this.chkStartZiel.Location = new System.Drawing.Point(206, 19);
+      this.chkStartZiel.Name = "chkStartZiel";
+      this.chkStartZiel.Size = new System.Drawing.Size(70, 17);
+      this.chkStartZiel.TabIndex = 24;
+      this.chkStartZiel.Text = "Start/Ziel";
+      this.ttp.SetToolTip(this.chkStartZiel, "Streckenstart/-ziel aus Gesamtplan übernehmen");
+      // 
+      // _btnBegleit
       // 
       this._btnBegleit.Location = new System.Drawing.Point(9, 71);
       this._btnBegleit.Name = "_btnBegleit";
@@ -452,7 +471,7 @@ namespace Asvz
       this._btnBegleit.Text = "Begleit exportieren";
       this._btnBegleit.Click += new System.EventHandler(this.btnBegleit_Click);
       // 
-      // txtBegleit
+      // _txtBegleit
       // 
       this._txtBegleit.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -462,7 +481,7 @@ namespace Asvz
       this._txtBegleit.TabIndex = 23;
       this._txtBegleit.Text = "Exp_Begleit";
       // 
-      // grpGesamt
+      // _grpGesamt
       // 
       this._grpGesamt.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -478,7 +497,7 @@ namespace Asvz
       this._grpGesamt.TabStop = false;
       this._grpGesamt.Text = "Gesamt";
       // 
-      // btnTransportGesamt
+      // _btnTransportGesamt
       // 
       this._btnTransportGesamt.Location = new System.Drawing.Point(9, 110);
       this._btnTransportGesamt.Name = "_btnTransportGesamt";
@@ -487,7 +506,7 @@ namespace Asvz
       this._btnTransportGesamt.Text = "Transport";
       this._btnTransportGesamt.Click += new System.EventHandler(this.btnTransportGesamt_Click);
       // 
-      // btnTestForch
+      // _btnTestForch
       // 
       this._btnTestForch.Location = new System.Drawing.Point(16, 156);
       this._btnTestForch.Name = "_btnTestForch";
@@ -496,7 +515,7 @@ namespace Asvz
       this._btnTestForch.Text = "Test Forch";
       this._btnTestForch.Click += new System.EventHandler(this.btnTestForch_Click);
       // 
-      // btnTestDuo
+      // _btnTestDuo
       // 
       this._btnTestDuo.Location = new System.Drawing.Point(16, 220);
       this._btnTestDuo.Name = "_btnTestDuo";
@@ -505,7 +524,7 @@ namespace Asvz
       this._btnTestDuo.Text = "Test DUO";
       this._btnTestDuo.Click += new System.EventHandler(this.btnTestDuo_Click);
       // 
-      // btnGpx
+      // _btnGpx
       // 
       this._btnGpx.Location = new System.Drawing.Point(199, 494);
       this._btnGpx.Name = "_btnGpx";
@@ -817,21 +836,22 @@ namespace Asvz
         if (int.TryParse(_txtBis.Text, out iBis) == false)
         { iBis = iVon + 1; }
 
+        List<string> outFiles = new List<string>();
         if (_chkDistance.Checked)
         {
           string name = string.Format("{0}_{1}_{2}", "profile", iVon + 1, iBis);
-          GetProfile(pProfile, name, iVon, iBis, true);
+          outFiles.Add(GetProfile(pProfile, name, iVon, iBis, true));
         }
         else
         {
           for (int i = iVon; i < iBis; i++)
           {
             string name = string.Format("{0}_{1:00}", "strecke", i + 1);
-            GetProfile(pProfile, name, i, i + 1, false);
+            outFiles.Add(GetProfile(pProfile, name, i, i + 1, false));
           }
         }
         string expProfile = GetExpProfile();
-        Ocad.Scripting.Utils.CreatePdf(expProfile);
+        Ocad.Scripting.Utils.CreatePdf(Path.Combine(expProfile, "CreatePdf.xml"), outFiles);
       }
       catch (Exception exp)
       { Debug.WriteLine(exp.Message); }
@@ -846,7 +866,7 @@ namespace Asvz
         "Exp_Profile");
       return path;
     }
-    private void GetProfile(SolaProfile profil, string name, int von, int bis, bool totalDistanz)
+    private string GetProfile(SolaProfile profil, string name, int von, int bis, bool totalDistanz)
     {
       string expProfile = GetExpProfile();
       string sResult = Path.Combine(expProfile, name);
@@ -862,6 +882,8 @@ namespace Asvz
       profil.WriteProfiles(
         Path.Combine(Path.GetDirectoryName(_txtCreate.Text), "profile9.ocd"),
         sResult, von, bis, totalDistanz, kat);
+
+      return sResult;
     }
 
     private void btnUebergabe_Click(object sender, EventArgs e)
@@ -1080,7 +1102,7 @@ namespace Asvz
           if (_chkDamen.Checked)
           { kat = Kategorie.Damen; }
 
-          strecke.Update(kat);
+          strecke.Update(kat, chkStartZiel.Checked);
         }
       }
       finally

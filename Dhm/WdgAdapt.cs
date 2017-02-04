@@ -151,7 +151,7 @@ namespace Dhm
 
       Polyline l0 = (Polyline)Ocad.Data.OcadConnection.FieldShape.GetValue(tbl.Rows[0]);
       Polyline l1 = (Polyline)Ocad.Data.OcadConnection.FieldShape.GetValue(tbl.Rows[1]);
-      IList<ParamGeometryRelation> rels = GeometryOperator.CreateRelations(l0, l1, null);
+      IList<ParamGeometryRelation> rels = GeometryOperator.CreateRelations(l0, l1);
 
       List<JoinOption> options = new List<JoinOption>();
       if (rels == null)

@@ -328,7 +328,8 @@ namespace Asvz.Sola
 
           Polyline trans = pair.Key;
           if (boxFrom.IsWithin(trans.Points.First.Value))
-          { t.Elements.AddRange(CombineTransport(trans, SymT.Transport));
+          {
+            t.Elements.AddRange(CombineTransport(trans, SymT.Transport));
             return t;
           }
         }

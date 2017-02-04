@@ -8,8 +8,6 @@ namespace Ocad
 
     private int _index;
     private Box _box;
-    private int _position;
-    private int _length;
     private int _symbol;
     // Version 9
     private short _objType;
@@ -49,16 +47,17 @@ namespace Ocad
       internal set { _box = value; }
     }
 
-    internal int Position
+    internal int Position { get; set; }
+    internal int Length { get; private set; }
+    internal int ReadElementLength(OcadReader reader)
     {
-      get { return _position; }
-      set { _position = value; }
+      Length = reader.ReadElementLength();
+      return Length;
     }
-
-    internal int Length
+    internal int CalcElementLength(OcadReader reader, Element elem)
     {
-      get { return _length; }
-      set { _length = value; }
+      Length = reader.CalcElementLength(elem);
+      return Length;
     }
 
     public int Symbol
@@ -108,7 +107,7 @@ namespace Ocad
         "File length   : {5,9}\n" +
         "Symbol        : {6,9}",
         _box.Min.X, _box.Min.Y, _box.Max.X, _box.Max.Y,
-        _position, _length, _symbol);
+        Position, Length, _symbol);
     }
   }
 }
