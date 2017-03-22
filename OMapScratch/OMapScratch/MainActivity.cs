@@ -5,7 +5,6 @@ using Android.Graphics;
 using Android.Views;
 using System.Collections.Generic;
 using OMapScratch.Views;
-using com.xamarin.recipes.filepicker;
 
 namespace OMapScratch
 {
@@ -109,8 +108,6 @@ namespace OMapScratch
 
       //SetContentView(Resource.Layout.FileBrowser);
       //return;
-
-      var _adapter = new FileListAdapter(this, new System.IO.FileSystemInfo[0]);
 
       // Set our view from the "main" layout resource
       SetContentView(Resource.Layout.Main);
