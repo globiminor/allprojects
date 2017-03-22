@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:local="clr-namespace:OMapScratch"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:id="@+id/parentLayout">
-  <ImageButton
-    android:src="@drawable/Save"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:id="@+id/btnSave" />
-  <Button
-      android:text="Load Image"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_toRightOf="@+id/btnSave"
-      android:id="@+id/btnImages" />
+    <ImageButton
+        android:src="@drawable/Save"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btnSave" />
+    <Button
+        android:text="Load Image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/btnSave"
+        android:id="@+id/btnImages" />
 </RelativeLayout>

@@ -5,6 +5,7 @@ using Android.Graphics;
 using Android.Views;
 using System.Collections.Generic;
 using OMapScratch.Views;
+using com.xamarin.recipes.filepicker;
 
 namespace OMapScratch
 {
@@ -14,19 +15,111 @@ namespace OMapScratch
     private MapView _mapView;
     private static Map _map;
     private SymbolButton _btnCurrentSymbol;
+    private LinearLayout _browse;
+    private ScrollView _scroll;
 
     public Map Map
     {
       get { return _map ?? (_map = new Map()); }
     }
 
+    private class FileButton : Button
+    {
+      public FileButton(Android.Content.Context context, string fullPath)
+        : base(context)
+        { }
+      public string FullPath { get; set; }
+    }
+    private class LoadListener : Java.Lang.Object, IMenuItemOnMenuItemClickListener
+    {
+      private MainActivity _activity;
+      public LoadListener(MainActivity activity)
+      {
+        _activity = activity;        
+      }
+      bool IMenuItemOnMenuItemClickListener.OnMenuItemClick(IMenuItem item)
+      {
+        Java.IO.File store = Environment.ExternalStorageDirectory;
+        string path = store.AbsolutePath;
+        SetDirectory(path);
+        _activity._scroll.Visibility = ViewStates.Visible;
+        return true;
+      }
+
+      private void SetDirectory(string path)
+      {
+        LinearLayout browse = _activity._browse;
+        browse.RemoveAllViews();
+
+        System.IO.DirectoryInfo di = new System.IO.DirectoryInfo(path);
+        foreach (System.IO.FileInfo fsi in di.GetFiles())
+        {
+          FileButton fileButton = new FileButton(_activity, fsi.FullName);
+          fileButton.TextAlignment = TextAlignment.TextStart;
+          fileButton.SetBackgroundColor(Color.LightGreen);
+          fileButton.Text = fsi.Name;
+          fileButton.Click += (s, e) =>
+          {
+            _activity._scroll.Visibility = ViewStates.Invisible;
+            _activity._scroll.PostInvalidate();
+          };
+          browse.AddView(fileButton);
+        }
+        foreach (System.IO.DirectoryInfo fsi in di.GetDirectories())
+        {
+          FileButton fileButton = new FileButton(_activity, fsi.FullName);
+          fileButton.TextAlignment = TextAlignment.TextStart;
+          fileButton.SetBackgroundColor(Color.LightBlue);
+          fileButton.Text = fsi.Name;
+          fileButton.Click += (s, e) =>
+          {
+            SetDirectory(fsi.FullName);
+          };
+          browse.AddView(fileButton);
+        }
+        browse.PostInvalidate();
+      }
+    }
+    public override bool OnCreateOptionsMenu(IMenu menu)
+    {
+      MenuInflater.Inflate(Resource.Layout.Toolbar, menu);
+
+      var shareMenuItem = menu.FindItem(Resource.Id.shareMenuItem);
+      var shareActionProvider =
+         (ShareActionProvider)shareMenuItem.ActionProvider;
+      shareActionProvider.SetShareIntent(CreateIntent());
+
+      var loadMenu = menu.FindItem(Resource.Id.mniLoad);
+
+      var loadListener = new LoadListener(this);
+      loadMenu.SetOnMenuItemClickListener(loadListener);
+      return true;
+    }
+    Android.Content.Intent CreateIntent()
+    {
+      var sendPictureIntent = new Android.Content.Intent(Android.Content.Intent.ActionSend);
+      sendPictureIntent.SetType("image/*");
+      var uri = Android.Net.Uri.FromFile(GetFileStreamPath("monkey.png"));
+      sendPictureIntent.PutExtra(Android.Content.Intent.ExtraStream, uri);
+      return sendPictureIntent;
+    }
     protected override void OnCreate(Bundle bundle)
     {
       base.OnCreate(bundle);
 
+      //SetContentView(Resource.Layout.FileBrowser);
+      //return;
+
+      var _adapter = new FileListAdapter(this, new System.IO.FileSystemInfo[0]);
 
       // Set our view from the "main" layout resource
       SetContentView(Resource.Layout.Main);
+
+      //Toolbar actionbar = FindViewById<Toolbar>(Resource.Id.toolbar);
+      //SetActionBar(actionbar);
+      //ActionBar.Title = "Gugus";
+      ActionBar x = ActionBar;
+
       var metrics = Resources.DisplayMetrics;
 
       _mapView = new MapView(this);
@@ -205,6 +298,30 @@ namespace OMapScratch
       MotionListener listener = new MotionListener(this);
       _mapView.SetOnTouchListener(listener);
       _mapView.SetOnGenericMotionListener(listener);
+
+      {
+        LinearLayout browse = new LinearLayout(this);
+        browse.Orientation = Orientation.Vertical;
+        browse.ScrollBarStyle = ScrollbarStyles.InsideOverlay;
+
+        {
+          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
+          browse.LayoutParameters = lprams;
+        }
+
+        ScrollView scroll = new ScrollView(this);
+        scroll.AddView(browse);
+        {
+          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
+          scroll.LayoutParameters = lprams;
+          scroll.Visibility = ViewStates.Invisible;
+        }
+        parentLayout.AddView(scroll);
+
+        _browse = browse;
+        _scroll = scroll;
+      }
+
     }
 
     private List<Color> GetColors()
@@ -309,7 +426,8 @@ namespace OMapScratch
 
             float x = (_t1Down.X + _t1Up.X) / 2.0f;
             float y = (_t1Down.Y + _t1Up.Y) / 2.0f;
-            float[] inverted = { x - rect.Left, y - rect.Top };
+//            float[] inverted = { x - rect.Left, y - rect.Top };
+            float[] inverted = { x - rect.Left, y };
             inverse.MapPoints(inverted);
 
             _parent.Map.AddPoint(inverted[0], inverted[1],
