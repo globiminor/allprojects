@@ -14,21 +14,13 @@ namespace OMapScratch
     private MapView _mapView;
     private static Map _map;
     private SymbolButton _btnCurrentSymbol;
-    private LinearLayout _browse;
-    private ScrollView _scroll;
+    private FileBrowser _browser;
 
     public Map Map
     {
       get { return _map ?? (_map = new Map()); }
     }
 
-    private class FileButton : Button
-    {
-      public FileButton(Android.Content.Context context, string fullPath)
-        : base(context)
-        { }
-      public string FullPath { get; set; }
-    }
     private class LoadListener : Java.Lang.Object, IMenuItemOnMenuItemClickListener
     {
       private MainActivity _activity;
@@ -40,44 +32,11 @@ namespace OMapScratch
       {
         Java.IO.File store = Environment.ExternalStorageDirectory;
         string path = store.AbsolutePath;
-        SetDirectory(path);
-        _activity._scroll.Visibility = ViewStates.Visible;
+        _activity._browser.SetDirectory(path);
+        _activity._browser.Visibility = ViewStates.Visible;
         return true;
       }
 
-      private void SetDirectory(string path)
-      {
-        LinearLayout browse = _activity._browse;
-        browse.RemoveAllViews();
-
-        System.IO.DirectoryInfo di = new System.IO.DirectoryInfo(path);
-        foreach (System.IO.FileInfo fsi in di.GetFiles())
-        {
-          FileButton fileButton = new FileButton(_activity, fsi.FullName);
-          fileButton.TextAlignment = TextAlignment.TextStart;
-          fileButton.SetBackgroundColor(Color.LightGreen);
-          fileButton.Text = fsi.Name;
-          fileButton.Click += (s, e) =>
-          {
-            _activity._scroll.Visibility = ViewStates.Invisible;
-            _activity._scroll.PostInvalidate();
-          };
-          browse.AddView(fileButton);
-        }
-        foreach (System.IO.DirectoryInfo fsi in di.GetDirectories())
-        {
-          FileButton fileButton = new FileButton(_activity, fsi.FullName);
-          fileButton.TextAlignment = TextAlignment.TextStart;
-          fileButton.SetBackgroundColor(Color.LightBlue);
-          fileButton.Text = fsi.Name;
-          fileButton.Click += (s, e) =>
-          {
-            SetDirectory(fsi.FullName);
-          };
-          browse.AddView(fileButton);
-        }
-        browse.PostInvalidate();
-      }
     }
     public override bool OnCreateOptionsMenu(IMenu menu)
     {
@@ -192,16 +151,6 @@ namespace OMapScratch
       commands.Visibility = ViewStates.Invisible;
       parentLayout.AddView(commands);
 
-      ImageButton btnSave = FindViewById<ImageButton>(Resource.Id.btnSave);
-      btnSave.Click += (s, e) =>
-      {
-        Java.IO.File store = Environment.ExternalStorageDirectory;
-        string _path = store.AbsolutePath;
-        string bgPath = $"{_path}/Pictures/oscratch.txt";
-        Map.Save(bgPath);
-      };
-
-
       Button imageButton = FindViewById<Button>(Resource.Id.btnImages);
       imageButton.Click += (s, e) =>
       {
@@ -296,29 +245,14 @@ namespace OMapScratch
       _mapView.SetOnTouchListener(listener);
       _mapView.SetOnGenericMotionListener(listener);
 
+      FileBrowser browser = new FileBrowser(this);
       {
-        LinearLayout browse = new LinearLayout(this);
-        browse.Orientation = Orientation.Vertical;
-        browse.ScrollBarStyle = ScrollbarStyles.InsideOverlay;
-
-        {
-          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
-          browse.LayoutParameters = lprams;
-        }
-
-        ScrollView scroll = new ScrollView(this);
-        scroll.AddView(browse);
-        {
-          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
-          scroll.LayoutParameters = lprams;
-          scroll.Visibility = ViewStates.Invisible;
-        }
-        parentLayout.AddView(scroll);
-
-        _browse = browse;
-        _scroll = scroll;
+        RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
+        browser.LayoutParameters = lprams;
+        browser.Visibility = ViewStates.Invisible;
       }
-
+      parentLayout.AddView(browser);
+      _browser = browser;
     }
 
     private List<Color> GetColors()
