@@ -30,6 +30,14 @@ namespace OMapScratch
     private List<Elem> _elems;
     private Curve _currentCurve;
 
+    private XmlConfig _config;
+    private string _configPath;
+
+    internal IList<XmlImage> Images
+    {
+      get { return _config?.Images; }
+    }
+
     public IEnumerable<Elem> Elems
     {
       get
@@ -39,6 +47,33 @@ namespace OMapScratch
 
         foreach (Elem elem in _elems)
         { yield return elem; }
+      }
+    }
+
+    public void LoadLocalImage(string path)
+    {
+      string file = Path.GetFileName(path);
+      string localDir = Path.GetDirectoryName(_configPath);
+      string localFile = Path.Combine(localDir, file);
+      LoadImage(localFile);
+    }
+    public void Load(string configPath)
+    {
+      using (TextReader r = new StreamReader(configPath))
+      {
+        XmlConfig config;
+        Serializer.Deserialize(out config, r);
+
+        if (config != null)
+        {
+          _configPath = configPath;
+          _config = config;
+          if (_config.Images?.Count > 0)
+          {
+            string path = _config.Images[0].Path;
+            LoadLocalImage(path);
+          }
+        }
       }
     }
     public void AddPoint(float x, float y, Symbol sym, ColorRef color)
@@ -118,11 +153,16 @@ namespace OMapScratch
       }
     }
 
-    internal void Save(string path)
+    internal void Save()
     {
       if (_elems == null)
       { return; }
+      string file = _config?.Data?.Scratch;
+      if (_configPath == null || file == null)
+      { return; }
 
+      string dir = Path.GetDirectoryName(_configPath);
+      string path = Path.Combine(dir, file);
       using (var w = new StreamWriter(path))
       {
         Serializer.Serialize(XmlElems.Create(_elems), w);
@@ -183,6 +223,38 @@ namespace OMapScratch
       };
     }
 
+  }
+
+  [XmlRoot("oscratch")]
+  public class XmlConfig
+  {
+    [XmlElement("offset")]
+    public XmlOffset Offset { get; set; }
+
+    [XmlElement("data")]
+    public XmlData Data { get; set; }
+
+    [XmlElement("image")]
+    public List<XmlImage> Images { get; set; }
+  }
+  public class XmlData
+  {
+    [XmlAttribute("scratch")]
+    public string Scratch { get; set; }
+  }
+  public class XmlImage
+  {
+    [XmlAttribute("name")]
+    public string Name { get; set; }
+    [XmlAttribute("path")]
+    public string Path { get; set; }
+  }
+  public class XmlOffset
+  {
+    [XmlAttribute("x")]
+    public double X { get; set; }
+    [XmlAttribute("y")]
+    public double Y { get; set; }
   }
 
   public class XmlElems

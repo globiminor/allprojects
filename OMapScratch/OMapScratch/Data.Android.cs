@@ -18,17 +18,27 @@ namespace OMapScratch
   {
     private Bitmap _img;
 
-    public Bitmap LoadImage()
+    public Bitmap LoadDefaultImage()
     {
       Java.IO.File store = Environment.ExternalStorageDirectory;
-      string _path = store.AbsolutePath;
-      string bgPath = $"{_path}/Pictures/fadacher_2017.jpg";
+      string initPath = store.AbsolutePath;
+      string path = $"{initPath}/Pictures/fadacher_2017.jpg";
+      return LoadImage(path);
+    }
+
+    public Bitmap CurrentImage { get { return _img; } }
+
+    public event System.EventHandler OnImageChanged;
+
+    private Bitmap LoadImage(string path)
+    {
       BitmapFactory.Options opts = new BitmapFactory.Options();
       opts.InPreferredConfig = Bitmap.Config.Argb8888;
-      Bitmap img = BitmapFactory.DecodeFile(bgPath, opts);
+      Bitmap img = BitmapFactory.DecodeFile(path, opts);
       _img?.Dispose();
       _img = img;
 
+      OnImageChanged?.Invoke(this, null);
       return img;
     }
   }

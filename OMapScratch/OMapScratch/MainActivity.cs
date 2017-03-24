@@ -15,10 +15,31 @@ namespace OMapScratch
     private static Map _map;
     private SymbolButton _btnCurrentSymbol;
     private FileBrowser _browser;
+    private LinearLayout _imageList;
 
     public Map Map
     {
-      get { return _map ?? (_map = new Map()); }
+      get
+      {
+        if (_map == null)
+        {
+          Map map = new Map();
+          map.OnImageChanged += (s, a) =>
+          {
+            _mapView.SetScaleType(ImageView.ScaleType.Matrix);
+            Matrix m = new Matrix();
+            _mapView.ImageMatrix = m;
+
+            _mapView.SetImageBitmap(Map.CurrentImage);
+            _mapView.ImageMatrix.SetScale(2, 2);
+
+            m.SetTranslate(10, 10);
+            _mapView.ImageMatrix = m;
+          };
+          _map = map;
+        }
+        return _map;
+      }
     }
 
     private class LoadListener : Java.Lang.Object, IMenuItemOnMenuItemClickListener
@@ -32,8 +53,10 @@ namespace OMapScratch
       {
         Java.IO.File store = Environment.ExternalStorageDirectory;
         string path = store.AbsolutePath;
-        _activity._browser.SetDirectory(path);
-        _activity._browser.Visibility = ViewStates.Visible;
+        FileBrowser browser = _activity._browser;
+        browser.Filter = new[] { ".config" };
+        browser.SetDirectory(path);
+        browser.Show((file) => { _activity.Map.Load(file); _activity._mapView.Invalidate(); });
         return true;
       }
 
@@ -86,17 +109,7 @@ namespace OMapScratch
       }
       _mapView.SetAdjustViewBounds(true);
       {
-        Bitmap img = Map.LoadImage();
-
-        _mapView.SetScaleType(ImageView.ScaleType.Matrix);
-        Matrix m = new Matrix();
-        _mapView.ImageMatrix = m;
-
-        _mapView.SetImageBitmap(img);
-        _mapView.ImageMatrix.SetScale(2, 2);
-
-        m.SetTranslate(10, 10);
-        _mapView.ImageMatrix = m;
+        Bitmap img = Map.LoadDefaultImage();
       }
 
       RelativeLayout parentLayout = FindViewById<RelativeLayout>(Resource.Id.parentLayout);
@@ -154,7 +167,25 @@ namespace OMapScratch
       Button imageButton = FindViewById<Button>(Resource.Id.btnImages);
       imageButton.Click += (s, e) =>
       {
-        //commands.Visibility = ViewStates.Visible;
+        _imageList.RemoveAllViews();
+        if (Map.Images?.Count > 0)
+        {
+          foreach (XmlImage img in Map.Images)
+          {
+            Button btn = new Button(this);
+            btn.Text = img.Name;
+            RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
+            btn.LayoutParameters = lprams;
+            btn.Click += (bs, be) =>
+            {
+              Map.LoadLocalImage(img.Path);
+              _imageList.Visibility = ViewStates.Invisible;
+            };
+
+            _imageList.AddView(btn);
+          }
+          _imageList.Visibility = ViewStates.Visible;
+        }
       };
 
       {
@@ -253,6 +284,16 @@ namespace OMapScratch
       }
       parentLayout.AddView(browser);
       _browser = browser;
+
+      LinearLayout imageList = new LinearLayout(this);
+      imageList.Orientation = Orientation.Vertical;
+      {
+        RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
+        imageList.LayoutParameters = lprams;
+        imageList.Visibility = ViewStates.Invisible;
+      }
+      parentLayout.AddView(imageList);
+      _imageList = imageList;
     }
 
     private List<Color> GetColors()

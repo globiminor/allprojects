@@ -10,7 +10,9 @@ namespace OMapScratch.Views
   {
     private LinearLayout _browse;
     private FileButton _top;
+    private System.Action<string> _onSuccess;
 
+    public IList<string> Filter { get; set; }
     public FileBrowser(Context context)
       : base(context)
     {
@@ -73,17 +75,37 @@ namespace OMapScratch.Views
 
     public bool ShowHiddenEntries { get; set; }
 
-    private IEnumerable<string> Filter(IEnumerable<string> candidates)
+    private IEnumerable<string> Select(IEnumerable<string> candidates, bool useFilter)
     {
       List<string> entries = new List<string>();
       foreach (string candidate in candidates)
       {
         if (!ShowHiddenEntries && System.IO.Path.GetFileName(candidate).StartsWith("."))
         { continue; }
+        bool valid = true;
+        if (useFilter && Filter != null)
+        {
+          valid = false;
+          foreach (string filter in Filter)
+          {
+            if (candidate.EndsWith(filter, System.StringComparison.CurrentCultureIgnoreCase))
+            {
+              valid = true;
+              break;
+            }
+          }
+        }
+        if (!valid)
+        { continue; }
         entries.Add(candidate);
       }
       entries.Sort();
       return entries;
+    }
+    public void Show(System.Action<string> onSuccess)
+    {
+      _onSuccess = onSuccess;
+      Visibility = ViewStates.Visible;
     }
     public void SetDirectory(string path)
     {
@@ -91,7 +113,7 @@ namespace OMapScratch.Views
       browse.RemoveAllViews();
 
       _top.FullPath = System.IO.Path.GetDirectoryName(path);
-      foreach (string fsi in Filter(System.IO.Directory.EnumerateFiles(path)))
+      foreach (string fsi in Select(System.IO.Directory.EnumerateFiles(path), true))
       {
         FileButton fileButton = new FileButton(Context, fsi);
         fileButton.TextAlignment = TextAlignment.TextStart;
@@ -101,10 +123,11 @@ namespace OMapScratch.Views
         {
           Visibility = ViewStates.Invisible;
           PostInvalidate();
+          _onSuccess(fsi);
         };
         browse.AddView(fileButton);
       }
-      foreach (string fsi in Filter(System.IO.Directory.EnumerateDirectories(path)))
+      foreach (string fsi in Select(System.IO.Directory.EnumerateDirectories(path), false))
       {
         FileButton fileButton = new FileButton(Context, fsi);
         fileButton.TextAlignment = TextAlignment.TextStart;
@@ -121,7 +144,7 @@ namespace OMapScratch.Views
 
     private class FileButton : Button
     {
-      public FileButton(Android.Content.Context context, string fullPath)
+      public FileButton(Context context, string fullPath)
         : base(context)
       { }
       public string FullPath { get; set; }
