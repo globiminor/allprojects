@@ -9,11 +9,12 @@ using OMapScratch.Views;
 namespace OMapScratch
 {
   [Activity(Label = "O-Scratch", MainLauncher = true, Icon = "@drawable/icon")]
-  public class MainActivity : Activity
+  public partial class MainActivity : Activity
   {
     private MapView _mapView;
     private static Map _map;
     private SymbolButton _btnCurrentSymbol;
+    private SymbolGrid _symbolGrid;
     private FileBrowser _browser;
     private LinearLayout _imageList;
 
@@ -24,17 +25,24 @@ namespace OMapScratch
         if (_map == null)
         {
           Map map = new Map();
-          map.OnImageChanged += (s, a) =>
+
+          map.ImageChanging += (s, a) =>
           {
-            _mapView.SetScaleType(ImageView.ScaleType.Matrix);
-            Matrix m = new Matrix();
-            _mapView.ImageMatrix = m;
+            _mapView.PrepareUpdateMapImage(map);
+          };
+          map.ImageChanged += (s, a) =>
+          {
+            _mapView.UpdateMapImage(map);
+          };
 
-            _mapView.SetImageBitmap(Map.CurrentImage);
-            _mapView.ImageMatrix.SetScale(2, 2);
+          map.Loaded += (s, a) =>
+          {
+            _symbolGrid.Init(SymbolFullWidth);
+            _mapView.ResetMap();
 
-            m.SetTranslate(10, 10);
-            _mapView.ImageMatrix = m;
+            if (map.Images?.Count > 0)
+            { map.LoadLocalImage(map.Images[0].Path); }
+
           };
           _map = map;
         }
@@ -47,7 +55,7 @@ namespace OMapScratch
       private MainActivity _activity;
       public LoadListener(MainActivity activity)
       {
-        _activity = activity;        
+        _activity = activity;
       }
       bool IMenuItemOnMenuItemClickListener.OnMenuItemClick(IMenuItem item)
       {
@@ -59,47 +67,61 @@ namespace OMapScratch
         browser.Show((file) => { _activity.Map.Load(file); _activity._mapView.Invalidate(); });
         return true;
       }
+    }
+    private class SaveListener : Java.Lang.Object, IMenuItemOnMenuItemClickListener
+    {
+      private MainActivity _activity;
+      public SaveListener(MainActivity activity)
+      {
+        _activity = activity;
+      }
+      bool IMenuItemOnMenuItemClickListener.OnMenuItemClick(IMenuItem item)
+      {
+        _activity.Map.Save();
+        return true;
+      }
 
     }
+
     public override bool OnCreateOptionsMenu(IMenu menu)
     {
       MenuInflater.Inflate(Resource.Layout.Toolbar, menu);
 
-      var shareMenuItem = menu.FindItem(Resource.Id.shareMenuItem);
-      var shareActionProvider =
-         (ShareActionProvider)shareMenuItem.ActionProvider;
-      shareActionProvider.SetShareIntent(CreateIntent());
+      //var shareMenuItem = menu.FindItem(Resource.Id.shareMenuItem);
+      //var shareActionProvider =
+      //   (ShareActionProvider)shareMenuItem.ActionProvider;
+      //shareActionProvider.SetShareIntent(CreateIntent());
 
       var loadMenu = menu.FindItem(Resource.Id.mniLoad);
+      loadMenu.SetOnMenuItemClickListener(new LoadListener(this));
 
-      var loadListener = new LoadListener(this);
-      loadMenu.SetOnMenuItemClickListener(loadListener);
+      var saveMenu = menu.FindItem(Resource.Id.mniSave);
+      saveMenu.SetOnMenuItemClickListener(new SaveListener(this));
+
       return true;
     }
-    Android.Content.Intent CreateIntent()
+    //Android.Content.Intent CreateIntent()
+    //{
+    //  var sendPictureIntent = new Android.Content.Intent(Android.Content.Intent.ActionSend);
+    //  sendPictureIntent.SetType("image/*");
+    //  var uri = Android.Net.Uri.FromFile(GetFileStreamPath("monkey.png"));
+    //  sendPictureIntent.PutExtra(Android.Content.Intent.ExtraStream, uri);
+    //  return sendPictureIntent;
+    //}
+
+    int SymbolFullWidth
     {
-      var sendPictureIntent = new Android.Content.Intent(Android.Content.Intent.ActionSend);
-      sendPictureIntent.SetType("image/*");
-      var uri = Android.Net.Uri.FromFile(GetFileStreamPath("monkey.png"));
-      sendPictureIntent.PutExtra(Android.Content.Intent.ExtraStream, uri);
-      return sendPictureIntent;
+      get
+      {
+        var metrics = Resources.DisplayMetrics;
+        return System.Math.Min( metrics.WidthPixels, metrics.HeightPixels);
+      }
     }
+
     protected override void OnCreate(Bundle bundle)
     {
       base.OnCreate(bundle);
-
-      //SetContentView(Resource.Layout.FileBrowser);
-      //return;
-
-      // Set our view from the "main" layout resource
       SetContentView(Resource.Layout.Main);
-
-      //Toolbar actionbar = FindViewById<Toolbar>(Resource.Id.toolbar);
-      //SetActionBar(actionbar);
-      //ActionBar.Title = "Gugus";
-      ActionBar x = ActionBar;
-
-      var metrics = Resources.DisplayMetrics;
 
       _mapView = new MapView(this);
       {
@@ -109,60 +131,10 @@ namespace OMapScratch
       }
       _mapView.SetAdjustViewBounds(true);
       {
-        Bitmap img = Map.LoadDefaultImage();
+        Map.LoadDefaultImage();
       }
-
       RelativeLayout parentLayout = FindViewById<RelativeLayout>(Resource.Id.parentLayout);
       parentLayout.AddView(_mapView);
-
-      List<Color> colors = GetColors();
-      List<Symbol> symbols = Map.GetSymbols();
-
-      GridLayout commands = new GridLayout(this);
-      {
-        RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
-        lprams.AddRule(LayoutRules.Below, Resource.Id.btnImages);
-        commands.LayoutParameters = lprams;
-      }
-      commands.ColumnCount = colors.Count;
-      commands.RowCount = 2 + (symbols.Count - 1) / colors.Count;
-      List<SymbolButton> symBtns = new List<SymbolButton>();
-      foreach (Color color in colors)
-      {
-        Button btnColor = new Button(this);
-        btnColor.SetMinimumWidth(5);
-        btnColor.SetWidth(metrics.WidthPixels / colors.Count);
-        btnColor.SetBackgroundColor(color);
-        commands.AddView(btnColor);
-
-        btnColor.Click += (s, a) =>
-        {
-          foreach (SymbolButton btn in symBtns)
-          {
-            btn.Color = new ColorRef { Color = color };
-            btn.PostInvalidate();
-          }
-        };
-      }
-      foreach (Symbol sym in symbols)
-      {
-        SymbolButton btnSym = new SymbolButton(sym, this);
-        btnSym.SetMinimumWidth(5);
-        btnSym.SetWidth(metrics.WidthPixels / colors.Count);
-
-        btnSym.Click += (s, e) =>
-        {
-          _btnCurrentSymbol.Symbol = btnSym.Symbol;
-          _btnCurrentSymbol.Color = btnSym.Color;
-          _btnCurrentSymbol.PostInvalidate();
-          commands.Visibility = ViewStates.Invisible;
-        };
-
-        commands.AddView(btnSym);
-        symBtns.Add(btnSym);
-      }
-      commands.Visibility = ViewStates.Invisible;
-      parentLayout.AddView(commands);
 
       Button imageButton = FindViewById<Button>(Resource.Id.btnImages);
       imageButton.Click += (s, e) =>
@@ -189,9 +161,9 @@ namespace OMapScratch
       };
 
       {
-        _btnCurrentSymbol = new SymbolButton(symbols[0], this);
+        _btnCurrentSymbol = new SymbolButton(Map.GetSymbols()[0], this);
         _btnCurrentSymbol.SetMinimumWidth(5);
-        _btnCurrentSymbol.SetWidth(metrics.WidthPixels / colors.Count);
+        _btnCurrentSymbol.SetWidth(SymbolFullWidth / 8);
         RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
         lprams.AddRule(LayoutRules.RightOf, Resource.Id.btnImages);
         _btnCurrentSymbol.LayoutParameters = lprams;
@@ -199,10 +171,10 @@ namespace OMapScratch
 
         _btnCurrentSymbol.Click += (s, e) =>
         {
-          if (commands.Visibility == ViewStates.Visible)
-          { commands.Visibility = ViewStates.Invisible; }
+          if (_symbolGrid.Visibility == ViewStates.Visible)
+          { _symbolGrid.Visibility = ViewStates.Invisible; }
           else
-          { commands.Visibility = ViewStates.Visible; }
+          { _symbolGrid.Visibility = ViewStates.Visible; }
           Map.CommitCurrentCurve();
         };
 
@@ -276,6 +248,18 @@ namespace OMapScratch
       _mapView.SetOnTouchListener(listener);
       _mapView.SetOnGenericMotionListener(listener);
 
+      {
+        _symbolGrid = new SymbolGrid(this);
+        {
+          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
+          lprams.AddRule(LayoutRules.Below, Resource.Id.btnImages);
+          _symbolGrid.LayoutParameters = lprams;
+        }
+        _symbolGrid.Init(SymbolFullWidth);
+        _symbolGrid.Visibility = ViewStates.Invisible;
+        parentLayout.AddView(_symbolGrid);
+      }
+
       FileBrowser browser = new FileBrowser(this);
       {
         RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
@@ -296,13 +280,8 @@ namespace OMapScratch
       _imageList = imageList;
     }
 
-    private List<Color> GetColors()
-    {
-      return new List<Color> { Color.Black, Color.Gray, Color.Brown, Color.Yellow, Color.Green, Color.Khaki, Color.Red, Color.Blue };
-    }
-
-    private class MotionListener : Java.Lang.Object, Android.Views.View.IOnGenericMotionListener,
-      Android.Views.View.IOnTouchListener
+    private class MotionListener : Java.Lang.Object, View.IOnGenericMotionListener,
+      View.IOnTouchListener
     {
       private readonly MainActivity _parent;
       public MotionListener(MainActivity parent)
@@ -326,7 +305,7 @@ namespace OMapScratch
         public float X { get; set; }
         public float Y { get; set; }
         public long Time { get; set; }
-        public MotionEventActions Action {get; set; }
+        public MotionEventActions Action { get; set; }
         public float Precision { get; set; }
 
         public static Touch Create(MotionEvent e, int pointId)
@@ -393,20 +372,13 @@ namespace OMapScratch
 
           if (System.Math.Abs(dx) <= prec && System.Math.Abs(dy) <= prec)
           {
-            Matrix inverse = new Matrix();
-            _parent._mapView.ImageMatrix.Invert(inverse);
-
             float x = (_t1Down.X + _t1Up.X) / 2.0f;
             float y = (_t1Down.Y + _t1Up.Y) / 2.0f;
-//            float[] inverted = { x - rect.Left, y - rect.Top };
-            float[] inverted = { x - rect.Left, y };
-            inverse.MapPoints(inverted);
 
-            _parent.Map.AddPoint(inverted[0], inverted[1],
-              _parent._btnCurrentSymbol.Symbol, _parent._btnCurrentSymbol.Color);
+            _parent._mapView.AddPoint(_parent.Map, _parent._btnCurrentSymbol.Symbol, _parent._btnCurrentSymbol.Color, x, y);
           }
           else
-          { _parent._mapView.ImageMatrix.PostTranslate(dx, dy); }
+          { _parent._mapView.Translate(dx, dy); }
           _parent._mapView.PostInvalidate();
 
           TouchReset();

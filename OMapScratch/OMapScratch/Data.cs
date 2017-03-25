@@ -28,7 +28,11 @@ namespace OMapScratch
   public partial class Map
   {
     private List<Elem> _elems;
+    private List<Symbol> _symbols;
+    private List<ColorRef> _colors;
+
     private Curve _currentCurve;
+    private string _currentImagePath;
 
     private XmlConfig _config;
     private string _configPath;
@@ -50,32 +54,35 @@ namespace OMapScratch
       }
     }
 
-    public void LoadLocalImage(string path)
+    public float[] GetCurrentWorldMatrix()
     {
-      string file = Path.GetFileName(path);
-      string localDir = Path.GetDirectoryName(_configPath);
-      string localFile = Path.Combine(localDir, file);
-      LoadImage(localFile);
-    }
-    public void Load(string configPath)
-    {
-      using (TextReader r = new StreamReader(configPath))
-      {
-        XmlConfig config;
-        Serializer.Deserialize(out config, r);
+      if (string.IsNullOrEmpty(_currentImagePath))
+      { return null; }
 
-        if (config != null)
-        {
-          _configPath = configPath;
-          _config = config;
-          if (_config.Images?.Count > 0)
-          {
-            string path = _config.Images[0].Path;
-            LoadLocalImage(path);
-          }
-        }
+      string ext = Path.GetExtension(_currentImagePath);
+      if (string.IsNullOrEmpty(ext) || ext.Length < 3)
+      { return null; }
+
+      string worldExt = $"{ext.Substring(0, 2)}{ext[ext.Length - 1]}w";
+      string worldFile = Path.ChangeExtension(_currentImagePath, worldExt);
+
+      if (!File.Exists(worldFile))
+      { return null; }
+
+      using (TextReader r = new StreamReader(worldFile))
+      {
+        float x00, x01, x10, x11, dx, dy;
+        if (!float.TryParse(r.ReadLine(), out x00)) return null;
+        if (!float.TryParse(r.ReadLine(), out x01)) return null;
+        if (!float.TryParse(r.ReadLine(), out x10)) return null;
+        if (!float.TryParse(r.ReadLine(), out x11)) return null;
+        if (!float.TryParse(r.ReadLine(), out dx)) return null;
+        if (!float.TryParse(r.ReadLine(), out dy)) return null;
+
+        return new float[] { x00, x01, x10, x11, dx, dy };
       }
     }
+
     public void AddPoint(float x, float y, Symbol sym, ColorRef color)
     {
       if (_elems == null)
@@ -153,16 +160,25 @@ namespace OMapScratch
       }
     }
 
+    public event System.ComponentModel.CancelEventHandler Saving;
+    public event EventHandler Saved;
+
     internal void Save()
+    {
+      if (Utils.Cancel(this, Saving))
+      { return; }
+      SaveCore();
+      Saved?.Invoke(this, null);
+    }
+
+    private void SaveCore()
     {
       if (_elems == null)
       { return; }
-      string file = _config?.Data?.Scratch;
-      if (_configPath == null || file == null)
+      string path = GetLocalPath(_config?.Data?.Scratch);
+      if (path == null)
       { return; }
 
-      string dir = Path.GetDirectoryName(_configPath);
-      string path = Path.Combine(dir, file);
       using (var w = new StreamWriter(path))
       {
         Serializer.Serialize(XmlElems.Create(_elems), w);
@@ -171,50 +187,171 @@ namespace OMapScratch
       }
     }
 
+    public event System.ComponentModel.CancelEventHandler Loading;
+    public event EventHandler Loaded;
+
+    public void Load(string configPath)
+    {
+      Save();
+
+      XmlConfig config;
+      using (TextReader r = new StreamReader(configPath))
+      {
+        Serializer.Deserialize(out config, r);
+      }
+      if (config != null)
+      {
+        if (Utils.Cancel(this, Loading))
+        { return; }
+        LoadCore(configPath, config);
+        Loaded?.Invoke(this, null);
+      }
+    }
+
+    private void LoadCore(string configPath, XmlConfig config)
+    {
+      _currentImagePath = null;
+
+      _configPath = configPath;
+      _config = config;
+
+      _colors = null;
+      _symbols = null;
+      _elems = null;
+      LoadSymbols();
+      _elems = LoadElems();
+    }
+
+    private List<Elem> LoadElems()
+    {
+      string elemsPath = VerifyLocalPath(_config?.Data?.Scratch);
+      if (string.IsNullOrEmpty(elemsPath))
+      { return null; }
+      XmlElems xml;
+      using (TextReader r = new StreamReader(elemsPath))
+      { Serializer.Deserialize(out xml, r); }
+      if (xml?.Elems == null)
+      { return null; }
+
+      Dictionary<string, ColorRef> colorDict = new Dictionary<string, ColorRef>();
+      foreach (ColorRef c in GetColors())
+      { colorDict[c.Id] = c; }
+
+      Dictionary<string, Symbol> symbolDict = new Dictionary<string, Symbol>();
+      foreach (Symbol s in GetSymbols())
+      { symbolDict[s.Id] = s; }
+
+      List<Elem> elems = new List<Elem>();
+      foreach (XmlElem xmlElem in xml.Elems)
+      {
+        Elem elem = xmlElem.GetElem();
+        Symbol sym;
+        if (symbolDict.TryGetValue(xmlElem.SymbolId ?? "", out sym))
+        { elem.Symbol = sym; }
+        ColorRef clr;
+        if (colorDict.TryGetValue(xmlElem.ColorId ?? "", out clr))
+        { elem.Color = clr; }
+
+        elems.Add(elem);
+      }
+      return elems;
+    }
+    private void LoadSymbols()
+    {
+      string symbolPath = VerifyLocalPath(_config?.Data?.Symbol);
+      if (string.IsNullOrEmpty(symbolPath))
+      { return; }
+      XmlSymbols xml;
+      using (TextReader r = new StreamReader(symbolPath))
+      { Serializer.Deserialize(out xml, r); }
+
+      _symbols = ReadSymbols(xml?.Symbols);
+      _colors = ReadColors(xml?.Colors);
+    }
+
+    private List<Symbol> ReadSymbols(List<XmlSymbol> xmlSymbols)
+    {
+      if (xmlSymbols == null)
+      { return null; }
+      List<Symbol> symbols = new List<Symbol>();
+      foreach (XmlSymbol xml in xmlSymbols)
+      { symbols.Add(xml.GetSymbol()); }
+      return symbols;
+    }
+
+    private List<ColorRef> ReadColors(List<XmlColor> xmlColors)
+    {
+      if (xmlColors == null)
+      { return null; }
+      List<ColorRef> colors = new List<ColorRef>();
+      foreach (XmlColor xml in xmlColors)
+      { colors.Add(xml.GetColor()); }
+      return colors;
+    }
+
     public List<Symbol> GetSymbols()
+    {
+      return _symbols ?? (_symbols = GetDefaultSymbols());
+    }
+
+    public List<ColorRef> GetColors()
+    {
+      return _colors ?? (_colors = GetDefaultColors());
+    }
+
+    private List<Symbol> GetDefaultSymbols()
     {
       return new List<Symbol> {
         new Symbol {
+          Id = "L1",
           Curves = new List<SymbolCurve> {
             new SymbolCurve { LineWidth = 1 },
           }
         },
         new Symbol {
+          Id = "L2",
           Curves = new List<SymbolCurve> {
             new SymbolCurve { LineWidth = 2 },
           }
         },
         new Symbol {
+          Id = "L4",
           Curves = new List<SymbolCurve> {
             new SymbolCurve { LineWidth = 4 },
           }
         },
         new Symbol {
+          Id = "L8",
           Curves = new List<SymbolCurve> {
             new SymbolCurve { LineWidth = 8 },
           }
         },
         new Symbol {
+          Id = "KrG",
           Curves = new List<SymbolCurve> {
             new SymbolCurve { Curve = new Curve().Circle(0,0,10) },
           }
         },
         new Symbol {
+          Id = "KrK",
           Curves = new List<SymbolCurve> {
             new SymbolCurve { Curve = new Curve().Circle(0,0,5) },
           }
         },
         new Symbol {
+          Id = "RiG",
           Curves = new List<SymbolCurve> {
             new SymbolCurve { LineWidth = 3 , Curve = new Curve().Circle(0,0,16), }
           }
         },
         new Symbol {
+          Id = "RiK",
           Curves = new List<SymbolCurve> {
             new SymbolCurve { LineWidth = 3 ,Curve = new Curve().Circle(0,0,8), }
           }
         },
         new Symbol {
+          Id = "KzG",
           Curves = new List<SymbolCurve> {
             new SymbolCurve { LineWidth = 3,Curve = new Curve().MoveTo(-10,-10).LineTo(10,10) },
             new SymbolCurve { LineWidth = 3,Curve = new Curve().MoveTo(10,-10).LineTo(-10,10) }
@@ -223,6 +360,24 @@ namespace OMapScratch
       };
     }
 
+    private string GetLocalPath(string path)
+    {
+      if (string.IsNullOrEmpty(path) || string.IsNullOrEmpty(_configPath))
+      { return null; }
+      string dir = Path.GetDirectoryName(_configPath);
+      if (!Directory.Exists(dir))
+      { return null; }
+      string fullPath = Path.Combine(dir, Path.GetFileName(path));
+      return fullPath;
+    }
+
+    private string VerifyLocalPath(string path)
+    {
+      string fullPath = GetLocalPath(path);
+      if (fullPath == null || !File.Exists(fullPath))
+      { return null; }
+      return fullPath;
+    }
   }
 
   [XmlRoot("oscratch")]
@@ -241,6 +396,8 @@ namespace OMapScratch
   {
     [XmlAttribute("scratch")]
     public string Scratch { get; set; }
+    [XmlAttribute("symbol")]
+    public string Symbol { get; set; }
   }
   public class XmlImage
   {
@@ -289,10 +446,17 @@ namespace OMapScratch
 
       return created;
     }
+    public Elem GetElem()
+    {
+      Elem elem = new Elem { Geometry = DrawableUtils.GetGeometry(Geometry) };
+      return elem;
+    }
   }
 
   public class XmlSymbols
   {
+    [XmlElement("Color")]
+    public List<XmlColor> Colors { get; set; }
     [XmlElement("Symbol")]
     public List<XmlSymbol> Symbols { get; set; }
 
@@ -305,14 +469,40 @@ namespace OMapScratch
 
       return created;
     }
-
-    public List<Symbol> GetSymbols()
+  }
+  public partial class XmlColor
+  {
+    public XmlColor()
+    { }
+    public XmlColor(byte r, byte g, byte b)
     {
-      List<Symbol> symbols = new List<Symbol>(Symbols.Count);
-      foreach (XmlSymbol symbol in Symbols)
-      { symbols.Add(symbol.GetSymbol()); }
-      return symbols;
+      Red = r;
+      Green = g;
+      Blue = b;
     }
+    [XmlAttribute("Id")]
+    public string Id { get; set; }
+
+    [XmlAttribute("R")]
+    public byte Red { get; set; }
+    [XmlAttribute("G")]
+    public byte Green { get; set; }
+    [XmlAttribute("B")]
+    public byte Blue { get; set; }
+
+    public static XmlColor Create(ColorRef color)
+    {
+      XmlColor xml = new XmlColor { Id = color.Id };
+      xml.SetEnvColor(color);
+      return xml;
+    }
+    public ColorRef GetColor()
+    {
+      ColorRef color = new ColorRef { Id = Id };
+      GetEnvColor(color);
+      return color;
+    }
+
   }
   public class XmlSymbol
   {
@@ -375,7 +565,7 @@ namespace OMapScratch
       curve.Fill = Fill;
       curve.Stroke = Stroke;
 
-      curve.Curve = (Curve)DrawableUtils.GetCurve(Geometry);
+      curve.Curve = (Curve)DrawableUtils.GetGeometry(Geometry);
       return curve;
     }
   }
@@ -407,7 +597,7 @@ namespace OMapScratch
     public const string LineTo = "l";
     public const string CubicTo = "c";
 
-    internal static IDrawable GetCurve(string geometry)
+    internal static IDrawable GetGeometry(string geometry)
     {
       if (string.IsNullOrEmpty(geometry))
       { return null; }
@@ -469,7 +659,7 @@ namespace OMapScratch
         else
         {
           throw new NotImplementedException();
-        } 
+        }
       }
       return d;
     }
@@ -635,6 +825,18 @@ namespace OMapScratch
     public bool IsLineSymbol()
     {
       return Curves?.Count == 1 && Curves[0].Curve == null;
+    }
+  }
+
+  public static class Utils
+  {
+    public static bool Cancel(object sender, System.ComponentModel.CancelEventHandler cancelEvent)
+    {
+      if (cancelEvent == null)
+      { return false; }
+      System.ComponentModel.CancelEventArgs args = new System.ComponentModel.CancelEventArgs();
+      cancelEvent.Invoke(sender, args);
+      return args.Cancel;
     }
   }
 }

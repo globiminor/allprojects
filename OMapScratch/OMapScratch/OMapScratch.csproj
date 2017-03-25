@@ -62,6 +62,7 @@
     <Compile Include="Views\FileBrowser.cs" />
     <Compile Include="Views\MapView.cs" />
     <Compile Include="Views\SymbolButton.cs" />
+    <Compile Include="Views\SymbolGrid.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="GettingStarted.Xamarin" />

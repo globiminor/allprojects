@@ -16,30 +16,72 @@ namespace OMapScratch
 
   public partial class Map
   {
-    private Bitmap _img;
+    public event System.ComponentModel.CancelEventHandler ImageChanging;
+    public event System.EventHandler ImageChanged;
 
-    public Bitmap LoadDefaultImage()
+    private Bitmap _currentImage;
+
+    public void LoadDefaultImage()
     {
       Java.IO.File store = Environment.ExternalStorageDirectory;
       string initPath = store.AbsolutePath;
       string path = $"{initPath}/Pictures/fadacher_2017.jpg";
-      return LoadImage(path);
+      if (!System.IO.File.Exists(path))
+      { return; }
+      LoadImage(path);
     }
 
-    public Bitmap CurrentImage { get { return _img; } }
+    public Bitmap CurrentImage { get { return _currentImage; } }
 
-    public event System.EventHandler OnImageChanged;
-
-    private Bitmap LoadImage(string path)
+    public void LoadLocalImage(string path)
     {
+      LoadImage(VerifyLocalPath(path));
+    }
+
+    private void LoadImage(string path)
+    {
+      if (string.IsNullOrEmpty(path))
+      { return; }
+
+      if (Utils.Cancel(this, ImageChanging))
+      { return; }
+
       BitmapFactory.Options opts = new BitmapFactory.Options();
       opts.InPreferredConfig = Bitmap.Config.Argb8888;
       Bitmap img = BitmapFactory.DecodeFile(path, opts);
-      _img?.Dispose();
-      _img = img;
+      _currentImage?.Dispose();
+      _currentImage = img;
+      _currentImagePath = path;
 
-      OnImageChanged?.Invoke(this, null);
-      return img;
+      ImageChanged?.Invoke(this, null);
+    }
+
+    private System.Collections.Generic.List<ColorRef> GetDefaultColors()
+    {
+      return new System.Collections.Generic.List<ColorRef>
+      {
+        new ColorRef { Id = "Bl", Color = Color.Black },
+        new ColorRef { Id = "Gy", Color = Color.Gray },
+        new ColorRef { Id = "Bw", Color = Color.Brown },
+        new ColorRef { Id = "Y", Color = Color.Yellow },
+        new ColorRef { Id = "G", Color = Color.Green },
+        new ColorRef { Id = "K", Color = Color.Khaki },
+        new ColorRef { Id = "R", Color = Color.Red },
+        new ColorRef { Id = "B", Color = Color.Blue } };
+    }
+  }
+
+  public partial class XmlColor
+  {
+    private void GetEnvColor(ColorRef color)
+    {
+      color.Color = new Color { A = byte.MaxValue, R = Red, G = Green, B = Blue };
+    }
+    private void SetEnvColor(ColorRef color)
+    {
+      Red = color.Color.R;
+      Green = color.Color.G;
+      Blue = color.Color.B;
     }
   }
 
