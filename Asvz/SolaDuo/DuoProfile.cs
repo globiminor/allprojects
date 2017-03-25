@@ -51,7 +51,7 @@ namespace Asvz.SolaDuo
           WriteLayoutStrecke(writer, cat, _data.PostenListe[iStrecke].Id,
             _data.PostenListe[iStrecke + 1].Name, sumDist, distStart);
 
-          sumDist += cat.Laenge();
+          sumDist += cat.DispLength;
         }
         WriteEnd(writer, _data.PostenListe[nStrecken].Id, sumDist);
 

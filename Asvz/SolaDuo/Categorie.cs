@@ -48,19 +48,20 @@ namespace Asvz
 
       }
     }
-    private double _distance;
+    private double? _userLength;
 
     private Polyline _s;
     private List<StreckeTeil> _streckeTeilList;
     private Data _data;
+    private double? _geomXyLength;
 
     private Polyline _profil;
     private Polyline _profilNormed;
     private double _steigung = -1;
 
-    protected Categorie(double distance)
+    protected Categorie(double? userLength)
     {
-      _distance = distance;
+      _userLength = userLength;
     }
 
     public abstract string Name { get; }
@@ -68,18 +69,21 @@ namespace Asvz
 
     protected Categorie()
     {
-      _distance = -1;
+      _userLength = null;
     }
 
-    public double Distance
+    public double? UserLength
     {
-      get { return _distance; }
+      get { return _userLength; }
       set
       {
-        _distance = value;
-
+        _userLength = value;
         _profilNormed = null;
       }
+    }
+    public double DispLength
+    {
+      get { return _userLength ?? GeomXyLength; }
     }
 
     public Polyline Strecke
@@ -133,28 +137,17 @@ namespace Asvz
       _profilNormed = null;
     }
 
-    /// <summary>
-    /// SOLA-Laenge in m
-    /// </summary>
-    /// <returns></returns>
-    public double Laenge()
+    private double GeomXyLength
     {
-      double measured = _distance * 1000.0;
-      if (measured < 0)
-      { measured = Strecke.Project(Geometry.ToXY).Length(); }
-
-      return measured;
+      get { return _geomXyLength ?? (_geomXyLength = Strecke.Project(Geometry.ToXY).Length()).Value; }
     }
 
     public double Faktor()
     {
-      double dMeasured = _distance;
-
-      if (dMeasured < 0)
+      if (_userLength == null)
       { return 1; }
 
-      double dLength = Strecke.Project(Geometry.ToXY).Length() / 1000.0;
-      return dLength / dMeasured;
+      return GeomXyLength / _userLength.Value;
     }
 
     public Polyline Profil
@@ -222,6 +215,25 @@ namespace Asvz
     public double SteigungRound(double round)
     {
       return Basics.Utils.Round(Steigung, round);
+    }
+
+    public virtual double OffsetStart { get { return 0; } }
+    public virtual double OffsetEnd { get { return 0; } }
+
+    public double[] GetLineParams(double distance)
+    {
+      Polyline line = Strecke;
+
+      double lengthGeom = GeomXyLength;
+      double lengthMeas = DispLength;
+      double lengthDisp = OffsetStart + lengthMeas + OffsetEnd;
+
+      double f = lengthGeom / lengthDisp;
+
+      double normedDist = (distance + OffsetStart) * f;
+      double[] param = line.ParamAt(normedDist);
+
+      return param;
     }
   }
 }

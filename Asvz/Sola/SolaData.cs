@@ -184,7 +184,7 @@ namespace Asvz.Sola
         foreach (SolaCategorie rawCat in rawStrecke.Categories)
         {
           SolaCategorie cat = new SolaCategorie(rawCat.Typ,
-            rawCat.Distance, rawCat.OffsetStart, rawCat.OffsetEnd,
+            rawCat.UserLength, rawCat.OffsetStart, rawCat.OffsetEnd,
             rawCat.Stufe);
           strecke.Categories.Add(cat);
         }
@@ -476,7 +476,7 @@ namespace Asvz.Sola
       attr = doc.CreateAttribute("description");
       attr.Value = string.Format("{1}{0}Länge {2:N2} km{0}Steigung {3:N0} m",
         Environment.NewLine,
-        k, cat.Laenge() / 1000.0,
+        k, cat.DispLength / 1000.0,
         cat.SteigungRound(5.0));
       elem.Attributes.Append(attr);
 

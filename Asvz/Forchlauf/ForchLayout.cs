@@ -272,7 +272,7 @@ namespace Asvz.Forchlauf
       IPoint result = min;
 
 
-      string info = string.Format("{0:N1} km / {1,3:N0} m HD", categorie.Laenge() / 1000,
+      string info = string.Format("{0:N1} km / {1,3:N0} m HD", categorie.DispLength / 1000,
         categorie.SteigungRound(5));
       PointCollection points = Common.GetGeometry(info, prj, symText);
       IBox box = points.Extent;

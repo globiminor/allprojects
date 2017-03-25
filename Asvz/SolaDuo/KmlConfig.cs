@@ -58,10 +58,10 @@ namespace Asvz
       Polyline s = line.Linearize(linearize);
       s = s.Project(prj);
 
-      TrkSeg seg = new TrkSeg { Points = new List<TrkPt>() };
+      TrkSeg seg = new TrkSeg { Points = new List<Pt>() };
       foreach (IPoint p in s.Points)
       {
-        TrkPt pt = new TrkPt { Lat = p.Y, Lon = p.X };
+        Pt pt = new Pt { Lat = p.Y, Lon = p.X };
         seg.Points.Add(pt);
       }
       return seg;
@@ -170,6 +170,8 @@ namespace Asvz
   [XmlRoot("gpx")]
   public class Gpx
   {
+    [XmlElement("wpt")]
+    public List<Pt> WayPoints { get; set; }
     [XmlElement("trk")]
     public Trk Trk { get; set; }
   }
@@ -181,14 +183,15 @@ namespace Asvz
   public class TrkSeg
   {
     [XmlElement("trkpt")]
-    public List<TrkPt> Points { get; set; }
+    public List<Pt> Points { get; set; }
   }
-  public class TrkPt
+  public class Pt
   {
     [XmlAttribute("lat")]
     public double Lat { get; set; }
     [XmlAttribute("lon")]
     public double Lon { get; set; }
+    [XmlElement("name")]
+    public string Name { get; set; }
   }
-
 }

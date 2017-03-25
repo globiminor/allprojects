@@ -499,7 +499,7 @@ namespace Asvz.Sola
     private void WriteInfo(OcadWriter writer, Kategorie kat)
     {
       Categorie cat = _data.Categorie(_iStrecke - 1, kat);
-      double d = cat.Laenge() / 1000.0;
+      double d = cat.DispLength / 1000.0;
       double h = cat.SteigungRound(5.0);
 
       foreach (Element e in _elemInfo)
@@ -529,23 +529,12 @@ namespace Asvz.Sola
       Ocad.Symbol.TextSymbol kmTxtSymbol, Setup setup, bool damen)
     {
       Polyline line = cat.Strecke;
-
-      double lengthGeom = line.Project(Geometry.ToXY).Length() / 1000.0;
-      double lengthMeas = cat.Laenge() / 1000;
-      double lengthDisp = cat.OffsetStart + lengthMeas + cat.OffsetEnd;
-
-      double f = lengthGeom / lengthDisp;
-      //if (lengthGeom > 14)
-      //{
-      //  f = 1;
-      //}
-
+      double lengthMeas = cat.DispLength / 1000;
       int iKm = 1;
 
       while (iKm < lengthMeas)
       {
-        double normedDist = (iKm + cat.OffsetStart) * 1000.0 * f;
-        double[] param = line.ParamAt(normedDist);
+        double[] param = cat.GetLineParams(iKm * 1000.0); 
         Point p = line.Segments[(int)param[0]].PointAt(param[1]);
         Point t = line.Segments[(int)param[0]].TangentAt(param[1]);
         Element textKm = CreateKmText(p, t, iKm, kmTxtSymbol, setup, damen);

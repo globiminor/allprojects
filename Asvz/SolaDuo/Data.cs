@@ -135,6 +135,32 @@ namespace Asvz
       Gpx gpx = new Gpx { Trk = trk };
       GpxUtils.Write(path, gpx);
     }
+    public void ExportKmGpx(string path, Categorie cat)
+    {
+      TransferProjection prj = GpxUtils.GetTransferProjection(new Ch1903());
+
+      Polyline line = cat.Strecke;
+      double lengthMeas = cat.DispLength / 1000;
+      int iKm = 1;
+
+      List<Pt> kms = new List<Pt>();
+      while (iKm < lengthMeas)
+      {
+        double[] param = cat.GetLineParams(iKm * 1000.0);
+        Point p = line.Segments[(int)param[0]].PointAt(param[1]);
+
+        p = p.Project(prj);
+
+        Pt wpt = new Pt { Lat = p.X, Lon = p.Y, Name = string.Format("Km {0}", iKm) };
+        kms.Add(wpt);
+
+        iKm++;
+      }
+
+      Gpx gpx = new Gpx { WayPoints = kms };
+      GpxUtils.Write(path, gpx);
+    }
+
 
     private void ExportGpxDoc(string path, IEnumerable<T> strecken)
     {
@@ -397,7 +423,7 @@ namespace Asvz
       XmlUtils.AppendElement(doc, elem, "description",
         string.Format("{1}{0}Länge {2:N2} km{0}Steigung {3:N0} m",
         Environment.NewLine,
-        k, cat.Laenge() / 1000.0,
+        k, cat.DispLength / 1000.0,
         cat.SteigungRound(5.0)));
 
       XmlUtils.AppendElement(doc, elem, "styleUrl", "#" + cat.KmlStyle);

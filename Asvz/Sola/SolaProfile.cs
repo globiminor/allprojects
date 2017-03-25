@@ -45,7 +45,7 @@ namespace Asvz.Sola
           for (int iStrecke = 0; iStrecke < von; iStrecke++)
           {
             Categorie cat = _data_.Categorie(iStrecke, kategorie);
-            double dDist = cat.Laenge();
+            double dDist = cat.DispLength;
             distStart += dDist;
           }
         }
@@ -68,7 +68,7 @@ namespace Asvz.Sola
             Ddx.Uebergabe[iStrecke + 1].Name,
             sumDist, distStart);
 
-          sumDist += cat.Laenge();
+          sumDist += cat.DispLength;
         }
 
         if (bis + 1 < Ddx.Uebergabe.Count)

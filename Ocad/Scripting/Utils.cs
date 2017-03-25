@@ -35,6 +35,9 @@ namespace Ocad.Scripting
         return;
       }
 
+      if (setAccess)
+      { SetAccessControl(Environment.CurrentDirectory); }
+
       ProcessStartInfo start = new ProcessStartInfo(exe, script);
       Process proc = new Process();
       proc.StartInfo = start;
@@ -43,7 +46,8 @@ namespace Ocad.Scripting
 
       proc.WaitForExit();
 
-      SetAccessControl(Environment.CurrentDirectory);
+      if (setAccess)
+      { SetAccessControl(Environment.CurrentDirectory); }
     }
 
     private static void SetAccessControl(string dir)

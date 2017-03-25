@@ -9,6 +9,8 @@ using Ocad;
 using Asvz.Sola;
 using System.Collections.Generic;
 using System.Security.AccessControl;
+using Ocad.StringParams;
+using System.Drawing;
 
 namespace Asvz
 {
@@ -1005,7 +1007,8 @@ namespace Asvz
             trans.TransTo.ExportKml(Path.Combine(dir, kmlName), name, to);
           }
         }
-        Ocad.Scripting.Utils.CreatePdf(dir);
+        string script = Path.Combine(dir, "CreatePdf.xml");
+        Ocad.Scripting.Utils.CreatePdf(script, ocdFiles);
       }
       catch (Exception exp)
       { MessageBox.Show(exp.Message + "\n" + exp.StackTrace); }
@@ -1163,6 +1166,23 @@ namespace Asvz
 
     private void btnTest_Click(object sender, EventArgs e)
     {
+      string ocdFile = Path.Combine(Path.GetDirectoryName(Ddx.Uebergabe[0].Vorlage), "Uebergabe_overview.ocd");
+      using (OcadReader reader = OcadReader.Open(ocdFile))
+      {
+        Setup setup = reader.ReadSetup();
+        foreach (StringParamIndex si in reader.ReadStringParamIndices())
+        {
+          if (si.Type != StringType.Template)
+          { continue; }
+          string s = reader.ReadStringParam(si);
+          TemplatePar p = new TemplatePar(s);
+          string name = Path.GetFileNameWithoutExtension(p.Name);
+          if (!name.EndsWith("_"))
+          { continue; }
+          p.WriteWorldFile(setup);
+        }
+      }
+      return;
       //foreach (string file in Directory.GetFiles(Environment.CurrentDirectory, "*", SearchOption.AllDirectories))
       {
         string file = @"C:\daten\ASVZ\SOLA\2015\Exp_Profile\profile_1_7.pdf";
@@ -1323,9 +1343,11 @@ namespace Asvz
         {
           Strecke s = data.Strecken[iStrecke - 1];
           data.ExportGpx(string.Format("Strecke {0}.gpx", iStrecke), s.Categories[0]);
+          data.ExportKmGpx(string.Format("Strecke {0}.km.gpx", iStrecke), s.Categories[0]);
           for (int iCat = 1; iCat < s.Categories.Count; iCat++)
           {
             data.ExportGpx(string.Format("Strecke {0}_{1}.gpx", iStrecke, iCat), s.Categories[iCat]);
+            data.ExportKmGpx(string.Format("Strecke {0}_{1}.km.gpx", iStrecke, iCat), s.Categories[iCat]);
           }
         }
       }

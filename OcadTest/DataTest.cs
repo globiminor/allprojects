@@ -95,6 +95,17 @@ namespace OcadTest
     }
 
     [TestMethod]
+    public void TestHiddenSegments()
+    {
+      using (OcadReader r = OcadReader.Open(@"C:\daten\felix\kapreolo\karten\eigental\test.ocd"))
+      {
+        foreach (ElementIndex idx in r.GetIndices())
+        {
+          r.ReadElement(idx);
+        }
+      }
+    }
+    [TestMethod]
     public void CanRunBoxTree()
     {
       BoxTree<Curve> t1;

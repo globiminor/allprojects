@@ -169,7 +169,7 @@ namespace Asvz.Sola
           {
             Categorie cat = data.Strecken[iStrecke - 1].Categories[0];
             StringBuilder text = new StringBuilder();
-            text.AppendFormat("{0:0.00} km", cat.Laenge() / 1000.0);
+            text.AppendFormat("{0:0.00} km", cat.DispLength / 1000.0);
             text.AppendLine();
             text.AppendFormat("{0} m", cat.SteigungRound(5));
             minInfo.Text = text.ToString();

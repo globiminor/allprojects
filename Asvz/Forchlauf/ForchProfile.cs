@@ -56,7 +56,7 @@ namespace Asvz.Forchlauf
         WriteLayoutStrecke(writer, cat, " ", "Fluntern",
           sumDist, distStart);
 
-        sumDist += cat.Laenge();
+        sumDist += cat.DispLength;
 
         WriteEnd(writer, cat.Name, sumDist);
 

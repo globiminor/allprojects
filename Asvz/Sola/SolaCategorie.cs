@@ -21,7 +21,7 @@ namespace Asvz.Sola
     private double _offsetStart;
     private double _offsetEnd;
 
-    public SolaCategorie(Kategorie typ, double distance, double offsetStart, double offsetEnd, string stufe)
+    public SolaCategorie(Kategorie typ, double? distance, double offsetStart, double offsetEnd, string stufe)
       : base(distance)
     {
       _typ = typ;
@@ -41,12 +41,12 @@ namespace Asvz.Sola
       get { return _typ; }
     }
 
-    public double OffsetStart
+    public override double OffsetStart
     {
       get { return _offsetStart; }
     }
 
-    public double OffsetEnd
+    public override double OffsetEnd
     {
       get { return _offsetEnd; } 
     }

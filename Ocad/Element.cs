@@ -9,12 +9,14 @@ namespace Ocad
   [System.Diagnostics.DebuggerStepThrough]
   public class Coord
   {
+    [Flags]
     public enum Flags
     {
       none = 0,
       firstBezierPoint = 1,
       secondBezierPoint = 2,
       noLeftLine = 4,
+      noLine = 8,
       cornerPoint = 256,
       firstHolePoint = 512,
       noRightLine = 1024,
@@ -110,9 +112,12 @@ namespace Ocad
 
     public override string ToString()
     {
-      return string.Format("{0,7} {1,7}   {2}   {3}",
+      int cx = GetCodePart(_ix);
+      int cy = GetCodePart(_iy);
+
+      return string.Format("{0,7} {1,7}   {2}   {3}  {4}",
         GetGeomPart(_ix), GetGeomPart(_iy),
-        CodeString(GetCodePart(_ix)), CodeString(GetCodePart(_iy)));
+        cx, cy, (Flags)(cx + 256 * cy));
     }
   }
 

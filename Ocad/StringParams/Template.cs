@@ -1,4 +1,7 @@
 
+using System.Drawing;
+using System.IO;
+
 namespace Ocad.StringParams
 {
   /// <summary>
@@ -85,5 +88,44 @@ namespace Ocad.StringParams
       X0 = (xMin + nx / 2.0 * dxx - setup.PrjTrans.X) / df;
       Y0 = (yMax + ny / 2.0 * dyy - setup.PrjTrans.Y) / df;
     }
+
+    public bool WriteWorldFile(Setup setup)
+    {
+      if (Dx != Dy || Omega != 0 || Phi != 0)
+      { return false; }
+
+      string imgPath = Name;
+      if (!File.Exists(imgPath))
+      { return false; }
+
+      string wPath = Name.Substring(0, Name.Length - 2) + "fw";
+
+      int w;
+      int h;
+      using (Image img = Image.FromFile(imgPath))
+      {
+        w = img.Width;
+        h = img.Height;
+      }
+
+      double scale = setup.Scale / 1000;
+      double imgXCenter = setup.PrjTrans.X + X0 * scale;
+      double imgYCenter = setup.PrjTrans.Y + Y0 * scale;
+      double x0 = imgXCenter - (w / 2.0 - 0.5) * Dx * scale;
+      double y0 = imgYCenter + (h / 2.0 - 0.5) * Dy * scale;
+
+      using (TextWriter r = new StreamWriter(wPath))
+      {
+        r.WriteLine("{0}", Dx * scale);
+        r.WriteLine("{0}", 0);
+        r.WriteLine("{0}", 0);
+        r.WriteLine("{0}", Dx * scale);
+        r.WriteLine("{0}", x0);
+        r.WriteLine("{0}", y0);
+      }
+      return true;
+
+    }
+
   }
 }

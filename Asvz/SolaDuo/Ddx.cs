@@ -146,20 +146,20 @@ namespace Asvz.Sola
           attr = nodeCat.Attributes[_nodeKatTyp];
           Kategorie typ = (Kategorie)int.Parse(attr.Value);
 
-          double distance = -1;
+          double? distance = null;
           attr = nodeCat.Attributes[_nodeKatDistanz];
           if (attr != null)
-          { distance = double.Parse(attr.Value); }
+          { distance = double.Parse(attr.Value) * 1000; }
 
           double offsetStart = 0;
           attr = nodeCat.Attributes[_nodeKatOffsetStart];
           if (attr != null)
-          { offsetStart = double.Parse(attr.Value); }
+          { offsetStart = double.Parse(attr.Value) * 1000; }
 
           double offsetEnd = 0;
           attr = nodeCat.Attributes[_nodeKatOffsetEnd];
           if (attr != null)
-          { offsetEnd = double.Parse(attr.Value); }
+          { offsetEnd = double.Parse(attr.Value) * 1000; }
 
           attr = nodeCat.Attributes[_nodeKatStufe];
           string stufe = attr.Value;

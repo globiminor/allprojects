@@ -190,7 +190,7 @@ namespace Asvz
     protected void WriteLayoutStrecke(Ocad9Writer writer, Categorie cat, string startName,
       string zielName, double sumDist, double distStart)
     {
-      double dist = cat.Laenge();
+      double dist = cat.DispLength;
       double steigung = cat.Steigung;
       int iSteigung5M = (int)cat.SteigungRound(5);
 
