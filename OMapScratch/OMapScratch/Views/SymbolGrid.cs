@@ -23,8 +23,8 @@ namespace OMapScratch
       {
         RemoveAllViews();
 
-        List<ColorRef> colors = _activity.Map.GetColors();
-        List<Symbol> symbols = _activity.Map.GetSymbols();
+        List<ColorRef> colors = _activity.MapVm.GetColors();
+        List<Symbol> symbols = _activity.MapVm.GetSymbols();
 
         ColumnCount = colors.Count;
         RowCount = 2 + (symbols.Count - 1) / colors.Count;

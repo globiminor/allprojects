@@ -18,6 +18,7 @@ namespace OMapScratch
   public partial interface IDrawable
   {
     string ToText();
+    IEnumerable<Pnt> GetVertices();
   }
 
   public partial class ColorRef
@@ -25,6 +26,81 @@ namespace OMapScratch
     public string Id { get; set; }
   }
 
+  public partial class MapVm
+  {
+    private Map _map;
+
+    public event System.ComponentModel.CancelEventHandler Saving;
+    public event EventHandler Saved;
+    public event System.ComponentModel.CancelEventHandler Loading;
+    public event EventHandler Loaded;
+
+    public MapVm(Map map)
+    {
+      _map = map;
+    }
+
+    public IEnumerable<XmlImage> Images
+    {
+      get
+      {
+        if (_map.Images == null)
+        { yield break; }
+
+        foreach (XmlImage img in _map.Images)
+        { yield return img; }
+      }
+    }
+
+    public IEnumerable<Elem> Elems
+    { get { return _map.Elems; } }
+
+    internal void AddPoint(float x, float y, Symbol symbol, ColorRef color)
+    { _map.AddPoint(x, y, symbol, color); }
+    internal void CommitCurrentCurve()
+    { _map.CommitCurrentCurve(); }
+    internal void Undo()
+    { _map.Undo(); }
+    internal void Redo()
+    { _map.Redo(); }
+
+    public float[] GetOffset()
+    { return _map.GetOffset(); }
+    public float[] GetCurrentWorldMatrix()
+    { return _map.GetCurrentWorldMatrix(); }
+    public List<Symbol> GetSymbols()
+    { return _map.GetSymbols(); }
+    public List<ColorRef> GetColors()
+    { return _map.GetColors(); }
+
+
+
+    internal void Save()
+    {
+      if (Utils.Cancel(this, Saving))
+      { return; }
+      _map.Save();
+      Saved?.Invoke(this, null);
+    }
+
+    public void Load(string configPath)
+    {
+      Save();
+
+      XmlConfig config;
+      using (TextReader r = new StreamReader(configPath))
+      {
+        Serializer.Deserialize(out config, r);
+      }
+      if (config != null)
+      {
+        if (Utils.Cancel(this, Loading))
+        { return; }
+        _map.Load(configPath, config);
+        Loaded?.Invoke(this, null);
+      }
+    }
+  }
   public partial class Map
   {
     private List<Elem> _elems;
@@ -52,6 +128,14 @@ namespace OMapScratch
         foreach (Elem elem in _elems)
         { yield return elem; }
       }
+    }
+
+    public float[] GetOffset()
+    {
+      XmlOffset offset = _config?.Offset;
+      if (offset == null)
+      { return null; }
+      return new float[] { (float)offset.X, (float)offset.Y };
     }
 
     public float[] GetCurrentWorldMatrix()
@@ -160,18 +244,7 @@ namespace OMapScratch
       }
     }
 
-    public event System.ComponentModel.CancelEventHandler Saving;
-    public event EventHandler Saved;
-
-    internal void Save()
-    {
-      if (Utils.Cancel(this, Saving))
-      { return; }
-      SaveCore();
-      Saved?.Invoke(this, null);
-    }
-
-    private void SaveCore()
+    public void Save()
     {
       if (_elems == null)
       { return; }
@@ -187,28 +260,7 @@ namespace OMapScratch
       }
     }
 
-    public event System.ComponentModel.CancelEventHandler Loading;
-    public event EventHandler Loaded;
-
-    public void Load(string configPath)
-    {
-      Save();
-
-      XmlConfig config;
-      using (TextReader r = new StreamReader(configPath))
-      {
-        Serializer.Deserialize(out config, r);
-      }
-      if (config != null)
-      {
-        if (Utils.Cancel(this, Loading))
-        { return; }
-        LoadCore(configPath, config);
-        Loaded?.Invoke(this, null);
-      }
-    }
-
-    private void LoadCore(string configPath, XmlConfig config)
+    public void Load(string configPath, XmlConfig config)
     {
       _currentImagePath = null;
 
@@ -371,7 +423,7 @@ namespace OMapScratch
       return fullPath;
     }
 
-    private string VerifyLocalPath(string path)
+    internal string VerifyLocalPath(string path)
     {
       string fullPath = GetLocalPath(path);
       if (fullPath == null || !File.Exists(fullPath))
@@ -680,6 +732,11 @@ namespace OMapScratch
     {
       return $"{DrawableUtils.Point} {X:f1} {Y:f1}";
     }
+
+    IEnumerable<Pnt> IDrawable.GetVertices()
+    {
+      yield return new Pnt { X = X, Y = Y };
+    }
   }
 
   public partial class Lin : ISegment
@@ -789,6 +846,14 @@ namespace OMapScratch
       { seg.AppendToText(sb); }
 
       return sb.ToString();
+    }
+    IEnumerable<Pnt> IDrawable.GetVertices()
+    {
+      if (Count <= 0)
+      { yield break; }
+      yield return this[0].From;
+      foreach (ISegment seg in this)
+      { yield return seg.To; }
     }
 
     private void SetTo(Pnt p)

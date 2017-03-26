@@ -11,7 +11,7 @@ namespace OMapScratch.Views
       : base(context)
     {
       Symbol = symbol;
-      Color = new ColorRef { Color = Android.Graphics.Color.Red };
+      Color = new ColorRef { Color = MapView.DefaultColor };
     }
 
     protected override void OnDraw(Canvas canvas)

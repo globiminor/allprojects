@@ -11,28 +11,32 @@ namespace OMapScratch
   [Activity(Label = "O-Scratch", MainLauncher = true, Icon = "@drawable/icon")]
   public partial class MainActivity : Activity
   {
+    private static Map _staticMap;
+
     private MapView _mapView;
-    private static Map _map;
+    private MapVm _map;
     private SymbolButton _btnCurrentSymbol;
     private SymbolGrid _symbolGrid;
     private FileBrowser _browser;
     private LinearLayout _imageList;
 
-    public Map Map
+    public MapVm MapVm
     {
       get
       {
         if (_map == null)
         {
-          Map map = new Map();
+          _staticMap = _staticMap ?? new Map();
+          MapVm map = new MapVm(_staticMap);
 
           map.ImageChanging += (s, a) =>
           {
-            _mapView.PrepareUpdateMapImage(map);
+            _mapView.PrepareUpdateMapImage();
           };
           map.ImageChanged += (s, a) =>
           {
-            _mapView.UpdateMapImage(map);
+            _mapView.UpdateMapImage();
+            _mapView.PostInvalidate();
           };
 
           map.Loaded += (s, a) =>
@@ -40,9 +44,7 @@ namespace OMapScratch
             _symbolGrid.Init(SymbolFullWidth);
             _mapView.ResetMap();
 
-            if (map.Images?.Count > 0)
-            { map.LoadLocalImage(map.Images[0].Path); }
-
+            map.LoadLocalImage(0);
           };
           _map = map;
         }
@@ -64,7 +66,7 @@ namespace OMapScratch
         FileBrowser browser = _activity._browser;
         browser.Filter = new[] { ".config" };
         browser.SetDirectory(path);
-        browser.Show((file) => { _activity.Map.Load(file); _activity._mapView.Invalidate(); });
+        browser.Show((file) => { _activity.MapVm.Load(file); _activity._mapView.Invalidate(); });
         return true;
       }
     }
@@ -77,7 +79,7 @@ namespace OMapScratch
       }
       bool IMenuItemOnMenuItemClickListener.OnMenuItemClick(IMenuItem item)
       {
-        _activity.Map.Save();
+        _activity.MapVm.Save();
         return true;
       }
 
@@ -130,9 +132,6 @@ namespace OMapScratch
         _mapView.LayoutParameters = lprams;
       }
       _mapView.SetAdjustViewBounds(true);
-      {
-        Map.LoadDefaultImage();
-      }
       RelativeLayout parentLayout = FindViewById<RelativeLayout>(Resource.Id.parentLayout);
       parentLayout.AddView(_mapView);
 
@@ -140,9 +139,8 @@ namespace OMapScratch
       imageButton.Click += (s, e) =>
       {
         _imageList.RemoveAllViews();
-        if (Map.Images?.Count > 0)
         {
-          foreach (XmlImage img in Map.Images)
+          foreach (XmlImage img in MapVm.Images)
           {
             Button btn = new Button(this);
             btn.Text = img.Name;
@@ -150,7 +148,7 @@ namespace OMapScratch
             btn.LayoutParameters = lprams;
             btn.Click += (bs, be) =>
             {
-              Map.LoadLocalImage(img.Path);
+              MapVm.LoadLocalImage(img.Path);
               _imageList.Visibility = ViewStates.Invisible;
             };
 
@@ -161,7 +159,7 @@ namespace OMapScratch
       };
 
       {
-        _btnCurrentSymbol = new SymbolButton(Map.GetSymbols()[0], this);
+        _btnCurrentSymbol = new SymbolButton(MapVm.GetSymbols()[0], this);
         _btnCurrentSymbol.SetMinimumWidth(5);
         _btnCurrentSymbol.SetWidth(SymbolFullWidth / 8);
         RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
@@ -175,7 +173,7 @@ namespace OMapScratch
           { _symbolGrid.Visibility = ViewStates.Invisible; }
           else
           { _symbolGrid.Visibility = ViewStates.Visible; }
-          Map.CommitCurrentCurve();
+          MapVm.CommitCurrentCurve();
         };
 
         parentLayout.AddView(_btnCurrentSymbol);
@@ -222,7 +220,7 @@ namespace OMapScratch
         btnUndo.Id = View.GenerateViewId();
         btnUndo.Click += (s, a) =>
         {
-          Map.Undo();
+          MapVm.Undo();
           _mapView.PostInvalidate();
         };
         parentLayout.AddView(btnUndo);
@@ -237,7 +235,7 @@ namespace OMapScratch
         btnRedo.Id = View.GenerateViewId();
         btnRedo.Click += (s, a) =>
         {
-          Map.Redo();
+          MapVm.Redo();
           _mapView.PostInvalidate();
         };
         parentLayout.AddView(btnRedo);
@@ -278,6 +276,13 @@ namespace OMapScratch
       }
       parentLayout.AddView(imageList);
       _imageList = imageList;
+
+      {
+        if (MapVm.CurrentImage == null)
+        { MapVm.LoadDefaultImage(); }
+        else
+        { MapVm.RefreshImage(); }
+      }
     }
 
     private class MotionListener : Java.Lang.Object, View.IOnGenericMotionListener,
@@ -375,7 +380,7 @@ namespace OMapScratch
             float x = (_t1Down.X + _t1Up.X) / 2.0f;
             float y = (_t1Down.Y + _t1Up.Y) / 2.0f;
 
-            _parent._mapView.AddPoint(_parent.Map, _parent._btnCurrentSymbol.Symbol, _parent._btnCurrentSymbol.Color, x, y);
+            _parent._mapView.AddPoint(_parent._btnCurrentSymbol.Symbol, _parent._btnCurrentSymbol.Color, x, y);
           }
           else
           { _parent._mapView.Translate(dx, dy); }

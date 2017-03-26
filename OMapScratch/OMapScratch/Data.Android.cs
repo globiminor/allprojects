@@ -14,12 +14,21 @@ namespace OMapScratch
     void Draw(Canvas canvas, Symbol symbol, Paint paint);
   }
 
-  public partial class Map
+  public partial class MapVm
   {
     public event System.ComponentModel.CancelEventHandler ImageChanging;
     public event System.EventHandler ImageChanged;
 
-    private Bitmap _currentImage;
+    public void RefreshImage()
+    {
+      if (Utils.Cancel(this, ImageChanging))
+      { return; }
+
+      ImageChanged?.Invoke(this, null);
+    }
+
+    public Bitmap CurrentImage
+    { get { return _map.CurrentImage; } }
 
     public void LoadDefaultImage()
     {
@@ -31,13 +40,6 @@ namespace OMapScratch
       LoadImage(path);
     }
 
-    public Bitmap CurrentImage { get { return _currentImage; } }
-
-    public void LoadLocalImage(string path)
-    {
-      LoadImage(VerifyLocalPath(path));
-    }
-
     private void LoadImage(string path)
     {
       if (string.IsNullOrEmpty(path))
@@ -46,17 +48,42 @@ namespace OMapScratch
       if (Utils.Cancel(this, ImageChanging))
       { return; }
 
+      _map.LoadImage(path);
+
+      ImageChanged?.Invoke(this, null);
+    }
+
+    public void LoadLocalImage(int imageIndex)
+    {
+      if (_map.Images?.Count <= imageIndex)
+      { return; }
+
+      string path = _map.Images[imageIndex].Path;
+      LoadImage(_map.VerifyLocalPath(path));
+    }
+    public void LoadLocalImage(string path)
+    {
+      LoadImage(_map.VerifyLocalPath(path));
+    }
+  }
+
+  public partial class Map
+  {
+    private Bitmap _currentImage;
+
+    public Bitmap CurrentImage { get { return _currentImage; } }
+
+    public void LoadImage(string path)
+    {
       BitmapFactory.Options opts = new BitmapFactory.Options();
       opts.InPreferredConfig = Bitmap.Config.Argb8888;
       Bitmap img = BitmapFactory.DecodeFile(path, opts);
       _currentImage?.Dispose();
       _currentImage = img;
       _currentImagePath = path;
-
-      ImageChanged?.Invoke(this, null);
     }
 
-    private System.Collections.Generic.List<ColorRef> GetDefaultColors()
+    public System.Collections.Generic.List<ColorRef> GetDefaultColors()
     {
       return new System.Collections.Generic.List<ColorRef>
       {
