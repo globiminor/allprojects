@@ -27,15 +27,24 @@ namespace OMapScratch.Views
         canvas.Translate(Width / 2, Height / 2);
         canvas.Scale(scale, scale);
         Symbol sym = Symbol;
-        if (sym.IsLineSymbol())
+        SymbolType symTyp = sym.GetSymbolType();
+        if (symTyp == SymbolType.Line)
         {
           float w = Width / (2 * scale) * 0.8f;
           SymbolUtils.DrawLine(canvas, sym, new Curve().MoveTo(-w, 0).LineTo(w, 0), p);
         }
-        else
+        else if (symTyp == SymbolType.Point)
         {
           SymbolUtils.DrawPoint(canvas, sym, new Pnt { X = 0, Y = 0 }, p);
         }
+        else if (symTyp == SymbolType.Text)
+        {
+          Paint.FontMetrics mtr = p.GetFontMetrics();
+          p.TextSize = Height / 6;
+          SymbolUtils.DrawText(canvas, sym.Text, new Pnt { X = 0, Y = 0 }, p);
+        }
+        else
+        { throw new System.NotImplementedException($"unknown SymbolType {symTyp}"); }
       }
       finally
       { canvas.Restore(); }

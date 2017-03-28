@@ -131,7 +131,7 @@ namespace OMapScratch
         lprams.AddRule(LayoutRules.Below, Resource.Id.btnImages);
         _mapView.LayoutParameters = lprams;
       }
-      _mapView.SetAdjustViewBounds(true);
+      //_mapView.SetAdjustViewBounds(true);
       RelativeLayout parentLayout = FindViewById<RelativeLayout>(Resource.Id.parentLayout);
       parentLayout.AddView(_mapView);
 
@@ -279,7 +279,14 @@ namespace OMapScratch
 
       {
         if (MapVm.CurrentImage == null)
-        { MapVm.LoadDefaultImage(); }
+        {
+          //_mapView.SetScaleType(ImageView.ScaleType.Matrix);
+          //_mapView.SetBackgroundResource(Resource.Drawable.schlosswald);
+          //Matrix m = new Matrix();
+          //m.PostTranslate(10, 10);
+          //_mapView.ImageMatrix = m;
+          //_mapView.PostInvalidate();
+        }
         else
         { MapVm.RefreshImage(); }
       }

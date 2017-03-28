@@ -30,16 +30,6 @@ namespace OMapScratch
     public Bitmap CurrentImage
     { get { return _map.CurrentImage; } }
 
-    public void LoadDefaultImage()
-    {
-      Java.IO.File store = Environment.ExternalStorageDirectory;
-      string initPath = store.AbsolutePath;
-      string path = $"{initPath}/Pictures/fadacher_2017.jpg";
-      if (!System.IO.File.Exists(path))
-      { return; }
-      LoadImage(path);
-    }
-
     private void LoadImage(string path)
     {
       if (string.IsNullOrEmpty(path))
@@ -185,6 +175,11 @@ namespace OMapScratch
 
     public static void DrawPoint(Canvas canvas, Symbol sym, Pnt point, Paint p)
     {
+      if (!string.IsNullOrEmpty(sym.Text))
+      {
+        DrawText(canvas, sym.Text, point, p);
+        return;
+      }
       canvas.Save();
       try
       {
@@ -195,6 +190,21 @@ namespace OMapScratch
       finally
       { canvas.Restore(); }
     }
+
+    public static void DrawText(Canvas canvas, string text, Pnt point, Paint p)
+    {
+      canvas.Save();
+      try
+      {
+        p.SetStyle(Paint.Style.Stroke);
+        p.StrokeWidth = 0;
+        p.TextAlign = Paint.Align.Center;
+        canvas.DrawText(text, point.X, point.Y + p.TextSize / 2.5f, p);
+      }
+      finally
+      { canvas.Restore(); }
+    }
+
     private static void DrawCurve(Canvas canvas, Curve curve, float lineWidth, bool fill, bool stroke, Paint p)
     {
       if (curve.Count == 0)

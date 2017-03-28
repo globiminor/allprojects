@@ -174,7 +174,8 @@ namespace OMapScratch
 
       Pnt p = new Pnt { X = x, Y = y };
 
-      if (sym.IsLineSymbol())
+      SymbolType symTyp = sym.GetSymbolType();
+      if (symTyp == SymbolType.Line)
       {
         if (_currentCurve == null)
         {
@@ -184,9 +185,13 @@ namespace OMapScratch
         else
         { _currentCurve.LineTo(x, y); }
       }
-      else
+      else if (symTyp == SymbolType.Point)
       {
         CommitCurrentCurve();
+        _elems.Add(new Elem { Geometry = p, Symbol = sym, Color = color });
+      }
+      else if (symTyp == SymbolType.Text)
+      {
         _elems.Add(new Elem { Geometry = p, Symbol = sym, Color = color });
       }
       _redoElems = null;
@@ -409,6 +414,14 @@ namespace OMapScratch
             new SymbolCurve { LineWidth = 3,Curve = new Curve().MoveTo(10,-10).LineTo(-10,10) }
           }
         },
+        new Symbol {
+          Id = "TxA",
+          Text = "A"
+        },
+        new Symbol {
+          Id = "Tx1",
+          Text = "1"
+        },
       };
     }
 
@@ -560,6 +573,8 @@ namespace OMapScratch
   {
     [XmlAttribute("Id")]
     public string Id { get; set; }
+    [XmlAttribute("Text")]
+    public string Text { get; set; }
     [XmlElement("Curve")]
     public List<XmlSymbolCurve> Curves { get; set; }
 
@@ -567,6 +582,7 @@ namespace OMapScratch
     {
       XmlSymbol created = new XmlSymbol();
       created.Id = symbol.Id;
+      created.Text = symbol.Text;
       created.Curves = new List<XmlSymbolCurve>();
       foreach (SymbolCurve curve in symbol.Curves)
       {
@@ -579,6 +595,7 @@ namespace OMapScratch
     {
       Symbol sym = new Symbol();
       sym.Id = Id;
+      sym.Text = Text;
       sym.Curves = new List<SymbolCurve>();
       if (Curves != null)
       {
@@ -882,14 +899,24 @@ namespace OMapScratch
     public Curve Curve { get; set; }
   }
 
+  public enum SymbolType { Point, Line, Text }
   public class Symbol
   {
     public string Id { get; set; }
 
+    public string Text { get; set; }
     public List<SymbolCurve> Curves { get; set; }
-    public bool IsLineSymbol()
+
+    public SymbolType GetSymbolType()
     {
-      return Curves?.Count == 1 && Curves[0].Curve == null;
+      int nCurves = Curves?.Count ?? 0;
+      if (nCurves == 0)
+      { return SymbolType.Text; }
+
+      if (nCurves == 1 && Curves[0].Curve == null)
+      { return SymbolType.Line; }
+
+      return SymbolType.Point;
     }
   }
 
