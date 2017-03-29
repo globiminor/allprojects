@@ -26,14 +26,29 @@ namespace OMapScratch
         List<ColorRef> colors = _activity.MapVm.GetColors();
         List<Symbol> symbols = _activity.MapVm.GetSymbols();
 
-        ColumnCount = colors.Count;
-        RowCount = 2 + (symbols.Count - 1) / colors.Count;
+        int nColumns = colors.Count + 1;
+
+        ColumnCount = nColumns;
+        RowCount = 2 + (symbols.Count - 1) / nColumns;
         List<SymbolButton> symBtns = new List<SymbolButton>();
+        EditButton btnEdit = new EditButton(_activity);
+        btnEdit.SetMinimumWidth(5);
+        btnEdit.SetWidth(fullWidth / nColumns);
+        btnEdit.Click += (s, e) =>
+        {
+          ModeButton current = _activity._btnCurrentMode;
+          current.CurrentMode = btnEdit;
+          current.PostInvalidate();
+          Visibility = ViewStates.Invisible;
+        };
+
+        AddView(btnEdit);
+
         foreach (ColorRef color in colors)
         {
           Button btnColor = new Button(Context);
           btnColor.SetMinimumWidth(5);
-          btnColor.SetWidth(fullWidth / colors.Count);
+          btnColor.SetWidth(fullWidth / nColumns);
           btnColor.SetBackgroundColor(color.Color);
           AddView(btnColor);
 
@@ -48,15 +63,14 @@ namespace OMapScratch
         }
         foreach (Symbol sym in symbols)
         {
-          SymbolButton btnSym = new SymbolButton(sym, Context);
+          SymbolButton btnSym = new SymbolButton(sym, _activity);
           btnSym.SetMinimumWidth(5);
-          btnSym.SetWidth(fullWidth / colors.Count);
+          btnSym.SetWidth(fullWidth / nColumns);
 
           btnSym.Click += (s, e) =>
           {
-            SymbolButton current = _activity._btnCurrentSymbol;
-            current.Symbol = btnSym.Symbol;
-            current.Color = btnSym.Color;
+            ModeButton current = _activity._btnCurrentMode;
+            current.CurrentMode = btnSym;
             current.PostInvalidate();
             Visibility = ViewStates.Invisible;
           };

@@ -1,20 +1,112 @@
+using System;
 using Android.Graphics;
 using Android.Widget;
 
 namespace OMapScratch.Views
 {
-  public class SymbolButton : Button
+  public abstract class MapButton : Button
   {
-    public Symbol Symbol { get; set; }
-    public ColorRef Color { get; set; }
-    public SymbolButton(Symbol symbol, Android.Content.Context context)
+    public MapButton(Android.Content.Context context)
+      : base(context)
+    { }
+
+    public abstract void MapClicked(float x, float y);
+
+    protected sealed override void OnDraw(Canvas canvas)
+    {
+      OnDrawCore(canvas);
+    }
+    internal abstract void OnDrawCore(Canvas canvas);
+  }
+
+  public class ModeButton : MapButton
+  {
+    private MainActivity _context;
+    public MapButton CurrentMode { get; set; }
+
+    public ModeButton(MainActivity context, MapButton initMode)
       : base(context)
     {
+      _context = context;
+      CurrentMode = initMode;
+    }
+
+    public override void MapClicked(float x, float y)
+    {
+      CurrentMode.MapClicked(x, y);
+    }
+
+    internal override void OnDrawCore(Canvas canvas)
+    {
+      CurrentMode.OnDrawCore(canvas);
+    }
+  }
+  public class EditButton : MapButton
+  {
+    private MainActivity _context;
+
+    public EditButton(MainActivity context)
+      : base(context)
+    {
+      _context = context;
+    }
+
+    private Curve _arrow;
+    private Curve Arrow
+    {
+      get
+      {
+        if (_arrow == null)
+        {
+          int d = Math.Min(Width, Height);
+          _arrow = new Curve().MoveTo(-d / 3f, d / 6f).LineTo(-d / 3f, -d / 3f).LineTo(d / 6f, -d / 3f).
+            LineTo(0, -d / 6f).LineTo(d / 3f, d / 3f).LineTo(-d / 6f, 0).LineTo(-d / 3f, d / 6f);
+        }
+        return _arrow;
+      }
+    }
+
+    public override void MapClicked(float x, float y)
+    {
+      _context.MapView.InitContextMenus(x, y);
+    }
+
+    internal override void OnDrawCore(Canvas canvas)
+    {
+      Paint p = new Paint();
+      p.Color = Color.White;
+
+      canvas.Save();
+      try
+      {
+        canvas.Translate(Width / 2, Height / 2);
+        SymbolUtils.DrawCurve(canvas, Arrow, 3, false, true, p);
+      }
+      finally
+      { canvas.Restore(); }
+    }
+
+  }
+  public class SymbolButton : MapButton
+  {
+    private MainActivity _context;
+
+    public Symbol Symbol { get; set; }
+    public ColorRef Color { get; set; }
+    public SymbolButton(Symbol symbol, MainActivity context)
+      : base(context)
+    {
+      _context = context;
       Symbol = symbol;
       Color = new ColorRef { Color = MapView.DefaultColor };
     }
 
-    protected override void OnDraw(Canvas canvas)
+    public override void MapClicked(float x, float y)
+    {
+      _context.MapView.AddPoint(Symbol, Color, x, y);
+    }
+
+    internal override void OnDrawCore(Canvas canvas)
     {
       //base.OnDraw(canvas);
       Paint p = new Paint();

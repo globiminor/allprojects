@@ -13,12 +13,20 @@ namespace OMapScratch
   {
     private static Map _staticMap;
 
+    private RelativeLayout _parentLayout;
     private MapView _mapView;
     private MapVm _map;
-    private SymbolButton _btnCurrentSymbol;
+    private ModeButton _btnCurrentMode;
     private SymbolGrid _symbolGrid;
     private FileBrowser _browser;
     private LinearLayout _imageList;
+
+    public MapView MapView
+    { get { return _mapView; } }
+    public MapButton BtnCurrentMode
+    { get { return _btnCurrentMode; } }
+
+    public RelativeLayout ParentLayout { get { return _parentLayout; } }
 
     public MapVm MapVm
     {
@@ -61,12 +69,7 @@ namespace OMapScratch
       }
       bool IMenuItemOnMenuItemClickListener.OnMenuItemClick(IMenuItem item)
       {
-        Java.IO.File store = Environment.ExternalStorageDirectory;
-        string path = store.AbsolutePath;
-        FileBrowser browser = _activity._browser;
-        browser.Filter = new[] { ".config" };
-        browser.SetDirectory(path);
-        browser.Show((file) => { _activity.MapVm.Load(file); _activity._mapView.Invalidate(); });
+        _activity.ShowBrowser();
         return true;
       }
     }
@@ -116,7 +119,7 @@ namespace OMapScratch
       get
       {
         var metrics = Resources.DisplayMetrics;
-        return System.Math.Min( metrics.WidthPixels, metrics.HeightPixels);
+        return System.Math.Min(metrics.WidthPixels, metrics.HeightPixels);
       }
     }
 
@@ -125,15 +128,29 @@ namespace OMapScratch
       base.OnCreate(bundle);
       SetContentView(Resource.Layout.Main);
 
+      _parentLayout = FindViewById<RelativeLayout>(Resource.Id.parentLayout);
       _mapView = new MapView(this);
       {
         RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent);
         lprams.AddRule(LayoutRules.Below, Resource.Id.btnImages);
         _mapView.LayoutParameters = lprams;
       }
-      //_mapView.SetAdjustViewBounds(true);
-      RelativeLayout parentLayout = FindViewById<RelativeLayout>(Resource.Id.parentLayout);
-      parentLayout.AddView(_mapView);
+      _parentLayout.AddView(_mapView);
+      {
+        LinearLayout mapCtxMenu = new LinearLayout(this);
+        mapCtxMenu.Orientation = Orientation.Vertical;
+        mapCtxMenu.Visibility = ViewStates.Invisible;
+        {
+          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+          lprams.AddRule(LayoutRules.Below, Resource.Id.btnImages);
+          mapCtxMenu.LayoutParameters = lprams;
+        }
+        _mapView.ContextMenu = mapCtxMenu;
+        _parentLayout.AddView(mapCtxMenu);
+      }
+
+
+
 
       Button imageButton = FindViewById<Button>(Resource.Id.btnImages);
       imageButton.Click += (s, e) =>
@@ -159,15 +176,15 @@ namespace OMapScratch
       };
 
       {
-        _btnCurrentSymbol = new SymbolButton(MapVm.GetSymbols()[0], this);
-        _btnCurrentSymbol.SetMinimumWidth(5);
-        _btnCurrentSymbol.SetWidth(SymbolFullWidth / 8);
+        _btnCurrentMode = new ModeButton(this, new SymbolButton(MapVm.GetSymbols()[0], this));
+        _btnCurrentMode.SetMinimumWidth(5);
+        _btnCurrentMode.SetWidth(SymbolFullWidth / 8);
         RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
         lprams.AddRule(LayoutRules.RightOf, Resource.Id.btnImages);
-        _btnCurrentSymbol.LayoutParameters = lprams;
-        _btnCurrentSymbol.Id = View.GenerateViewId();
+        _btnCurrentMode.LayoutParameters = lprams;
+        _btnCurrentMode.Id = View.GenerateViewId();
 
-        _btnCurrentSymbol.Click += (s, e) =>
+        _btnCurrentMode.Click += (s, e) =>
         {
           if (_symbolGrid.Visibility == ViewStates.Visible)
           { _symbolGrid.Visibility = ViewStates.Invisible; }
@@ -176,7 +193,7 @@ namespace OMapScratch
           MapVm.CommitCurrentCurve();
         };
 
-        parentLayout.AddView(_btnCurrentSymbol);
+        _parentLayout.AddView(_btnCurrentMode);
       }
 
       {
@@ -185,7 +202,7 @@ namespace OMapScratch
         btnZoomIn.SetBackgroundResource(Resource.Drawable.ZoomIn);
         {
           RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-          lprams.AddRule(LayoutRules.RightOf, _btnCurrentSymbol.Id);
+          lprams.AddRule(LayoutRules.RightOf, _btnCurrentMode.Id);
           btnZoomIn.LayoutParameters = lprams;
         }
         btnZoomIn.Id = View.GenerateViewId();
@@ -194,7 +211,7 @@ namespace OMapScratch
           _mapView.Scale(dScale);
           _mapView.PostInvalidate();
         };
-        parentLayout.AddView(btnZoomIn);
+        _parentLayout.AddView(btnZoomIn);
 
         ImageButton btnZoomOut = new ImageButton(this);
         btnZoomOut.SetBackgroundResource(Resource.Drawable.ZoomOut);
@@ -208,7 +225,7 @@ namespace OMapScratch
         {
           _mapView.Scale(1 / dScale);
         };
-        parentLayout.AddView(btnZoomOut);
+        _parentLayout.AddView(btnZoomOut);
 
         ImageButton btnUndo = new ImageButton(this);
         btnUndo.SetBackgroundResource(Resource.Drawable.Undo);
@@ -223,7 +240,7 @@ namespace OMapScratch
           MapVm.Undo();
           _mapView.PostInvalidate();
         };
-        parentLayout.AddView(btnUndo);
+        _parentLayout.AddView(btnUndo);
 
         ImageButton btnRedo = new ImageButton(this);
         btnRedo.SetBackgroundResource(Resource.Drawable.Redo);
@@ -238,7 +255,7 @@ namespace OMapScratch
           MapVm.Redo();
           _mapView.PostInvalidate();
         };
-        parentLayout.AddView(btnRedo);
+        _parentLayout.AddView(btnRedo);
 
       }
 
@@ -255,7 +272,7 @@ namespace OMapScratch
         }
         _symbolGrid.Init(SymbolFullWidth);
         _symbolGrid.Visibility = ViewStates.Invisible;
-        parentLayout.AddView(_symbolGrid);
+        _parentLayout.AddView(_symbolGrid);
       }
 
       FileBrowser browser = new FileBrowser(this);
@@ -264,7 +281,7 @@ namespace OMapScratch
         browser.LayoutParameters = lprams;
         browser.Visibility = ViewStates.Invisible;
       }
-      parentLayout.AddView(browser);
+      _parentLayout.AddView(browser);
       _browser = browser;
 
       LinearLayout imageList = new LinearLayout(this);
@@ -274,190 +291,26 @@ namespace OMapScratch
         imageList.LayoutParameters = lprams;
         imageList.Visibility = ViewStates.Invisible;
       }
-      parentLayout.AddView(imageList);
+      _parentLayout.AddView(imageList);
       _imageList = imageList;
 
       {
         if (MapVm.CurrentImage == null)
-        {
-          //_mapView.SetScaleType(ImageView.ScaleType.Matrix);
-          //_mapView.SetBackgroundResource(Resource.Drawable.schlosswald);
-          //Matrix m = new Matrix();
-          //m.PostTranslate(10, 10);
-          //_mapView.ImageMatrix = m;
-          //_mapView.PostInvalidate();
-        }
+        { ShowBrowser(); }
         else
         { MapVm.RefreshImage(); }
       }
     }
 
-    private class MotionListener : Java.Lang.Object, View.IOnGenericMotionListener,
-      View.IOnTouchListener
+    private void ShowBrowser()
     {
-      private readonly MainActivity _parent;
-      public MotionListener(MainActivity parent)
-      {
-        _parent = parent;
-      }
-      public bool OnGenericMotion(View v, MotionEvent e)
-      {
-        if (e.Action == MotionEventActions.Pointer1Down)
-        { }
-
-        if (e.Action == MotionEventActions.HoverEnter || e.Action == MotionEventActions.HoverExit)
-        { return false; }
-        if (e.Action == MotionEventActions.HoverMove)
-        { return false; }
-        return false;
-      }
-
-      private class Touch
-      {
-        public float X { get; set; }
-        public float Y { get; set; }
-        public long Time { get; set; }
-        public MotionEventActions Action { get; set; }
-        public float Precision { get; set; }
-
-        public static Touch Create(MotionEvent e, int pointId)
-        {
-          float x = e.RawX;
-          float y = e.RawY;
-          if (e.PointerCount > pointId)
-          {
-            MotionEvent.PointerCoords coords = new MotionEvent.PointerCoords();
-            e.GetPointerCoords(pointId, coords);
-            x = coords.X;
-            y = coords.Y;
-          }
-          Touch t = new Touch
-          {
-            X = x,
-            Y = y,
-            Time = e.EventTime,
-            Action = e.Action,
-            Precision = (float)System.Math.Sqrt(e.XPrecision * e.XPrecision + e.YPrecision * e.YPrecision)
-          };
-          return t;
-        }
-      }
-
-      private Touch _t1Down;
-      private Touch _t2Down;
-      private Touch _t1Up;
-      private Touch _t2Up;
-
-      private void TouchReset()
-      {
-        _t1Down = null;
-        _t2Down = null;
-        _t1Up = null;
-        _t2Up = null;
-      }
-
-      private bool HandleAction()
-      {
-        if (_t1Down == null)
-        {
-          TouchReset();
-          return true;
-        }
-        if (_t1Up == null)
-        {
-          return true;
-        }
-        if ((_t2Down == null) != (_t2Up == null))
-        {
-          if (_t2Up != null)
-          { TouchReset(); }
-          return true;
-        }
-
-        Rect rect = new Rect();
-        _parent._mapView.GetGlobalVisibleRect(rect);
-        if (_t2Down == null)
-        {
-          float dx = _t1Up.X - _t1Down.X;
-          float dy = _t1Up.Y - _t1Down.Y;
-          float prec = System.Math.Min(rect.Height(), rect.Width()) / 100f;
-
-          if (System.Math.Abs(dx) <= prec && System.Math.Abs(dy) <= prec)
-          {
-            float x = (_t1Down.X + _t1Up.X) / 2.0f;
-            float y = (_t1Down.Y + _t1Up.Y) / 2.0f;
-
-            _parent._mapView.AddPoint(_parent._btnCurrentSymbol.Symbol, _parent._btnCurrentSymbol.Color, x, y);
-          }
-          else
-          { _parent._mapView.Translate(dx, dy); }
-          _parent._mapView.PostInvalidate();
-
-          TouchReset();
-          return true;
-        }
-
-        {
-          float dxDown = _t2Down.X - _t1Down.X;
-          float dyDown = _t2Down.Y - _t1Down.Y;
-          float lDown = (float)System.Math.Sqrt(dxDown * dxDown + dyDown * dyDown);
-
-          float dxUp = _t2Up.X - _t1Up.X;
-          float dyUp = _t2Up.Y - _t1Up.Y;
-          float lUp = (float)System.Math.Sqrt(dxUp * dxUp + dyUp * dyUp);
-          float scale = lUp / lDown;
-
-          float centerX = (_t1Down.X + _t1Up.X + _t2Down.X + _t2Up.X) / 4 - rect.Left;
-          float centerY = (_t1Down.Y + _t1Up.Y + _t2Down.Y + _t2Up.Y) / 4 - rect.Top;
-
-          _parent._mapView.Scale(scale, centerX, centerY);
-        }
-
-        TouchReset();
-        return true;
-      }
-
-      public bool OnTouch(View v, MotionEvent e)
-      {
-        if (e.Action == MotionEventActions.Down)
-        {
-          if (_t1Down == null) _t1Down = Touch.Create(e, 0);
-          return HandleAction();
-        }
-        if (e.Action == MotionEventActions.Move)
-        { return true; }
-        if (e.Action == MotionEventActions.Up)
-        {
-          if (_t1Up == null) _t1Up = Touch.Create(e, 0);
-          else if (_t2Up == null) _t2Up = Touch.Create(e, 0);
-          HandleAction();
-          TouchReset();
-        }
-        if (e.Action == MotionEventActions.Pointer2Down)
-        {
-          _t2Down = Touch.Create(e, 1);
-          return HandleAction();
-        }
-        if (e.Action == MotionEventActions.Pointer2Up)
-        {
-          _t2Up = Touch.Create(e, 1);
-          return HandleAction();
-        }
-        if (e.Action == MotionEventActions.Pointer1Up)
-        {
-          _t1Up = Touch.Create(e, 0);
-          return HandleAction();
-        }
-        if (e.Action == MotionEventActions.Pointer1Down)
-        {
-          _t1Down = Touch.Create(e, 0);
-          return HandleAction();
-        }
-
-        return false;
-      }
+      Java.IO.File store = Environment.ExternalStorageDirectory;
+      string path = store.AbsolutePath;
+      FileBrowser browser = _browser;
+      browser.Filter = new[] { ".config" };
+      browser.SetDirectory(path);
+      browser.Show((file) => { MapVm.Load(file); _mapView.Invalidate(); });
     }
-
   }
 }
 

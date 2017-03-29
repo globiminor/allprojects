@@ -13,6 +13,10 @@ namespace OMapScratch.Views
     private Matrix _inversElemMatrix;
     private Matrix _initMatrix;
 
+    internal LinearLayout ContextMenu { get; set; }
+
+    public float Precision { get { return 100; } }
+
     public MapView(MainActivity context)
       : base(context)
     {
@@ -175,14 +179,53 @@ namespace OMapScratch.Views
 
     public void AddPoint(Symbol symbol, ColorRef color, float x, float y)
     {
-      //Matrix inverse = new Matrix();
-      //ImageMatrix.Invert(inverse);
-      //            float[] inverted = { x - rect.Left, y - rect.Top };
       float[] inverted = { x, y };
       InversElemMatrix.MapPoints(inverted);
 
       _context.MapVm.AddPoint(inverted[0], inverted[1], symbol, color);
     }
+
+    public void InitContextMenus(float x, float y)
+    {
+      Rect rect = new Rect();
+      GetGlobalVisibleRect(rect);
+      float prec = System.Math.Min(rect.Width(), rect.Height()) / Precision;
+
+      float[] min = { x - prec, y - prec };
+      InversElemMatrix.MapPoints(min);
+      float[] max = { x + prec, y + prec };
+      InversElemMatrix.MapPoints(max);
+
+      IList<ContextAction> actions = _context.MapVm.GetContextActions(min[0], min[1], max[0], max[1]);
+      if (actions.Count <= 0)
+      {
+        ContextMenu.Visibility = Android.Views.ViewStates.Invisible;
+        ContextMenu.RemoveAllViews();
+        ContextMenu.PostInvalidate();
+        PostInvalidate();
+        return;
+      }
+
+      ContextMenu.RemoveAllViews();
+      foreach (ContextAction action in actions)
+      {
+        Button actionButton = new Button(_context);
+        actionButton.Text = action.Name;
+        actionButton.Click += (s,e) => {
+          action.Action();
+          ContextMenu.Visibility = Android.Views.ViewStates.Invisible;
+          PostInvalidate();
+        };
+        ContextMenu.AddView(actionButton);
+      }
+      ContextMenu.SetX(x);
+      ContextMenu.SetY(y);
+      ContextMenu.Visibility = Android.Views.ViewStates.Visible;
+      ContextMenu.PostInvalidate();
+      PostInvalidate();
+    }
+
+
     public void Translate(float dx, float dy)
     {
       ResetElemMatrix();

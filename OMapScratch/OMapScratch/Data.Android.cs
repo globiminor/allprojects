@@ -205,7 +205,7 @@ namespace OMapScratch
       { canvas.Restore(); }
     }
 
-    private static void DrawCurve(Canvas canvas, Curve curve, float lineWidth, bool fill, bool stroke, Paint p)
+    public static void DrawCurve(Canvas canvas, Curve curve, float lineWidth, bool fill, bool stroke, Paint p)
     {
       if (curve.Count == 0)
       {

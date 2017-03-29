@@ -26,6 +26,12 @@ namespace OMapScratch
     public string Id { get; set; }
   }
 
+  public class ContextAction
+  {
+    public string Name { get; set; }
+    public Action Action { get; set; }
+  }
+
   public partial class MapVm
   {
     private Map _map;
@@ -38,6 +44,35 @@ namespace OMapScratch
     public MapVm(Map map)
     {
       _map = map;
+    }
+
+    public List<ContextAction> GetContextActions(float x0, float y0, float x1, float y1)
+    {
+      double xMin = Math.Min(x0, x1);
+      double yMin = Math.Min(y0, y1);
+      double xMax = Math.Max(x0, x1);
+      double yMax = Math.Max(y0, y1);
+
+      List<Elem> selected = new List<Elem>();
+      foreach (Elem elem in _map.Elems)
+      {
+        Pnt pre = null;
+        foreach (Pnt point in elem.Geometry.GetVertices())
+        {
+          if (point.X > xMin && point.X < xMax && point.Y > yMin && point.Y < yMax)
+          {
+            selected.Add(elem);
+            break;
+          }
+        }
+      }
+
+      List<ContextAction> actions = new List<ContextAction>();
+      if (selected.Count == 1)
+      {
+        actions.Add(new ContextAction { Name = "Delete", Action = () => _map.RemoveElem(selected[0]) });
+      }
+      return actions;
     }
 
     public IEnumerable<XmlImage> Images
@@ -128,6 +163,12 @@ namespace OMapScratch
         foreach (Elem elem in _elems)
         { yield return elem; }
       }
+    }
+
+    public bool RemoveElem(Elem elem)
+    {
+      // TODO
+      return _elems?.Remove(elem) ?? false;
     }
 
     public float[] GetOffset()
