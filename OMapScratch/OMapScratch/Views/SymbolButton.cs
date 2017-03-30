@@ -1,4 +1,3 @@
-using System;
 using Android.Graphics;
 using Android.Widget;
 
@@ -14,9 +13,9 @@ namespace OMapScratch.Views
 
     protected sealed override void OnDraw(Canvas canvas)
     {
-      OnDrawCore(canvas);
+      OnDrawCore(this, canvas);
     }
-    internal abstract void OnDrawCore(Canvas canvas);
+    internal abstract void OnDrawCore(MapButton canvasOwner, Canvas canvas);
   }
 
   public class ModeButton : MapButton
@@ -36,9 +35,9 @@ namespace OMapScratch.Views
       CurrentMode.MapClicked(x, y);
     }
 
-    internal override void OnDrawCore(Canvas canvas)
+    internal override void OnDrawCore(MapButton thisButton, Canvas canvas)
     {
-      CurrentMode.OnDrawCore(canvas);
+      CurrentMode.OnDrawCore(thisButton, canvas);
     }
   }
   public class EditButton : MapButton
@@ -58,7 +57,7 @@ namespace OMapScratch.Views
       {
         if (_arrow == null)
         {
-          int d = Math.Min(Width, Height);
+          int d = System.Math.Min(Width, Height);
           _arrow = new Curve().MoveTo(-d / 3f, d / 6f).LineTo(-d / 3f, -d / 3f).LineTo(d / 6f, -d / 3f).
             LineTo(0, -d / 6f).LineTo(d / 3f, d / 3f).LineTo(-d / 6f, 0).LineTo(-d / 3f, d / 6f);
         }
@@ -71,7 +70,7 @@ namespace OMapScratch.Views
       _context.MapView.InitContextMenus(x, y);
     }
 
-    internal override void OnDrawCore(Canvas canvas)
+    internal override void OnDrawCore(MapButton canvasOwner, Canvas canvas)
     {
       Paint p = new Paint();
       p.Color = Color.White;
@@ -79,7 +78,9 @@ namespace OMapScratch.Views
       canvas.Save();
       try
       {
-        canvas.Translate(Width / 2, Height / 2);
+        float width = canvasOwner.Width;
+        float height = canvasOwner.Height;
+        canvas.Translate(width / 2, height / 2);
         SymbolUtils.DrawCurve(canvas, Arrow, 3, false, true, p);
       }
       finally
@@ -106,7 +107,7 @@ namespace OMapScratch.Views
       _context.MapView.AddPoint(Symbol, Color, x, y);
     }
 
-    internal override void OnDrawCore(Canvas canvas)
+    internal override void OnDrawCore(MapButton canvasOwner, Canvas canvas)
     {
       //base.OnDraw(canvas);
       Paint p = new Paint();
@@ -115,14 +116,17 @@ namespace OMapScratch.Views
       canvas.Save();
       try
       {
+        float width = canvasOwner.Width;
+        float height = canvasOwner.Height;
+
         float scale = 2;
-        canvas.Translate(Width / 2, Height / 2);
+        canvas.Translate(width / 2, height / 2);
         canvas.Scale(scale, scale);
         Symbol sym = Symbol;
         SymbolType symTyp = sym.GetSymbolType();
         if (symTyp == SymbolType.Line)
         {
-          float w = Width / (2 * scale) * 0.8f;
+          float w = width / (2 * scale) * 0.8f;
           SymbolUtils.DrawLine(canvas, sym, new Curve().MoveTo(-w, 0).LineTo(w, 0), p);
         }
         else if (symTyp == SymbolType.Point)
@@ -132,7 +136,7 @@ namespace OMapScratch.Views
         else if (symTyp == SymbolType.Text)
         {
           Paint.FontMetrics mtr = p.GetFontMetrics();
-          p.TextSize = Height / 6;
+          p.TextSize = height / 6;
           SymbolUtils.DrawText(canvas, sym.Text, new Pnt { X = 0, Y = 0 }, p);
         }
         else

@@ -136,13 +136,14 @@ namespace OMapScratch
       }
     }
   }
+
   public partial class Map
   {
     private List<Elem> _elems;
     private List<Symbol> _symbols;
     private List<ColorRef> _colors;
 
-    private Curve _currentCurve;
+    private Elem _currentCurve;
     private string _currentImagePath;
 
     private XmlConfig _config;
@@ -220,73 +221,147 @@ namespace OMapScratch
       {
         if (_currentCurve == null)
         {
-          _currentCurve = new Curve().MoveTo(x, y);
-          _elems.Add(new Elem { Geometry = _currentCurve, Symbol = sym, Color = color });
+          Curve curve = new Curve();
+          _currentCurve = new Elem { Geometry = curve, Symbol = sym, Color = color };
+        }
+        AddPointOperation op = new AddPointOperation(_elems, _currentCurve, x, y);
+        op.Redo(this, true);
+      }
+      else if (symTyp == SymbolType.Point ||
+        symTyp == SymbolType.Text)
+      {
+        AddElementOperation op = new AddElementOperation(new Elem { Geometry = p, Symbol = sym, Color = color }, _elems, _currentCurve);
+        op.Redo(this, true);
+      }
+    }
+
+    private abstract class Operation
+    {
+      public abstract void Undo();
+      public void Redo(Map map, bool isFirst)
+      {
+        Redo(map._undoOps);
+        if (isFirst)
+        { map._redoOps.Clear(); }
+      }
+      protected abstract void Redo(Stack<Operation> ops);
+    }
+
+    private class AddPointOperation : Operation
+    {
+      private float _x;
+      private float _y;
+      private Elem _currentCurve;
+      private IList<Elem> _elems;
+      private bool _first;
+      public AddPointOperation(IList<Elem> elems, Elem currentCurve, float x, float y)
+      {
+        _x = x;
+        _y = y;
+        _currentCurve = currentCurve;
+        _elems = elems;
+
+        _first = (_elems.Count == 0 || _elems[_elems.Count - 1] != _currentCurve);
+      }
+      protected override void Redo(Stack<Operation> ops)
+      {
+        if (_first)
+        {
+          ((Curve)_currentCurve.Geometry).MoveTo(_x, _y);
+          _elems.Add(_currentCurve);
         }
         else
-        { _currentCurve.LineTo(x, y); }
+        { ((Curve)_currentCurve.Geometry).LineTo(_x, _y); }
+        ops.Push(this);
       }
-      else if (symTyp == SymbolType.Point)
+      public override void Undo()
       {
-        CommitCurrentCurve();
-        _elems.Add(new Elem { Geometry = p, Symbol = sym, Color = color });
+        if (_first)
+        {
+          if (_elems.Count > 0 && _elems[_elems.Count - 1] == _currentCurve)
+          {
+            _elems.RemoveAt(_elems.Count - 1);
+          }
+          else
+          {
+            // ERROR!!!
+          }
+        }
+        else
+        { ((Curve)_currentCurve.Geometry).RemoveLast(); }
       }
-      else if (symTyp == SymbolType.Text)
-      {
-        _elems.Add(new Elem { Geometry = p, Symbol = sym, Color = color });
-      }
-      _redoElems = null;
-      _redoSegments = null;
     }
+    private class AddElementOperation : Operation
+    {
+      private Elem _elem;
+      private IList<Elem> _elems;
+      private Elem _currentCurve;
+      public AddElementOperation(Elem elem, IList<Elem> elems, Elem currentCurve)
+      {
+        _elem = elem;
+        _elems = elems;
+        _currentCurve = currentCurve;
+      }
+
+      public override void Undo()
+      {
+        if (_elems.Count > 0 && _elems[_elems.Count - 1] == _elem)
+        {
+          _elems.RemoveAt(_elems.Count - 1);
+        }
+        else
+        {
+          // ERROR!!!
+        }
+      }
+      protected override void Redo(Stack<Operation> ops)
+      {
+        while (ops.Count > 0 && ops.Peek() is AddPointOperation)
+        { ops.Pop(); }
+        if (_currentCurve != null)
+        {
+          AddElementOperation addCurve = new AddElementOperation(_currentCurve, _elems, null);
+          addCurve.Redo(ops);
+          _currentCurve = null;
+        }
+
+        if (_elem == null)
+        { return; }
+
+        if (_elem != _elems[_elems.Count - 1])
+        { _elems.Add(_elem); }
+        ops.Push(this);
+      }
+    }
+
     public void CommitCurrentCurve()
     {
-      if (_currentCurve != null && _currentCurve.Count == 0 && _elems[_elems.Count - 1].Geometry == _currentCurve)
-      { _elems.RemoveAt(_elems.Count - 1); }
+      AddElementOperation op = new AddElementOperation(_currentCurve, _elems, null);
+      op.Redo(this, true);
       _currentCurve = null;
     }
 
-    private List<ISegment> _redoSegments;
-    private List<Elem> _redoElems;
+    private Stack<Operation> _undoOps = new Stack<Operation>();
+    private Stack<Operation> _redoOps = new Stack<Operation>();
+
     public void Undo()
     {
-      if (_currentCurve != null)
+      if (_undoOps?.Count > 0)
       {
-        int i = _currentCurve.Count - 1;
-        if (i >= 0)
-        {
-          _redoSegments = _redoSegments ?? new List<ISegment>();
-          _redoSegments.Add(_currentCurve[i]);
-          _currentCurve.RemoveLast();
-        }
-        else
-        { CommitCurrentCurve(); }
-      }
-      else if (_elems != null)
-      {
-        _redoSegments = null;
-        _redoElems = _redoElems ?? new List<Elem>();
-        int i = _elems.Count - 1;
-        if (i >= 0)
-        {
-          _redoElems.Add(_elems[i]);
-          _elems.RemoveAt(i);
-        }
+        Operation op = _undoOps.Pop();
+        op.Undo();
+        _redoOps = _redoOps ?? new Stack<Operation>();
+        _redoOps.Push(op);
       }
     }
 
     public void Redo()
     {
-      if (_redoSegments?.Count > 0 && _currentCurve != null)
+      if (_redoOps?.Count > 0)
       {
-        int i = _redoSegments.Count - 1;
-        _currentCurve.Append(_redoSegments[i]);
-        _redoSegments.RemoveAt(i);
-      }
-      else if (_redoElems?.Count > 0 && _currentCurve == null)
-      {
-        int i = _redoElems.Count - 1;
-        _elems.Add(_redoElems[i]);
-        _redoElems.RemoveAt(i);
+        Operation op = _redoOps.Pop();
+        _undoOps = _undoOps ?? new Stack<Operation>();
+        op.Redo(this, false);
       }
     }
 
@@ -316,6 +391,8 @@ namespace OMapScratch
       _colors = null;
       _symbols = null;
       _elems = null;
+      _undoOps = new Stack<Operation>();
+      _redoOps = new Stack<Operation>();
       LoadSymbols();
       _elems = LoadElems();
     }
