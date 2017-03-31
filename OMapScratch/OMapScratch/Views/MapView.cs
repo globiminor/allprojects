@@ -2,6 +2,7 @@
 using Android.Graphics;
 using Android.Widget;
 using System.Collections.Generic;
+using System;
 
 namespace OMapScratch.Views
 {
@@ -13,7 +14,45 @@ namespace OMapScratch.Views
     private Matrix _inversElemMatrix;
     private Matrix _initMatrix;
 
-    internal LinearLayout ContextMenu { get; set; }
+    private LinearLayout _contextMenu;
+    internal LinearLayout ContextMenu
+    {
+      get { return _contextMenu; }
+      set
+      {
+        _contextMenu = value;
+        Android.Views.ViewTreeObserver vto = _contextMenu.ViewTreeObserver;
+        vto.AddOnGlobalLayoutListener(new OnGlobalLayoutListener(this));
+      }
+    }
+
+    private class OnGlobalLayoutListener : Java.Lang.Object, Android.Views.ViewTreeObserver.IOnGlobalLayoutListener
+    {
+      private readonly MapView _parent;
+      public OnGlobalLayoutListener(MapView parent)
+      {
+        _parent = parent;
+      }
+      public void OnGlobalLayout()
+      {
+        //_parent.ViewTreeObserver.RemoveOnGlobalLayoutListener(this);
+
+        int width = _parent.ContextMenu.MeasuredWidth;
+        int height = _parent.ContextMenu.MeasuredHeight;
+
+        float x = _parent.ContextMenu.GetX();
+        if (width + x > _parent.Width)
+        {
+          _parent.ContextMenu.SetX(x - width);
+        }
+        float y = _parent.ContextMenu.GetY();
+        if (height + y > _parent.Height)
+        {
+          _parent.ContextMenu.SetY(_parent.Height - height);
+        }
+
+      }
+    }
 
     public float Precision { get { return 100; } }
 
@@ -191,12 +230,13 @@ namespace OMapScratch.Views
       GetGlobalVisibleRect(rect);
       float prec = System.Math.Min(rect.Width(), rect.Height()) / Precision;
 
-      float[] min = { x - prec, y - prec };
-      InversElemMatrix.MapPoints(min);
+      float[] at = { x, y };
+      InversElemMatrix.MapPoints(at);
       float[] max = { x + prec, y + prec };
       InversElemMatrix.MapPoints(max);
+      float search = System.Math.Max(System.Math.Abs(max[0] - at[0]), System.Math.Abs(max[1] - at[1]));
 
-      IList<ContextAction> actions = _context.MapVm.GetContextActions(min[0], min[1], max[0], max[1]);
+      IList<ContextAction> actions = _context.MapVm.GetContextActions(at[0], at[1], search);
       if (actions.Count <= 0)
       {
         ContextMenu.Visibility = Android.Views.ViewStates.Invisible;
@@ -209,15 +249,17 @@ namespace OMapScratch.Views
       ContextMenu.RemoveAllViews();
       foreach (ContextAction action in actions)
       {
-        Button actionButton = new Button(_context);
+        ActionButton actionButton = new ActionButton(_context, action);
         actionButton.Text = action.Name;
-        actionButton.Click += (s,e) => {
+        actionButton.Click += (s, e) =>
+        {
           action.Action();
           ContextMenu.Visibility = Android.Views.ViewStates.Invisible;
           PostInvalidate();
         };
         ContextMenu.AddView(actionButton);
       }
+
       ContextMenu.SetX(x);
       ContextMenu.SetY(y);
       ContextMenu.Visibility = Android.Views.ViewStates.Visible;
@@ -225,7 +267,13 @@ namespace OMapScratch.Views
       PostInvalidate();
     }
 
-
+    private class ActionButton : Button
+    {
+      public ContextAction Action { get; }
+      public ActionButton(MainActivity context, ContextAction action)
+        : base(context)
+      { Action = action; }
+    }
     public void Translate(float dx, float dy)
     {
       ResetElemMatrix();
@@ -286,8 +334,8 @@ namespace OMapScratch.Views
       }
       finally
       { canvas.Restore(); }
-      bool edit = false;
-      if (edit)
+
+      if (ContextMenu.Visibility == Android.Views.ViewStates.Visible)
       {
         Paint wp = new Paint();
         wp.Color = Color.White;
@@ -299,29 +347,30 @@ namespace OMapScratch.Views
         bp.SetStyle(Paint.Style.Stroke);
 
         Matrix mat = ElemMatrix;
-        foreach (Elem elem in elems)
+
+        for (int iChild = 0; iChild < ContextMenu.ChildCount; iChild++)
         {
-          foreach (Pnt pnt in elem.Geometry.GetVertices())
-          {
-            float[] draw = new float[] { pnt.X, pnt.Y };
-            mat.MapPoints(draw);
+          ActionButton btn = ContextMenu.GetChildAt(iChild) as ActionButton;
+          if (btn == null)
+          { continue; }
+          Pnt pnt = btn.Action.Position;
+          float[] draw = new float[] { pnt.X, pnt.Y };
+          mat.MapPoints(draw);
 
-            int x0 = (int)draw[0];
-            int y0 = (int)draw[1];
+          int x0 = (int)draw[0];
+          int y0 = (int)draw[1];
 
-            float size = 10;
-            Path path = new Path();
-            path.MoveTo(draw[0] - size, draw[1] - size);
-            path.LineTo(draw[0] - size, draw[1] + size);
-            path.LineTo(draw[0] + size, draw[1] + size);
-            path.LineTo(draw[0] + size, draw[1] - size);
-            path.LineTo(draw[0] - size, draw[1] - size);
+          float size = 10;
+          Path path = new Path();
+          path.MoveTo(draw[0] - size, draw[1] - size);
+          path.LineTo(draw[0] - size, draw[1] + size);
+          path.LineTo(draw[0] + size, draw[1] + size);
+          path.LineTo(draw[0] + size, draw[1] - size);
+          path.LineTo(draw[0] - size, draw[1] - size);
 
-            canvas.DrawPath(path, wp);
-            canvas.DrawPath(path, bp);
-          }
+          canvas.DrawPath(path, wp);
+          canvas.DrawPath(path, bp);
         }
-        //this.SetColorFilter(filter);
       }
     }
   }

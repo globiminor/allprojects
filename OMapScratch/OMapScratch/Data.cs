@@ -28,6 +28,11 @@ namespace OMapScratch
 
   public class ContextAction
   {
+    public ContextAction(Pnt position)
+    {
+      Position = position;
+    }
+    public Pnt Position { get; }
     public string Name { get; set; }
     public Action Action { get; set; }
   }
@@ -46,32 +51,56 @@ namespace OMapScratch
       _map = map;
     }
 
-    public List<ContextAction> GetContextActions(float x0, float y0, float x1, float y1)
+    public List<ContextAction> GetContextActions(float x0, float y0, float dx)
     {
-      double xMin = Math.Min(x0, x1);
-      double yMin = Math.Min(y0, y1);
-      double xMax = Math.Max(x0, x1);
-      double yMax = Math.Max(y0, y1);
+      float dd = Math.Max(Math.Abs(dx), _map.MinSearchDistance);
+      float xMin = x0 - dd;
+      float yMin = y0 - dd;
+      float xMax = x0 + dd;
+      float yMax = y0 + dd;
 
-      List<Elem> selected = new List<Elem>();
+      List<ContextAction> actions = new List<ContextAction>();
       foreach (Elem elem in _map.Elems)
       {
         Pnt pre = null;
+        Pnt actionPnt = null;
+        List<int> vertices = null;
+        int iVertex = 0;
         foreach (Pnt point in elem.Geometry.GetVertices())
         {
           if (point.X > xMin && point.X < xMax && point.Y > yMin && point.Y < yMax)
           {
-            selected.Add(elem);
-            break;
+            if (actionPnt == null)
+            { actionPnt = point; }
+            else
+            {
+              Pnt down = new Pnt { X = x0, Y = y0 };
+              if (down.Dist2(actionPnt) > down.Dist2(point))
+              { actionPnt = point; }
+            }
+            vertices = vertices ?? new List<int>();
+            vertices.Add(iVertex);
           }
+          iVertex++;
+        }
+        if (actionPnt != null)
+        {
+          List<ContextAction> elemActions = new List<ContextAction>();
+          elemActions.Add(new ContextAction(actionPnt) { Name = "Del. Elem.", Action = () => _map.RemoveElem(elem) });
+          IDrawable geom = elem.Geometry;
+          if ((elem.Geometry as Curve)?.Count > 1)
+          {
+            foreach (int idx in vertices)
+            {
+              string name = vertices.Count > 1 ? $"Del. Vertex #{idx}" : "Del. Vertex";
+              elemActions.Add(new ContextAction(actionPnt) { Name = name, Action = () => _map.RemoveVertex(elem, idx) });
+            }
+          }
+
+          actions.AddRange(elemActions);
         }
       }
 
-      List<ContextAction> actions = new List<ContextAction>();
-      if (selected.Count == 1)
-      {
-        actions.Add(new ContextAction { Name = "Delete", Action = () => _map.RemoveElem(selected[0]) });
-      }
       return actions;
     }
 
@@ -149,9 +178,20 @@ namespace OMapScratch
     private XmlConfig _config;
     private string _configPath;
 
+    private static readonly float _defaultMinSearchDist = 10;
+
     internal IList<XmlImage> Images
     {
       get { return _config?.Images; }
+    }
+
+    public float MinSearchDistance
+    {
+      get
+      {
+        float search = _config?.Data?.Search ?? 0;
+        return search > 0 ? search : _defaultMinSearchDist;
+      }
     }
 
     public IEnumerable<Elem> Elems
@@ -168,9 +208,18 @@ namespace OMapScratch
 
     public bool RemoveElem(Elem elem)
     {
-      // TODO
-      return _elems?.Remove(elem) ?? false;
+      RemoveElementOperation op = new RemoveElementOperation(_elems, elem);
+      op.Redo(this, true);
+      return op.LastSuccess;
     }
+
+    public bool RemoveVertex(Elem elem, int idx)
+    {
+      RemoveVertexOperation op = new RemoveVertexOperation(elem, idx);
+      op.Redo(this, true);
+      return op.LastSuccess;
+    }
+
 
     public float[] GetOffset()
     {
@@ -247,6 +296,93 @@ namespace OMapScratch
       protected abstract void Redo(Stack<Operation> ops);
     }
 
+    private class RemoveVertexOperation : Operation
+    {
+      private readonly Elem _elem;
+      private readonly int _vertexIndex;
+
+      private ISegment _seg0;
+      private ISegment _seg1;
+
+      public RemoveVertexOperation(Elem elem, int vertexIndex)
+      {
+        _elem = elem;
+        _vertexIndex = vertexIndex;
+      }
+      public bool LastSuccess { get; private set; }
+      public override void Undo()
+      {
+        Curve curve = (Curve)_elem.Geometry;
+        if (_vertexIndex == 0)
+        {
+          curve.Insert(0, _seg0);
+        }
+        else if (_vertexIndex == curve.Count + 1)
+        {
+          curve.Add(_seg1);
+        }
+        else
+        {
+          curve.RemoveAt(_vertexIndex - 1);
+          curve.Insert(_vertexIndex - 1, _seg1);
+          curve.Insert(_vertexIndex - 1, _seg0);
+        }
+      }
+      protected override void Redo(Stack<Operation> ops)
+      {
+        Curve curve = (Curve)_elem.Geometry;
+        if (_vertexIndex == 0)
+        {
+          _seg0 = curve[0];
+          curve.RemoveAt(0);
+        }
+        else if (_vertexIndex == curve.Count)
+        {
+          _seg1 = curve[_vertexIndex - 1];
+          curve.RemoveAt(_vertexIndex - 1);
+        }
+        else
+        {
+          _seg0 = curve[_vertexIndex - 1];
+          _seg1 = curve[_vertexIndex];
+          Lin add = new Lin { From = _seg0.From, To = _seg1.To };
+          curve.RemoveAt(_vertexIndex - 1);
+          curve.RemoveAt(_vertexIndex - 1);
+          curve.Insert(_vertexIndex - 1, add);
+        }
+        ops.Push(this);
+      }
+    }
+
+    private class RemoveElementOperation : Operation
+    {
+      private readonly Elem _remove;
+      private readonly IList<Elem> _elems;
+      private int _idx;
+      public RemoveElementOperation(IList<Elem> elems, Elem remove)
+      {
+        _remove = remove;
+        _elems = elems;
+      }
+      public bool LastSuccess { get; private set; }
+      public override void Undo()
+      {
+        if (_idx < 0)
+        { return; }
+        _elems.Insert(_idx, _remove);
+      }
+      protected override void Redo(Stack<Operation> ops)
+      {
+        _idx = _elems.IndexOf(_remove);
+        LastSuccess = (_idx >= 0);
+
+        if (_idx < 0)
+        { return; }
+
+        _elems.RemoveAt(_idx);
+        ops.Push(this);
+      }
+    }
     private class AddPointOperation : Operation
     {
       private float _x;
@@ -581,6 +717,8 @@ namespace OMapScratch
     public string Scratch { get; set; }
     [XmlAttribute("symbol")]
     public string Symbol { get; set; }
+    [XmlAttribute("search")]
+    public float Search { get; set; }
   }
   public class XmlImage
   {
@@ -868,6 +1006,12 @@ namespace OMapScratch
       return $"{DrawableUtils.Point} {X:f1} {Y:f1}";
     }
 
+    public float Dist2(Pnt other)
+    {
+      float dx = X - other.X;
+      float dy = Y - other.Y;
+      return (dx * dx + dy * dy);
+    }
     IEnumerable<Pnt> IDrawable.GetVertices()
     {
       yield return new Pnt { X = X, Y = Y };
