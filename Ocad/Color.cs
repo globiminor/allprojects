@@ -54,6 +54,13 @@ namespace Ocad
       return (int)(255 * percent / 100.0);
     }
 
+    public static Color FromRgb(byte r, byte g, byte b)
+    {
+      double c, m, y, k;
+      RgbToCmyk(r / 255.0, g / 255.0, b / 255.0, out c, out m, out y, out k);
+      Color col = new Color { Cyan = (byte)(255 * c), Magenta = (byte)(255 * m), Yellow = (byte)(255 * y), Black = (byte)(255 * k) };
+      return col;
+    }
     public static Color ColorToCmyk(System.Drawing.Color color)
     {
       double c, m, y, k;
@@ -67,11 +74,17 @@ namespace Ocad
       double red = color.R / 255.0;
       double green = color.G / 255.0;
       double blue = color.B / 255.0;
+      RgbToCmyk(red, green, blue, out c, out m, out y, out k);
+    }
+
+    public static void RgbToCmyk(double red, double green, double blue, out double c, out double m, out double y, out double k)
+    {
       k = System.Math.Min(System.Math.Min(1 - red, 1 - green), 1 - blue);
       c = (1 - red - k) / (1 - k);
       m = (1 - green - k) / (1 - k);
       y = (1 - blue - k) / (1 - k);
     }
+
     public static System.Drawing.Color CmykToColor(double c, double m, double y, double k)
     {
       int red = (int)((1 - c) * (1 - k) * 255);

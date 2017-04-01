@@ -47,5 +47,67 @@ namespace OcadScratch
       if (sb.ToString() != first)
       { throw new InvalidDataException(""); }
     }
+
+    private void btnTransfer_Click(object sender, RoutedEventArgs e)
+    {
+      string scratchFile;
+      {
+        Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+        dlg.Title = "Load Scratch file";
+        dlg.Filter = "*.config | *.config";
+        if (!(dlg.ShowDialog() ?? false))
+        { return; }
+
+        scratchFile = dlg.FileName;
+      }
+
+      string ocdFile;
+      {
+        Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+        dlg.Title = "Load OCAD file";
+        dlg.Filter = "*.ocd | *.ocd";
+        if (!(dlg.ShowDialog() ?? false))
+        { return; }
+
+        ocdFile = dlg.FileName;
+      }
+
+      using (CmdTransfer cmd = new CmdTransfer(scratchFile, ocdFile))
+      {
+        cmd.Execute();
+      }
+    }
+
+    private void btnMoveToOcad_Click(object sender, RoutedEventArgs e)
+    {
+      try
+      {
+        Topmost = false;
+        Macro.Macro macro = new Macro.Macro();
+        macro.SetForegroundWindow("OCAD");
+
+        macro.SendCommands('n', Macro.Macro.VK_ALT);
+        macro.SendKey('c');
+
+        System.Threading.Thread.Sleep(500);
+        macro.SendKeys("677500");
+
+        System.Threading.Thread.Sleep(100);
+        macro.SendKey('\t');
+
+        System.Threading.Thread.Sleep(100);
+        macro.SendKeys("254200");
+
+        System.Threading.Thread.Sleep(100);
+        macro.SendKey('\t');
+
+        System.Threading.Thread.Sleep(100);
+        macro.SendKeys(System.Environment.NewLine);
+      }
+      finally
+      {
+        Topmost = true;
+      }
+    }
   }
 }

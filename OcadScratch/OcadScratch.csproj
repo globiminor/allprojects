@@ -66,6 +66,8 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="CmdTransfer.cs" />
+    <Compile Include="Data.Geom.cs" />
     <Compile Include="Data.Wpf.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -98,6 +100,20 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Basics\Basics.csproj">
+      <Project>{200E9400-2771-4ACE-A172-78EBD405B67E}</Project>
+      <Name>Basics</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Macro\Macro.csproj">
+      <Project>{bb7de197-d752-4378-8f2d-af7f1ab343c0}</Project>
+      <Name>Macro</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Ocad\Ocad.csproj">
+      <Project>{39b4f02a-e890-4afe-b00b-11d1e7ed5634}</Project>
+      <Name>Ocad</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
