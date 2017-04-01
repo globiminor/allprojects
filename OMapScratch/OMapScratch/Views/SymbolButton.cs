@@ -81,7 +81,7 @@ namespace OMapScratch.Views
         float width = canvasOwner.Width;
         float height = canvasOwner.Height;
         canvas.Translate(width / 2, height / 2);
-        SymbolUtils.DrawCurve(canvas, Arrow, 3, false, true, p);
+        SymbolUtils.DrawCurve(canvas, Arrow, null, 3, false, true, p);
       }
       finally
       { canvas.Restore(); }
@@ -127,17 +127,17 @@ namespace OMapScratch.Views
         if (symTyp == SymbolType.Line)
         {
           float w = width / (2 * scale) * 0.8f;
-          SymbolUtils.DrawLine(canvas, sym, new Curve().MoveTo(-w, 0).LineTo(w, 0), p);
+          SymbolUtils.DrawLine(canvas, sym, null, 1, new Curve().MoveTo(-w, 0).LineTo(w, 0), p);
         }
         else if (symTyp == SymbolType.Point)
         {
-          SymbolUtils.DrawPoint(canvas, sym, new Pnt { X = 0, Y = 0 }, p);
+          SymbolUtils.DrawPoint(canvas, sym, null, 1, new Pnt(0, 0), p);
         }
         else if (symTyp == SymbolType.Text)
         {
           Paint.FontMetrics mtr = p.GetFontMetrics();
           p.TextSize = height / 6;
-          SymbolUtils.DrawText(canvas, sym.Text, new Pnt { X = 0, Y = 0 }, p);
+          SymbolUtils.DrawText(canvas, sym.Text, null, 1, new Pnt { X = 0, Y = 0 }, p);
         }
         else
         { throw new System.NotImplementedException($"unknown SymbolType {symTyp}"); }

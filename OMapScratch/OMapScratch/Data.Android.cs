@@ -5,13 +5,13 @@ namespace OMapScratch
 {
   public partial interface ISegment
   {
-    void Init(Path path);
-    void AppendTo(Path path);
+    void Init(Path path, float[] matrix);
+    void AppendTo(Path path, float[] matrix);
   }
 
   public partial interface IDrawable
   {
-    void Draw(Canvas canvas, Symbol symbol, Paint paint);
+    void Draw(Canvas canvas, Symbol symbol, float[] matrix, float symbolScale, Paint paint);
   }
 
   public partial class MapVm
@@ -109,37 +109,41 @@ namespace OMapScratch
 
   public partial class Pnt
   {
-    void IDrawable.Draw(Canvas canvas, Symbol symbol, Paint paint)
+    void IDrawable.Draw(Canvas canvas, Symbol symbol, float[] matrix, float symbolScale, Paint paint)
     {
-      SymbolUtils.DrawPoint(canvas, symbol, this, paint);
+      SymbolUtils.DrawPoint(canvas, symbol, matrix, symbolScale, this, paint);
     }
   }
 
   public partial class Lin
   {
-    void ISegment.Init(Path path)
+    void ISegment.Init(Path path, float[] matrix)
     {
-      path.MoveTo(From.X, From.Y);
+      Pnt t = From.Trans(matrix);
+      path.MoveTo(t.X, t.Y);
     }
 
-    void ISegment.AppendTo(Path path)
+    void ISegment.AppendTo(Path path, float[] matrix)
     {
-      path.LineTo(To.X, To.Y);
+      Pnt t = To.Trans(matrix);
+      path.LineTo(t.X, t.Y);
     }
   }
 
   public partial class Circle
   {
-    void ISegment.Init(Path path)
+    void ISegment.Init(Path path, float[] matrix)
     { }
-    void ISegment.AppendTo(Path path)
+    void ISegment.AppendTo(Path path, float[] matrix)
     {
+      Pnt lt = new Pnt(Center.X - Radius, Center.Y - Radius).Trans(matrix);
+      Pnt rb = new Pnt(Center.X + Radius, Center.Y + Radius).Trans(matrix);
       RectF r = new RectF
       {
-        Left = Center.X - Radius,
-        Right = Center.X + Radius,
-        Top = Center.Y - Radius,
-        Bottom = Center.X + Radius,
+        Left = lt.X,
+        Right = rb.X,
+        Top = lt.Y,
+        Bottom = rb.Y,
       };
       path.AddArc(r, 0, 360);
     }
@@ -147,51 +151,63 @@ namespace OMapScratch
 
   public partial class Bezier
   {
-    void ISegment.Init(Path path)
+    void ISegment.Init(Path path, float[] matrix)
     {
-      path.MoveTo(From.X, From.Y);
+      Pnt t = From.Trans(matrix);
+      path.MoveTo(t.X, t.Y);
     }
-    void ISegment.AppendTo(Path path)
+    void ISegment.AppendTo(Path path, float[] matrix)
     {
-      path.CubicTo(I0.X, I0.Y, I1.X, I1.Y, To.X, To.Y);
+      Pnt i0 = I0.Trans(matrix);
+      Pnt i1 = I1.Trans(matrix);
+      Pnt to = To.Trans(matrix);
+      path.CubicTo(i0.X, i0.Y, i1.X, i1.Y, to.X, to.Y);
     }
   }
 
   public partial class Curve
   {
-    void IDrawable.Draw(Canvas canvas, Symbol symbol, Paint paint)
+    void IDrawable.Draw(Canvas canvas, Symbol symbol, float[] matrix, float symbolScale, Paint paint)
     {
-      SymbolUtils.DrawLine(canvas, symbol, this, paint);
+      SymbolUtils.DrawLine(canvas, symbol, matrix, symbolScale, this, paint);
     }
   }
 
   public static class SymbolUtils
   {
-    public static void DrawLine(Canvas canvas, Symbol sym, Curve line, Paint p)
+    public static void DrawLine(Canvas canvas, Symbol sym, float[] matrix, float symbolScale, Curve line, Paint p)
     {
+      float lineScale = matrix?[0] / symbolScale ?? 1;
       foreach (SymbolCurve curve in sym.Curves)
-      { DrawCurve(canvas, line, curve.LineWidth, curve.Fill, curve.Stroke, p); }
+      { DrawCurve(canvas, line, matrix, curve.LineWidth * lineScale, curve.Fill, curve.Stroke, p); }
     }
 
-    public static void DrawPoint(Canvas canvas, Symbol sym, Pnt point, Paint p)
+    public static void DrawPoint(Canvas canvas, Symbol sym, float[] matrix, float symbolScale, Pnt point, Paint p)
     {
       if (!string.IsNullOrEmpty(sym.Text))
       {
-        DrawText(canvas, sym.Text, point, p);
+        DrawText(canvas, sym.Text, matrix, symbolScale, point, p);
         return;
       }
       canvas.Save();
       try
       {
-        canvas.Translate(point.X, point.Y);
+        Pnt t = point.Trans(matrix);
+        canvas.Translate(t.X, t.Y);
+        float pntScale = 1;
+        if (matrix != null)
+        {
+          pntScale = matrix[0] / symbolScale;
+        }
+        canvas.Scale(pntScale, -pntScale);
         foreach (SymbolCurve curve in sym.Curves)
-        { DrawCurve(canvas, curve.Curve, curve.LineWidth, curve.Fill, curve.Stroke, p); }
+        { DrawCurve(canvas, curve.Curve, null, curve.LineWidth, curve.Fill, curve.Stroke, p); }
       }
       finally
       { canvas.Restore(); }
     }
 
-    public static void DrawText(Canvas canvas, string text, Pnt point, Paint p)
+    public static void DrawText(Canvas canvas, string text, float[] matrix, float symbolScale, Pnt point, Paint p)
     {
       canvas.Save();
       try
@@ -199,13 +215,18 @@ namespace OMapScratch
         p.SetStyle(Paint.Style.Stroke);
         p.StrokeWidth = 0;
         p.TextAlign = Paint.Align.Center;
-        canvas.DrawText(text, point.X, point.Y + p.TextSize / 2.5f, p);
+
+        Pnt t = point.Trans(matrix);
+        canvas.Translate(t.X, t.Y);
+        if (matrix != null)
+        { canvas.Scale(matrix[0] / symbolScale, matrix[4] / symbolScale); }
+        canvas.DrawText(text, 0, 0 + p.TextSize / 2.5f, p);
       }
       finally
       { canvas.Restore(); }
     }
 
-    public static void DrawCurve(Canvas canvas, Curve curve, float lineWidth, bool fill, bool stroke, Paint p)
+    public static void DrawCurve(Canvas canvas, Curve curve, float[] matrix, float lineWidth, bool fill, bool stroke, Paint p)
     {
       if (curve.Count == 0)
       {
@@ -215,9 +236,9 @@ namespace OMapScratch
       }
 
       Path path = new Path();
-      curve[0].Init(path);
+      curve[0].Init(path, matrix);
       foreach (ISegment segment in curve)
-      { segment.AppendTo(path); }
+      { segment.AppendTo(path, matrix); }
 
       p.StrokeWidth = lineWidth;
       if (fill && stroke)

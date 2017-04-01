@@ -119,6 +119,11 @@ namespace OMapScratch
     public IEnumerable<Elem> Elems
     { get { return _map.Elems; } }
 
+    public float SymbolScale
+    {
+      get { return _map.SymbolScale; }
+    }
+
     internal void AddPoint(float x, float y, Symbol symbol, ColorRef color)
     { _map.AddPoint(x, y, symbol, color); }
     internal void CommitCurrentCurve()
@@ -183,6 +188,16 @@ namespace OMapScratch
     internal IList<XmlImage> Images
     {
       get { return _config?.Images; }
+    }
+
+    public float SymbolScale
+    {
+      get
+      {
+        float scale = _config?.Data?.SymbolScale ?? 1;
+        if (scale <= 0) { scale = 1; }
+        return scale;
+      }
     }
 
     public float MinSearchDistance
@@ -464,7 +479,7 @@ namespace OMapScratch
         if (_elem == null)
         { return; }
 
-        if (_elem != _elems[_elems.Count - 1])
+        if (_elems.Count == 0 || _elem != _elems[_elems.Count - 1])
         { _elems.Add(_elem); }
         ops.Push(this);
       }
@@ -717,8 +732,12 @@ namespace OMapScratch
     public string Scratch { get; set; }
     [XmlAttribute("symbol")]
     public string Symbol { get; set; }
+    [XmlAttribute("symbolscale")]
+    public float SymbolScale { get; set; }
     [XmlAttribute("search")]
     public float Search { get; set; }
+    [XmlAttribute("numberformat")]
+    public string NumberFormat { get; set; }
   }
   public class XmlImage
   {
@@ -1001,6 +1020,22 @@ namespace OMapScratch
     public float X { get; set; }
     public float Y { get; set; }
 
+    public Pnt()
+    { }
+    public Pnt(float x, float y)
+    {
+      X = x;
+      Y = y;
+    }
+
+    public Pnt Trans(float[] matrix)
+    {
+      if (matrix == null)
+      { return new Pnt(X, Y); }
+
+      Pnt trans = new Pnt(matrix[0] * X + matrix[2], matrix[4] * Y + matrix[5]);
+      return trans;
+    }
     string IDrawable.ToText()
     {
       return $"{DrawableUtils.Point} {X:f1} {Y:f1}";

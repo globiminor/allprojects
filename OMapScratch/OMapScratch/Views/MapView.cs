@@ -324,12 +324,14 @@ namespace OMapScratch.Views
       {
         float[] matrix = ElemMatrixValues;
 
-        canvas.Translate(matrix[2], matrix[5]);
-        canvas.Scale(matrix[0], matrix[0]);
+        float symbolScale = _context.MapVm.SymbolScale;
+
+        //canvas.Translate(matrix[2] * symbolScale, matrix[5] * symbolScale);
+        //canvas.Scale(matrix[0] / symbolScale, matrix[0] / symbolScale);
         foreach (Elem elem in elems)
         {
           p.Color = elem.Color?.Color ?? DefaultColor;
-          elem.Geometry.Draw(canvas, elem.Symbol, p);
+          elem.Geometry.Draw(canvas, elem.Symbol, matrix, symbolScale, p);
         }
       }
       finally
