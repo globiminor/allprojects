@@ -13,6 +13,52 @@ namespace OcadTest
   public class DataTest
   {
     [TestMethod]
+    public void TestBildObjekte()
+    {
+      using (OcadReader r = OcadReader.Open(@"C:\daten\felix\kapreolo\scool\regensdorf_ruggenacher\test.ocd"))
+      {
+        foreach (ElementIndex idx in r.GetIndices())
+        {
+          ElementV9 e = (ElementV9)r.ReadElement(idx);
+          if (e == null)
+          { continue; }
+          byte[] color = BitConverter.GetBytes(e.Color);
+        }
+      }
+    }
+
+    [TestMethod]
+    public void TestWriteBildObjekte()
+    {
+      using (OcadWriter w = Ocad9Writer.AppendTo(@"C:\daten\felix\kapreolo\scool\regensdorf_ruggenacher\test.ocd"))
+      {
+        {
+          ElementV9 elem = new ElementV9(true);
+          elem.Type = GeomType.unformattedText;
+          elem.Color = Color.ColorToCmyk(System.Drawing.Color.Blue).ToNumber();
+          elem.Geometry = new Point2D(677000, 254000);
+          elem.Text = "A";
+          elem.Symbol = -3;
+
+          w.Append(elem);
+        }
+
+        {
+          ElementV9 elem = new ElementV9(true);
+          elem.Type = GeomType.line;
+          elem.Color = Color.ColorToCmyk(System.Drawing.Color.Green).ToNumber();
+          elem.LineWidth = 30;
+          elem.Geometry = Polyline.Create(new[] { new Point2D(677010, 254000), new Point2D(677020, 254010) });
+          elem.Symbol = -3;
+
+          w.Append(elem);
+        }
+
+      }
+    }
+
+
+    [TestMethod]
     public void SetColor()
     {
       using (OcadWriter w = Ocad9Writer.AppendTo(@"C:\daten\ASVZ\SOLA\2015\OCAD Vorlagen\sola10k - Kopie.ocd"))

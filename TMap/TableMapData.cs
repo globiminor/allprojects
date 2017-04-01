@@ -210,7 +210,7 @@ namespace TMap
 
     private static System.Drawing.Color GetColor(Ocad.Color ocadColor)
     {
-      System.Drawing.Color color = Symbol.CmykToColor(ocadColor.Cyan / 255.0,
+      System.Drawing.Color color = Ocad.Color.CmykToColor(ocadColor.Cyan / 255.0,
                                                       ocadColor.Magenta / 255.0, ocadColor.Yellow / 255.0, ocadColor.Black / 255.0);
       return color;
     }

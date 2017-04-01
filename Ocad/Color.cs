@@ -53,6 +53,34 @@ namespace Ocad
     {
       return (int)(255 * percent / 100.0);
     }
+
+    public static Color ColorToCmyk(System.Drawing.Color color)
+    {
+      double c, m, y, k;
+      ColorToCmyk(color, out c, out m, out y, out k);
+      Color col = new Color { Cyan = (byte)(255 * c), Magenta = (byte)(255 * m), Yellow = (byte)(255 * y), Black = (byte)(255 * k) };
+      return col;
+    }
+
+    public static void ColorToCmyk(System.Drawing.Color color, out double c, out double m, out double y, out double k)
+    {
+      double red = color.R / 255.0;
+      double green = color.G / 255.0;
+      double blue = color.B / 255.0;
+      k = System.Math.Min(System.Math.Min(1 - red, 1 - green), 1 - blue);
+      c = (1 - red - k) / (1 - k);
+      m = (1 - green - k) / (1 - k);
+      y = (1 - blue - k) / (1 - k);
+    }
+    public static System.Drawing.Color CmykToColor(double c, double m, double y, double k)
+    {
+      int red = (int)((1 - c) * (1 - k) * 255);
+      int green = (int)((1 - m) * (1 - k) * 255);
+      int blue = (int)((1 - y) * (1 - k) * 255);
+
+      return System.Drawing.Color.FromArgb(red, green, blue);
+    }
+
   }
 
   public class ColorInfo
