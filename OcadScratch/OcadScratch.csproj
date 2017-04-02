@@ -55,6 +55,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ViewModels\WorkElemVm.cs" />
+    <Page Include="CntWorkElem.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -67,6 +72,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="CmdTransfer.cs" />
+    <Compile Include="CntWorkElem.xaml.cs">
+      <DependentUpon>CntWorkElem.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Data.Geom.cs" />
     <Compile Include="Data.Wpf.cs" />
     <Compile Include="MainWindow.xaml.cs">

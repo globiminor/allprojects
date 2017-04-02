@@ -46,7 +46,8 @@ namespace Ocad
 
     public int ToNumber()
     {
-      return GetByte(Cyan) + 256 * (GetByte(Magenta) + 256 * (GetByte(Yellow) + 256 * GetByte(Black)));
+      return Cyan + 256 * (Magenta + 256 * (Yellow + 256 * Black));
+      //return GetByte(Cyan) + 256 * (GetByte(Magenta) + 256 * (GetByte(Yellow) + 256 * GetByte(Black)));
     }
 
     private int GetByte(int percent)

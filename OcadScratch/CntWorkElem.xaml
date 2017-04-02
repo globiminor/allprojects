@@ -1,0 +1,21 @@
+﻿<UserControl x:Class="OcadScratch.CntWorkElem"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:OcadScratch.ViewModels"
+             mc:Ignorable="d" 
+             d:DesignHeight="111.024" d:DesignWidth="297.638">
+    <UserControl.DataContext>
+        <local:WorkElemVm />
+    </UserControl.DataContext>
+
+    <Grid>
+        <Label x:Name="lblSymbol" Content="Symbol-ID" HorizontalAlignment="Left" Margin="24,32,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="txtSymbol" HorizontalAlignment="Left" Height="23" Margin="24,63,0,0" TextWrapping="Wrap" Text="{Binding SymbolId, UpdateSourceTrigger=Explicit}" VerticalAlignment="Top" Width="66" IsReadOnly="True"/>
+
+        <Label x:Name="lblColor" Content="Color-ID" HorizontalAlignment="Left" Margin="104,32,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="txtColor" HorizontalAlignment="Left" Height="23" Margin="104,63,0,0" TextWrapping="Wrap" Text="{Binding ColorId, UpdateSourceTrigger=Explicit}" VerticalAlignment="Top" Width="66" IsReadOnly="True"/>
+
+    </Grid>
+</UserControl>

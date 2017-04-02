@@ -7,9 +7,11 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="350" Width="525">
     <Grid>
-        <Button x:Name="btnSymbols" Content="Button" HorizontalAlignment="Left" Margin="54,244,0,0" VerticalAlignment="Top" Width="75" Click="btnSymbols_Click"/>
+        <Button x:Name="btnSymbols" Content="Button" HorizontalAlignment="Left" Margin="54,72,0,0" VerticalAlignment="Top" Width="75" Click="btnSymbols_Click"/>
         <Button x:Name="btnTransfer" Content="Transfer" HorizontalAlignment="Left" Margin="54,27,0,0" VerticalAlignment="Top" Width="75" Click="btnTransfer_Click"/>
         <Button x:Name="btnMoveToOcad" Content="Move To" HorizontalAlignment="Left" Margin="54,107,0,0" VerticalAlignment="Top" Width="75" Click="btnMoveToOcad_Click"/>
+        <local:CntWorkElem x:Name="cntWorkElem" HorizontalAlignment="Left" Margin="153,27,0,0" VerticalAlignment="Top" Width="181" Height="107"/>
+        <DataGrid x:Name="grdElems" Margin="54,147,10,10" SelectionChanged="grdElems_SelectionChanged"/>
 
     </Grid>
 </Window>

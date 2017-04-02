@@ -28,6 +28,36 @@ namespace Basics.Geom
       return p;
     }
 
+    public Polyline ToBeziers()
+    {
+      Polyline copy = new Polyline();
+      foreach (Curve seg in Segments)
+      {
+        if (seg is Line || seg is Bezier)
+        {
+          copy.Add(seg.Clone());
+          continue;
+        }
+        Arc arc = seg as Arc;
+        foreach (Bezier part in arc.EnumBeziers())
+        {
+          copy.Add(part);
+        }
+      }
+      return copy;
+    }
+
+    public bool HasNonBezier()
+    {
+      foreach (Curve seg in Segments)
+      {
+        if (seg is Line || seg is Bezier)
+        { continue; }
+        return true;
+      }
+      return false;
+    }
+
     IBox IParamGeometry.ParameterRange
     {
       get

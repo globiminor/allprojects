@@ -545,9 +545,24 @@ namespace OMapScratch
       _undoOps = new Stack<Operation>();
       _redoOps = new Stack<Operation>();
       LoadSymbols();
-      _elems = LoadElems();
+      List<Elem> elems = LoadElems();
+      _elems = GetValidElems(elems);
     }
 
+    private List<Elem> GetValidElems(IEnumerable<Elem> elems)
+    {
+      List<Elem> valids = new List<Elem>();
+      foreach (Elem elem in elems)
+      {
+        if (elem?.Symbol == null)
+        { continue; }
+        if (elem.Geometry == null)
+        { continue; }
+
+        valids.Add(elem);
+      }
+      return valids;
+    }
     private List<Elem> LoadElems()
     {
       string elemsPath = VerifyLocalPath(_config?.Data?.Scratch);

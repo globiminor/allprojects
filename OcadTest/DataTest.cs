@@ -59,6 +59,21 @@ namespace OcadTest
 
 
     [TestMethod]
+    public void TestText()
+    {
+      using (OcadReader r = OcadReader.Open(@"C:\daten\felix\kapreolo\scool\regensdorf_ruggenacher\ruggenacher_2017.ocd"))
+      {
+        foreach (ElementIndex idx in r.GetIndices())
+        {
+          ElementV9 e = (ElementV9)r.ReadElement(idx);
+          if (!string.IsNullOrWhiteSpace(e.Text))
+          { 
+          }
+        }
+      }
+    }
+
+    [TestMethod]
     public void SetColor()
     {
       using (OcadWriter w = Ocad9Writer.AppendTo(@"C:\daten\ASVZ\SOLA\2015\OCAD Vorlagen\sola10k - Kopie.ocd"))

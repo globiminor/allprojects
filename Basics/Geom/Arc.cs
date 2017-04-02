@@ -69,6 +69,20 @@ namespace Basics.Geom
       return new Arc(Point.Create(_center), _radius, _dirStart, _angle);
     }
 
+    public IEnumerable<Bezier> EnumBeziers()
+    {
+      if (Math.Abs(_angle) < 2 * Math.PI - 0.1)
+      { yield break; }
+
+      double x = Center.X;
+      double y = Center.Y;
+      double r = Radius;
+      double t = 0.55 * r;
+      yield return new Bezier(new Point2D(x, y + r), new Point2D(x + t, y + r), new Point2D(x + r, y + t), new Point2D(x + r, y));
+      yield return new Bezier(new Point2D(x + r, y), new Point2D(x + r, y - t), new Point2D(x + t, y - r), new Point2D(x, y - r));
+      yield return new Bezier(new Point2D(x, y - r), new Point2D(x - t, y - r), new Point2D(x - r, y - t), new Point2D(x - r, y));
+      yield return new Bezier(new Point2D(x - r, y), new Point2D(x - r, y + t), new Point2D(x - t, y + r), new Point2D(x, y + r));
+    }
     public override bool EqualGeometry(IGeometry other)
     {
       if (this == other)

@@ -1,6 +1,9 @@
-﻿using OMapScratch;
+﻿using Basics.Views;
+using OcadScratch.ViewModels;
+using OMapScratch;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Windows;
 
@@ -75,6 +78,14 @@ namespace OcadScratch
       using (CmdTransfer cmd = new CmdTransfer(scratchFile, ocdFile))
       {
         cmd.Execute();
+        BindingListView<WorkElemVm> lstElems = new BindingListView<WorkElemVm>();
+        lstElems.AllowNew = false;
+        lstElems.AllowRemove = false;
+        foreach (Elem elem in cmd.Map.Elems)
+        { lstElems.Add(new WorkElemVm(elem)); }
+
+        grdElems.ItemsSource = lstElems;
+        cntWorkElem.DataContext = lstElems.FirstOrDefault();
       }
     }
 
@@ -107,6 +118,15 @@ namespace OcadScratch
       finally
       {
         Topmost = true;
+      }
+    }
+
+    private void grdElems_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+      WorkElemVm currentElem = grdElems.CurrentItem as WorkElemVm;
+      if (currentElem != null && currentElem != cntWorkElem.DataContext)
+      {
+        cntWorkElem.DataContext = currentElem;
       }
     }
   }
