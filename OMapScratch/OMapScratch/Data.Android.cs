@@ -177,7 +177,7 @@ namespace OMapScratch
   {
     public static void DrawLine(Canvas canvas, Symbol sym, float[] matrix, float symbolScale, Curve line, Paint p)
     {
-      float lineScale = matrix?[0] / symbolScale ?? 1;
+      float lineScale = matrix?[0] * symbolScale ?? 1;
       foreach (SymbolCurve curve in sym.Curves)
       { DrawCurve(canvas, line, matrix, curve.LineWidth * lineScale, curve.Fill, curve.Stroke, p); }
     }
@@ -197,7 +197,7 @@ namespace OMapScratch
         float pntScale = 1;
         if (matrix != null)
         {
-          pntScale = matrix[0] / symbolScale;
+          pntScale = matrix[0] * symbolScale;
         }
         canvas.Scale(pntScale, -pntScale);
         foreach (SymbolCurve curve in sym.Curves)
@@ -219,7 +219,7 @@ namespace OMapScratch
         Pnt t = point.Trans(matrix);
         canvas.Translate(t.X, t.Y);
         if (matrix != null)
-        { canvas.Scale(matrix[0] / symbolScale, matrix[4] / symbolScale); }
+        { canvas.Scale(matrix[0] * symbolScale, matrix[4] * symbolScale); }
         canvas.DrawText(text, 0, 0 + p.TextSize / 2.5f, p);
       }
       finally
