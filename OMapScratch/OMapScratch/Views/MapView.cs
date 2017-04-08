@@ -2,30 +2,11 @@
 using Android.Graphics;
 using Android.Widget;
 using System.Collections.Generic;
-using System;
 
 namespace OMapScratch.Views
 {
-  public class MapView : ImageView
+  public class MapView : ImageView, IMapView
   {
-    private readonly MainActivity _context;
-    private Matrix _elemMatrix;
-    private float[] _elemMatrixValues;
-    private Matrix _inversElemMatrix;
-    private Matrix _initMatrix;
-
-    private LinearLayout _contextMenu;
-    internal LinearLayout ContextMenu
-    {
-      get { return _contextMenu; }
-      set
-      {
-        _contextMenu = value;
-        Android.Views.ViewTreeObserver vto = _contextMenu.ViewTreeObserver;
-        vto.AddOnGlobalLayoutListener(new OnGlobalLayoutListener(this));
-      }
-    }
-
     private class OnGlobalLayoutListener : Java.Lang.Object, Android.Views.ViewTreeObserver.IOnGlobalLayoutListener
     {
       private readonly MapView _parent;
@@ -52,6 +33,38 @@ namespace OMapScratch.Views
         }
 
       }
+    }
+
+    private readonly MainActivity _context;
+    private Matrix _elemMatrix;
+    private float[] _elemMatrixValues;
+    private Matrix _inversElemMatrix;
+    private Matrix _initMatrix;
+
+    private Pnt _editPnt;
+    private System.Action<Pnt> _nextPointAction;
+
+    private LinearLayout _contextMenu;
+    internal LinearLayout ContextMenu
+    {
+      get { return _contextMenu; }
+      set
+      {
+        _contextMenu = value;
+        Android.Views.ViewTreeObserver vto = _contextMenu.ViewTreeObserver;
+        vto.AddOnGlobalLayoutListener(new OnGlobalLayoutListener(this));
+      }
+    }
+
+    private void ResetContextMenu()
+    {
+      _editPnt = null;
+      _nextPointAction = null;
+    }
+
+    void IMapView.SetNextPointAction(System.Action<Pnt> actionWithNextPoint)
+    {
+      _nextPointAction = actionWithNextPoint;
     }
 
     public float Precision { get { return 100; } }
@@ -226,18 +239,33 @@ namespace OMapScratch.Views
 
     public void InitContextMenus(float x, float y)
     {
+      float[] at = { x, y };
+      InversElemMatrix.MapPoints(at);
+
+      if (_nextPointAction != null)
+      {
+        System.Action<Pnt> action = _nextPointAction;
+        ResetContextMenu();
+
+        action(new Pnt(at[0], at[1]));
+
+        ContextMenu.Visibility = Android.Views.ViewStates.Invisible;
+        ContextMenu.RemoveAllViews();
+        ContextMenu.PostInvalidate();
+        PostInvalidate();
+        return;
+      }
+
       Rect rect = new Rect();
       GetGlobalVisibleRect(rect);
       float prec = System.Math.Min(rect.Width(), rect.Height()) / Precision;
 
-      float[] at = { x, y };
-      InversElemMatrix.MapPoints(at);
       float[] max = { x + prec, y + prec };
       InversElemMatrix.MapPoints(max);
       float search = System.Math.Max(System.Math.Abs(max[0] - at[0]), System.Math.Abs(max[1] - at[1]));
 
-      IList<ContextAction> actions = _context.MapVm.GetContextActions(at[0], at[1], search);
-      if (actions.Count <= 0)
+      IList<ContextActions> allActions = _context.MapVm.GetContextActions(this, at[0], at[1], search);
+      if (allActions.Count <= 0)
       {
         ContextMenu.Visibility = Android.Views.ViewStates.Invisible;
         ContextMenu.RemoveAllViews();
@@ -247,23 +275,125 @@ namespace OMapScratch.Views
       }
 
       ContextMenu.RemoveAllViews();
-      foreach (ContextAction action in actions)
+      ResetContextMenu();
+      bool first = true;
+      foreach (ContextActions objActions in allActions)
       {
-        ActionButton actionButton = new ActionButton(_context, action);
-        actionButton.Text = action.Name;
-        actionButton.Click += (s, e) =>
+        LinearLayout objMenus = new LinearLayout(_context);
+        objMenus.Orientation = Orientation.Vertical;
+
+        Button actionsButton = new Button(_context);
+        actionsButton.Text = objActions.Name;
+        actionsButton.Click += (s, e) =>
         {
-          action.Action();
-          ContextMenu.Visibility = Android.Views.ViewStates.Invisible;
-          PostInvalidate();
+          ToggleMenu(ContextMenu, objMenus);
         };
-        ContextMenu.AddView(actionButton);
+
+        foreach (ContextAction action in objActions.Actions)
+        {
+          ActionButton actionButton = new ActionButton(_context, action);
+          actionButton.Text = action.Name;
+          actionButton.Click += (s, e) =>
+          {
+            action.Action();
+            ContextMenu.Visibility = Android.Views.ViewStates.Invisible;
+            PostInvalidate();
+          };
+          {
+            RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(
+              Android.Views.ViewGroup.LayoutParams.MatchParent, Android.Views.ViewGroup.LayoutParams.WrapContent);
+            lprams.Height = (int)Android.Util.TypedValue.ApplyDimension(Android.Util.ComplexUnitType.Mm, 5, actionButton.Resources.DisplayMetrics);
+            actionButton.LayoutParameters = lprams;
+          }
+          actionButton.SetPadding(0, 0, 0, 0);
+          actionButton.SetTextSize(Android.Util.ComplexUnitType.Mm, 2);
+          objMenus.AddView(actionButton);
+        }
+        if (first)
+        {
+          objMenus.Visibility = Android.Views.ViewStates.Visible;
+          _editPnt = objActions.Position;
+        }
+        else
+        { objMenus.Visibility = Android.Views.ViewStates.Gone; }
+
+        {
+          float mm = Android.Util.TypedValue.ApplyDimension(Android.Util.ComplexUnitType.Mm, 1, actionsButton.Resources.DisplayMetrics);
+
+          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(
+            Android.Views.ViewGroup.LayoutParams.MatchParent, Android.Views.ViewGroup.LayoutParams.WrapContent);
+          lprams.Height = (int)(6 * mm);
+          actionsButton.LayoutParameters = lprams;
+          actionsButton.SetPadding((int)mm, 0, (int)mm, 0);
+        }
+        actionsButton.SetTextSize(Android.Util.ComplexUnitType.Mm, 3.5f);
+
+        ContextMenu.AddView(actionsButton);
+        ContextMenu.AddView(objMenus);
+        first = false;
       }
 
       ContextMenu.SetX(x);
       ContextMenu.SetY(y);
+      PositionMenu();
+
       ContextMenu.Visibility = Android.Views.ViewStates.Visible;
       ContextMenu.PostInvalidate();
+      PostInvalidate();
+    }
+
+    private void PositionMenu()
+    {
+      if (_editPnt == null)
+      { return; }
+
+      Matrix mat = ElemMatrix;
+
+      float[] draw = new float[] { _editPnt.X, _editPnt.Y };
+      mat.MapPoints(draw);
+
+      ContextMenu.SetX(draw[0]);
+      ContextMenu.SetY(draw[1]);
+    }
+
+    private void ToggleMenu(LinearLayout contextMenu, LinearLayout objMenus)
+    {
+      _editPnt = null;
+      int nViews = contextMenu.ChildCount;
+      for (int iView = 0; iView < nViews; iView++)
+      {
+        LinearLayout view = contextMenu.GetChildAt(iView) as LinearLayout;
+        if (view == null)
+        { continue; }
+        if (view == objMenus)
+        {
+          if (view.Visibility == Android.Views.ViewStates.Visible)
+          { view.Visibility = Android.Views.ViewStates.Gone; }
+          else
+          {
+            int nMenus = objMenus.ChildCount;
+            for (int iMenu = 0; iMenu < nMenus; iMenu++)
+            {
+              ActionButton btn = objMenus.GetChildAt(iMenu) as ActionButton;
+              if (btn != null)
+              {
+                _editPnt = btn.Action.Position;
+                break;
+              }
+            }
+            view.Visibility = Android.Views.ViewStates.Visible;
+          }
+          view.PostInvalidate();
+        }
+        else if (view.Visibility != Android.Views.ViewStates.Gone)
+        {
+          view.Visibility = Android.Views.ViewStates.Gone;
+          view.PostInvalidate();
+        }
+      }
+
+      PositionMenu();
+      contextMenu.PostInvalidate();
       PostInvalidate();
     }
 
@@ -337,7 +467,8 @@ namespace OMapScratch.Views
       finally
       { canvas.Restore(); }
 
-      if (ContextMenu.Visibility == Android.Views.ViewStates.Visible)
+      if (ContextMenu.Visibility == Android.Views.ViewStates.Visible &&
+        _editPnt != null)
       {
         Paint wp = new Paint();
         wp.Color = Color.White;
@@ -350,29 +481,23 @@ namespace OMapScratch.Views
 
         Matrix mat = ElemMatrix;
 
-        for (int iChild = 0; iChild < ContextMenu.ChildCount; iChild++)
-        {
-          ActionButton btn = ContextMenu.GetChildAt(iChild) as ActionButton;
-          if (btn == null)
-          { continue; }
-          Pnt pnt = btn.Action.Position;
-          float[] draw = new float[] { pnt.X, pnt.Y };
-          mat.MapPoints(draw);
+        Pnt pnt = _editPnt;
+        float[] draw = new float[] { pnt.X, pnt.Y };
+        mat.MapPoints(draw);
 
-          int x0 = (int)draw[0];
-          int y0 = (int)draw[1];
+        int x0 = (int)draw[0];
+        int y0 = (int)draw[1];
 
-          float size = 10;
-          Path path = new Path();
-          path.MoveTo(draw[0] - size, draw[1] - size);
-          path.LineTo(draw[0] - size, draw[1] + size);
-          path.LineTo(draw[0] + size, draw[1] + size);
-          path.LineTo(draw[0] + size, draw[1] - size);
-          path.LineTo(draw[0] - size, draw[1] - size);
+        float size = 10;
+        Path path = new Path();
+        path.MoveTo(draw[0] - size, draw[1] - size);
+        path.LineTo(draw[0] - size, draw[1] + size);
+        path.LineTo(draw[0] + size, draw[1] + size);
+        path.LineTo(draw[0] + size, draw[1] - size);
+        path.LineTo(draw[0] - size, draw[1] - size);
 
-          canvas.DrawPath(path, wp);
-          canvas.DrawPath(path, bp);
-        }
+        canvas.DrawPath(path, wp);
+        canvas.DrawPath(path, bp);
       }
     }
   }

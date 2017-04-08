@@ -6,10 +6,16 @@ using System.Xml.Serialization;
 
 namespace OMapScratch
 {
+  public interface IMapView
+  {
+    void SetNextPointAction(Action<Pnt> actionWithNextPoint);
+  }
+
   public partial interface ISegment
   {
-    Pnt From { get; }
-    Pnt To { get; }
+    ISegment Clone();
+    Pnt From { get; set; }
+    Pnt To { get; set; }
 
     void InitToText(StringBuilder sb);
     void AppendToText(StringBuilder sb);
@@ -26,6 +32,20 @@ namespace OMapScratch
     public string Id { get; set; }
   }
 
+  public class ContextActions
+  {
+    public ContextActions(string name, Elem elem, Pnt position, List<ContextAction> actions)
+    {
+      Name = name;
+      Elem = elem;
+      Position = position;
+      Actions = actions;
+    }
+    public string Name { get; set; }
+    public Elem Elem { get; }
+    public Pnt Position { get; }
+    public List<ContextAction> Actions { get; }
+  }
   public class ContextAction
   {
     public ContextAction(Pnt position)
@@ -51,7 +71,7 @@ namespace OMapScratch
       _map = map;
     }
 
-    public List<ContextAction> GetContextActions(float x0, float y0, float dx)
+    public List<ContextActions> GetContextActions(IMapView view, float x0, float y0, float dx)
     {
       float dd = Math.Max(Math.Abs(dx), _map.MinSearchDistance);
       float xMin = x0 - dd;
@@ -59,49 +79,80 @@ namespace OMapScratch
       float xMax = x0 + dd;
       float yMax = y0 + dd;
 
-      List<ContextAction> actions = new List<ContextAction>();
+      List<ContextActions> allActions = new List<ContextActions>();
       foreach (Elem elem in _map.Elems)
       {
+        bool isLine = ((elem.Geometry as Curve)?.Count > 1);
+
         Pnt pre = null;
-        Pnt actionPnt = null;
-        List<int> vertices = null;
+        Pnt elemPnt = null;
+
+        List<ContextActions> vertexActionsList = new List<ContextActions>();
         int iVertex = 0;
         foreach (Pnt point in elem.Geometry.GetVertices())
         {
           if (point.X > xMin && point.X < xMax && point.Y > yMin && point.Y < yMax)
           {
-            if (actionPnt == null)
-            { actionPnt = point; }
+            if (elemPnt == null)
+            { elemPnt = point; }
             else
             {
               Pnt down = new Pnt { X = x0, Y = y0 };
-              if (down.Dist2(actionPnt) > down.Dist2(point))
-              { actionPnt = point; }
+              if (down.Dist2(elemPnt) > down.Dist2(point))
+              { elemPnt = point; }
             }
-            vertices = vertices ?? new List<int>();
-            vertices.Add(iVertex);
+
+            if (isLine)
+            {
+              List<ContextAction> vertexActions = new List<ContextAction>();
+              vertexActions.Add(new ContextAction(elemPnt) { Name = "Delete", Action = () => _map.RemoveVertex(elem, iVertex) });
+              MoveVertexAction m = new MoveVertexAction(_map, elem, iVertex);
+              vertexActions.Add(new ContextAction(elemPnt)
+              {
+                Name = "Move",
+                Action = () => { view.SetNextPointAction((next) => m.MoveVertex(next)); }
+              });
+
+              vertexActionsList.Add(new ContextActions($"Vertex #{iVertex}", elem, new Pnt(point.X, point.Y), vertexActions));
+            }
           }
           iVertex++;
         }
-        if (actionPnt != null)
+        if (elemPnt != null)
         {
           List<ContextAction> elemActions = new List<ContextAction>();
-          elemActions.Add(new ContextAction(actionPnt) { Name = "Del. Elem.", Action = () => _map.RemoveElem(elem) });
-          IDrawable geom = elem.Geometry;
-          if ((elem.Geometry as Curve)?.Count > 1)
+          elemActions.Add(new ContextAction(elemPnt) { Name = "Delete", Action = () => _map.RemoveElem(elem) });
+          elemActions.Add(new ContextAction(elemPnt) { Name = "Move", Action = () => _map.RemoveElem(elem) });
+          if (isLine)
           {
-            foreach (int idx in vertices)
-            {
-              string name = vertices.Count > 1 ? $"Del. Vertex #{idx}" : "Del. Vertex";
-              elemActions.Add(new ContextAction(actionPnt) { Name = name, Action = () => _map.RemoveVertex(elem, idx) });
-            }
+            elemActions.Add(new ContextAction(elemPnt) { Name = "Ins. Vert.", Action = () => _map.RemoveElem(elem) });
           }
+          elemActions.Add(new ContextAction(elemPnt) { Name = "Re-Symbol", Action = () => _map.RemoveElem(elem) });
 
-          actions.AddRange(elemActions);
+          allActions.Add(new ContextActions("Elem", elem, elemPnt, elemActions));
         }
+        allActions.AddRange(vertexActionsList);
       }
 
-      return actions;
+      return allActions;
+    }
+
+    private class MoveVertexAction
+    {
+      private readonly Map _map;
+      private readonly Elem _elem;
+      private readonly int _iVertex;
+      public MoveVertexAction(Map map, Elem elem, int iVertex)
+      {
+        _map = map;
+        _elem = elem;
+        _iVertex = iVertex;
+      }
+
+      public void MoveVertex(Pnt next)
+      {
+        _map.MoveVertex(_elem, _iVertex, next);
+      }
     }
 
     public IEnumerable<XmlImage> Images
@@ -235,6 +286,14 @@ namespace OMapScratch
       return op.LastSuccess;
     }
 
+    public bool MoveVertex(Elem elem, int idx, Pnt newPosition)
+    {
+      MoveVertexOperation op = new MoveVertexOperation(elem, idx, newPosition);
+      op.Redo(this, true);
+      return op.LastSuccess;
+    }
+
+
 
     public float[] GetOffset()
     {
@@ -309,6 +368,74 @@ namespace OMapScratch
         { map._redoOps.Clear(); }
       }
       protected abstract void Redo(Stack<Operation> ops);
+    }
+
+    private class MoveVertexOperation : Operation
+    {
+      private readonly Elem _elem;
+      private readonly int _vertexIndex;
+      private readonly Pnt _newPosition;
+
+      private ISegment _seg0;
+      private ISegment _seg1;
+
+      public MoveVertexOperation(Elem elem, int vertexIndex, Pnt newPosition)
+      {
+        _elem = elem;
+        _vertexIndex = vertexIndex;
+        _newPosition = newPosition;
+      }
+      public bool LastSuccess { get; private set; }
+      public override void Undo()
+      {
+        Curve curve = (Curve)_elem.Geometry;
+        if (_vertexIndex == 0)
+        {
+          curve[0] = _seg0;
+        }
+        else if (_vertexIndex == curve.Count)
+        {
+          curve[_vertexIndex - 1] = _seg1;
+        }
+        else
+        {
+          curve[_vertexIndex - 1] = _seg0;
+          curve[_vertexIndex] = _seg1;
+        }
+      }
+      protected override void Redo(Stack<Operation> ops)
+      {
+        Curve curve = (Curve)_elem.Geometry;
+        if (_vertexIndex == 0)
+        {
+          _seg0 = curve[0];
+          ISegment clone = _seg0.Clone();
+          clone.From = _newPosition;
+          curve[0] = clone;
+        }
+        else if (_vertexIndex == curve.Count)
+        {
+          _seg1 = curve[_vertexIndex - 1];
+          ISegment clone = _seg1.Clone();
+          clone.To = _newPosition;
+          curve[_vertexIndex - 1] = clone;
+        }
+        else
+        {
+          _seg0 = curve[_vertexIndex - 1];
+          _seg1 = curve[_vertexIndex];
+
+          ISegment clone0 = _seg0.Clone();
+          clone0.To = _newPosition;
+
+          ISegment clone1 = _seg1.Clone();
+          clone1.From = _newPosition;
+
+          curve[_vertexIndex - 1] = clone0;
+          curve[_vertexIndex] = clone1;
+        }
+        ops.Push(this);
+      }
     }
 
     private class RemoveVertexOperation : Operation
@@ -1044,6 +1171,11 @@ namespace OMapScratch
       Y = y;
     }
 
+    public Pnt Clone()
+    {
+      return new Pnt(X, Y);
+    }
+
     public Pnt Trans(float[] matrix)
     {
       if (matrix == null)
@@ -1074,6 +1206,12 @@ namespace OMapScratch
     public Pnt From { get; set; }
     public Pnt To { get; set; }
 
+    ISegment ISegment.Clone()
+    { return Clone(); }
+    public Lin Clone()
+    {
+      return new Lin { From = From.Clone(), To = To.Clone() };
+    }
     void ISegment.InitToText(StringBuilder sb)
     { sb.Append($" {DrawableUtils.MoveTo} {From.X:f1} {From.Y:f1}"); }
 
@@ -1086,8 +1224,23 @@ namespace OMapScratch
     public Pnt Center { get; set; }
     public float Radius { get; set; }
 
-    Pnt ISegment.To { get { return new Pnt { X = Center.X, Y = Center.Y + Radius }; } }
-    Pnt ISegment.From { get { return new Pnt { X = Center.X, Y = Center.Y + Radius }; } }
+    Pnt ISegment.From
+    {
+      get { return new Pnt { X = Center.X, Y = Center.Y + Radius }; }
+      set { Center = new Pnt(value.X, value.Y - Radius); }
+    }
+    Pnt ISegment.To
+    {
+      get { return new Pnt { X = Center.X, Y = Center.Y + Radius }; }
+      set { Center = new Pnt(value.X, value.Y - Radius); }
+    }
+
+    ISegment ISegment.Clone()
+    { return Clone(); }
+    public Circle Clone()
+    {
+      return new Circle { Center = Center.Clone(), Radius = Radius };
+    }
 
     void ISegment.InitToText(StringBuilder sb)
     { }
@@ -1101,6 +1254,13 @@ namespace OMapScratch
     public Pnt I0 { get; set; }
     public Pnt I1 { get; set; }
     public Pnt To { get; set; }
+
+    ISegment ISegment.Clone()
+    { return Clone(); }
+    public Bezier Clone()
+    {
+      return new Bezier { From = From.Clone(), I0 = I0.Clone(), I1 = I1.Clone(), To = To.Clone() };
+    }
 
     void ISegment.InitToText(StringBuilder sb)
     { sb.Append($" {DrawableUtils.MoveTo} {From.X:f1} {From.Y:f1}"); }
