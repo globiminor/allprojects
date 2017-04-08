@@ -1,29 +1,14 @@
 ﻿using Ocad;
+using OcadScratch.ViewModels;
 using OMapScratch;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace OcadScratch
 {
   public class CmdTransfer : IDisposable
   {
-    private class MyPrjGlobal : Basics.Geom.IProjection
-    {
-      private readonly double _x0;
-      private readonly double _y0;
-
-      public MyPrjGlobal(double x0, double y0)
-      {
-        _x0 = x0;
-        _y0 = y0;
-      }
-
-      public Basics.Geom.IPoint Project(Basics.Geom.IPoint point)
-      {
-        return new Basics.Geom.Point2D(point.X + _x0, -point.Y + _y0);
-      }
-    }
-
     private class MyPrjLocal : Basics.Geom.IProjection
     {
       private readonly Basics.Geom.Point2D _translate;
@@ -41,18 +26,19 @@ namespace OcadScratch
       }
     }
 
-    private readonly string _scratchFile;
+    private readonly IList<WorkElemVm> _elems;
     private readonly string _ocdFile;
+    private readonly Map _map;
 
-    public Map Map { get; private set; }
     private Basics.Geom.IProjection _prj;
     private double _symbolScale;
 
     public bool UseBackupFile { get; set; }
 
-    public CmdTransfer(string scratchFile, string ocdFile)
+    public CmdTransfer(Map map,IList<WorkElemVm> elems, string ocdFile)
     {
-      _scratchFile = scratchFile;
+      _map = map;
+      _elems = elems;
       _ocdFile = ocdFile;
       UseBackupFile = true;
     }
@@ -62,30 +48,29 @@ namespace OcadScratch
 
     public void Execute()
     {
+      if (_map == null)
+      { return; }
+      if (_elems == null)
+      { return; }
+      if (_ocdFile == null)
+      { return; }
+
       if (UseBackupFile)
       { HandleBackup(_ocdFile); }
 
       _prj = null;
       _symbolScale = 1;
 
-      XmlConfig config;
-      using (TextReader reader = new StreamReader(_scratchFile))
-      { Serializer.Deserialize(out config, reader); }
-      Map map = new Map();
-      map.Load(_scratchFile, config);
-
-      float[] offset = map.GetOffset();
-      _prj = new MyPrjGlobal(offset[0], offset[1]);
-      _symbolScale = map.SymbolScale;
+      _prj = _map.GetGlobalPrj(); 
+      _symbolScale = _map.SymbolScale;
 
       using (Ocad9Writer w = Ocad9Writer.AppendTo(_ocdFile))
       {
-        foreach (Elem elem in map.Elems)
+        foreach (WorkElemVm elem in _elems)
         {
-          Transfer(elem, w);
+          Transfer(elem.Elem, w);
         }
       }
-      Map = map;
     }
 
     private void HandleBackup(string file)

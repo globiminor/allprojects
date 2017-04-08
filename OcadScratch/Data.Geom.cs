@@ -22,6 +22,32 @@ namespace OMapScratch
     }
   }
 
+  partial class Map
+  {
+    private class MyPrjGlobal : Basics.Geom.IProjection
+    {
+      private readonly double _x0;
+      private readonly double _y0;
+
+      public MyPrjGlobal(double x0, double y0)
+      {
+        _x0 = x0;
+        _y0 = y0;
+      }
+
+      public Basics.Geom.IPoint Project(Basics.Geom.IPoint point)
+      {
+        return new Basics.Geom.Point2D(point.X + _x0, -point.Y + _y0);
+      }
+    }
+
+    public Basics.Geom.IProjection GetGlobalPrj()
+    {
+      float[] offset = GetOffset();
+      return new MyPrjGlobal(offset[0], offset[1]);
+    }
+
+  }
   partial class Lin
   {
     Basics.Geom.Curve ISegment.GetGeometry()

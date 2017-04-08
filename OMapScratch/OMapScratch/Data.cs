@@ -288,7 +288,7 @@ namespace OMapScratch
           Curve curve = new Curve();
           _currentCurve = new Elem { Geometry = curve, Symbol = sym, Color = color };
         }
-        AddPointOperation op = new AddPointOperation(_elems, _currentCurve, x, y);
+        AddPointOperation op = new AddPointOperation(this, x, y);
         op.Redo(this, true);
       }
       else if (symTyp == SymbolType.Point ||
@@ -403,23 +403,23 @@ namespace OMapScratch
       private float _x;
       private float _y;
       private Elem _currentCurve;
-      private IList<Elem> _elems;
       private bool _first;
-      public AddPointOperation(IList<Elem> elems, Elem currentCurve, float x, float y)
+      private Map _map;
+      public AddPointOperation(Map map, float x, float y)
       {
         _x = x;
         _y = y;
-        _currentCurve = currentCurve;
-        _elems = elems;
+        _currentCurve = _map._currentCurve;
+        _map = map;
 
-        _first = (_elems.Count == 0 || _elems[_elems.Count - 1] != _currentCurve);
+        _first = (_map._elems.Count == 0 || _map._elems[_map._elems.Count - 1] != _currentCurve);
       }
       protected override void Redo(Stack<Operation> ops)
       {
         if (_first)
         {
           ((Curve)_currentCurve.Geometry).MoveTo(_x, _y);
-          _elems.Add(_currentCurve);
+          _map._elems.Add(_currentCurve);
         }
         else
         { ((Curve)_currentCurve.Geometry).LineTo(_x, _y); }
@@ -429,9 +429,10 @@ namespace OMapScratch
       {
         if (_first)
         {
-          if (_elems.Count > 0 && _elems[_elems.Count - 1] == _currentCurve)
+          if (_map._elems.Count > 0 && _map._elems[_map._elems.Count - 1] == _currentCurve)
           {
-            _elems.RemoveAt(_elems.Count - 1);
+            _map._elems.RemoveAt(_map._elems.Count - 1);
+            _map._currentCurve = null;
           }
           else
           {

@@ -182,6 +182,10 @@ namespace Basics.Views
       }
     }
 
+    protected void Changed()
+    {
+      Changed((string)null);
+    }
     protected virtual void Changed(MethodBase propertyMethod)
     {
       Changed(GetProperty(propertyMethod));

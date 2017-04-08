@@ -4,14 +4,21 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:OcadScratch"
+        xmlns:localVm="clr-namespace:OcadScratch.ViewModels"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="O-Scratch" Height="396" Width="698">
+    <Window.DataContext>
+        <localVm:MapVm />
+    </Window.DataContext>
     <Grid>
-        <Button x:Name="btnSymbols" Content="Button" HorizontalAlignment="Left" Margin="54,72,0,0" VerticalAlignment="Top" Width="75" Click="btnSymbols_Click"/>
-        <Button x:Name="btnTransfer" Content="Transfer" HorizontalAlignment="Left" Margin="54,27,0,0" VerticalAlignment="Top" Width="75" Click="btnTransfer_Click"/>
-        <Button x:Name="btnMoveToOcad" Content="Move To" HorizontalAlignment="Left" Margin="54,107,0,0" VerticalAlignment="Top" Width="75" Click="btnMoveToOcad_Click"/>
-        <local:CntWorkElem x:Name="cntWorkElem" HorizontalAlignment="Left" Margin="153,27,0,0" VerticalAlignment="Top" Width="181" Height="107"/>
-        <DataGrid x:Name="grdElems" Margin="54,147,10,10" SelectionChanged="grdElems_SelectionChanged"/>
+        <Button x:Name="btnSymbols" Content="Button" HorizontalAlignment="Left" Margin="54,118,0,0" Visibility="Collapsed" VerticalAlignment="Top" Width="75" Click="btnSymbols_Click" RenderTransformOrigin="-0.417,4.245"/>
+        <Button x:Name="btnLoad" Content="Load" HorizontalAlignment="Left" Margin="54,12,0,0" VerticalAlignment="Top" Width="75" Click="btnLoad_Click"/>
+        <Button x:Name="btnMoveToOcad" Content="Move To" HorizontalAlignment="Left" Margin="54,53,0,0" VerticalAlignment="Top" Width="75" Click="btnMoveToOcad_Click"/>
+        <local:CntWorkElem x:Name="cntWorkElem" HorizontalAlignment="Left" Margin="153,40,0,0" VerticalAlignment="Top" Width="285" Height="107" RenderTransformOrigin="1.318,0.576"/>
+        <DataGrid x:Name="grdElems" ItemsSource="{Binding Elems}"  Margin="54,147,10,10" SelectionChanged="grdElems_SelectionChanged" AutoGenerateColumns="False" />
+        <TextBox x:Name="txtScratch" Height="23" Margin="153,10,10,0" TextWrapping="Wrap" Text="{Binding ConfigPath}" VerticalAlignment="Top"/>
+        <Button x:Name="btnNext" Content="Move To Next" HorizontalAlignment="Left" Margin="54,78,0,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="0.054,0.233" Click="btnNext_Click"/>
+        <Button x:Name="btnTransfer" Content="Transfer" HorizontalAlignment="Left" Margin="54,118,0,0" VerticalAlignment="Top" Width="75" Click="btnTransfer_Click"/>
 
     </Grid>
 </Window>
