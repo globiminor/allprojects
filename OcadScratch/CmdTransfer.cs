@@ -22,7 +22,7 @@ namespace OcadScratch
 
       public Basics.Geom.IPoint Project(Basics.Geom.IPoint point)
       {
-        return new Basics.Geom.Point2D(point.X / _scale + _translate.X, point.Y / _scale + _translate.Y);
+        return new Basics.Geom.Point2D(point.X * _scale + _translate.X, point.Y * _scale + _translate.Y);
       }
     }
 
@@ -61,7 +61,7 @@ namespace OcadScratch
       _prj = null;
       _symbolScale = 1;
 
-      _prj = _map.GetGlobalPrj(); 
+      _prj = _map.GetGlobalPrj();
       _symbolScale = _map.SymbolScale;
 
       using (Ocad9Writer w = Ocad9Writer.AppendTo(_ocdFile))
@@ -108,7 +108,7 @@ namespace OcadScratch
 
       elem.Type = geomType;
       elem.Color = color;
-      elem.LineWidth = (int)(symCurve.LineWidth / _symbolScale * 100);
+      elem.LineWidth = (int)(symCurve.LineWidth * _symbolScale / 100);
       elem.Symbol = -3;
 
       w.Append(elem);
@@ -152,7 +152,7 @@ namespace OcadScratch
       {
         ElementV9 elem = new ElementV9(true);
         elem.Type = GeomType.line;
-        elem.LineWidth = (int)(e.Symbol.Curves[0].LineWidth / _symbolScale * 100);
+        elem.LineWidth = (int)(e.Symbol.Curves[0].LineWidth * _symbolScale / 100);
         elem.Color = color;
         elem.Geometry = geom;
         elem.Symbol = -3;

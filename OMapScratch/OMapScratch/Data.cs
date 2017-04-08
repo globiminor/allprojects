@@ -409,9 +409,9 @@ namespace OMapScratch
       {
         _x = x;
         _y = y;
-        _currentCurve = _map._currentCurve;
         _map = map;
 
+        _currentCurve = _map._currentCurve;
         _first = (_map._elems.Count == 0 || _map._elems[_map._elems.Count - 1] != _currentCurve);
       }
       protected override void Redo(Stack<Operation> ops)
