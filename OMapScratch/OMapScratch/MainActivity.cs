@@ -11,6 +11,34 @@ namespace OMapScratch
   [Activity(Label = "O-Scratch", MainLauncher = true, Icon = "@drawable/icon")]
   public partial class MainActivity : Activity
   {
+    private class LoadListener : Java.Lang.Object, IMenuItemOnMenuItemClickListener
+    {
+      private MainActivity _activity;
+      public LoadListener(MainActivity activity)
+      {
+        _activity = activity;
+      }
+      bool IMenuItemOnMenuItemClickListener.OnMenuItemClick(IMenuItem item)
+      {
+        _activity.ShowBrowser();
+        return true;
+      }
+    }
+    private class SaveListener : Java.Lang.Object, IMenuItemOnMenuItemClickListener
+    {
+      private MainActivity _activity;
+      public SaveListener(MainActivity activity)
+      {
+        _activity = activity;
+      }
+      bool IMenuItemOnMenuItemClickListener.OnMenuItemClick(IMenuItem item)
+      {
+        _activity.MapVm.Save();
+        return true;
+      }
+
+    }
+
     private static Map _staticMap;
 
     private RelativeLayout _parentLayout;
@@ -20,6 +48,8 @@ namespace OMapScratch
     private SymbolGrid _symbolGrid;
     private FileBrowser _browser;
     private LinearLayout _imageList;
+
+    private System.Action<MapButton> _setModeFct;
 
     public MapView MapView
     { get { return _mapView; } }
@@ -60,32 +90,13 @@ namespace OMapScratch
       }
     }
 
-    private class LoadListener : Java.Lang.Object, IMenuItemOnMenuItemClickListener
+    private int SymbolFullWidth
     {
-      private MainActivity _activity;
-      public LoadListener(MainActivity activity)
+      get
       {
-        _activity = activity;
+        var metrics = Resources.DisplayMetrics;
+        return System.Math.Min(metrics.WidthPixels, metrics.HeightPixels);
       }
-      bool IMenuItemOnMenuItemClickListener.OnMenuItemClick(IMenuItem item)
-      {
-        _activity.ShowBrowser();
-        return true;
-      }
-    }
-    private class SaveListener : Java.Lang.Object, IMenuItemOnMenuItemClickListener
-    {
-      private MainActivity _activity;
-      public SaveListener(MainActivity activity)
-      {
-        _activity = activity;
-      }
-      bool IMenuItemOnMenuItemClickListener.OnMenuItemClick(IMenuItem item)
-      {
-        _activity.MapVm.Save();
-        return true;
-      }
-
     }
 
     public override bool OnCreateOptionsMenu(IMenu menu)
@@ -114,15 +125,6 @@ namespace OMapScratch
     //  return sendPictureIntent;
     //}
 
-    int SymbolFullWidth
-    {
-      get
-      {
-        var metrics = Resources.DisplayMetrics;
-        return System.Math.Min(metrics.WidthPixels, metrics.HeightPixels);
-      }
-    }
-
     protected override void OnCreate(Bundle bundle)
     {
       base.OnCreate(bundle);
@@ -140,13 +142,26 @@ namespace OMapScratch
         LinearLayout mapCtxMenu = new LinearLayout(this);
         mapCtxMenu.Orientation = Orientation.Vertical;
         mapCtxMenu.Visibility = ViewStates.Invisible;
-        {
-          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-          lprams.AddRule(LayoutRules.Below, Resource.Id.btnImages);
-          mapCtxMenu.LayoutParameters = lprams;
-        }
+
+        RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+        lprams.AddRule(LayoutRules.Below, Resource.Id.btnImages);
+        mapCtxMenu.LayoutParameters = lprams;
+
         _mapView.ContextMenu = mapCtxMenu;
         _parentLayout.AddView(mapCtxMenu);
+      }
+      {
+        TextView txtInfo = new TextView(this);
+
+        RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
+        lprams.AddRule(LayoutRules.AlignParentBottom);
+        txtInfo.LayoutParameters = lprams;
+        txtInfo.Visibility = ViewStates.Invisible;
+        txtInfo.SetBackgroundColor(Color.LightGray);
+        txtInfo.SetTextColor(Color.Black);
+
+        _mapView.TextInfo = txtInfo;
+        _parentLayout.AddView(txtInfo);
       }
 
 
@@ -186,11 +201,21 @@ namespace OMapScratch
 
         _btnCurrentMode.Click += (s, e) =>
         {
-          if (_symbolGrid.Visibility == ViewStates.Visible)
-          { _symbolGrid.Visibility = ViewStates.Invisible; }
-          else
-          { _symbolGrid.Visibility = ViewStates.Visible; }
+          _setModeFct = null;
           MapVm.CommitCurrentCurve();
+          if (_symbolGrid.Visibility == ViewStates.Visible)
+          {
+            _symbolGrid.Visibility = ViewStates.Invisible;
+          }
+          else
+          {
+            _setModeFct = (btn) =>
+            {
+              _btnCurrentMode.CurrentMode = btn;
+              _btnCurrentMode.PostInvalidate();
+            };
+            _symbolGrid.Visibility = ViewStates.Visible;
+          }
         };
 
         _parentLayout.AddView(_btnCurrentMode);
@@ -310,6 +335,17 @@ namespace OMapScratch
       browser.Filter = new[] { ".config" };
       browser.SetDirectory(path);
       browser.Show((file) => { MapVm.Load(file); _mapView.Invalidate(); });
+    }
+
+    public void ShowSymbols(System.Action<MapButton> setModeFct)
+    {
+      _setModeFct = setModeFct;
+      _symbolGrid.Visibility = ViewStates.Visible;
+      _symbolGrid.PostInvalidate();
+    }
+    private void SetMode(MapButton modeButton)
+    {
+      _setModeFct?.Invoke(modeButton);
     }
   }
 }

@@ -3,6 +3,11 @@ using Android.Widget;
 
 namespace OMapScratch.Views
 {
+  public interface ISetModeHandler
+  {
+    void SetMode(MapButton button);
+  }
+
   public abstract class MapButton : Button
   {
     public MapButton(Android.Content.Context context)

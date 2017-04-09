@@ -36,9 +36,7 @@ namespace OMapScratch
         btnEdit.SetWidth(fullWidth / nColumns);
         btnEdit.Click += (s, e) =>
         {
-          ModeButton current = _activity._btnCurrentMode;
-          current.CurrentMode = btnEdit;
-          current.PostInvalidate();
+          _activity.SetMode(btnEdit);
           Visibility = ViewStates.Invisible;
         };
 
@@ -69,9 +67,7 @@ namespace OMapScratch
 
           btnSym.Click += (s, e) =>
           {
-            ModeButton current = _activity._btnCurrentMode;
-            current.CurrentMode = btnSym;
-            current.PostInvalidate();
+            _activity.SetMode(btnSym);
             Visibility = ViewStates.Invisible;
           };
 

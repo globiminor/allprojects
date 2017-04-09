@@ -35,6 +35,14 @@ namespace OMapScratch.Views
       }
     }
 
+    private class ActionButton : Button
+    {
+      public ContextAction Action { get; }
+      public ActionButton(MainActivity context, ContextAction action)
+        : base(context)
+      { Action = action; }
+    }
+
     private readonly MainActivity _context;
     private Matrix _elemMatrix;
     private float[] _elemMatrixValues;
@@ -42,7 +50,7 @@ namespace OMapScratch.Views
     private Matrix _initMatrix;
 
     private Pnt _editPnt;
-    private System.Action<Pnt> _nextPointAction;
+    private IPointAction _nextPointAction;
 
     private LinearLayout _contextMenu;
     internal LinearLayout ContextMenu
@@ -55,16 +63,58 @@ namespace OMapScratch.Views
         vto.AddOnGlobalLayoutListener(new OnGlobalLayoutListener(this));
       }
     }
+    internal TextView TextInfo
+    { get; set; }
 
-    private void ResetContextMenu()
+    public void ResetContextMenu()
     {
       _editPnt = null;
       _nextPointAction = null;
+      TextInfo.Visibility = Android.Views.ViewStates.Invisible;
+      TextInfo.PostInvalidate();
     }
 
-    void IMapView.SetNextPointAction(System.Action<Pnt> actionWithNextPoint)
+    void IMapView.SetNextPointAction(IPointAction actionWithNextPoint)
     {
       _nextPointAction = actionWithNextPoint;
+      ShowText(actionWithNextPoint.Description);
+    }
+
+    private bool _keepTextOnDraw;
+    private void ShowText(string text, bool success = true)
+    {
+      if (string.IsNullOrWhiteSpace(text))
+      {
+        TextInfo.Visibility = Android.Views.ViewStates.Invisible;
+      }
+      else
+      {
+        TextInfo.Text = text;
+        TextInfo.SetTextColor(success ? Color.Black : Color.Red);
+        TextInfo.Visibility = Android.Views.ViewStates.Visible;
+        _keepTextOnDraw = success;
+      }
+      TextInfo.PostInvalidate();
+    }
+
+    void IMapView.SetGetSymbolAction(ISymbolAction symbolAction)
+    {
+      ShowText(symbolAction.Description);
+
+      _context.ShowSymbols((mode) =>
+      {
+        SymbolButton btn = mode as SymbolButton;
+        if (btn != null)
+        {
+          string message;
+          bool success = symbolAction.Action(btn.Symbol, btn.Color, out message);
+          ShowText(message, success);
+          if (success)
+          { PostInvalidate(); }
+        }
+        else
+        { ShowText("No valid symbol button", false); }
+      });
     }
 
     public float Precision { get { return 100; } }
@@ -244,10 +294,10 @@ namespace OMapScratch.Views
 
       if (_nextPointAction != null)
       {
-        System.Action<Pnt> action = _nextPointAction;
+        IPointAction action = _nextPointAction;
         ResetContextMenu();
 
-        action(new Pnt(at[0], at[1]));
+        action.Action(new Pnt(at[0], at[1]));
 
         ContextMenu.Visibility = Android.Views.ViewStates.Invisible;
         ContextMenu.RemoveAllViews();
@@ -397,13 +447,6 @@ namespace OMapScratch.Views
       PostInvalidate();
     }
 
-    private class ActionButton : Button
-    {
-      public ContextAction Action { get; }
-      public ActionButton(MainActivity context, ContextAction action)
-        : base(context)
-      { Action = action; }
-    }
     public void Translate(float dx, float dy)
     {
       ResetElemMatrix();
@@ -438,6 +481,8 @@ namespace OMapScratch.Views
     protected override void OnDraw(Canvas canvas)
     {
       base.OnDraw(canvas);
+      if (!_keepTextOnDraw)
+      { ShowText(null); }
       DrawElems(canvas, _context.MapVm.Elems);
     }
 

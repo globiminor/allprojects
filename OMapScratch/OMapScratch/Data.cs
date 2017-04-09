@@ -6,9 +6,22 @@ using System.Xml.Serialization;
 
 namespace OMapScratch
 {
+  public interface IPointAction
+  {
+    string Description { get; }
+    void Action(Pnt pnt);
+  }
+  public interface ISymbolAction
+  {
+    string Description { get; }
+    bool Action(Symbol symbol, ColorRef color, out string message);
+  }
+
+
   public interface IMapView
   {
-    void SetNextPointAction(Action<Pnt> actionWithNextPoint);
+    void SetGetSymbolAction(ISymbolAction setSymbol);
+    void SetNextPointAction(IPointAction actionWithNextPoint);
   }
 
   public partial interface ISegment
@@ -17,6 +30,7 @@ namespace OMapScratch
     Pnt From { get; set; }
     Pnt To { get; set; }
 
+    ISegment Project(IProjection prj);
     void InitToText(StringBuilder sb);
     void AppendToText(StringBuilder sb);
   }
@@ -25,6 +39,12 @@ namespace OMapScratch
   {
     string ToText();
     IEnumerable<Pnt> GetVertices();
+    IDrawable Project(IProjection prj);
+  }
+
+  public interface IProjection
+  {
+    Pnt Project(Pnt pnt);
   }
 
   public partial class ColorRef
@@ -59,6 +79,70 @@ namespace OMapScratch
 
   public partial class MapVm
   {
+    private class MoveVertexAction : IPointAction
+    {
+      private readonly Map _map;
+      private readonly Elem _elem;
+      private readonly int _iVertex;
+      public MoveVertexAction(Map map, Elem elem, int iVertex)
+      {
+        _map = map;
+        _elem = elem;
+        _iVertex = iVertex;
+      }
+
+      public string Description { get { return "Click the new position of the vertex"; } }
+      void IPointAction.Action(Pnt pnt)
+      { MoveVertex(pnt); }
+      public void MoveVertex(Pnt next)
+      {
+        _map.MoveVertex(_elem, _iVertex, next);
+      }
+    }
+
+    private class MoveElementAction : IPointAction
+    {
+      private readonly Map _map;
+      private readonly Elem _elem;
+      private readonly Pnt _origPosition;
+      public MoveElementAction(Map map, Elem elem, Pnt origPosition)
+      {
+        _map = map;
+        _elem = elem;
+        _origPosition = origPosition;
+      }
+
+      public string Description { get { return "Click the new position of the element"; } }
+      void IPointAction.Action(Pnt pnt)
+      { MoveElement(pnt); }
+      public void MoveElement(Pnt next)
+      {
+        Pnt diff = new Pnt(next.X - _origPosition.X, next.Y - _origPosition.Y);
+        _map.MoveElement(_elem, diff);
+      }
+    }
+
+
+    private class SetSymbolAction : ISymbolAction
+    {
+      private readonly Map _map;
+      private readonly Elem _elem;
+      public SetSymbolAction(Map map, Elem elem)
+      {
+        _map = map;
+        _elem = elem;
+      }
+
+      public string Description { get { return "Select new color and symbol"; } }
+      bool ISymbolAction.Action(Symbol symbol, ColorRef color, out string message)
+      { return SetSymbol(symbol, color, out message); }
+
+      public bool SetSymbol(Symbol symbol, ColorRef color, out string message)
+      {
+        return _map.SetSymbol(_elem, symbol, color, out message);
+      }
+    }
+
     private Map _map;
 
     public event System.ComponentModel.CancelEventHandler Saving;
@@ -106,11 +190,11 @@ namespace OMapScratch
             {
               List<ContextAction> vertexActions = new List<ContextAction>();
               vertexActions.Add(new ContextAction(elemPnt) { Name = "Delete", Action = () => _map.RemoveVertex(elem, iVertex) });
-              MoveVertexAction m = new MoveVertexAction(_map, elem, iVertex);
+              MoveVertexAction moveAction = new MoveVertexAction(_map, elem, iVertex);
               vertexActions.Add(new ContextAction(elemPnt)
               {
                 Name = "Move",
-                Action = () => { view.SetNextPointAction((next) => m.MoveVertex(next)); }
+                Action = () => { view.SetNextPointAction(moveAction); }
               });
 
               vertexActionsList.Add(new ContextActions($"Vertex #{iVertex}", elem, new Pnt(point.X, point.Y), vertexActions));
@@ -122,12 +206,23 @@ namespace OMapScratch
         {
           List<ContextAction> elemActions = new List<ContextAction>();
           elemActions.Add(new ContextAction(elemPnt) { Name = "Delete", Action = () => _map.RemoveElem(elem) });
-          elemActions.Add(new ContextAction(elemPnt) { Name = "Move", Action = () => _map.RemoveElem(elem) });
+
+          MoveElementAction moveAction = new MoveElementAction(_map, elem, elemPnt);
+          elemActions.Add(new ContextAction(elemPnt)
+          {
+            Name = "Move",
+            Action = () => { view.SetNextPointAction(moveAction); }
+          });
           if (isLine)
           {
             elemActions.Add(new ContextAction(elemPnt) { Name = "Ins. Vert.", Action = () => _map.RemoveElem(elem) });
           }
-          elemActions.Add(new ContextAction(elemPnt) { Name = "Re-Symbol", Action = () => _map.RemoveElem(elem) });
+          SetSymbolAction resymbolAction = new SetSymbolAction(_map, elem);
+          elemActions.Add(new ContextAction(elemPnt)
+          {
+            Name = "Change Symbol",
+            Action = () => { view.SetGetSymbolAction(resymbolAction); }
+          });
 
           allActions.Add(new ContextActions("Elem", elem, elemPnt, elemActions));
         }
@@ -135,24 +230,6 @@ namespace OMapScratch
       }
 
       return allActions;
-    }
-
-    private class MoveVertexAction
-    {
-      private readonly Map _map;
-      private readonly Elem _elem;
-      private readonly int _iVertex;
-      public MoveVertexAction(Map map, Elem elem, int iVertex)
-      {
-        _map = map;
-        _elem = elem;
-        _iVertex = iVertex;
-      }
-
-      public void MoveVertex(Pnt next)
-      {
-        _map.MoveVertex(_elem, _iVertex, next);
-      }
     }
 
     public IEnumerable<XmlImage> Images
@@ -224,140 +301,6 @@ namespace OMapScratch
 
   public partial class Map
   {
-    private List<Elem> _elems;
-    private List<Symbol> _symbols;
-    private List<ColorRef> _colors;
-
-    private Elem _currentCurve;
-    private string _currentImagePath;
-
-    private XmlConfig _config;
-    private string _configPath;
-
-    private static readonly float _defaultMinSearchDist = 10;
-
-    internal IList<XmlImage> Images
-    {
-      get { return _config?.Images; }
-    }
-
-    public float SymbolScale
-    {
-      get
-      {
-        float scale = _config?.Data?.SymbolScale ?? 1;
-        if (scale <= 0) { scale = 1; }
-        return scale;
-      }
-    }
-
-    public float MinSearchDistance
-    {
-      get
-      {
-        float search = _config?.Data?.Search ?? 0;
-        return search > 0 ? search : _defaultMinSearchDist;
-      }
-    }
-
-    public IEnumerable<Elem> Elems
-    {
-      get
-      {
-        if (_elems == null)
-        { yield break; }
-
-        foreach (Elem elem in _elems)
-        { yield return elem; }
-      }
-    }
-
-    public bool RemoveElem(Elem elem)
-    {
-      RemoveElementOperation op = new RemoveElementOperation(_elems, elem);
-      op.Redo(this, true);
-      return op.LastSuccess;
-    }
-
-    public bool RemoveVertex(Elem elem, int idx)
-    {
-      RemoveVertexOperation op = new RemoveVertexOperation(elem, idx);
-      op.Redo(this, true);
-      return op.LastSuccess;
-    }
-
-    public bool MoveVertex(Elem elem, int idx, Pnt newPosition)
-    {
-      MoveVertexOperation op = new MoveVertexOperation(elem, idx, newPosition);
-      op.Redo(this, true);
-      return op.LastSuccess;
-    }
-
-
-
-    public float[] GetOffset()
-    {
-      XmlOffset offset = _config?.Offset;
-      if (offset == null)
-      { return null; }
-      return new float[] { (float)offset.X, (float)offset.Y };
-    }
-
-    public float[] GetCurrentWorldMatrix()
-    {
-      if (string.IsNullOrEmpty(_currentImagePath))
-      { return null; }
-
-      string ext = Path.GetExtension(_currentImagePath);
-      if (string.IsNullOrEmpty(ext) || ext.Length < 3)
-      { return null; }
-
-      string worldExt = $"{ext.Substring(0, 2)}{ext[ext.Length - 1]}w";
-      string worldFile = Path.ChangeExtension(_currentImagePath, worldExt);
-
-      if (!File.Exists(worldFile))
-      { return null; }
-
-      using (TextReader r = new StreamReader(worldFile))
-      {
-        float x00, x01, x10, x11, dx, dy;
-        if (!float.TryParse(r.ReadLine(), out x00)) return null;
-        if (!float.TryParse(r.ReadLine(), out x01)) return null;
-        if (!float.TryParse(r.ReadLine(), out x10)) return null;
-        if (!float.TryParse(r.ReadLine(), out x11)) return null;
-        if (!float.TryParse(r.ReadLine(), out dx)) return null;
-        if (!float.TryParse(r.ReadLine(), out dy)) return null;
-
-        return new float[] { x00, x01, x10, x11, dx, dy };
-      }
-    }
-
-    public void AddPoint(float x, float y, Symbol sym, ColorRef color)
-    {
-      if (_elems == null)
-      { _elems = new List<Elem>(); }
-
-      Pnt p = new Pnt { X = x, Y = y };
-
-      SymbolType symTyp = sym.GetSymbolType();
-      if (symTyp == SymbolType.Line)
-      {
-        if (_currentCurve == null)
-        {
-          Curve curve = new Curve();
-          _currentCurve = new Elem { Geometry = curve, Symbol = sym, Color = color };
-        }
-        AddPointOperation op = new AddPointOperation(this, x, y);
-        op.Redo(this, true);
-      }
-      else if (symTyp == SymbolType.Point ||
-        symTyp == SymbolType.Text)
-      {
-        AddElementOperation op = new AddElementOperation(new Elem { Geometry = p, Symbol = sym, Color = color }, _elems, _currentCurve);
-        op.Redo(this, true);
-      }
-    }
-
     private abstract class Operation
     {
       public abstract void Undo();
@@ -496,6 +439,41 @@ namespace OMapScratch
       }
     }
 
+    private class MoveElementOperation : Operation
+    {
+      private readonly Elem _elem;
+      private readonly Pnt _offset;
+
+      private IDrawable _origGeom;
+
+      public MoveElementOperation(Elem elem, Pnt offset)
+      {
+        _elem = elem;
+        _offset = offset;
+      }
+      public bool LastSuccess { get; private set; }
+      public override void Undo()
+      {
+        _elem.Geometry = _origGeom;
+      }
+      protected override void Redo(Stack<Operation> ops)
+      {
+        _origGeom = _elem.Geometry;
+        Translation translate = new Translation(_offset);
+        _elem.Geometry = _elem.Geometry.Project(translate);
+        ops.Push(this);
+      }
+    }
+
+    private class Translation : IProjection
+    {
+      private readonly Pnt _offset;
+      public Translation(Pnt offset)
+      { _offset = offset; }
+      public Pnt Project(Pnt p)
+      { return new Pnt(p.X + _offset.X, p.Y + _offset.Y); }
+    }
+
     private class RemoveElementOperation : Operation
     {
       private readonly Elem _remove;
@@ -525,6 +503,40 @@ namespace OMapScratch
         ops.Push(this);
       }
     }
+
+    private class SetSymbolOperation : Operation
+    {
+      private readonly Elem _elem;
+      private readonly Symbol _newSymbol;
+      private readonly ColorRef _newColor;
+
+      private Symbol _oldSymbol;
+      private ColorRef _oldColor;
+
+      public SetSymbolOperation(Elem elem, Symbol symbol, ColorRef color)
+      {
+        _elem = elem;
+        _newSymbol = symbol;
+        _newColor = color;
+      }
+      public bool LastSuccess { get; private set; }
+      public override void Undo()
+      {
+        _elem.Symbol = _oldSymbol;
+        _elem.Color = _oldColor;
+      }
+      protected override void Redo(Stack<Operation> ops)
+      {
+        _oldSymbol = _elem.Symbol;
+        _oldColor = _elem.Color;
+
+        _elem.Symbol = _newSymbol;
+        _elem.Color = _newColor;
+
+        ops.Push(this);
+      }
+    }
+
     private class AddPointOperation : Operation
     {
       private float _x;
@@ -613,15 +625,172 @@ namespace OMapScratch
       }
     }
 
+    private List<Elem> _elems;
+    private List<Symbol> _symbols;
+    private List<ColorRef> _colors;
+
+    private Elem _currentCurve;
+    private string _currentImagePath;
+
+    private XmlConfig _config;
+    private string _configPath;
+
+    private static readonly float _defaultMinSearchDist = 10;
+
+    private Stack<Operation> _undoOps = new Stack<Operation>();
+    private Stack<Operation> _redoOps = new Stack<Operation>();
+
+    internal IList<XmlImage> Images
+    {
+      get { return _config?.Images; }
+    }
+
+    public float SymbolScale
+    {
+      get
+      {
+        float scale = _config?.Data?.SymbolScale ?? 1;
+        if (scale <= 0) { scale = 1; }
+        return scale;
+      }
+    }
+
+    public float MinSearchDistance
+    {
+      get
+      {
+        float search = _config?.Data?.Search ?? 0;
+        return search > 0 ? search : _defaultMinSearchDist;
+      }
+    }
+
+    public IEnumerable<Elem> Elems
+    {
+      get
+      {
+        if (_elems == null)
+        { yield break; }
+
+        foreach (Elem elem in _elems)
+        { yield return elem; }
+      }
+    }
+
+    public bool RemoveElem(Elem elem)
+    {
+      RemoveElementOperation op = new RemoveElementOperation(_elems, elem);
+      op.Redo(this, true);
+      return op.LastSuccess;
+    }
+
+    public bool RemoveVertex(Elem elem, int idx)
+    {
+      RemoveVertexOperation op = new RemoveVertexOperation(elem, idx);
+      op.Redo(this, true);
+      return op.LastSuccess;
+    }
+
+    public bool MoveVertex(Elem elem, int idx, Pnt newPosition)
+    {
+      MoveVertexOperation op = new MoveVertexOperation(elem, idx, newPosition);
+      op.Redo(this, true);
+      return op.LastSuccess;
+    }
+
+    public bool MoveElement(Elem elem, Pnt offset)
+    {
+      MoveElementOperation op = new MoveElementOperation(elem, offset);
+      op.Redo(this, true);
+      return op.LastSuccess;
+    }
+
+    public bool SetSymbol(Elem elem, Symbol symbol, ColorRef color, out string message)
+    {
+      bool isElemLine = elem.Symbol.GetSymbolType() == SymbolType.Line;
+      bool isSymbolLine = symbol.GetSymbolType() == SymbolType.Line;
+      if (isElemLine != isSymbolLine)
+      {
+        message = isElemLine ? 
+          "Cannot change to point symbol" :
+          "Cannot change to line symbol";
+        return false;
+      }
+
+      SetSymbolOperation op = new SetSymbolOperation(elem, symbol, color);
+      op.Redo(this, true);
+      message = null;
+      return op.LastSuccess;
+    }
+
+    public float[] GetOffset()
+    {
+      XmlOffset offset = _config?.Offset;
+      if (offset == null)
+      { return null; }
+      return new float[] { (float)offset.X, (float)offset.Y };
+    }
+
+    public float[] GetCurrentWorldMatrix()
+    {
+      if (string.IsNullOrEmpty(_currentImagePath))
+      { return null; }
+
+      string ext = Path.GetExtension(_currentImagePath);
+      if (string.IsNullOrEmpty(ext) || ext.Length < 3)
+      { return null; }
+
+      string worldExt = $"{ext.Substring(0, 2)}{ext[ext.Length - 1]}w";
+      string worldFile = Path.ChangeExtension(_currentImagePath, worldExt);
+
+      if (!File.Exists(worldFile))
+      { return null; }
+
+      using (TextReader r = new StreamReader(worldFile))
+      {
+        float x00, x01, x10, x11, dx, dy;
+        if (!float.TryParse(r.ReadLine(), out x00)) return null;
+        if (!float.TryParse(r.ReadLine(), out x01)) return null;
+        if (!float.TryParse(r.ReadLine(), out x10)) return null;
+        if (!float.TryParse(r.ReadLine(), out x11)) return null;
+        if (!float.TryParse(r.ReadLine(), out dx)) return null;
+        if (!float.TryParse(r.ReadLine(), out dy)) return null;
+
+        return new float[] { x00, x01, x10, x11, dx, dy };
+      }
+    }
+
+    public void AddPoint(float x, float y, Symbol sym, ColorRef color)
+    {
+      if (_elems == null)
+      { _elems = new List<Elem>(); }
+
+      Pnt p = new Pnt { X = x, Y = y };
+
+      SymbolType symTyp = sym.GetSymbolType();
+      if (symTyp == SymbolType.Line)
+      {
+        if (_currentCurve == null)
+        {
+          Curve curve = new Curve();
+          _currentCurve = new Elem { Geometry = curve, Symbol = sym, Color = color };
+        }
+        AddPointOperation op = new AddPointOperation(this, x, y);
+        op.Redo(this, true);
+      }
+      else if (symTyp == SymbolType.Point ||
+        symTyp == SymbolType.Text)
+      {
+        AddElementOperation op = new AddElementOperation(new Elem { Geometry = p, Symbol = sym, Color = color }, _elems, _currentCurve);
+        op.Redo(this, true);
+      }
+    }
+
     public void CommitCurrentCurve()
     {
       AddElementOperation op = new AddElementOperation(_currentCurve, _elems, null);
       op.Redo(this, true);
       _currentCurve = null;
     }
-
-    private Stack<Operation> _undoOps = new Stack<Operation>();
-    private Stack<Operation> _redoOps = new Stack<Operation>();
 
     public void Undo()
     {
@@ -1184,6 +1353,15 @@ namespace OMapScratch
       Pnt trans = new Pnt(matrix[0] * X + matrix[2], matrix[4] * Y + matrix[5]);
       return trans;
     }
+
+    public Pnt Project(IProjection prj)
+    {
+      return prj.Project(this);
+    }
+
+    IDrawable IDrawable.Project(IProjection prj)
+    { return Project(prj); }
+
     string IDrawable.ToText()
     {
       return $"{DrawableUtils.Point} {X:f1} {Y:f1}";
@@ -1212,6 +1390,14 @@ namespace OMapScratch
     {
       return new Lin { From = From.Clone(), To = To.Clone() };
     }
+
+    public Lin Project(IProjection prj)
+    {
+      return new Lin { From = From.Project(prj), To = To.Project(prj) };
+    }
+    ISegment ISegment.Project(IProjection prj)
+    { return Project(prj); }
+
     void ISegment.InitToText(StringBuilder sb)
     { sb.Append($" {DrawableUtils.MoveTo} {From.X:f1} {From.Y:f1}"); }
 
@@ -1242,6 +1428,13 @@ namespace OMapScratch
       return new Circle { Center = Center.Clone(), Radius = Radius };
     }
 
+    public Circle Project(IProjection prj)
+    {
+      return new Circle { Center = Center.Project(prj), Radius = Radius };
+    }
+    ISegment ISegment.Project(IProjection prj)
+    { return Project(prj); }
+
     void ISegment.InitToText(StringBuilder sb)
     { }
     void ISegment.AppendToText(StringBuilder sb)
@@ -1261,6 +1454,13 @@ namespace OMapScratch
     {
       return new Bezier { From = From.Clone(), I0 = I0.Clone(), I1 = I1.Clone(), To = To.Clone() };
     }
+
+    public Bezier Project(IProjection prj)
+    {
+      return new Bezier { From = From.Project(prj), I0 = I0.Project(prj), I1 = I1.Project(prj), To = To.Project(prj) };
+    }
+    ISegment ISegment.Project(IProjection prj)
+    { return Project(prj); }
 
     void ISegment.InitToText(StringBuilder sb)
     { sb.Append($" {DrawableUtils.MoveTo} {From.X:f1} {From.Y:f1}"); }
@@ -1325,6 +1525,17 @@ namespace OMapScratch
       SetTo(seg.To);
     }
 
+    public Curve Project(IProjection prj)
+    {
+      Curve projected = new Curve();
+      foreach (ISegment seg in this)
+      {
+        projected.AddSegment(seg.Project(prj));
+      }
+      return projected;
+    }
+    IDrawable IDrawable.Project(IProjection prj)
+    { return Project(prj); }
     string IDrawable.ToText()
     {
       if (Count <= 0)

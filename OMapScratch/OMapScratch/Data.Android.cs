@@ -19,26 +19,13 @@ namespace OMapScratch
     public event System.ComponentModel.CancelEventHandler ImageChanging;
     public event System.EventHandler ImageChanged;
 
+    public Bitmap CurrentImage
+    { get { return _map.CurrentImage; } }
+
     public void RefreshImage()
     {
       if (Utils.Cancel(this, ImageChanging))
       { return; }
-
-      ImageChanged?.Invoke(this, null);
-    }
-
-    public Bitmap CurrentImage
-    { get { return _map.CurrentImage; } }
-
-    private void LoadImage(string path)
-    {
-      if (string.IsNullOrEmpty(path))
-      { return; }
-
-      if (Utils.Cancel(this, ImageChanging))
-      { return; }
-
-      _map.LoadImage(path);
 
       ImageChanged?.Invoke(this, null);
     }
@@ -54,6 +41,19 @@ namespace OMapScratch
     public void LoadLocalImage(string path)
     {
       LoadImage(_map.VerifyLocalPath(path));
+    }
+
+    private void LoadImage(string path)
+    {
+      if (string.IsNullOrEmpty(path))
+      { return; }
+
+      if (Utils.Cancel(this, ImageChanging))
+      { return; }
+
+      _map.LoadImage(path);
+
+      ImageChanged?.Invoke(this, null);
     }
   }
 
