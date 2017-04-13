@@ -1064,6 +1064,20 @@ namespace OMapScratch
     public double X { get; set; }
     [XmlAttribute("y")]
     public double Y { get; set; }
+
+    [XmlAttribute("lat")]
+    public double Latitude { get; set; }
+    [XmlAttribute("lon")]
+    public double Longitude { get; set; }
+    [XmlAttribute("north")]
+    public double Meridiankonvergenz { get; set; }
+    [XmlAttribute("gpsmintime")]
+    public double GpsMinTime { get; set; }
+    [XmlAttribute("gpsmindistance")]
+    public double GpsMinDistance { get; set; }
+
+    [XmlAttribute("declination")]
+    public double Declination { get; set; }
   }
 
   public class XmlElems

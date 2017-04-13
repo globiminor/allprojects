@@ -1,10 +1,7 @@
 ﻿using Basics.Views;
 using OMapScratch;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
-using System;
-using Basics.Geom;
 
 namespace OcadScratch.ViewModels
 {
@@ -13,7 +10,7 @@ namespace OcadScratch.ViewModels
     private string _configPath;
     private Map _map;
     private BindingListView<WorkElemVm> _elems;
-    private IProjection _globalPrj;
+    private Basics.Geom.IProjection _globalPrj;
 
     public void Init(string scratchFile)
     {
@@ -40,7 +37,7 @@ namespace OcadScratch.ViewModels
       set { }
     }
 
-    public IProjection GlobalPrj
+    public Basics.Geom.IProjection GlobalPrj
     {
       get
       {

@@ -198,5 +198,11 @@ namespace OcadScratch
       }
       MoveTo();
     }
+
+    private void mniPrepare_Click(object sender, RoutedEventArgs e)
+    {
+      FrmConfig frm = new FrmConfig();
+      frm.ShowDialog();
+    }
   }
 }

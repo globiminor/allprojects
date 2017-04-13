@@ -5,11 +5,13 @@ using Android.Graphics;
 using Android.Views;
 using System.Collections.Generic;
 using OMapScratch.Views;
+using Android.Locations;
+using System.Linq;
 
 namespace OMapScratch
 {
   [Activity(Label = "O-Scratch", MainLauncher = true, Icon = "@drawable/icon")]
-  public partial class MainActivity : Activity
+  public partial class MainActivity : Activity, Android.Locations.ILocationListener
   {
     private class LoadListener : Java.Lang.Object, IMenuItemOnMenuItemClickListener
     {
@@ -347,6 +349,43 @@ namespace OMapScratch
     {
       _setModeFct?.Invoke(modeButton);
     }
+
+    private LocationManager _locMgr;
+    private string _locProvider;
+    private LocationManager InitLocationManager(out string locationProvider)
+    {
+      LocationManager locMgr = (LocationManager)GetSystemService(LocationService);
+      Criteria criteria = new Criteria { Accuracy = Accuracy.Fine };
+      IList<string> locProviders = locMgr.GetProviders(criteria, enabledOnly: true);
+      locationProvider = locProviders?.FirstOrDefault();
+      return locMgr;
+    }
+    protected override void OnResume()
+    {
+      base.OnResume();
+      //_locMgr = _locMgr ?? InitLocationManager(out _locProvider);
+      //_locMgr?.RequestLocationUpdates(_locProvider, 1000, 0, this);
+    }
+    protected override void OnPause()
+    {
+      base.OnPause();
+      _locMgr?.RemoveUpdates(this);
+    }
+    public void OnLocationChanged(Location location)
+    {
+      MapView.TextInfo.Text = $"{location.Latitude:N6}  {location.Longitude:N6}";
+      MapView.TextInfo.Visibility = ViewStates.Visible;
+      MapView.TextInfo.PostInvalidate();
+    }
+
+    public void OnProviderDisabled(string provider)
+    { }
+
+    public void OnProviderEnabled(string provider)
+    { }
+
+    public void OnStatusChanged(string provider, Availability status, Bundle extras)
+    { }
   }
 }
 

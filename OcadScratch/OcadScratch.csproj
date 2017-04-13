@@ -55,11 +55,20 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Commands\CmdCalcDeclination.cs" />
     <Compile Include="Commands\CmdMoveTo.cs" />
     <Compile Include="Commands\CmdNextElem.cs" />
+    <Compile Include="FrmConfig.xaml.cs">
+      <DependentUpon>FrmConfig.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ViewModels\ConfigVm.cs" />
     <Compile Include="ViewModels\MapVm.cs" />
     <Compile Include="ViewModels\WorkElemVm.cs" />
     <Page Include="CntWorkElem.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="FrmConfig.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
