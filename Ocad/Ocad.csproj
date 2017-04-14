@@ -80,6 +80,7 @@
     <Compile Include="StringParams\CategoryPar.cs" />
     <Compile Include="StringParams\ColorPar.cs" />
     <Compile Include="StringParams\ControlPar.cs" />
+    <Compile Include="StringParams\CoordSystemPar.cs" />
     <Compile Include="StringParams\CoursePar.cs" />
     <Compile Include="StringParams\CourseViewPar.cs" />
     <Compile Include="StringParams\DisplayParam.cs" />

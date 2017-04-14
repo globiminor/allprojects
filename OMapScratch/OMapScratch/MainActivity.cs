@@ -11,7 +11,7 @@ using System.Linq;
 namespace OMapScratch
 {
   [Activity(Label = "O-Scratch", MainLauncher = true, Icon = "@drawable/icon")]
-  public partial class MainActivity : Activity, Android.Locations.ILocationListener
+  public partial class MainActivity : Activity, ILocationListener
   {
     private class LoadListener : Java.Lang.Object, IMenuItemOnMenuItemClickListener
     {
@@ -138,8 +138,17 @@ namespace OMapScratch
         RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent);
         lprams.AddRule(LayoutRules.Below, Resource.Id.btnImages);
         _mapView.LayoutParameters = lprams;
+        _mapView.Id = View.GenerateViewId();
       }
       _parentLayout.AddView(_mapView);
+      ConstrView constrView = new ConstrView(_mapView);
+      {
+        RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent);
+        lprams.AddRule(LayoutRules.AlignTop, _mapView.Id);
+        constrView.LayoutParameters = lprams;
+      }
+      _parentLayout.AddView(constrView);
+
       {
         LinearLayout mapCtxMenu = new LinearLayout(this);
         mapCtxMenu.Orientation = Orientation.Vertical;

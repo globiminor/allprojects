@@ -25,5 +25,27 @@ namespace OcadScratch
     {
       DataContext?.CalcDeclination();
     }
+
+    private void mniInit_Click(object sender, RoutedEventArgs e)
+    {
+      string ocdFile;
+      {
+        Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+        dlg.Title = "OCAD file";
+        dlg.Filter = "*.ocd | *.ocd";
+        if (!(dlg.ShowDialog() ?? false))
+        { return; }
+
+        ocdFile = dlg.FileName;
+      }
+
+      DataContext = DataContext ?? new ConfigVm();
+      DataContext.Init(ocdFile);
+    }
+
+    private void mniSave_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
   }
 }

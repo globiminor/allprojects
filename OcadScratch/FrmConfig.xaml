@@ -9,24 +9,32 @@
     <Window.DataContext>
         <local:ConfigVm />
     </Window.DataContext>
-    <Grid>
-        <TextBlock x:Name="lblKoord" HorizontalAlignment="Left" Margin="10,33,0,0" VerticalAlignment="Top">Kartenkoordinaten</TextBlock>
-        <TextBlock x:Name="lblOffsetX" HorizontalAlignment="Left" Margin="10,59,0,0" VerticalAlignment="Top">Offset X</TextBlock>
-        <TextBox x:Name="txtOffsetX" Height="23" Margin="153,61,10,0" TextWrapping="Wrap" Text="{Binding OffsetX}" VerticalAlignment="Top" TextAlignment="Right"/>
-        <TextBlock x:Name="lblOffsetY" HorizontalAlignment="Left" Margin="10,85,0,0" VerticalAlignment="Top">Offset Y</TextBlock>
-        <TextBox x:Name="txtOffsetY" Height="23" Margin="153,89,10,0" TextWrapping="Wrap" Text="{Binding OffsetY}" VerticalAlignment="Top" TextAlignment="Right"/>
-        <TextBlock x:Name="lblProjection" HorizontalAlignment="Left" Margin="10,111,0,0" VerticalAlignment="Top">WGS 84</TextBlock>
-        <TextBlock x:Name="lblLat" HorizontalAlignment="Left" Margin="10,139,0,0" VerticalAlignment="Top">Lat [°]</TextBlock>
-        <TextBox x:Name="txtLat" Height="23" Margin="153,142,10,0" TextWrapping="Wrap" Text="{Binding Lat}" VerticalAlignment="Top" TextAlignment="Right"/>
-        <TextBlock x:Name="lblLon" HorizontalAlignment="Left" Margin="10,167,0,0" VerticalAlignment="Top">Lon [°]</TextBlock>
-        <TextBox x:Name="txtLon" Height="23" Margin="153,170,10,0" TextWrapping="Wrap" Text="{Binding Lon}" VerticalAlignment="Top" TextAlignment="Right"/>
-        <TextBlock x:Name="lblMeridian" HorizontalAlignment="Left" Margin="10,195,0,0" VerticalAlignment="Top">Meridiankonvergenz [°]</TextBlock>
-        <TextBox x:Name="txtMeridian" Height="23" Margin="153,198,10,0" TextWrapping="Wrap" Text="{Binding Meridiankonvergenz}" VerticalAlignment="Top" TextAlignment="Right"/>
-        <Button x:Name="btnGetWgs" Content="aus Kartenkordinaten ..." HorizontalAlignment="Left" Margin="153,117,0,0" VerticalAlignment="Top" Width="129"/>
-        <Button x:Name="btnGetKoord" Content="aus WGS 84 ..." HorizontalAlignment="Left" Margin="153,36,0,0" VerticalAlignment="Top" Width="129"/>
-        <Button x:Name="btnOcad" Content="aus Ocad-Datei..." HorizontalAlignment="Left" Margin="153,10,0,0" VerticalAlignment="Top" Width="129"/>
-        <TextBlock x:Name="lblDeklination" TextWrapping="Wrap" HorizontalAlignment="Left" Margin="10,251,0,0" VerticalAlignment="Top" Width="134" Height="23">Deklination [°]</TextBlock>
-        <TextBox x:Name="txtDeklination" Height="23" Margin="153,251,10,0" TextWrapping="Wrap" Text="{Binding Declination}" VerticalAlignment="Top" TextAlignment="Right"/>
-        <Button x:Name="btnGetDeklination" Content="aus Kartenkoordinaten..." HorizontalAlignment="Left" Margin="153,226,0,0" VerticalAlignment="Top" Width="129" Click="btnGetDeklination_Click"/>
-    </Grid>
+    <StackPanel>
+        <Menu x:Name="menu" DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Init..." Click="mniInit_Click"/>
+                <MenuItem Header="_Save" Click="mniSave_Click"/>
+            </MenuItem>
+        </Menu>
+        <Grid>
+            <TextBlock x:Name="lblKoord" HorizontalAlignment="Left" Margin="10,33,0,0" VerticalAlignment="Top">Kartenkoordinaten</TextBlock>
+            <TextBlock x:Name="lblOffsetX" HorizontalAlignment="Left" Margin="10,59,0,0" VerticalAlignment="Top">Offset X</TextBlock>
+            <TextBox x:Name="txtOffsetX" Height="23" Margin="153,61,10,0" TextWrapping="Wrap" Text="{Binding OffsetX}" VerticalAlignment="Top" TextAlignment="Right"/>
+            <TextBlock x:Name="lblOffsetY" HorizontalAlignment="Left" Margin="10,85,0,0" VerticalAlignment="Top">Offset Y</TextBlock>
+            <TextBox x:Name="txtOffsetY" Height="23" Margin="153,89,10,0" TextWrapping="Wrap" Text="{Binding OffsetY}" VerticalAlignment="Top" TextAlignment="Right"/>
+            <TextBlock x:Name="lblProjection" HorizontalAlignment="Left" Margin="10,111,0,0" VerticalAlignment="Top">WGS 84</TextBlock>
+            <TextBlock x:Name="lblLat" HorizontalAlignment="Left" Margin="10,139,0,0" VerticalAlignment="Top">Lat [°]</TextBlock>
+            <TextBox x:Name="txtLat" Height="23" Margin="153,142,10,0" TextWrapping="Wrap" Text="{Binding Lat}" VerticalAlignment="Top" TextAlignment="Right"/>
+            <TextBlock x:Name="lblLon" HorizontalAlignment="Left" Margin="10,167,0,0" VerticalAlignment="Top">Lon [°]</TextBlock>
+            <TextBox x:Name="txtLon" Height="23" Margin="153,170,10,0" TextWrapping="Wrap" Text="{Binding Lon}" VerticalAlignment="Top" TextAlignment="Right"/>
+            <TextBlock x:Name="lblMeridian" HorizontalAlignment="Left" Margin="10,195,0,0" VerticalAlignment="Top">Meridiankonvergenz [°]</TextBlock>
+            <TextBox x:Name="txtMeridian" Height="23" Margin="153,198,10,0" TextWrapping="Wrap" Text="{Binding Meridiankonvergenz}" VerticalAlignment="Top" TextAlignment="Right"/>
+            <Button x:Name="btnGetWgs" Content="aus Kartenkordinaten ..." HorizontalAlignment="Left" Margin="153,117,0,0" VerticalAlignment="Top" Width="129"/>
+            <Button x:Name="btnGetKoord" Content="aus WGS 84 ..." HorizontalAlignment="Left" Margin="153,36,0,0" VerticalAlignment="Top" Width="129"/>
+            <Button x:Name="btnOcad" Content="aus Ocad-Datei..." HorizontalAlignment="Left" Margin="153,10,0,0" VerticalAlignment="Top" Width="129"/>
+            <TextBlock x:Name="lblDeklination" TextWrapping="Wrap" HorizontalAlignment="Left" Margin="10,251,0,0" VerticalAlignment="Top" Width="134" Height="23">Deklination [°]</TextBlock>
+            <TextBox x:Name="txtDeklination" Height="23" Margin="153,251,10,0" TextWrapping="Wrap" Text="{Binding Declination}" VerticalAlignment="Top" TextAlignment="Right"/>
+            <Button x:Name="btnGetDeklination" Content="aus Kartenkoordinaten..." HorizontalAlignment="Left" Margin="153,226,0,0" VerticalAlignment="Top" Width="129" Click="btnGetDeklination_Click"/>
+        </Grid>
+    </StackPanel>
 </Window>

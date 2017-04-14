@@ -17,6 +17,7 @@ namespace Ocad.StringParams
     ViewPar = 1030,
     Export = 1035,
     ScalePar = 1039,
+    CoordSystemPar = 1053,
 
     MapNotes = 1061
   }

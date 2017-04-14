@@ -156,6 +156,7 @@ namespace Ocad.StringParams
       if (value == null)
       {
         _paraList.RemoveAt(idx);
+        return;
       }
       _paraList[idx] = string.Format("{0}{1}", _paraList[idx][0], value);
     }

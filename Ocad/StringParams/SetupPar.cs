@@ -9,6 +9,7 @@ namespace Ocad.StringParams
     public const char YKey = 'y';
     public const char RotationKey = 'a';
     public const char RealWorldKey = 'r';
+    public const char KeyGridZone = 'i';
 
     public ScalePar()
     { }
@@ -22,6 +23,11 @@ namespace Ocad.StringParams
       set { SetParam(ScaleKey, value); }
     }
 
+    public int? GridAndZone
+    {
+      get { return GetInt_(KeyGridZone); }
+      set { SetParam(KeyGridZone, value); }
+    }
     public double X
     {
       get { return GetDouble(XKey); }

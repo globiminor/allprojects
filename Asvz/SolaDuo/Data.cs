@@ -83,7 +83,6 @@ namespace Asvz
       }
 
       TransferProjection prj = KmlUtils.GetTransferProjection(new Ch1903());
-      Projection wgs = new Geographic();
 
       CreateStyles(doc, dc);
 

@@ -86,15 +86,7 @@ namespace Asvz
   {
     public static TransferProjection GetTransferProjection(Projection dataProjection)
     {
-      Projection wgs = new Geographic();
-      Ellipsoid ell = new Ellipsoid.Wgs84();
-      ell.Datum = new Datum.ITRS();
-      ell.Datum.Center.X = -0;
-      ell.Datum.Center.Y = 0;
-      ell.Datum.Center.Z = 0.0;
-      wgs.SetEllipsoid(ell);
-      TransferProjection prj = new TransferProjection(dataProjection, wgs);
-
+      TransferProjection prj = new TransferProjection(dataProjection, Geographic.Wgs84());
       return prj;
     }
 

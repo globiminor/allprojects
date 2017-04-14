@@ -131,13 +131,20 @@ namespace OMapScratch.Views
 
     public bool OnTouch(View v, MotionEvent e)
     {
+      MapView mapView = _parent.MapView;
+
       if (e.Action == MotionEventActions.Down)
       {
         if (_t1Down == null) _t1Down = Touch.Create(e, 0);
+        mapView.OnTouch(_t1Down.X, _t1Down.Y, _t1Down.Action);
         return HandleAction();
       }
       if (e.Action == MotionEventActions.Move)
-      { return true; }
+      {
+        Touch move = Touch.Create(e, 0);
+        mapView.OnTouch(move.X, move.Y, move.Action);
+        return true;
+      }
       if (e.Action == MotionEventActions.Up)
       {
         if (_t1Up == null) _t1Up = Touch.Create(e, 0);

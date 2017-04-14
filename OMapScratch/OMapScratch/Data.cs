@@ -20,6 +20,8 @@ namespace OMapScratch
 
   public interface IMapView
   {
+    IPointAction NextPointAction { get; }
+
     void SetGetSymbolAction(ISymbolAction setSymbol);
     void SetNextPointAction(IPointAction actionWithNextPoint);
   }

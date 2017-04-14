@@ -109,7 +109,7 @@ namespace OcadScratch
       { throw new InvalidDataException(""); }
     }
 
-    private void btnLoad_Click(object sender, RoutedEventArgs e)
+    private void mniLoad_Click(object sender, RoutedEventArgs e)
     {
       string scratchFile;
       {

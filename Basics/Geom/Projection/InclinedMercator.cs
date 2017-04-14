@@ -158,9 +158,14 @@ namespace Basics.Geom.Projection
     }
   }
 
-  public class Ch1903 : InclinedMercator
+  public class Ch1903Raw : InclinedMercator
   {
-    public Ch1903()
+    protected Ch1903Raw(double offsetEast, double offsetNorth)
+      : this()
+    {
+      SetOffset(offsetEast, offsetNorth);
+    }
+    public Ch1903Raw()
     {
       Ellipsoid ellipsoid = new Ellipsoid.Bessel();
       ellipsoid.Datum = new Datum.Ch1903();
@@ -176,7 +181,20 @@ namespace Basics.Geom.Projection
       double phi0 = Units.Gms2Rad(phi_g, phi_m, phi_s);
 
       SetParams(ellipsoid, lam0, phi0);
-      SetOffset(600000.0, 200000.0);
     }
   }
+  public class Ch1903 : Ch1903Raw
+  {
+    public Ch1903()
+      : base(600000.0, 200000.0)
+    { }
+  }
+
+  public class Ch1903_LV95 : Ch1903Raw
+  {
+    public Ch1903_LV95()
+      : base(2600000.0, 1200000.0)
+    { }
+  }
+
 }
