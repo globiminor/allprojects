@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:OcadScratch.ViewModels"
         mc:Ignorable="d"
-        Title="Prepare Config" Height="350" Width="300">
+        Title="Prepare Config" Height="400" Width="300">
     <Window.DataContext>
         <local:ConfigVm />
     </Window.DataContext>
@@ -17,24 +17,26 @@
             </MenuItem>
         </Menu>
         <Grid>
-            <TextBlock x:Name="lblKoord" HorizontalAlignment="Left" Margin="10,33,0,0" VerticalAlignment="Top">Kartenkoordinaten</TextBlock>
-            <TextBlock x:Name="lblOffsetX" HorizontalAlignment="Left" Margin="10,59,0,0" VerticalAlignment="Top">Offset X</TextBlock>
-            <TextBox x:Name="txtOffsetX" Height="23" Margin="153,61,10,0" TextWrapping="Wrap" Text="{Binding OffsetX}" VerticalAlignment="Top" TextAlignment="Right"/>
-            <TextBlock x:Name="lblOffsetY" HorizontalAlignment="Left" Margin="10,85,0,0" VerticalAlignment="Top">Offset Y</TextBlock>
-            <TextBox x:Name="txtOffsetY" Height="23" Margin="153,89,10,0" TextWrapping="Wrap" Text="{Binding OffsetY}" VerticalAlignment="Top" TextAlignment="Right"/>
+            <TextBlock x:Name="lblKoord" HorizontalAlignment="Left" Margin="10,14,0,0" VerticalAlignment="Top">Kartenkoordinaten</TextBlock>
+            <TextBlock x:Name="lblOffsetX" HorizontalAlignment="Left" Margin="10,40,0,0" VerticalAlignment="Top">Offset X</TextBlock>
+            <TextBox x:Name="txtOffsetX" Height="23" Margin="153,42,10,0" TextWrapping="Wrap" Text="{Binding OffsetX, StringFormat=N1}" VerticalAlignment="Top" TextAlignment="Right"/>
+            <TextBlock x:Name="lblOffsetY" HorizontalAlignment="Left" Margin="10,66,0,0" VerticalAlignment="Top">Offset Y</TextBlock>
+            <TextBox x:Name="txtOffsetY" Height="23" Margin="153,70,10,0" TextWrapping="Wrap" Text="{Binding OffsetY, StringFormat=N1}" VerticalAlignment="Top" TextAlignment="Right"/>
             <TextBlock x:Name="lblProjection" HorizontalAlignment="Left" Margin="10,111,0,0" VerticalAlignment="Top">WGS 84</TextBlock>
             <TextBlock x:Name="lblLat" HorizontalAlignment="Left" Margin="10,139,0,0" VerticalAlignment="Top">Lat [°]</TextBlock>
-            <TextBox x:Name="txtLat" Height="23" Margin="153,142,10,0" TextWrapping="Wrap" Text="{Binding Lat}" VerticalAlignment="Top" TextAlignment="Right"/>
+            <TextBox x:Name="txtLat" Height="23" Margin="153,142,10,0" TextWrapping="Wrap" Text="{Binding Lat, StringFormat=N6}" VerticalAlignment="Top" TextAlignment="Right"/>
             <TextBlock x:Name="lblLon" HorizontalAlignment="Left" Margin="10,167,0,0" VerticalAlignment="Top">Lon [°]</TextBlock>
-            <TextBox x:Name="txtLon" Height="23" Margin="153,170,10,0" TextWrapping="Wrap" Text="{Binding Lon}" VerticalAlignment="Top" TextAlignment="Right"/>
-            <TextBlock x:Name="lblMeridian" HorizontalAlignment="Left" Margin="10,195,0,0" VerticalAlignment="Top">Meridiankonvergenz [°]</TextBlock>
-            <TextBox x:Name="txtMeridian" Height="23" Margin="153,198,10,0" TextWrapping="Wrap" Text="{Binding Meridiankonvergenz}" VerticalAlignment="Top" TextAlignment="Right"/>
-            <Button x:Name="btnGetWgs" Content="aus Kartenkordinaten ..." HorizontalAlignment="Left" Margin="153,117,0,0" VerticalAlignment="Top" Width="129"/>
-            <Button x:Name="btnGetKoord" Content="aus WGS 84 ..." HorizontalAlignment="Left" Margin="153,36,0,0" VerticalAlignment="Top" Width="129"/>
-            <Button x:Name="btnOcad" Content="aus Ocad-Datei..." HorizontalAlignment="Left" Margin="153,10,0,0" VerticalAlignment="Top" Width="129"/>
-            <TextBlock x:Name="lblDeklination" TextWrapping="Wrap" HorizontalAlignment="Left" Margin="10,251,0,0" VerticalAlignment="Top" Width="134" Height="23">Deklination [°]</TextBlock>
-            <TextBox x:Name="txtDeklination" Height="23" Margin="153,251,10,0" TextWrapping="Wrap" Text="{Binding Declination}" VerticalAlignment="Top" TextAlignment="Right"/>
-            <Button x:Name="btnGetDeklination" Content="aus Kartenkoordinaten..." HorizontalAlignment="Left" Margin="153,226,0,0" VerticalAlignment="Top" Width="129" Click="btnGetDeklination_Click"/>
+            <TextBox x:Name="txtLon" Height="23" Margin="153,170,10,0" TextWrapping="Wrap" Text="{Binding Lon, StringFormat=N6}" VerticalAlignment="Top" TextAlignment="Right"/>
+            <TextBlock x:Name="lblGeomatrix" HorizontalAlignment="Left" Margin="10,195,0,0" VerticalAlignment="Top">Geomatrix</TextBlock>
+            <TextBox x:Name="txtGeo00" Height="23" Margin="117,198,95,0" TextWrapping="Wrap" Text="{Binding GeoMatrix00, StringFormat=N1}" VerticalAlignment="Top" TextAlignment="Right"/>
+            <TextBox x:Name="txtGeo01" Height="23" Margin="202,198,10,0" TextWrapping="Wrap" Text="{Binding GeoMatrix01, StringFormat=N1}" VerticalAlignment="Top" TextAlignment="Right"/>
+            <TextBox x:Name="txtGeo10" Height="23" Margin="117,226,95,0" TextWrapping="Wrap" Text="{Binding GeoMatrix10, StringFormat=N1}" VerticalAlignment="Top" TextAlignment="Right"/>
+            <TextBox x:Name="txtGeo11" Height="23" Margin="202,226,10,0" TextWrapping="Wrap" Text="{Binding GeoMatrix11, StringFormat=N1}" VerticalAlignment="Top" TextAlignment="Right"/>
+            <Button x:Name="btnGetWgs" Content="aus Kartenkordinaten ..." HorizontalAlignment="Left" Margin="153,117,0,0" VerticalAlignment="Top" Width="129" Click="btnGetWgs_Click"/>
+            <Button x:Name="btnGetKoord" Content="aus WGS 84 ..." HorizontalAlignment="Left" Margin="153,17,0,0" VerticalAlignment="Top" Width="129"/>
+            <TextBlock x:Name="lblDeklination" TextWrapping="Wrap" HorizontalAlignment="Left" Margin="10,310,0,-59" VerticalAlignment="Top" Width="134" Height="23">Deklination [°]</TextBlock>
+            <TextBox x:Name="txtDeklination" Height="23" Margin="153,310,10,-59" TextWrapping="Wrap" Text="{Binding Declination}" VerticalAlignment="Top" TextAlignment="Right"/>
+            <Button x:Name="btnGetDeklination" Content="aus Kartenkoordinaten..." HorizontalAlignment="Left" Margin="153,285,0,-31" VerticalAlignment="Top" Width="129" Click="btnGetDeklination_Click"/>
         </Grid>
     </StackPanel>
 </Window>

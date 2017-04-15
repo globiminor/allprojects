@@ -45,7 +45,23 @@ namespace OcadScratch
 
     private void mniSave_Click(object sender, RoutedEventArgs e)
     {
+      string configFile;
+      {
+        Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
+        dlg.Title = "O-Scratch Config";
+        dlg.Filter = "*.config | *.config";
+        if (!(dlg.ShowDialog() ?? false))
+        { return; }
 
+        configFile = dlg.FileName;
+      }
+      DataContext.Save(configFile);
+    }
+
+    private void btnGetWgs_Click(object sender, RoutedEventArgs e)
+    {
+      DataContext = DataContext ?? new ConfigVm();
+      DataContext.CalcWgs84();
     }
   }
 }

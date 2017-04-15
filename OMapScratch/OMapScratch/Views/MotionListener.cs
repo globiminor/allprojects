@@ -94,7 +94,9 @@ namespace OMapScratch.Views
         float dy = _t1Up.Y - _t1Down.Y;
         float prec = System.Math.Min(rect.Height(), rect.Width()) / mapView.Precision;
 
-        if (System.Math.Abs(dx) <= prec && System.Math.Abs(dy) <= prec)
+        if (mapView.IsTouchHandled())
+        { }
+        else if (System.Math.Abs(dx) <= prec && System.Math.Abs(dy) <= prec)
         {
           float x = (_t1Down.X + _t1Up.X) / 2.0f;
           float y = (_t1Down.Y + _t1Up.Y) / 2.0f;

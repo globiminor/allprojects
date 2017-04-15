@@ -233,66 +233,101 @@ namespace OMapScratch
       }
 
       {
+        int viewId = _btnCurrentMode.Id;
         float dScale = 1.5f;
-        ImageButton btnZoomIn = new ImageButton(this);
-        btnZoomIn.SetBackgroundResource(Resource.Drawable.ZoomIn);
-        {
-          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-          lprams.AddRule(LayoutRules.RightOf, _btnCurrentMode.Id);
-          btnZoomIn.LayoutParameters = lprams;
-        }
-        btnZoomIn.Id = View.GenerateViewId();
-        btnZoomIn.Click += (s, a) =>
-        {
-          _mapView.Scale(dScale);
-          _mapView.PostInvalidate();
-        };
-        _parentLayout.AddView(btnZoomIn);
 
-        ImageButton btnZoomOut = new ImageButton(this);
-        btnZoomOut.SetBackgroundResource(Resource.Drawable.ZoomOut);
         {
-          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-          lprams.AddRule(LayoutRules.RightOf, btnZoomIn.Id);
-          btnZoomOut.LayoutParameters = lprams;
+          ImageButton btnGps = new ImageButton(this);
+          btnGps.SetBackgroundResource(Resource.Drawable.Gps);
+          {
+            RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+            lprams.AddRule(LayoutRules.RightOf, viewId);
+            btnGps.LayoutParameters = lprams;
+          }
+          btnGps.Id = View.GenerateViewId();
+          btnGps.Click += (s, a) =>
+          {
+            Pnt pnt = MapView.GetCurrentMapLocation();
+            if (pnt != null)
+            {
+              _btnCurrentMode.MapClicked(pnt.X, pnt.Y);
+              MapView.PostInvalidate();
+            }
+          };
+          _parentLayout.AddView(btnGps);
+          viewId = btnGps.Id;
         }
-        btnZoomOut.Id = View.GenerateViewId();
-        btnZoomOut.Click += (s, a) =>
-        {
-          _mapView.Scale(1 / dScale);
-        };
-        _parentLayout.AddView(btnZoomOut);
 
-        ImageButton btnUndo = new ImageButton(this);
-        btnUndo.SetBackgroundResource(Resource.Drawable.Undo);
+        //{
+        //  ImageButton btnZoomIn = new ImageButton(this);
+        //  btnZoomIn.SetBackgroundResource(Resource.Drawable.ZoomIn);
+        //  {
+        //    RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+        //    lprams.AddRule(LayoutRules.RightOf, viewId);
+        //    btnZoomIn.LayoutParameters = lprams;
+        //  }
+        //  btnZoomIn.Id = View.GenerateViewId();
+        //  btnZoomIn.Click += (s, a) =>
+        //  {
+        //    _mapView.Scale(dScale);
+        //    _mapView.PostInvalidate();
+        //  };
+        //  _parentLayout.AddView(btnZoomIn);
+
+        //  viewId = btnZoomIn.Id;
+        //}
+        //{
+        //  ImageButton btnZoomOut = new ImageButton(this);
+        //  btnZoomOut.SetBackgroundResource(Resource.Drawable.ZoomOut);
+        //  {
+        //    RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+        //    lprams.AddRule(LayoutRules.RightOf, viewId);
+        //    btnZoomOut.LayoutParameters = lprams;
+        //  }
+        //  btnZoomOut.Id = View.GenerateViewId();
+        //  btnZoomOut.Click += (s, a) =>
+        //  {
+        //    _mapView.Scale(1 / dScale);
+        //  };
+        //  _parentLayout.AddView(btnZoomOut);
+        //  viewId = btnZoomOut.Id;
+        //}
+
         {
-          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-          lprams.AddRule(LayoutRules.RightOf, btnZoomOut.Id);
-          btnUndo.LayoutParameters = lprams;
+          ImageButton btnUndo = new ImageButton(this);
+          btnUndo.SetBackgroundResource(Resource.Drawable.Undo);
+          {
+            RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+            lprams.AddRule(LayoutRules.RightOf, viewId);
+            btnUndo.LayoutParameters = lprams;
+          }
+          btnUndo.Id = View.GenerateViewId();
+          btnUndo.Click += (s, a) =>
+          {
+            MapVm.Undo();
+            _mapView.PostInvalidate();
+          };
+          _parentLayout.AddView(btnUndo);
+          viewId = btnUndo.Id;
         }
-        btnUndo.Id = View.GenerateViewId();
-        btnUndo.Click += (s, a) =>
-        {
-          MapVm.Undo();
-          _mapView.PostInvalidate();
-        };
-        _parentLayout.AddView(btnUndo);
 
-        ImageButton btnRedo = new ImageButton(this);
-        btnRedo.SetBackgroundResource(Resource.Drawable.Redo);
         {
-          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-          lprams.AddRule(LayoutRules.RightOf, btnUndo.Id);
-          btnRedo.LayoutParameters = lprams;
+          ImageButton btnRedo = new ImageButton(this);
+          btnRedo.SetBackgroundResource(Resource.Drawable.Redo);
+          {
+            RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+            lprams.AddRule(LayoutRules.RightOf, viewId);
+            btnRedo.LayoutParameters = lprams;
+          }
+          btnRedo.Id = View.GenerateViewId();
+          btnRedo.Click += (s, a) =>
+          {
+            MapVm.Redo();
+            _mapView.PostInvalidate();
+          };
+          _parentLayout.AddView(btnRedo);
+          viewId = btnRedo.Id;
         }
-        btnRedo.Id = View.GenerateViewId();
-        btnRedo.Click += (s, a) =>
-        {
-          MapVm.Redo();
-          _mapView.PostInvalidate();
-        };
-        _parentLayout.AddView(btnRedo);
-
       }
 
       MotionListener listener = new MotionListener(this);
@@ -345,7 +380,12 @@ namespace OMapScratch
       FileBrowser browser = _browser;
       browser.Filter = new[] { ".config" };
       browser.SetDirectory(path);
-      browser.Show((file) => { MapVm.Load(file); _mapView.Invalidate(); });
+      browser.Show((file) =>
+      {
+        MapVm.Load(file);
+        _mapView.Invalidate();
+        OnResume();
+      });
     }
 
     public void ShowSymbols(System.Action<MapButton> setModeFct)
@@ -372,19 +412,40 @@ namespace OMapScratch
     protected override void OnResume()
     {
       base.OnResume();
-      //_locMgr = _locMgr ?? InitLocationManager(out _locProvider);
-      //_locMgr?.RequestLocationUpdates(_locProvider, 1000, 0, this);
+      StartLocation();
     }
     protected override void OnPause()
     {
       base.OnPause();
-      _locMgr?.RemoveUpdates(this);
+      PauseLocation();
     }
+
+    public void StartLocation()
+    {
+      _locMgr = _locMgr ?? InitLocationManager(out _locProvider);
+
+      if (MapVm.HasGlobalLocation())
+      { _locMgr?.RequestLocationUpdates(_locProvider, 1000, 0, this); }
+      else
+      { _locMgr?.RemoveUpdates(this); }
+      MapVm.SetCurrentLocation(null);
+      MapView.ConstrView.PostInvalidate();
+    }
+
+    public void PauseLocation()
+    {
+      _locMgr?.RemoveUpdates(this);
+      MapVm.SetCurrentLocation(null);
+      MapView.ConstrView.PostInvalidate();
+    }
+
     public void OnLocationChanged(Location location)
     {
-      MapView.TextInfo.Text = $"{location.Latitude:N6}  {location.Longitude:N6}";
-      MapView.TextInfo.Visibility = ViewStates.Visible;
-      MapView.TextInfo.PostInvalidate();
+      MapVm.SetCurrentLocation(location);
+      MapView.ConstrView.PostInvalidate();
+      //MapView.TextInfo.Text = $"{location.Latitude:N6}  {location.Longitude:N6}";
+      //MapView.TextInfo.Visibility = ViewStates.Visible;
+      //MapView.TextInfo.PostInvalidate();
     }
 
     public void OnProviderDisabled(string provider)

@@ -89,6 +89,18 @@ namespace OMapScratch.Views
       TextInfo.PostInvalidate();
     }
 
+    public Pnt GetCurrentMapLocation()
+    {
+      Pnt localLoc = _context.MapVm.GetCurrentLocalLocation();
+      if (localLoc == null)
+      { return null; }
+
+      float[] coords = { localLoc.X, localLoc.Y };
+      ElemMatrix.MapPoints(coords);
+
+      return new Pnt(coords[0], coords[1]);
+    }
+
     void IMapView.SetNextPointAction(IPointAction actionWithNextPoint)
     {
       _nextPointAction = actionWithNextPoint;
@@ -311,6 +323,19 @@ namespace OMapScratch.Views
 
       return false;
     }
+
+    public bool IsTouchHandled()
+    {
+      ITouchAction touchAction = _nextPointAction as ITouchAction;
+      if (touchAction == null)
+      { return false; }
+      if (!touchAction.TryHandle(reInit:true))
+      { return false; }
+
+      ResetContextMenu();
+      return true;
+    }
+
     public void InitContextMenus(float x, float y)
     {
       float[] at = { x, y };

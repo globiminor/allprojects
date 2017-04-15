@@ -30,6 +30,16 @@ namespace OMapScratch
       ImageChanged?.Invoke(this, null);
     }
 
+    public void SetCurrentLocation(Android.Locations.Location location)
+    {
+      if (location == null)
+      {
+        _currentLocalLocation = null;
+        return;
+      }
+      SetCurrentLocation(location.Latitude, location.Longitude, location.Altitude, location.Accuracy);
+    }
+
     public void LoadLocalImage(int imageIndex)
     {
       if (_map.Images?.Count <= imageIndex)

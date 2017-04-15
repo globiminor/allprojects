@@ -124,7 +124,6 @@ namespace OMapScratch
       }
     }
 
-
     private class SetSymbolAction : ISymbolAction
     {
       private readonly Map _map;
@@ -146,6 +145,7 @@ namespace OMapScratch
     }
 
     private Map _map;
+    private Pnt _currentLocalLocation;
 
     public event System.ComponentModel.CancelEventHandler Saving;
     public event EventHandler Saved;
@@ -155,6 +155,33 @@ namespace OMapScratch
     public MapVm(Map map)
     {
       _map = map;
+    }
+
+    public bool HasGlobalLocation()
+    {
+      return _map.Config?.Offset?.World != null;
+    }
+
+    public Pnt GetCurrentLocalLocation()
+    {
+      return _currentLocalLocation;
+    }
+    public void SetCurrentLocation(double lat, double lon, double alt, double accuracy)
+    {
+      XmlWorld w = _map.Config?.Offset?.World;
+      if (w == null)
+      {
+        _currentLocalLocation = null;
+        return;
+      }
+
+      double dLat = lat - w.Latitude;
+      double dLon = lon - w.Longitude;
+
+      double x = w.GeoMatrix00 * dLon + w.GeoMatrix10 * dLat;
+      double y = w.GeoMatrix01 * dLon + w.GeoMatrix11 * dLat;
+
+      _currentLocalLocation = new Pnt((float)x, (float)-y);
     }
 
     public List<ContextActions> GetContextActions(IMapView view, float x0, float y0, float dx)
@@ -712,7 +739,7 @@ namespace OMapScratch
       bool isSymbolLine = symbol.GetSymbolType() == SymbolType.Line;
       if (isElemLine != isSymbolLine)
       {
-        message = isElemLine ? 
+        message = isElemLine ?
           "Cannot change to point symbol" :
           "Cannot change to line symbol";
         return false;
@@ -723,6 +750,9 @@ namespace OMapScratch
       message = null;
       return op.LastSuccess;
     }
+
+    internal XmlConfig Config
+    { get { return _config; } }
 
     public float[] GetOffset()
     {
@@ -1067,19 +1097,50 @@ namespace OMapScratch
     [XmlAttribute("y")]
     public double Y { get; set; }
 
+    [XmlElement("world")]
+    public XmlWorld World { get; set; }
+
+    public XmlWorld GetWorld()
+    {
+      return World ?? (World = new XmlWorld());
+    }
+  }
+
+  public class XmlWorld
+  {
     [XmlAttribute("lat")]
     public double Latitude { get; set; }
     [XmlAttribute("lon")]
     public double Longitude { get; set; }
-    [XmlAttribute("north")]
-    public double Meridiankonvergenz { get; set; }
-    [XmlAttribute("gpsmintime")]
-    public double GpsMinTime { get; set; }
-    [XmlAttribute("gpsmindistance")]
-    public double GpsMinDistance { get; set; }
+    [XmlAttribute("geoMat00")]
+    public double GeoMatrix00 { get; set; }
+    [XmlAttribute("geoMat01")]
+    public double GeoMatrix01 { get; set; }
+    [XmlAttribute("geoMat10")]
+    public double GeoMatrix10 { get; set; }
+    [XmlAttribute("geoMat11")]
+    public double GeoMatrix11 { get; set; }
+    //[XmlAttribute("gpsmintime")]
+    //public double GpsMinTime { get; set; }
+    //[XmlAttribute("gpsmindistance")]
+    //public double GpsMinDistance { get; set; }
 
     [XmlAttribute("declination")]
-    public double Declination { get; set; }
+    public string DeclText
+    {
+      get { return $"{Declination}"; }
+      set
+      {
+        double decl;
+        if (double.TryParse(value, out decl))
+        { Declination = decl; }
+        else
+        { Declination = null; }
+      }
+    }
+
+    [XmlIgnore()]
+    public double? Declination { get; set; }
   }
 
   public class XmlElems
@@ -1446,7 +1507,12 @@ namespace OMapScratch
 
     public Circle Project(IProjection prj)
     {
-      return new Circle { Center = Center.Project(prj), Radius = Radius };
+      Pnt center = Center.Project(prj);
+      Pnt start = new Pnt(Center.X + Radius, Center.Y).Project(prj);
+      float dx = start.X - center.X;
+      float dy = start.Y - center.Y;
+      float radius = (float)Math.Sqrt(dx * dx + dy * dy);
+      return new Circle { Center = center, Radius = radius };
     }
     ISegment ISegment.Project(IProjection prj)
     { return Project(prj); }

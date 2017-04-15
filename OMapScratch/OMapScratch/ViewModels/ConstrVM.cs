@@ -5,6 +5,7 @@ namespace OMapScratch.ViewModels
   public interface IConstrView
   {
     IMapView MapView { get; }
+    bool IsInStartArea(Pnt pnt);
     void PostInvalidate();
   }
 
@@ -12,67 +13,164 @@ namespace OMapScratch.ViewModels
   {
     bool OnDown(float[] at);
     bool OnMove(float[] at);
+    bool TryHandle(bool reInit);
   }
+
+  public interface IHasCompass
+  {
+    Pnt Position { get; }
+  }
+  public interface IHasGeometries
+  {
+    IEnumerable<Curve> GetGeometries();
+  }
+  public interface IHasTexts
+  {
+    IEnumerable<Elem> GetTexts();
+  }
+
 
   public class ConstrVm
   {
-    private class LineAction : ITouchAction
+    private abstract class ConstrAction : ITouchAction, IHasCompass, IHasGeometries, IHasTexts
     {
       private readonly Pnt _origPosition;
-      private readonly IConstrView _view;
+      private readonly ConstrVm _constrVm;
 
+      private bool _initialized;
       private Pnt _end;
 
-      public LineAction(Pnt origPosition, IConstrView view)
+      protected ConstrAction(Pnt origPosition, ConstrVm constrVm)
       {
         _origPosition = origPosition;
-        _view = view;
+        _constrVm = constrVm;
       }
 
-      public string Description { get { return "Start within circle and move to the end position of the construction line"; } }
+      Pnt IHasCompass.Position
+      { get { return OrigPosition; } }
+      public Pnt OrigPosition
+      { get { return _origPosition; } }
+
+      public Pnt End
+      { get { return _end; } }
+
       void IPointAction.Action(Pnt pnt)
       { MoveElement(pnt); }
       public void MoveElement(Pnt next)
+      { }
+
+      public abstract string Description { get; }
+
+      public bool TryHandle(bool reInit)
       {
-      }
-      public bool OnDown(float[] pnt)
-      {
-        _end = new Pnt(pnt[0], pnt[1]);
-        _view.PostInvalidate();
+        bool initialized = _initialized;
+        if (reInit)
+        { _initialized = false; }
+
+        if (!initialized || _end == null)
+        { return false; }
+
+        _constrVm._constrs.Add(GetGeometry());
         return true;
       }
+
+      public bool OnDown(float[] pnt)
+      {
+        if (_initialized)
+        {
+          _end = null;
+        }
+        else
+        {
+          Pnt end = new Pnt(pnt[0], pnt[1]);
+          if (_constrVm._view.IsInStartArea(end))
+          { _end = end; }
+          _initialized = true;
+        }
+        _constrVm._view.PostInvalidate();
+        return true;
+      }
+
       public bool OnMove(float[] pnt)
       {
         if (_end != null)
         { _end = new Pnt(pnt[0], pnt[1]); }
 
-        _view.PostInvalidate();
+        _constrVm._view.PostInvalidate();
         return true;
       }
 
       public IEnumerable<Curve> GetGeometries()
       {
-        yield return new Curve().Circle(_origPosition.X, _origPosition.Y, 10);
-        yield return new Curve().Circle(_origPosition.X, _origPosition.Y, 50);
-        yield return new Curve().MoveTo(_origPosition.X - 60, _origPosition.Y).LineTo(_origPosition.X + 60, _origPosition.Y);
-        yield return new Curve().MoveTo(_origPosition.X, _origPosition.Y - 60).LineTo(_origPosition.X, _origPosition.Y + 60);
-
         if (_end != null)
         {
-          yield return new Curve().MoveTo(_origPosition.X, _origPosition.Y).LineTo(_end.X, _end.Y);
+          yield return GetGeometry();
         }
       }
 
-      public IEnumerable<Elem> GetTexts()
+      public abstract IEnumerable<Elem> GetTexts();
+      protected abstract Curve GetGeometry();
+    }
+
+
+    private class LineAction : ConstrAction
+    {
+      public LineAction(Pnt origPosition, ConstrVm constrVm)
+        : base(origPosition, constrVm)
+      { }
+
+      public override string Description { get { return "Start within circle and move to the end position of the construction line"; } }
+      protected override Curve GetGeometry()
       {
-        if (_end != null)
+        return new Curve().MoveTo(OrigPosition.X, OrigPosition.Y).LineTo(End.X, End.Y);
+      }
+
+      public override IEnumerable<Elem> GetTexts()
+      {
+        if (End != null)
         {
-          float dx = _end.X - _origPosition.X;
-          float dy = _end.Y - _origPosition.Y;
+          float dx = End.X - OrigPosition.X;
+          float dy = End.Y - OrigPosition.Y;
+          double l = System.Math.Sqrt(dx * dx + dy * dy);
+          double angle = System.Math.Atan2(-dy, dx);
+          double azi = 90 - angle * 180 / System.Math.PI;
+          if (azi < 0) { azi += 360; }
+
+          System.Text.StringBuilder sb = new System.Text.StringBuilder();
+          sb.AppendLine($"{l:N1} m");
+          sb.Append($"{azi:N1}°");
+          Elem elem = new Elem() { Symbol = new Symbol { Text = sb.ToString() }, Geometry = new Pnt(OrigPosition.X + dx / 2, OrigPosition.Y + dy / 2) };
+          yield return elem;
+        }
+      }
+    }
+
+    private class CircleAction : ConstrAction
+    {
+      public CircleAction(Pnt origPosition, ConstrVm constrVm)
+        : base(origPosition, constrVm)
+      { }
+
+      public override string Description { get { return "Start within displayed circle and move to the radius of the construction circle"; } }
+      protected override Curve GetGeometry()
+      {
+        float dx = End.X - OrigPosition.X;
+        float dy = End.Y - OrigPosition.Y;
+        float r = (float)System.Math.Sqrt(dx * dx + dy * dy);
+        return new Curve().Circle(OrigPosition.X, OrigPosition.Y, r);
+      }
+
+      public override IEnumerable<Elem> GetTexts()
+      {
+        if (End != null)
+        {
+          float dx = End.X - OrigPosition.X;
+          float dy = End.Y - OrigPosition.Y;
           double l = System.Math.Sqrt(dx * dx + dy * dy);
 
-          string text = $"{l:N1} m";
-          Elem elem = new Elem() { Symbol = new Symbol { Text = text }, Geometry = new Pnt(_origPosition.X + dx / 2, _origPosition.Y + dy / 2) };
+          System.Text.StringBuilder sb = new System.Text.StringBuilder();
+          sb.AppendLine($"{l:N1} m");
+          Elem elem = new Elem() { Symbol = new Symbol { Text = sb.ToString() }, Geometry = new Pnt(OrigPosition.X + dx / 2, OrigPosition.Y + dy / 2) };
           yield return elem;
         }
       }
@@ -87,12 +185,30 @@ namespace OMapScratch.ViewModels
       _constrs = new List<Curve>();
     }
 
+    public float? GetDeclination()
+    {
+      IHasCompass action = _view.MapView.NextPointAction as IHasCompass;
+      if (action == null)
+      { return null; }
+
+      return 0;
+    }
+
+    public Pnt GetCompassPoint()
+    {
+      IHasCompass action = _view.MapView.NextPointAction as IHasCompass;
+      if (action == null)
+      { return null; }
+
+      return action.Position;
+    }
+
     public IEnumerable<Curve> GetGeometries()
     {
       foreach (Curve curve in _constrs)
       { yield return curve; }
 
-      LineAction action = _view.MapView.NextPointAction as LineAction;
+      IHasGeometries action = _view.MapView.NextPointAction as IHasGeometries;
       if (action != null)
       {
         foreach (Curve curve in action.GetGeometries())
@@ -104,7 +220,7 @@ namespace OMapScratch.ViewModels
 
     public IEnumerable<Elem> GetTexts()
     {
-      LineAction action = _view.MapView.NextPointAction as LineAction;
+      IHasTexts action = _view.MapView.NextPointAction as IHasTexts;
       if (action != null)
       {
         foreach (Elem elem in action.GetTexts())
@@ -121,8 +237,8 @@ namespace OMapScratch.ViewModels
 
       List<ContextAction> actions = new List<ContextAction>
       {
-        new ContextAction(pos) { Name = "Constr. Line", Action = () => { mapView.SetNextPointAction(new LineAction(pos, _view)); } },
-        new ContextAction(pos) { Name = "Constr. Circle", Action = () => {  } },
+        new ContextAction(pos) { Name = "Constr. Line", Action = () => { mapView.SetNextPointAction(new LineAction(pos, this)); } },
+        new ContextAction(pos) { Name = "Constr. Circle", Action = () => { mapView.SetNextPointAction(new CircleAction(pos, this)); } },
         new ContextAction(pos) { Name = "Set GPS", Action = () => { } },
       };
       ContextActions constr = new ContextActions("Constr.", null, pos, actions);
