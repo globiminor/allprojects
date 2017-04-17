@@ -115,40 +115,7 @@ namespace OMapScratch.Views
     internal override void OnDrawCore(MapButton canvasOwner, Canvas canvas)
     {
       //base.OnDraw(canvas);
-      Paint p = new Paint();
-      p.Color = Color.Color;
-
-      canvas.Save();
-      try
-      {
-        float width = canvasOwner.Width;
-        float height = canvasOwner.Height;
-
-        float scale = 2;
-        canvas.Translate(width / 2, height / 2);
-        canvas.Scale(scale, scale);
-        Symbol sym = Symbol;
-        SymbolType symTyp = sym.GetSymbolType();
-        if (symTyp == SymbolType.Line)
-        {
-          float w = width / (2 * scale) * 0.8f;
-          SymbolUtils.DrawLine(canvas, sym, null, 1, new Curve().MoveTo(-w, 0).LineTo(w, 0), p);
-        }
-        else if (symTyp == SymbolType.Point)
-        {
-          SymbolUtils.DrawPoint(canvas, sym, null, 1, new Pnt(0, 0), p);
-        }
-        else if (symTyp == SymbolType.Text)
-        {
-          Paint.FontMetrics mtr = p.GetFontMetrics();
-          p.TextSize = height / 6;
-          SymbolUtils.DrawText(canvas, sym.Text, null, 1, new Pnt { X = 0, Y = 0 }, p);
-        }
-        else
-        { throw new System.NotImplementedException($"unknown SymbolType {symTyp}"); }
-      }
-      finally
-      { canvas.Restore(); }
+      Utils.DrawSymbol(canvas, Symbol, Color.Color, canvasOwner.Width, canvasOwner.Height, 2);
     }
   }
 }

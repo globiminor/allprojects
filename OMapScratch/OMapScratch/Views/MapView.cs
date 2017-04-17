@@ -41,9 +41,46 @@ namespace OMapScratch.Views
       public ContextAction Action { get; }
       public ActionButton(MainActivity context, ContextAction action)
         : base(context)
-      { Action = action; }
+      {
+        Action = action;
+      }
+
+      protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
+      {
+        base.OnLayout(changed, left, top, right, bottom);
+        Gravity = Android.Views.GravityFlags.Left;
+        float mm = Utils.GetMmPixel(this);
+        SetPadding((int)(1.0f * mm), (int)(0.5f * mm), 0, 0);
+      }
     }
 
+    private class ElemButton : Button
+    {
+      private readonly Elem _elem;
+      public ElemButton(MainActivity context, Elem elem)
+        : base(context)
+      {
+        _elem = elem;
+        Gravity = Android.Views.GravityFlags.Left;
+//        SetPadding(10, 0, 0, 0);
+      }
+      protected override void OnDraw(Canvas canvas)
+      {
+        base.OnDraw(canvas);
+
+        if (_elem != null)
+        {
+          canvas.Save();
+          try
+          {
+            canvas.Translate(Width - 1.2f * Height, 0);
+            Utils.DrawSymbol(canvas, _elem.Symbol, _elem.Color?.Color ?? DefaultColor, Height, Height, 1);
+          }
+          finally
+          { canvas.Restore(); }
+        }
+      }
+    }
     private readonly MainActivity _context;
     private Matrix _elemMatrix;
     private float[] _elemMatrixValues;
@@ -81,12 +118,19 @@ namespace OMapScratch.Views
     internal TextView TextInfo
     { get; set; }
 
-    public void ResetContextMenu()
+    public void ResetContextMenu(bool clearMenu = false)
     {
       _editPnt = null;
       _nextPointAction = null;
       TextInfo.Visibility = Android.Views.ViewStates.Invisible;
       TextInfo.PostInvalidate();
+
+      if (clearMenu && ContextMenu.Visibility == Android.Views.ViewStates.Visible)
+      {
+        ContextMenu.RemoveAllViews();
+        ContextMenu.Visibility = Android.Views.ViewStates.Invisible;
+        ContextMenu.PostInvalidate();
+      }
     }
 
     public Pnt GetCurrentMapLocation()
@@ -389,7 +433,8 @@ namespace OMapScratch.Views
       LinearLayout objMenus = new LinearLayout(_context);
       objMenus.Orientation = Orientation.Vertical;
 
-      Button actionsButton = new Button(_context);
+      ElemButton actionsButton = new ElemButton(_context, objActions.Elem);
+      actionsButton.SetAllCaps(false);
       actionsButton.Text = objActions.Name;
       actionsButton.Click += (s, e) =>
       {
@@ -399,10 +444,11 @@ namespace OMapScratch.Views
       foreach (ContextAction action in objActions.Actions)
       {
         ActionButton actionButton = new ActionButton(_context, action);
+        actionButton.SetAllCaps(false);
         actionButton.Text = action.Name;
         actionButton.Click += (s, e) =>
         {
-          action.Action();
+          action.Execute();
           ContextMenu.Visibility = Android.Views.ViewStates.Invisible;
           PostInvalidate();
         };

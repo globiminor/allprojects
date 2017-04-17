@@ -5,17 +5,31 @@ using Ocad;
 using Ocad.StringParams;
 using OcadScratch.Commands;
 using OMapScratch;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace OcadScratch.ViewModels
 {
   public class ConfigVm : NotifyListener
   {
     private readonly XmlConfig _config;
+    private readonly List<ProjectionVm> _projections;
+    private ProjectionVm _prj;
+    private Dictionary<int, ProjectionVm> _projectionDict;
+
     public ConfigVm()
     {
       _config = new XmlConfig();
       _config.Offset = new XmlOffset();
+
+      _projections = new List<ProjectionVm>
+      {
+        null,
+        new ProjectionVm("CH1903", new Ch1903()) { OcadId = 14001 },
+        new ProjectionVm("CH1903 LV95", new Ch1903_LV95()) { OcadId = 14002 },
+      };
     }
+
     public ConfigVm(XmlConfig config)
     { _config = config; }
 
@@ -69,15 +83,48 @@ namespace OcadScratch.ViewModels
 
     public double? Declination
     {
-      get { return _config.Offset.World?.Declination; }
+      get { return _config.Offset.Declination; }
       set
       {
-        _config.Offset.GetWorld().Declination = value;
+        _config.Offset.Declination = value;
         Changed();
       }
     }
 
-    private int? _gridAndZone;
+    public ProjectionVm Projection
+    {
+      get { return _prj; }
+      set
+      {
+        _prj = value;
+        Changed();
+      }
+    }
+
+    public bool CanGeo2Map
+    { get { return _prj != null && _config.Offset.World != null; } }
+
+    public bool CanMap2Geo
+    { get { return _prj != null; } }
+
+    public bool CanDeclination
+    {
+      get { return _prj != null || _config.Offset.World != null; }
+    }
+
+    private Dictionary<int, ProjectionVm> ProjectionDict
+    {
+      get
+      {
+        return _projectionDict ??
+          (_projectionDict = _projections.Where(x => x != null).ToDictionary(x => x.OcadId));
+      }
+    }
+
+    public List<ProjectionVm> Projections
+    {
+      get { return _projections; }
+    }
 
     protected override void Disposing(bool disposing)
     { }
@@ -115,64 +162,85 @@ namespace OcadScratch.ViewModels
         }
       }
 
-      _gridAndZone = gridAndZone;
+      ProjectionVm prj;
+      if (gridAndZone.HasValue && ProjectionDict.TryGetValue(gridAndZone.Value, out prj))
+      {
+        Projection = prj;
+      }
 
       CalcWgs84();
+      CalcDeclination();
+
+      Changed();
+    }
+
+    public void CalcMapCoord()
+    {
+      ProjectionVm prj = Projection;
+      if (prj == null)
+      { return; }
+
+      XmlWorld w = _config.Offset.World;
+      if (w == null)
+      { return; }
+
+      IPoint map = prj.Geo2Map.Project(new Point2D(w.Longitude, w.Latitude));
+      OffsetX = map.X;
+      OffsetY = map.Y;
+
+      Changed();
     }
 
     public void CalcWgs84()
     {
+      ProjectionVm prj = Projection;
+      if (prj == null)
+      { return; }
+
       IPoint offset = new Point2D(_config.Offset.X, _config.Offset.Y);
-      int? gridAndZone = _gridAndZone;
 
-      Projection map = null;
-      if (gridAndZone == 14001)
-      {
-        map = new Ch1903();
-      }
-      else if (gridAndZone == 14002)
-      {
-        map = new Ch1903_LV95();
-      }
+      IPoint wgs84 = prj.Map2Geo.Project(offset);
+      Lon = wgs84.X;
+      Lat = wgs84.Y;
 
-      if (map != null)
-      {
-        TransferProjection prj = new TransferProjection(map, Geographic.Wgs84());
+      double d = 0.001;
+      IPoint dEast = prj.Geo2Map.Project(new Point2D(wgs84.X + d, wgs84.Y));
+      IPoint dNorth = prj.Geo2Map.Project(new Point2D(wgs84.X, wgs84.Y + d));
 
-        IPoint wgs84 = prj.Project(offset);
-        Lon = wgs84.X;
-        Lat = wgs84.Y;
+      XmlWorld w = _config.Offset.GetWorld();
 
-        TransferProjection invPrj = new TransferProjection(Geographic.Wgs84(), map);
+      w.GeoMatrix00 = (dEast.X - offset.X) / d;
+      w.GeoMatrix01 = (dEast.Y - offset.Y) / d;
+      w.GeoMatrix10 = (dNorth.X - offset.X) / d;
+      w.GeoMatrix11 = (dNorth.Y - offset.Y) / d;
 
-        double d = 0.001;
-        IPoint dEast = invPrj.Project(new Point2D(wgs84.X + d, wgs84.Y));
-        IPoint dNorth = invPrj.Project(new Point2D(wgs84.X, wgs84.Y + d));
+      //IPoint test = new Point2D(offset.X + 80, offset.Y + 30);
+      //IPoint rr = prj.Project(test);
 
-        XmlWorld w = _config.Offset.GetWorld();
-
-        w.GeoMatrix00 = (dEast.X - offset.X) / d;
-        w.GeoMatrix01 = (dEast.Y - offset.Y) / d;
-        w.GeoMatrix10 = (dNorth.X - offset.X) / d;
-        w.GeoMatrix11 = (dNorth.Y - offset.Y) / d;
-
-        //IPoint test = new Point2D(offset.X + 80, offset.Y + 30);
-        //IPoint rr = prj.Project(test);
-
-        //double xt = (rr.X - wgs84.X) * w.GeoMatrix00 + (rr.Y - wgs84.Y) * w.GeoMatrix10;
-        //double yt = (rr.X - wgs84.X) * w.GeoMatrix01 + (rr.Y - wgs84.Y) * w.GeoMatrix11;
-
-        CalcDeclination();
-      }
+      //double xt = (rr.X - wgs84.X) * w.GeoMatrix00 + (rr.Y - wgs84.Y) * w.GeoMatrix10;
+      //double yt = (rr.X - wgs84.X) * w.GeoMatrix01 + (rr.Y - wgs84.Y) * w.GeoMatrix11;
 
       Changed();
     }
     public void CalcDeclination()
     {
-      if (!Lat.HasValue || !Lon.HasValue)
+      double lat;
+      double lon;
+      if (Lat.HasValue && Lon.HasValue)
+      {
+        lat = Lat.Value;
+        lon = Lon.Value;
+      }
+      else if (_prj != null)
+      {
+        IPoint wgs = _prj.Map2Geo.Project(new Point2D(OffsetX, OffsetY));
+        lat = wgs.Y;
+        lon = wgs.X;
+      }
+      else
       { return; }
 
-      CmdCalcDeclination cmd = new CmdCalcDeclination(Lat.Value, Lon.Value);
+      CmdCalcDeclination cmd = new CmdCalcDeclination(lat, lon);
       cmd.Execute();
       Declination = cmd.Declination ?? Declination;
     }

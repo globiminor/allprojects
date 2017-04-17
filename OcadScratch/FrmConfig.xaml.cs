@@ -63,5 +63,11 @@ namespace OcadScratch
       DataContext = DataContext ?? new ConfigVm();
       DataContext.CalcWgs84();
     }
+
+    private void btnGetKoord_Click(object sender, RoutedEventArgs e)
+    {
+      DataContext = DataContext ?? new ConfigVm();
+      DataContext.CalcMapCoord();
+    }
   }
 }

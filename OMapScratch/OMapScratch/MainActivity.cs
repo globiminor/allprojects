@@ -213,6 +213,7 @@ namespace OMapScratch
         _btnCurrentMode.Click += (s, e) =>
         {
           _setModeFct = null;
+          MapView.ResetContextMenu(clearMenu: true);
           MapVm.CommitCurrentCurve();
           if (_symbolGrid.Visibility == ViewStates.Visible)
           {
@@ -238,7 +239,7 @@ namespace OMapScratch
 
         {
           ImageButton btnGps = new ImageButton(this);
-          btnGps.SetBackgroundResource(Resource.Drawable.Gps);
+          btnGps.SetBackgroundResource(Resource.Drawable.Location);
           {
             RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
             lprams.AddRule(LayoutRules.RightOf, viewId);

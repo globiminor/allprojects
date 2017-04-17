@@ -63,6 +63,7 @@
     </Compile>
     <Compile Include="ViewModels\ConfigVm.cs" />
     <Compile Include="ViewModels\MapVm.cs" />
+    <Compile Include="ViewModels\ProjectionVm.cs" />
     <Compile Include="ViewModels\WorkElemVm.cs" />
     <Page Include="CntWorkElem.xaml">
       <SubType>Designer</SubType>

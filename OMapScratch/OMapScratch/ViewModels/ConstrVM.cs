@@ -32,20 +32,24 @@ namespace OMapScratch.ViewModels
 
   public class ConstrVm
   {
-    private abstract class ConstrAction : ITouchAction, IHasCompass, IHasGeometries, IHasTexts
+    private abstract class ConstrAction : IAction, ITouchAction, IHasCompass, IHasGeometries, IHasTexts
     {
+      private readonly IMapView _mapView;
       private readonly Pnt _origPosition;
       private readonly ConstrVm _constrVm;
 
       private bool _initialized;
       private Pnt _end;
 
-      protected ConstrAction(Pnt origPosition, ConstrVm constrVm)
+      protected ConstrAction(IMapView mapView, Pnt origPosition, ConstrVm constrVm)
       {
+        _mapView = mapView;
         _origPosition = origPosition;
         _constrVm = constrVm;
       }
 
+      void IAction.Action()
+      { _mapView.SetNextPointAction(this); }
       Pnt IHasCompass.Position
       { get { return OrigPosition; } }
       public Pnt OrigPosition
@@ -115,8 +119,8 @@ namespace OMapScratch.ViewModels
 
     private class LineAction : ConstrAction
     {
-      public LineAction(Pnt origPosition, ConstrVm constrVm)
-        : base(origPosition, constrVm)
+      public LineAction(IMapView mapView, Pnt origPosition, ConstrVm constrVm)
+        : base(mapView, origPosition, constrVm)
       { }
 
       public override string Description { get { return "Start within circle and move to the end position of the construction line"; } }
@@ -147,8 +151,8 @@ namespace OMapScratch.ViewModels
 
     private class CircleAction : ConstrAction
     {
-      public CircleAction(Pnt origPosition, ConstrVm constrVm)
-        : base(origPosition, constrVm)
+      public CircleAction(IMapView mapView, Pnt origPosition, ConstrVm constrVm)
+        : base(mapView, origPosition, constrVm)
       { }
 
       public override string Description { get { return "Start within displayed circle and move to the radius of the construction circle"; } }
@@ -237,9 +241,9 @@ namespace OMapScratch.ViewModels
 
       List<ContextAction> actions = new List<ContextAction>
       {
-        new ContextAction(pos) { Name = "Constr. Line", Action = () => { mapView.SetNextPointAction(new LineAction(pos, this)); } },
-        new ContextAction(pos) { Name = "Constr. Circle", Action = () => { mapView.SetNextPointAction(new CircleAction(pos, this)); } },
-        new ContextAction(pos) { Name = "Set GPS", Action = () => { } },
+        new ContextAction(pos, new LineAction(mapView, pos, this)) { Name = "Constr. Line" },
+        new ContextAction(pos, new CircleAction(mapView, pos, this)) { Name = "Constr. Circle" },
+        new ContextAction(pos, null) { Name = "Set Location" }
       };
       ContextActions constr = new ContextActions("Constr.", null, pos, actions);
 
