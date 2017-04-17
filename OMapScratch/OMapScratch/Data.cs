@@ -258,16 +258,17 @@ namespace OMapScratch
 
     public bool HasGlobalLocation()
     {
-      return _map.Config?.Offset?.World != null;
+      return _map.World != null;
     }
 
     public Pnt GetCurrentLocalLocation()
     {
       return _currentLocalLocation;
     }
+
     public void SetCurrentLocation(double lat, double lon, double alt, double accuracy)
     {
-      XmlWorld w = _map.Config?.Offset?.World;
+      XmlWorld w = _map.World;
       if (w == null)
       {
         _currentLocalLocation = null;
@@ -897,6 +898,8 @@ namespace OMapScratch
     private XmlConfig _config;
     private string _configPath;
 
+    private XmlWorld _world;
+
     private static readonly float _defaultMinSearchDist = 10;
 
     private Stack<Operation> _undoOps = new Stack<Operation>();
@@ -998,6 +1001,33 @@ namespace OMapScratch
       return op.LastSuccess;
     }
 
+    public void SynchLocation(Pnt mapCoord, double lat, double lon, double alt, double accuracy)
+    {
+      if (_world == null)
+      {
+        _world = _config?.Offset?.World?.Clone();
+      }
+      if (_world == null)
+      {
+        XmlWorld world = new XmlWorld();
+        world.GeoMatrix11 = 111175;
+        world.GeoMatrix00 = Math.Cos(Math.PI * lat / 180) * world.GeoMatrix11;
+        _world = world;
+      }
+      // dLon * m00 + dLat * m10 == map.X
+      // dLon * m01 + dLat * m11 == map.Y
+      double det = _world.GeoMatrix00 * _world.GeoMatrix11 - _world.GeoMatrix01 * _world.GeoMatrix10;
+      double dLat = (-_world.GeoMatrix10 * mapCoord.X + _world.GeoMatrix11 * mapCoord.Y) / det;
+      double dLon = (_world.GeoMatrix00 * mapCoord.X - _world.GeoMatrix01 * mapCoord.Y) / det;
+
+      _world.Latitude = lat + dLat;
+      _world.Longitude = lon + dLon;
+    }
+
+    internal XmlWorld World
+    {
+      get { return _world ?? _config?.Offset?.World; }
+    }
     internal XmlConfig Config
     { get { return _config; } }
 
@@ -1384,6 +1414,11 @@ namespace OMapScratch
     public double GeoMatrix10 { get; set; }
     [XmlAttribute("geoMat11")]
     public double GeoMatrix11 { get; set; }
+
+    public XmlWorld Clone()
+    {
+      return (XmlWorld)MemberwiseClone();
+    }
     //[XmlAttribute("gpsmintime")]
     //public double GpsMinTime { get; set; }
     //[XmlAttribute("gpsmindistance")]

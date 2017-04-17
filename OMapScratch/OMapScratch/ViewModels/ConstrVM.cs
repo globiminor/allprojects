@@ -235,7 +235,7 @@ namespace OMapScratch.ViewModels
     }
 
 
-    public ContextActions GetConstrActions(Pnt pos)
+    public List<ContextAction> GetConstrActions(Pnt pos)
     {
       IMapView mapView = _view.MapView;
 
@@ -245,9 +245,8 @@ namespace OMapScratch.ViewModels
         new ContextAction(pos, new CircleAction(mapView, pos, this)) { Name = "Constr. Circle" },
         new ContextAction(pos, null) { Name = "Set Location" }
       };
-      ContextActions constr = new ContextActions("Constr.", null, pos, actions);
 
-      return constr;
+      return actions;
     }
   }
 }

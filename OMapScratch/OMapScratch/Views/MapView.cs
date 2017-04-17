@@ -43,6 +43,15 @@ namespace OMapScratch.Views
         : base(context)
       {
         Action = action;
+        SetAllCaps(false);
+        {
+          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(
+            Android.Views.ViewGroup.LayoutParams.MatchParent, Android.Views.ViewGroup.LayoutParams.WrapContent);
+          lprams.Height = (int)(5 * Utils.GetMmPixel(this));
+          LayoutParameters = lprams;
+        }
+        SetPadding(0, 0, 0, 0);
+        SetTextSize(Android.Util.ComplexUnitType.Mm, 2);
       }
 
       protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
@@ -62,7 +71,7 @@ namespace OMapScratch.Views
       {
         _elem = elem;
         Gravity = Android.Views.GravityFlags.Left;
-//        SetPadding(10, 0, 0, 0);
+        //        SetPadding(10, 0, 0, 0);
       }
       protected override void OnDraw(Canvas canvas)
       {
@@ -373,7 +382,7 @@ namespace OMapScratch.Views
       ITouchAction touchAction = _nextPointAction as ITouchAction;
       if (touchAction == null)
       { return false; }
-      if (!touchAction.TryHandle(reInit:true))
+      if (!touchAction.TryHandle(reInit: true))
       { return false; }
 
       ResetContextMenu();
@@ -414,10 +423,16 @@ namespace OMapScratch.Views
       bool first = true;
       foreach (ContextActions objActions in allActions)
       {
-        AddMenues(objActions, first);
+        LinearLayout objMenus = AddMenues(objActions, first);
+        AddConstrMenus(objMenus, ConstrView.ViewModel.GetConstrActions(objActions.Position));
         first = false;
       }
-      AddMenues(ConstrView.ViewModel.GetConstrActions(new Pnt(at[0], at[1])), first);
+      {
+        Pnt pos = new Pnt(at[0], at[1]);
+        List<ContextAction> actions = ConstrView.ViewModel.GetConstrActions(pos);
+        ContextActions constr = new ContextActions("Constr.", null, pos, actions);
+        AddMenues(constr, first);
+      }
 
       ContextMenu.SetX(x);
       ContextMenu.SetY(y);
@@ -428,7 +443,55 @@ namespace OMapScratch.Views
       PostInvalidate();
     }
 
-    private void AddMenues(ContextActions objActions, bool first)
+    private void AddConstrMenus(LinearLayout menues, IList<ContextAction> constrActions)
+    {
+      ActionButton btnConstr = new ActionButton(_context, null) { Text = "constrs..." };
+      btnConstr.Visibility = Android.Views.ViewStates.Visible;
+      ActionButton btnOthers = new ActionButton(_context, null) { Text = "others..." };
+      btnOthers.Visibility = Android.Views.ViewStates.Gone;
+
+      menues.AddView(btnConstr);
+      menues.AddView(btnOthers);
+
+      btnConstr.Click += (s, e) => {
+        ToggleVisible(menues);
+        menues.PostInvalidate();
+      };
+
+      btnOthers.Click += (s,e) => {
+        ToggleVisible(menues);
+        menues.PostInvalidate();
+      };
+
+      AddMenues(menues, constrActions, visibility:Android.Views.ViewStates.Gone);
+    }
+
+    private void ToggleVisible(LinearLayout menues)
+    {
+      for (int i = 0; i < menues.ChildCount; i++)
+      {
+        Android.Views.View child = menues.GetChildAt(i);
+        child.Visibility = (child.Visibility == Android.Views.ViewStates.Visible) ? Android.Views.ViewStates.Gone : Android.Views.ViewStates.Visible;
+      }
+    }
+
+    private void AddMenues(LinearLayout menues, IList<ContextAction> actions, Android.Views.ViewStates visibility = Android.Views.ViewStates.Visible)
+    {
+      foreach (ContextAction action in actions)
+      {
+        ActionButton actionButton = new ActionButton(_context, action);
+        actionButton.Text = action.Name;
+        actionButton.Click += (s, e) =>
+        {
+          action.Execute();
+          ContextMenu.Visibility = Android.Views.ViewStates.Invisible;
+          PostInvalidate();
+        };
+        actionButton.Visibility = visibility;
+        menues.AddView(actionButton);
+      }
+    }
+    private LinearLayout AddMenues(ContextActions objActions, bool first)
     {
       LinearLayout objMenus = new LinearLayout(_context);
       objMenus.Orientation = Orientation.Vertical;
@@ -441,27 +504,7 @@ namespace OMapScratch.Views
         ToggleMenu(ContextMenu, objMenus);
       };
 
-      foreach (ContextAction action in objActions.Actions)
-      {
-        ActionButton actionButton = new ActionButton(_context, action);
-        actionButton.SetAllCaps(false);
-        actionButton.Text = action.Name;
-        actionButton.Click += (s, e) =>
-        {
-          action.Execute();
-          ContextMenu.Visibility = Android.Views.ViewStates.Invisible;
-          PostInvalidate();
-        };
-        {
-          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(
-            Android.Views.ViewGroup.LayoutParams.MatchParent, Android.Views.ViewGroup.LayoutParams.WrapContent);
-          lprams.Height = (int)(5 * Utils.GetMmPixel(actionButton));
-          actionButton.LayoutParameters = lprams;
-        }
-        actionButton.SetPadding(0, 0, 0, 0);
-        actionButton.SetTextSize(Android.Util.ComplexUnitType.Mm, 2);
-        objMenus.AddView(actionButton);
-      }
+      AddMenues(objMenus, objActions.Actions);
       if (first)
       {
         objMenus.Visibility = Android.Views.ViewStates.Visible;
@@ -483,6 +526,8 @@ namespace OMapScratch.Views
 
       ContextMenu.AddView(actionsButton);
       ContextMenu.AddView(objMenus);
+
+      return objMenus;
     }
 
     private void PositionMenu()
