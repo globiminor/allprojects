@@ -22,8 +22,9 @@ namespace OMapScratch
   }
 
 
-  public interface IMapView
+  public partial interface IMapView
   {
+    MapVm MapVm { get; }
     IPointAction NextPointAction { get; }
 
     void SetGetSymbolAction(ISymbolAction setSymbol);

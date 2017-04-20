@@ -413,7 +413,7 @@ namespace OMapScratch
     protected override void OnResume()
     {
       base.OnResume();
-      StartLocation();
+      StartLocation(false);
     }
     protected override void OnPause()
     {
@@ -421,11 +421,12 @@ namespace OMapScratch
       PauseLocation();
     }
 
-    public void StartLocation()
+    public ILocationAction NextLocationAction { get; set; }
+    public void StartLocation(bool forceInit)
     {
       _locMgr = _locMgr ?? InitLocationManager(out _locProvider);
 
-      if (MapVm.HasGlobalLocation())
+      if (MapVm.HasGlobalLocation() || forceInit)
       { _locMgr?.RequestLocationUpdates(_locProvider, 1000, 0, this); }
       else
       { _locMgr?.RemoveUpdates(this); }
@@ -442,6 +443,11 @@ namespace OMapScratch
 
     public void OnLocationChanged(Location location)
     {
+      ILocationAction locationAction = NextLocationAction;
+      NextLocationAction = null;
+      if (locationAction != null)
+      { locationAction.Action(location); }
+
       MapVm.SetCurrentLocation(location);
       MapView.ConstrView.PostInvalidate();
       //MapView.TextInfo.Text = $"{location.Latitude:N6}  {location.Longitude:N6}";

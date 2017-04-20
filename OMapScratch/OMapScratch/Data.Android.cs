@@ -8,6 +8,15 @@ namespace OMapScratch
     void Init(Path path, float[] matrix);
     void AppendTo(Path path, float[] matrix);
   }
+  public interface ILocationAction
+  {
+    void Action(Android.Locations.Location loc);
+  }
+
+  public partial interface IMapView
+  {
+    void SetNextLocationAction(ILocationAction action);
+  }
 
   public partial interface IDrawable
   {
@@ -18,10 +27,13 @@ namespace OMapScratch
   {
     public event System.ComponentModel.CancelEventHandler ImageChanging;
     public event System.EventHandler ImageChanged;
+    private Android.Locations.Location _currentWorldLocation;
 
     public Bitmap CurrentImage
     { get { return _map.CurrentImage; } }
 
+    public Android.Locations.Location CurrentWorldLocation
+    { get { return _currentWorldLocation; } }
     public void RefreshImage()
     {
       if (Utils.Cancel(this, ImageChanging))
@@ -32,12 +44,18 @@ namespace OMapScratch
 
     public void SetCurrentLocation(Android.Locations.Location location)
     {
+      _currentWorldLocation = location;
       if (location == null)
       {
         _currentLocalLocation = null;
         return;
       }
       SetCurrentLocation(location.Latitude, location.Longitude, location.Altitude, location.Accuracy);
+    }
+
+    public void SynchLocation(Pnt mapCoord, Android.Locations.Location location)
+    {
+      _map.SynchLocation(mapCoord, location.Latitude, location.Longitude, location.Altitude, location.Accuracy);
     }
 
     public void LoadLocalImage(int imageIndex)

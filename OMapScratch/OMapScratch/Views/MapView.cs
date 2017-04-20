@@ -114,6 +114,9 @@ namespace OMapScratch.Views
     public IPointAction NextPointAction { get { return _nextPointAction; } }
     public float Precision { get { return 100; } }
 
+    MapVm IMapView.MapVm
+    { get { return _context.MapVm; } }
+
     internal LinearLayout ContextMenu
     {
       get { return _contextMenu; }
@@ -158,6 +161,18 @@ namespace OMapScratch.Views
     {
       _nextPointAction = actionWithNextPoint;
       ShowText(actionWithNextPoint.Description);
+    }
+
+    void IMapView.SetNextLocationAction(ILocationAction action)
+    {
+      Android.Locations.Location loc = _context.MapVm.CurrentWorldLocation;
+      if (loc != null)
+      {
+        action.Action(loc);
+        return;
+      }
+      _context.NextLocationAction = action;
+      _context.StartLocation(forceInit: true);
     }
 
     private void ShowText(string text, bool success = true)

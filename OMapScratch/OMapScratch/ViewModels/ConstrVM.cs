@@ -116,7 +116,6 @@ namespace OMapScratch.ViewModels
       protected abstract Curve GetGeometry();
     }
 
-
     private class LineAction : ConstrAction
     {
       public LineAction(IMapView mapView, Pnt origPosition, ConstrVm constrVm)
@@ -180,6 +179,26 @@ namespace OMapScratch.ViewModels
       }
     }
 
+    private class SetLocationAction : ILocationAction, IAction
+    {
+      private readonly IMapView _mapView;
+      private readonly Pnt _position;
+      private readonly MapVm _mapVm;
+      public SetLocationAction(IMapView mapView, Pnt position, MapVm mapVm)
+      //: base(mapView, origPosition)
+      {
+        _mapView = mapView;
+        _position = position;
+        _mapVm = mapVm;
+      }
+      void IAction.Action()
+      { _mapView.SetNextLocationAction(this); }
+
+      void ILocationAction.Action(Android.Locations.Location loc)
+      {
+        _mapVm.SynchLocation(_position, loc);
+      }
+    }
     private readonly IConstrView _view;
     private readonly List<Curve> _constrs;
 
@@ -243,7 +262,7 @@ namespace OMapScratch.ViewModels
       {
         new ContextAction(pos, new LineAction(mapView, pos, this)) { Name = "Constr. Line" },
         new ContextAction(pos, new CircleAction(mapView, pos, this)) { Name = "Constr. Circle" },
-        new ContextAction(pos, null) { Name = "Set Location" }
+        new ContextAction(pos, new SetLocationAction(mapView, pos, _view.MapView.MapVm)) { Name = "Set Location" }
       };
 
       return actions;
