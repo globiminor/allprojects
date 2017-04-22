@@ -29,6 +29,7 @@ namespace OMapScratch
 
     void SetGetSymbolAction(ISymbolAction setSymbol);
     void SetNextPointAction(IPointAction actionWithNextPoint);
+    void ShowOrientation();
   }
 
   public partial interface ISegment
@@ -267,13 +268,13 @@ namespace OMapScratch
       return _currentLocalLocation;
     }
 
-    public void SetCurrentLocation(double lat, double lon, double alt, double accuracy)
+    public Pnt SetCurrentLocation(double lat, double lon, double alt, double accuracy)
     {
       XmlWorld w = _map.World;
       if (w == null)
       {
         _currentLocalLocation = null;
-        return;
+        return null;
       }
 
       double dLat = lat - w.Latitude;
@@ -283,7 +284,12 @@ namespace OMapScratch
       double y = w.GeoMatrix01 * dLon + w.GeoMatrix11 * dLat;
 
       _currentLocalLocation = new Pnt((float)x, (float)-y);
+      return _currentLocalLocation;
     }
+
+    public float? CurrentOrientation { get; private set; }
+    public void SetCurrentOrientation(float? orientation)
+    { CurrentOrientation = orientation; }
 
     public List<ContextActions> GetContextActions(IMapView view, float x0, float y0, float dx)
     {
@@ -411,6 +417,8 @@ namespace OMapScratch
 
     public float[] GetOffset()
     { return _map.GetOffset(); }
+    public float? GetDeclination()
+    { return _map.GetDeclination(); }
     public float[] GetCurrentWorldMatrix()
     { return _map.GetCurrentWorldMatrix(); }
     public List<Symbol> GetSymbols()
@@ -1018,8 +1026,8 @@ namespace OMapScratch
       // dLon * m00 + dLat * m10 == map.X
       // dLon * m01 + dLat * m11 == map.Y
       double det = _world.GeoMatrix00 * _world.GeoMatrix11 - _world.GeoMatrix01 * _world.GeoMatrix10;
-      double dLat = (-_world.GeoMatrix10 * mapCoord.X + _world.GeoMatrix11 * mapCoord.Y) / det;
-      double dLon = (_world.GeoMatrix00 * mapCoord.X - _world.GeoMatrix01 * mapCoord.Y) / det;
+      double dLon = (-_world.GeoMatrix10 * mapCoord.Y - _world.GeoMatrix11 * mapCoord.X) / det;
+      double dLat = (_world.GeoMatrix00 * mapCoord.Y - _world.GeoMatrix01 * mapCoord.X) / det;
 
       _world.Latitude = lat + dLat;
       _world.Longitude = lon + dLon;
@@ -1038,6 +1046,10 @@ namespace OMapScratch
       if (offset == null)
       { return null; }
       return new float[] { (float)offset.X, (float)offset.Y };
+    }
+    public float? GetDeclination()
+    {
+      return (float?)_config?.Offset?.Declination;
     }
 
     public float[] GetCurrentWorldMatrix()

@@ -59,11 +59,14 @@ namespace OMapScratch
             }
           };
         }
+        SymbolButton firstSym = null;
         foreach (Symbol sym in symbols)
         {
           SymbolButton btnSym = new SymbolButton(sym, _activity);
           btnSym.SetMinimumWidth(5);
           btnSym.SetWidth(fullWidth / nColumns);
+
+          firstSym = firstSym ?? btnSym;
 
           btnSym.Click += (s, e) =>
           {
@@ -73,6 +76,12 @@ namespace OMapScratch
 
           AddView(btnSym);
           symBtns.Add(btnSym);
+        }
+
+        if (firstSym != null)
+        {
+          _activity._btnCurrentMode.CurrentMode = firstSym;
+          _activity._btnCurrentMode.PostInvalidate();
         }
       }
     }

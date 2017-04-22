@@ -56,6 +56,7 @@
     <Compile Include="CourseTest.cs" />
     <Compile Include="DataTest.cs" />
     <Compile Include="LcpTest.cs" />
+    <Compile Include="OscratchTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SchartenhoeheTest.cs" />
     <Compile Include="SdeDataTest.cs" />
@@ -78,6 +79,10 @@
     <ProjectReference Include="..\LeastCostPathUI\LeastCostPathUI.csproj">
       <Project>{8972d218-e70f-4428-9eb4-ddfe61dd7848}</Project>
       <Name>LeastCostPathUI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\OcadScratch\OcadScratch.csproj">
+      <Project>{4b5672ef-fdc6-4fdf-9425-07a0d6ecbbe8}</Project>
+      <Name>OcadScratch</Name>
     </ProjectReference>
     <ProjectReference Include="..\Ocad\Ocad.csproj">
       <Project>{39b4f02a-e890-4afe-b00b-11d1e7ed5634}</Project>

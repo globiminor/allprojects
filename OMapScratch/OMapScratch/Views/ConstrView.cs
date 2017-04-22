@@ -86,6 +86,7 @@ namespace OMapScratch.Views
         DrawCompass(canvas, ViewModel.GetCompassPoint().Project(prj), declination.Value, wp, bp);
       }
 
+      DrawOrientation(canvas, ViewModel.GetOrientation());
 
       bool first = true;
       foreach (Elem textElem in ViewModel.GetTexts())
@@ -125,13 +126,37 @@ namespace OMapScratch.Views
       foreach (double angle in new List<double> { 0, 90 })
       {
         double sin = System.Math.Sin((angle + declination) / 180 * System.Math.PI);
+        double cos = System.Math.Cos((angle + declination) / 180 * System.Math.PI);
 
         float dy = (float)(l * sin);
-        float dx = (float)System.Math.Sqrt(l * l - dy * dy);
+        float dx = (float)(l * cos);
 
         DrawCurve(canvas, new Curve().MoveTo(center.X - dx, center.Y - dy).LineTo(center.X - 0.3f * dx, center.Y - 0.3f * dy), wp, bp);
         DrawCurve(canvas, new Curve().MoveTo(center.X + dx, center.Y + dy).LineTo(center.X + 0.3f * dx, center.Y + 0.3f * dy), wp, bp);
       }
+    }
+
+    private void DrawOrientation(Canvas canvas, float? orientation)
+    {
+      if (orientation == null)
+      { return; }
+
+      double azimuth = -(90 + orientation.Value) / 180 * System.Math.PI;
+      float mm = Utils.GetMmPixel(this);
+
+      float sin = (float)System.Math.Sin(azimuth);
+      float cos = (float)System.Math.Cos(azimuth);
+
+      Paint red = new Paint();
+      red.Color = Color.Red;
+      red.SetStyle(Paint.Style.Fill);
+      red.StrokeWidth = mm;
+
+      float x0 = 15 * mm;
+      float b = 0.5f * mm;
+      float l = 10 * mm;
+      Curve c = new Curve().MoveTo(x0 + sin * b, x0 - cos * b).LineTo(x0 + l * cos, x0 + l * sin).LineTo(x0 - sin * b, x0 + cos * b);
+      canvas.DrawPath(SymbolUtils.GetPath(c), red);
     }
 
     private void DrawCurrentLocation(Canvas canvas, Pnt p)

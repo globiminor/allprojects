@@ -48,6 +48,8 @@ namespace OMapScratch.ViewModels
         _constrVm = constrVm;
       }
 
+      public ConstrVm ConstrVm { get { return _constrVm; } }
+
       void IAction.Action()
       { _mapView.SetNextPointAction(this); }
       Pnt IHasCompass.Position
@@ -118,6 +120,7 @@ namespace OMapScratch.ViewModels
 
     private class LineAction : ConstrAction
     {
+      float? _declination;
       public LineAction(IMapView mapView, Pnt origPosition, ConstrVm constrVm)
         : base(mapView, origPosition, constrVm)
       { }
@@ -132,11 +135,12 @@ namespace OMapScratch.ViewModels
       {
         if (End != null)
         {
+          float declination = _declination ?? (_declination = ConstrVm.GetDeclination()).Value;
           float dx = End.X - OrigPosition.X;
           float dy = End.Y - OrigPosition.Y;
           double l = System.Math.Sqrt(dx * dx + dy * dy);
           double angle = System.Math.Atan2(-dy, dx);
-          double azi = 90 - angle * 180 / System.Math.PI;
+          double azi = 90 - declination - angle * 180 / System.Math.PI;
           if (azi < 0) { azi += 360; }
 
           System.Text.StringBuilder sb = new System.Text.StringBuilder();
@@ -179,18 +183,37 @@ namespace OMapScratch.ViewModels
       }
     }
 
+    private class CompassAction : IAction
+    {
+      private MapVm _mapVm;
+      private IMapView _mapView;
+
+      public CompassAction(IMapView mapView, Pnt origPosition, MapVm mapVm)
+      {
+        _mapView = mapView;
+        _mapVm = mapVm;
+      }
+
+      void IAction.Action()
+      {
+        _mapView.ShowOrientation();
+      }
+    }
+
     private class SetLocationAction : ILocationAction, IAction
     {
       private readonly IMapView _mapView;
       private readonly Pnt _position;
       private readonly MapVm _mapVm;
       public SetLocationAction(IMapView mapView, Pnt position, MapVm mapVm)
-      //: base(mapView, origPosition)
       {
         _mapView = mapView;
         _position = position;
         _mapVm = mapVm;
       }
+
+      public string WaitDescription { get { return "Waiting to receive next location"; } }
+      public string SetDescription { get { return "Set location to selected map position"; } }
       void IAction.Action()
       { _mapView.SetNextLocationAction(this); }
 
@@ -214,7 +237,7 @@ namespace OMapScratch.ViewModels
       if (action == null)
       { return null; }
 
-      return 0;
+      return _view.MapView.MapVm.GetDeclination() ?? 0;
     }
 
     public Pnt GetCompassPoint()
@@ -224,6 +247,11 @@ namespace OMapScratch.ViewModels
       { return null; }
 
       return action.Position;
+    }
+
+    public float? GetOrientation()
+    {
+      return _view.MapView.MapVm.CurrentOrientation;
     }
 
     public IEnumerable<Curve> GetGeometries()
@@ -262,6 +290,7 @@ namespace OMapScratch.ViewModels
       {
         new ContextAction(pos, new LineAction(mapView, pos, this)) { Name = "Constr. Line" },
         new ContextAction(pos, new CircleAction(mapView, pos, this)) { Name = "Constr. Circle" },
+        new ContextAction(pos, new CompassAction(mapView, pos, _view.MapView.MapVm)) { Name = "Compass" },
         new ContextAction(pos, new SetLocationAction(mapView, pos, _view.MapView.MapVm)) { Name = "Set Location" }
       };
 

@@ -7,11 +7,12 @@ using System.Collections.Generic;
 using OMapScratch.Views;
 using Android.Locations;
 using System.Linq;
+using OMapScratch.ViewModels;
 
 namespace OMapScratch
 {
   [Activity(Label = "O-Scratch", MainLauncher = true, Icon = "@drawable/icon")]
-  public partial class MainActivity : Activity, ILocationListener
+  public partial class MainActivity : Activity, ILocationContext, ICompassContext
   {
     private class LoadListener : Java.Lang.Object, IMenuItemOnMenuItemClickListener
     {
@@ -400,69 +401,28 @@ namespace OMapScratch
       _setModeFct?.Invoke(modeButton);
     }
 
-    private LocationManager _locMgr;
-    private string _locProvider;
-    private LocationManager InitLocationManager(out string locationProvider)
-    {
-      LocationManager locMgr = (LocationManager)GetSystemService(LocationService);
-      Criteria criteria = new Criteria { Accuracy = Accuracy.Fine };
-      IList<string> locProviders = locMgr.GetProviders(criteria, enabledOnly: true);
-      locationProvider = locProviders?.FirstOrDefault();
-      return locMgr;
-    }
+    private LocationVm _locationVm;
+    public LocationVm LocationVm
+    { get { return _locationVm ?? (_locationVm = new LocationVm(this) { View = MapView }); } }
+    private CompassVm _compassVm;
+    public CompassVm CompassVm
+    { get { return _compassVm ?? (_compassVm = new CompassVm(this) { View = MapView }); } }
+
     protected override void OnResume()
     {
       base.OnResume();
-      StartLocation(false);
+      LocationVm.StartLocation(false);
     }
     protected override void OnPause()
     {
       base.OnPause();
-      PauseLocation();
+      LocationVm.PauseLocation();
     }
+    LocationManager ILocationContext.GetLocationManager()
+    { return (LocationManager)GetSystemService(LocationService); }
+    Android.Hardware.SensorManager ICompassContext.GetSensorManager()
+    { return (Android.Hardware.SensorManager)GetSystemService(SensorService); }
 
-    public ILocationAction NextLocationAction { get; set; }
-    public void StartLocation(bool forceInit)
-    {
-      _locMgr = _locMgr ?? InitLocationManager(out _locProvider);
-
-      if (MapVm.HasGlobalLocation() || forceInit)
-      { _locMgr?.RequestLocationUpdates(_locProvider, 1000, 0, this); }
-      else
-      { _locMgr?.RemoveUpdates(this); }
-      MapVm.SetCurrentLocation(null);
-      MapView.ConstrView.PostInvalidate();
-    }
-
-    public void PauseLocation()
-    {
-      _locMgr?.RemoveUpdates(this);
-      MapVm.SetCurrentLocation(null);
-      MapView.ConstrView.PostInvalidate();
-    }
-
-    public void OnLocationChanged(Location location)
-    {
-      ILocationAction locationAction = NextLocationAction;
-      NextLocationAction = null;
-      if (locationAction != null)
-      { locationAction.Action(location); }
-
-      MapVm.SetCurrentLocation(location);
-      MapView.ConstrView.PostInvalidate();
-      //MapView.TextInfo.Text = $"{location.Latitude:N6}  {location.Longitude:N6}";
-      //MapView.TextInfo.Visibility = ViewStates.Visible;
-      //MapView.TextInfo.PostInvalidate();
-    }
-
-    public void OnProviderDisabled(string provider)
-    { }
-
-    public void OnProviderEnabled(string provider)
-    { }
-
-    public void OnStatusChanged(string provider, Availability status, Bundle extras)
-    { }
   }
 }
 

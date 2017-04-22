@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace OMapScratch.Views
 {
-  public class MapView : ImageView, IMapView
+  public class MapView : ImageView, IMapView, ILocationView, ICompassView
   {
     private class OnGlobalLayoutListener : Java.Lang.Object, Android.Views.ViewTreeObserver.IOnGlobalLayoutListener
     {
@@ -114,9 +114,28 @@ namespace OMapScratch.Views
     public IPointAction NextPointAction { get { return _nextPointAction; } }
     public float Precision { get { return 100; } }
 
-    MapVm IMapView.MapVm
+    public MapVm MapVm
     { get { return _context.MapVm; } }
 
+    bool ILocationView.HasGlobalLocation()
+    { return MapVm.HasGlobalLocation(); }
+    void ILocationView.SetLocation(Android.Locations.Location loc)
+    {
+      MapVm.SetCurrentLocation(loc);
+      ConstrView.PostInvalidate();
+    }
+    void ILocationView.ShowText(string text)
+    { ShowText(text); }
+
+    void ICompassView.SetAngle(float? angle)
+    {
+      MapVm.SetCurrentOrientation(angle);
+      ConstrView.PostInvalidate();
+    }
+    void IMapView.ShowOrientation()
+    {
+      _context.CompassVm.StartCompass();
+    }
     internal LinearLayout ContextMenu
     {
       get { return _contextMenu; }
@@ -171,11 +190,11 @@ namespace OMapScratch.Views
         action.Action(loc);
         return;
       }
-      _context.NextLocationAction = action;
-      _context.StartLocation(forceInit: true);
+      _context.LocationVm.NextLocationAction = action;
+      _context.LocationVm.StartLocation(forceInit: true);
     }
 
-    private void ShowText(string text, bool success = true)
+    public void ShowText(string text, bool success = true)
     {
       if (string.IsNullOrWhiteSpace(text))
       {
@@ -468,17 +487,19 @@ namespace OMapScratch.Views
       menues.AddView(btnConstr);
       menues.AddView(btnOthers);
 
-      btnConstr.Click += (s, e) => {
+      btnConstr.Click += (s, e) =>
+      {
         ToggleVisible(menues);
         menues.PostInvalidate();
       };
 
-      btnOthers.Click += (s,e) => {
+      btnOthers.Click += (s, e) =>
+      {
         ToggleVisible(menues);
         menues.PostInvalidate();
       };
 
-      AddMenues(menues, constrActions, visibility:Android.Views.ViewStates.Gone);
+      AddMenues(menues, constrActions, visibility: Android.Views.ViewStates.Gone);
     }
 
     private void ToggleVisible(LinearLayout menues)

@@ -10,6 +10,8 @@ namespace OMapScratch
   }
   public interface ILocationAction
   {
+    string WaitDescription { get; }
+    string SetDescription { get; }
     void Action(Android.Locations.Location loc);
   }
 
@@ -254,6 +256,15 @@ namespace OMapScratch
       { canvas.Restore(); }
     }
 
+    public static Path GetPath(Curve curve, float[] matrix = null)
+    {
+      Path path = new Path();
+      curve[0].Init(path, matrix);
+      foreach (ISegment segment in curve)
+      { segment.AppendTo(path, matrix); }
+      return path;
+    }
+
     public static void DrawCurve(Canvas canvas, Curve curve, float[] matrix, float lineWidth, bool fill, bool stroke, Paint p)
     {
       if (curve.Count == 0)
@@ -263,10 +274,7 @@ namespace OMapScratch
         return;
       }
 
-      Path path = new Path();
-      curve[0].Init(path, matrix);
-      foreach (ISegment segment in curve)
-      { segment.AppendTo(path, matrix); }
+      Path path = GetPath(curve, matrix);
 
       p.StrokeWidth = lineWidth;
       if (fill && stroke)

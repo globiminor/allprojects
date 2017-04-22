@@ -14,6 +14,12 @@ namespace OMapScratch.Views
       : base(context)
     { }
 
+    protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
+    {
+
+      base.OnLayout(changed, left, top, System.Math.Min(right, left + (bottom - top)), bottom);
+    }
+
     public abstract void MapClicked(float x, float y);
 
     protected sealed override void OnDraw(Canvas canvas)
