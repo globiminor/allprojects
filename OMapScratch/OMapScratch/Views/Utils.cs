@@ -1,5 +1,6 @@
 
 using Android.Graphics;
+using Android.Runtime;
 using Android.Views;
 
 namespace OMapScratch.Views
@@ -13,6 +14,25 @@ namespace OMapScratch.Views
     public static float GetMmPixel(Android.Content.Res.Resources res)
     {
       return Android.Util.TypedValue.ApplyDimension(Android.Util.ComplexUnitType.Mm, 1, res.DisplayMetrics);
+    }
+
+    public static float GetSurfaceOrientation()
+    {
+      IWindowManager windowManager = Android.App.Application.Context.GetSystemService(Android.Content.Context.WindowService).JavaCast<IWindowManager>();
+      SurfaceOrientation o = windowManager.DefaultDisplay.Rotation;
+
+      float angle;
+      if (o == SurfaceOrientation.Rotation0)
+      { angle = 90; }
+      else if (o == SurfaceOrientation.Rotation90)
+      { angle = 180; }
+      else if (o == SurfaceOrientation.Rotation180)
+      { angle = 270; }
+      else if (o == SurfaceOrientation.Rotation270)
+      { angle = 0; }
+      else
+      { angle = 90; }
+      return angle;
     }
 
     public static void DrawSymbol(Canvas canvas, Symbol sym, Color color, float width, float height, float scale)

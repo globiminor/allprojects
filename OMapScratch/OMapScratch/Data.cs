@@ -29,7 +29,7 @@ namespace OMapScratch
 
     void SetGetSymbolAction(ISymbolAction setSymbol);
     void SetNextPointAction(IPointAction actionWithNextPoint);
-    void ShowOrientation();
+    void ShowOrientation(bool show);
   }
 
   public partial interface ISegment
@@ -290,6 +290,9 @@ namespace OMapScratch
     public float? CurrentOrientation { get; private set; }
     public void SetCurrentOrientation(float? orientation)
     { CurrentOrientation = orientation; }
+
+    public void SetDeclination(float? declination)
+    { _map.SetDeclination(declination); }
 
     public List<ContextActions> GetContextActions(IMapView view, float x0, float y0, float dx)
     {
@@ -1047,9 +1050,14 @@ namespace OMapScratch
       { return null; }
       return new float[] { (float)offset.X, (float)offset.Y };
     }
+    private float? _declination;
     public float? GetDeclination()
     {
-      return (float?)_config?.Offset?.Declination;
+      return _declination ?? (float?)_config?.Offset?.Declination;
+    }
+    public void SetDeclination(float? declination)
+    {
+      _declination = declination;
     }
 
     public float[] GetCurrentWorldMatrix()

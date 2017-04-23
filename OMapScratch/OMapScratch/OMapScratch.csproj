@@ -63,7 +63,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="ViewModels\ConstrVm.cs" />
+    <Compile Include="Views\ActionButton.cs" />
     <Compile Include="Views\ConstrView.cs" />
+    <Compile Include="Views\ContextMenuView.cs" />
     <Compile Include="Views\FileBrowser.cs" />
     <Compile Include="Views\MapView.cs" />
     <Compile Include="Views\MotionListener.cs" />

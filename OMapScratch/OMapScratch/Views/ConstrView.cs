@@ -136,12 +136,23 @@ namespace OMapScratch.Views
       }
     }
 
+    private float? _orientationAngle;
+    private float GetOrientationAngle()
+    {
+      return (_orientationAngle ?? (_orientationAngle = Utils.GetSurfaceOrientation()).Value);
+    }
+
     private void DrawOrientation(Canvas canvas, float? orientation)
     {
       if (orientation == null)
-      { return; }
+      {
+        _orientationAngle = null;
+        return;
+      }
 
-      double azimuth = -(90 + orientation.Value) / 180 * System.Math.PI;
+      float orientationAngle = GetOrientationAngle();
+
+      double azimuth = -(orientationAngle + orientation.Value) / 180 * System.Math.PI;
       float mm = Utils.GetMmPixel(this);
 
       float sin = (float)System.Math.Sin(azimuth);

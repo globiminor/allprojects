@@ -183,23 +183,6 @@ namespace OMapScratch.ViewModels
       }
     }
 
-    private class CompassAction : IAction
-    {
-      private MapVm _mapVm;
-      private IMapView _mapView;
-
-      public CompassAction(IMapView mapView, Pnt origPosition, MapVm mapVm)
-      {
-        _mapView = mapView;
-        _mapVm = mapVm;
-      }
-
-      void IAction.Action()
-      {
-        _mapView.ShowOrientation();
-      }
-    }
-
     private class SetLocationAction : ILocationAction, IAction
     {
       private readonly IMapView _mapView;
@@ -222,6 +205,32 @@ namespace OMapScratch.ViewModels
         _mapVm.SynchLocation(_position, loc);
       }
     }
+
+    private class SetOrientationAction : IPointAction, IAction
+    {
+      private readonly IMapView _mapView;
+      private readonly Pnt _position;
+      private readonly MapVm _mapVm;
+      public SetOrientationAction(IMapView mapView, Pnt position, MapVm mapVm)
+      {
+        _mapView = mapView;
+        _position = position;
+        _mapVm = mapVm;
+      }
+
+      void IAction.Action()
+      {
+        _mapView.ShowOrientation(false);
+        _mapView.SetNextPointAction(this);
+      }
+
+      string IPointAction.Description { get { return "Orientate this device corresponding to the environment, and click on map when ready"; } }
+      void IPointAction.Action(Pnt pnt)
+      {
+        _mapVm.SetDeclination(_mapVm.CurrentOrientation + Views.Utils.GetSurfaceOrientation());
+      }
+    }
+
     private readonly IConstrView _view;
     private readonly List<Curve> _constrs;
 
@@ -290,8 +299,8 @@ namespace OMapScratch.ViewModels
       {
         new ContextAction(pos, new LineAction(mapView, pos, this)) { Name = "Constr. Line" },
         new ContextAction(pos, new CircleAction(mapView, pos, this)) { Name = "Constr. Circle" },
-        new ContextAction(pos, new CompassAction(mapView, pos, _view.MapView.MapVm)) { Name = "Compass" },
-        new ContextAction(pos, new SetLocationAction(mapView, pos, _view.MapView.MapVm)) { Name = "Set Location" }
+        new ContextAction(pos, new SetLocationAction(mapView, pos, _view.MapView.MapVm)) { Name = "Set Location" },
+        new ContextAction(pos, new SetOrientationAction(mapView, pos, _view.MapView.MapVm)) { Name = "Set Orientation" }
       };
 
       return actions;

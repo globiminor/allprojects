@@ -8,61 +8,6 @@ namespace OMapScratch.Views
 {
   public class MapView : ImageView, IMapView, ILocationView, ICompassView
   {
-    private class OnGlobalLayoutListener : Java.Lang.Object, Android.Views.ViewTreeObserver.IOnGlobalLayoutListener
-    {
-      private readonly MapView _parent;
-      public OnGlobalLayoutListener(MapView parent)
-      {
-        _parent = parent;
-      }
-      public void OnGlobalLayout()
-      {
-        //_parent.ViewTreeObserver.RemoveOnGlobalLayoutListener(this);
-
-        int width = _parent.ContextMenu.MeasuredWidth;
-        int height = _parent.ContextMenu.MeasuredHeight;
-
-        float x = _parent.ContextMenu.GetX();
-        if (width + x > _parent.Width)
-        {
-          _parent.ContextMenu.SetX(x - width);
-        }
-        float y = _parent.ContextMenu.GetY();
-        if (height + y > _parent.Height)
-        {
-          _parent.ContextMenu.SetY(_parent.Height - height);
-        }
-
-      }
-    }
-
-    private class ActionButton : Button
-    {
-      public ContextAction Action { get; }
-      public ActionButton(MainActivity context, ContextAction action)
-        : base(context)
-      {
-        Action = action;
-        SetAllCaps(false);
-        {
-          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(
-            Android.Views.ViewGroup.LayoutParams.MatchParent, Android.Views.ViewGroup.LayoutParams.WrapContent);
-          lprams.Height = (int)(5 * Utils.GetMmPixel(this));
-          LayoutParameters = lprams;
-        }
-        SetPadding(0, 0, 0, 0);
-        SetTextSize(Android.Util.ComplexUnitType.Mm, 2);
-      }
-
-      protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
-      {
-        base.OnLayout(changed, left, top, right, bottom);
-        Gravity = Android.Views.GravityFlags.Left;
-        float mm = Utils.GetMmPixel(this);
-        SetPadding((int)(1.0f * mm), (int)(0.5f * mm), 0, 0);
-      }
-    }
-
     private class ElemButton : Button
     {
       private readonly Elem _elem;
@@ -99,7 +44,7 @@ namespace OMapScratch.Views
     private Pnt _editPnt;
     private IPointAction _nextPointAction;
 
-    private LinearLayout _contextMenu;
+    private ContextMenuView _contextMenu;
     private bool _keepTextOnDraw;
 
     public MapView(MainActivity context)
@@ -109,6 +54,8 @@ namespace OMapScratch.Views
 
       SetScaleType(ScaleType.Matrix);
     }
+
+    public new MainActivity Context { get { return (MainActivity)base.Context; } }
 
     internal ConstrView ConstrView { get; set; }
     public IPointAction NextPointAction { get { return _nextPointAction; } }
@@ -132,19 +79,17 @@ namespace OMapScratch.Views
       MapVm.SetCurrentOrientation(angle);
       ConstrView.PostInvalidate();
     }
-    void IMapView.ShowOrientation()
+    void IMapView.ShowOrientation(bool show)
     {
-      _context.CompassVm.StartCompass();
+      if (show)
+      { _context.CompassVm.StartCompass(); }
+      else
+      { _context.CompassVm.StopCompass(); }
     }
-    internal LinearLayout ContextMenu
+    internal ContextMenuView ContextMenu
     {
       get { return _contextMenu; }
-      set
-      {
-        _contextMenu = value;
-        Android.Views.ViewTreeObserver vto = _contextMenu.ViewTreeObserver;
-        vto.AddOnGlobalLayoutListener(new OnGlobalLayoutListener(this));
-      }
+      set { _contextMenu = value; }
     }
     internal TextView TextInfo
     { get; set; }
@@ -537,7 +482,10 @@ namespace OMapScratch.Views
       actionsButton.Text = objActions.Name;
       actionsButton.Click += (s, e) =>
       {
-        ToggleMenu(ContextMenu, objMenus);
+        _editPnt = ContextMenu.ToggleMenu(objMenus);
+        PositionMenu();
+        ContextMenu.PostInvalidate();
+        PostInvalidate();
       };
 
       AddMenues(objMenus, objActions.Actions);
@@ -578,47 +526,6 @@ namespace OMapScratch.Views
 
       ContextMenu.SetX(draw[0]);
       ContextMenu.SetY(draw[1]);
-    }
-
-    private void ToggleMenu(LinearLayout contextMenu, LinearLayout objMenus)
-    {
-      _editPnt = null;
-      int nViews = contextMenu.ChildCount;
-      for (int iView = 0; iView < nViews; iView++)
-      {
-        LinearLayout view = contextMenu.GetChildAt(iView) as LinearLayout;
-        if (view == null)
-        { continue; }
-        if (view == objMenus)
-        {
-          if (view.Visibility == Android.Views.ViewStates.Visible)
-          { view.Visibility = Android.Views.ViewStates.Gone; }
-          else
-          {
-            int nMenus = objMenus.ChildCount;
-            for (int iMenu = 0; iMenu < nMenus; iMenu++)
-            {
-              ActionButton btn = objMenus.GetChildAt(iMenu) as ActionButton;
-              if (btn != null)
-              {
-                _editPnt = btn.Action.Position;
-                break;
-              }
-            }
-            view.Visibility = Android.Views.ViewStates.Visible;
-          }
-          view.PostInvalidate();
-        }
-        else if (view.Visibility != Android.Views.ViewStates.Gone)
-        {
-          view.Visibility = Android.Views.ViewStates.Gone;
-          view.PostInvalidate();
-        }
-      }
-
-      PositionMenu();
-      contextMenu.PostInvalidate();
-      PostInvalidate();
     }
 
     public void Translate(float dx, float dy)

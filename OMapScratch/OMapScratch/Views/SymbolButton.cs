@@ -1,5 +1,6 @@
 using Android.Graphics;
 using Android.Widget;
+using System.Collections.Generic;
 
 namespace OMapScratch.Views
 {
@@ -60,7 +61,14 @@ namespace OMapScratch.Views
     {
       _context = context;
     }
-
+    private class Prj : IProjection
+    {
+      private float _d;
+      public Prj(float d)
+      { _d = d; }
+      public Pnt Project(Pnt p)
+      { return new Pnt(_d * (p.X - 0.5f), _d * (p.Y - 0.5f)); }
+    }
     private Curve _arrow;
     private Curve Arrow
     {
@@ -68,9 +76,11 @@ namespace OMapScratch.Views
       {
         if (_arrow == null)
         {
-          int d = System.Math.Min(Width, Height);
-          _arrow = new Curve().MoveTo(-d / 3f, d / 6f).LineTo(-d / 3f, -d / 3f).LineTo(d / 6f, -d / 3f).
-            LineTo(0, -d / 6f).LineTo(d / 3f, d / 3f).LineTo(-d / 6f, 0).LineTo(-d / 3f, d / 6f);
+          Curve raw = new Curve().MoveTo(0.3f, 0.1f).LineTo(0.3f, 0.65f).LineTo(0.43f, 0.52f).
+            LineTo(0.63f,0.9f).LineTo(0.7f, 0.87f).LineTo(0.52f,0.5f).LineTo(0.7f, 0.5f).LineTo(0.3f,0.1f);
+
+          float d = System.Math.Min(Width, Height);
+          _arrow = raw.Project(new Prj(d));
         }
         return _arrow;
       }

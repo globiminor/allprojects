@@ -3,10 +3,8 @@ using Android.Widget;
 using Android.OS;
 using Android.Graphics;
 using Android.Views;
-using System.Collections.Generic;
 using OMapScratch.Views;
 using Android.Locations;
-using System.Linq;
 using OMapScratch.ViewModels;
 
 namespace OMapScratch
@@ -39,7 +37,69 @@ namespace OMapScratch
         _activity.MapVm.Save();
         return true;
       }
+    }
+    private class LocationListener : Java.Lang.Object,
+      IMenuItemOnMenuItemClickListener
+    {
+      private MainActivity _activity;
+      public LocationListener(MainActivity activity)
+      {
+        _activity = activity;
+      }
 
+      bool IMenuItemOnMenuItemClickListener.OnMenuItemClick(IMenuItem item)
+      {
+        if (Settings.UseLocation)
+        {
+          Settings.UseLocation = false;
+          _activity.LocationVm.PauseLocation();
+        }
+        else
+        {
+          if (!_activity.MapVm.HasGlobalLocation())
+          {
+            _activity.MapView.ShowText("Unknown Georeference, please set location (Edit tool -> map click -> set location).", false);
+          }
+          else
+          {
+            Settings.UseLocation = true;
+            _activity.LocationVm.StartLocation(false);
+          }
+        }
+        return true;
+      }
+    }
+
+    private class CompassListener : Java.Lang.Object,
+      IMenuItemOnMenuItemClickListener
+    {
+      private MainActivity _activity;
+      public CompassListener(MainActivity activity)
+      {
+        _activity = activity;
+      }
+
+      bool IMenuItemOnMenuItemClickListener.OnMenuItemClick(IMenuItem item)
+      {
+        if (Settings.UseCompass)
+        {
+          Settings.UseCompass = false;
+          _activity.CompassVm.StopCompass();
+        }
+        else
+        {
+          //if (_activity.MapVm.GetDeclination() == null)
+          //{
+          //  _activity.MapView.ShowText("Unknown Declination, please set orientation (Edit tool -> map click -> set orientation).", false);
+          //}
+          //else
+          //{
+          Settings.UseCompass = true;
+          _activity.CompassVm.StartCompass();
+          //          }
+        }
+        return true;
+      }
     }
 
     private static Map _staticMap;
@@ -102,9 +162,11 @@ namespace OMapScratch
       }
     }
 
+    private IMenu _optionsMenu;
     public override bool OnCreateOptionsMenu(IMenu menu)
     {
       MenuInflater.Inflate(Resource.Layout.Toolbar, menu);
+      _optionsMenu = menu;
 
       //var shareMenuItem = menu.FindItem(Resource.Id.shareMenuItem);
       //var shareActionProvider =
@@ -117,7 +179,26 @@ namespace OMapScratch
       var saveMenu = menu.FindItem(Resource.Id.mniSave);
       saveMenu.SetOnMenuItemClickListener(new SaveListener(this));
 
+      var locationMenu = menu.FindItem(Resource.Id.mniLocation);
+      locationMenu.SetOnMenuItemClickListener(new LocationListener(this));
+
+      var orientationMenu = menu.FindItem(Resource.Id.mniOrientation);
+      orientationMenu.SetOnMenuItemClickListener(new CompassListener(this));
+
       return true;
+    }
+
+    public override bool OnMenuOpened(int id, IMenu menu)
+    {
+      if (menu == null && _optionsMenu != null)
+      {
+        var locationMenu = _optionsMenu.FindItem(Resource.Id.mniLocation);
+        locationMenu.SetTitle(Settings.UseLocation ? "Hide Location" : "Show Location");
+
+        var orientationMenu = _optionsMenu.FindItem(Resource.Id.mniOrientation);
+        orientationMenu.SetTitle(Settings.UseCompass ? "Hide Compass" : "Show Compass");
+      }
+      return base.OnMenuOpened(id, menu);
     }
     //Android.Content.Intent CreateIntent()
     //{
@@ -159,7 +240,7 @@ namespace OMapScratch
         lprams.AddRule(LayoutRules.Below, Resource.Id.btnImages);
         mapCtxMenu.LayoutParameters = lprams;
 
-        _mapView.ContextMenu = mapCtxMenu;
+        _mapView.ContextMenu = new ContextMenuView(mapCtxMenu, _mapView);
         _parentLayout.AddView(mapCtxMenu);
       }
       {
@@ -175,9 +256,6 @@ namespace OMapScratch
         _mapView.TextInfo = txtInfo;
         _parentLayout.AddView(txtInfo);
       }
-
-
-
 
       Button imageButton = FindViewById<Button>(Resource.Id.btnImages);
       imageButton.Click += (s, e) =>
@@ -411,12 +489,23 @@ namespace OMapScratch
     protected override void OnResume()
     {
       base.OnResume();
+
+      Button imageButton = FindViewById<Button>(Resource.Id.btnImages);
+      int nImages = 0;
+      foreach (XmlImage img in MapVm.Images)
+      { nImages++; }
+      imageButton.Visibility = (nImages < 2) ? ViewStates.Gone : ViewStates.Visible;
+      imageButton.PostInvalidate();
+
       LocationVm.StartLocation(false);
+      if (Settings.UseCompass)
+      { CompassVm.StartCompass(); }
     }
     protected override void OnPause()
     {
       base.OnPause();
       LocationVm.PauseLocation();
+      CompassVm.StopCompass();
     }
     LocationManager ILocationContext.GetLocationManager()
     { return (LocationManager)GetSystemService(LocationService); }

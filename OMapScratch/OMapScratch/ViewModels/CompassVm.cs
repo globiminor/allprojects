@@ -1,7 +1,5 @@
 ﻿
-using System;
 using Android.Hardware;
-using Android.Runtime;
 using System.Collections.Generic;
 
 namespace OMapScratch.ViewModels
@@ -45,10 +43,12 @@ namespace OMapScratch.ViewModels
       _lastAngle = null;
       _sensorMgr = _sensorMgr ?? InitSensorManager(out _compass);
       _sensorMgr?.RegisterListener(this, _compass, SensorDelay.Fastest);
+      Settings.UseCompass = true;
     }
     public void StopCompass()
     {
       _lastAngle = null;
+      View?.SetAngle(_lastAngle);
       _sensorMgr = _sensorMgr ?? InitSensorManager(out _compass);
       _sensorMgr.UnregisterListener(this);
     }
