@@ -79,12 +79,10 @@ namespace OMapScratch.Views
       MapVm.SetCurrentOrientation(angle);
       ConstrView.PostInvalidate();
     }
-    void IMapView.ShowOrientation(bool show)
+    void IMapView.StartCompass(bool hide)
     {
-      if (show)
-      { _context.CompassVm.StartCompass(); }
-      else
-      { _context.CompassVm.StopCompass(); }
+      _context.CompassVm.StartCompass();
+      HideCompass = hide;
     }
     internal ContextMenuView ContextMenu
     {
@@ -94,13 +92,15 @@ namespace OMapScratch.Views
     internal TextView TextInfo
     { get; set; }
 
+    internal bool HideCompass { get; set; }
+
     public void ResetContextMenu(bool clearMenu = false)
     {
       _editPnt = null;
       _nextPointAction = null;
       TextInfo.Visibility = Android.Views.ViewStates.Invisible;
       TextInfo.PostInvalidate();
-
+      
       if (clearMenu && ContextMenu.Visibility == Android.Views.ViewStates.Visible)
       {
         ContextMenu.RemoveAllViews();

@@ -71,18 +71,66 @@ namespace Basics.Geom
 
     public IEnumerable<Bezier> EnumBeziers()
     {
+      double dir0;
+      double dir1;
+
       if (Math.Abs(_angle) < 2 * Math.PI - 0.1)
-      { yield break; }
+      {
+        dir0 = _dirStart;
+        while (dir0 < 0)
+        { dir0 += 2 * Math.PI; }
+        while (dir0 > 2 * Math.PI)
+        { dir0 -= 2 * Math.PI; }
+
+        dir0 *= 2 / Math.PI;
+        dir1 = dir0 + 2 * _angle / Math.PI;
+      }
+      else
+      {
+        dir0 = 0;
+        dir1 = 4;
+      }
 
       double x = Center.X;
       double y = Center.Y;
       double r = Radius;
-      double t = 0.55 * r;
-      yield return new Bezier(new Point2D(x, y + r), new Point2D(x + t, y + r), new Point2D(x + r, y + t), new Point2D(x + r, y));
-      yield return new Bezier(new Point2D(x + r, y), new Point2D(x + r, y - t), new Point2D(x + t, y - r), new Point2D(x, y - r));
-      yield return new Bezier(new Point2D(x, y - r), new Point2D(x - t, y - r), new Point2D(x - r, y - t), new Point2D(x - r, y));
-      yield return new Bezier(new Point2D(x - r, y), new Point2D(x - r, y + t), new Point2D(x - t, y + r), new Point2D(x, y + r));
+      
+      int i = (int)dir0;
+      int di = (_angle > 0) ? 1 : -1;
+
+      while (i != (int)dir1 + di)
+      {
+        double t0 = 0;
+        double t1 = 1;
+        if (dir0 >= i && dir0 <= i + 1)
+        { t0 = (dir0 - i); }
+
+        if (dir1 >= i && dir1 <= i + 1)
+        { t1 = dir1 - i; }
+
+        if (Math.Abs(t0 - t1) > 1e-8)
+        {
+          Bezier quart = GetQuart(i, x, y, r);
+          Bezier part = quart.Subpart(t0, t1);
+          yield return part;
+        }
+
+        i += di;
+      }
     }
+    private Bezier GetQuart(int quart, double x, double y, double r)
+    {
+      int q = quart % 4;
+      double t = 0.55 * r;
+
+      if (q == 0) return new Bezier(new Point2D(x, y + r), new Point2D(x + t, y + r), new Point2D(x + r, y + t), new Point2D(x + r, y));
+      if (q == 1) return new Bezier(new Point2D(x + r, y), new Point2D(x + r, y - t), new Point2D(x + t, y - r), new Point2D(x, y - r));
+      if (q == 2) return new Bezier(new Point2D(x, y - r), new Point2D(x - t, y - r), new Point2D(x - r, y - t), new Point2D(x - r, y));
+      if (q == 3) return new Bezier(new Point2D(x - r, y), new Point2D(x - r, y + t), new Point2D(x - t, y + r), new Point2D(x, y + r));
+
+      return null;
+    }
+
     public override bool EqualGeometry(IGeometry other)
     {
       if (this == other)
@@ -281,7 +329,7 @@ namespace Basics.Geom
       IPoint start = Start.Project(projection);
       IPoint end = End.Project(projection);
       double radius = Math.Sqrt(PntOp.Dist2(center, start));
-      double dirStart = Math.Atan2(start.Y - center.Y, start.X - center.Y);
+      double dirStart = Math.Atan2(start.Y - center.Y, start.X - center.X);
       return new Arc(start, end, center, radius, dirStart, _angle);
     }
 

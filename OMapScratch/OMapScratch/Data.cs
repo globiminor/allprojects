@@ -29,7 +29,7 @@ namespace OMapScratch
 
     void SetGetSymbolAction(ISymbolAction setSymbol);
     void SetNextPointAction(IPointAction actionWithNextPoint);
-    void ShowOrientation(bool show);
+    void StartCompass(bool hide = false);
   }
 
   public partial interface ISegment
@@ -1629,6 +1629,7 @@ namespace OMapScratch
   {
     public const string Point = "p";
     public const string Circle = "r";
+    public const string Arc = "a";
     public const string MoveTo = "m";
     public const string LineTo = "l";
     public const string CubicTo = "c";
@@ -1665,6 +1666,19 @@ namespace OMapScratch
             Radius = float.Parse(parts[i + 3])
           });
           i += 4;
+          d = c;
+        }
+        else if (part == Arc)
+        {
+          Curve c = (Curve)d ?? new Curve();
+          c.Append(new Circle
+          {
+            Center = new Pnt { X = float.Parse(parts[i + 1]), Y = float.Parse(parts[i + 2]) },
+            Radius = float.Parse(parts[i + 3]),
+            Azimuth = float.Parse(parts[i + 4]) / 180 * (float)Math.PI,
+            Angle = float.Parse(parts[i + 5]) / 180 * (float)Math.PI
+          });
+          i += 6;
           d = c;
         }
         else if (part == MoveTo)
@@ -1881,20 +1895,36 @@ namespace OMapScratch
     public Pnt Center { get; set; }
     public float Radius { get; set; }
 
+    public float? Azimuth { get; set; }
+    public float? Angle { get; set; }
+
     Pnt ISegment.From
     {
-      get { return new Pnt { X = Center.X, Y = Center.Y + Radius }; }
+      get { return new Pnt(GetStartX(), GetStartY()); }
       set { Center = new Pnt(value.X, value.Y - Radius); }
     }
     Pnt ISegment.To
     {
-      get { return new Pnt { X = Center.X, Y = Center.Y + Radius }; }
+      get { return new Pnt(GetEndX(), GetEndY()); }
       set { Center = new Pnt(value.X, value.Y - Radius); }
     }
 
+    private float Azi { get { return Azimuth ?? 0; } }
+    private double Ang { get { return Angle ?? (2.0 * Math.PI); } }
+
+    private float GetStartX()
+    { return Center.X + (float)Math.Sin(Azi) * Radius; }
+    private float GetStartY()
+    { return Center.Y + (float)Math.Cos(Azi) * Radius; }
+
+    private float GetEndX()
+    { return Center.X + (float)Math.Sin(Azi + Ang) * Radius; }
+    private float GetEndY()
+    { return Center.Y + (float)Math.Cos(Azi + Ang) * Radius; }
+
     public Pnt At(float t)
     {
-      double angle = t * Math.PI * 2;
+      double angle = Azi + t * Ang;
       double sin = Math.Sin(angle);
       double cos = Math.Cos(angle);
 
@@ -1904,12 +1934,19 @@ namespace OMapScratch
     }
 
     IList<ISegment> ISegment.Split(float t)
-    { return new[] { Clone() }; } // TODO
+    {
+      return new ISegment[]
+      {
+        new Circle { Center = Center.Clone(), Radius = Radius, Azimuth = Azi, Angle = t * Angle },
+        new Circle { Center = Center.Clone(), Radius = Radius, Azimuth = Azi + t * Angle, Angle = (1 - t) * Angle },
+      };
+    }
 
     float ISegment.GetAlong(Pnt p)
     {
       double f = (Math.PI / 2 - Math.Atan2(p.Y - Center.Y, p.X - Center.X)) / (2 * Math.PI);
       if (f < 0) { f += 1; }
+      f = (f - Azi) / Ang;
       return (float)f;
     }
     public Box GetExtent()
@@ -1924,17 +1961,24 @@ namespace OMapScratch
     { return Clone(); }
     public Circle Clone()
     {
-      return new Circle { Center = Center.Clone(), Radius = Radius };
+      return new Circle { Center = Center.Clone(), Radius = Radius, Azimuth = Azimuth, Angle = Angle };
     }
 
     public Circle Project(IProjection prj)
     {
       Pnt center = Center.Project(prj);
-      Pnt start = new Pnt(Center.X + Radius, Center.Y).Project(prj);
+      Pnt start = new Pnt(GetStartX(), GetStartY()).Project(prj);
       float dx = start.X - center.X;
       float dy = start.Y - center.Y;
       float radius = (float)Math.Sqrt(dx * dx + dy * dy);
-      return new Circle { Center = center, Radius = radius };
+      Circle projected = new Circle { Center = center, Radius = radius };
+
+      if (Azimuth != null && Angle != null)
+      {
+        projected.Azimuth = (float)Math.Atan2(dx, dy);
+        projected.Angle = radius;
+      }
+      return projected;
     }
     ISegment ISegment.Project(IProjection prj)
     { return Project(prj); }
@@ -1942,7 +1986,12 @@ namespace OMapScratch
     void ISegment.InitToText(StringBuilder sb)
     { }
     void ISegment.AppendToText(StringBuilder sb)
-    { sb.Append($" {DrawableUtils.Circle} {Center.X:f1} {Center.Y:f1} {Radius:f1}"); }
+    {
+      if (Azimuth == null || Angle == null)
+      { sb.Append($" {DrawableUtils.Circle} {Center.X:f1} {Center.Y:f1} {Radius:f1}"); }
+      else
+      { sb.Append($" {DrawableUtils.Arc} {Center.X:f1} {Center.Y:f1} {Radius:f1} {Azimuth * Math.PI / 180:f1} {Angle * Math.PI / 180:f1}"); }
+    }
   }
 
   public partial class Bezier : ISegment
@@ -2113,9 +2162,10 @@ namespace OMapScratch
       return this;
     }
 
-    public Curve Circle(float centerX, float centerY, float radius)
+    public Curve Circle(float centerX, float centerY, float radius, float? azimuth = null, float? angle = null)
     {
-      AddSegment(new Circle { Center = new Pnt { X = centerX, Y = centerY }, Radius = radius });
+      Circle circle = new Circle { Center = new Pnt { X = centerX, Y = centerY }, Radius = radius, Azimuth = azimuth, Angle = angle };
+      AddSegment(circle);
       return this;
     }
     private void AddSegment(ISegment seg)

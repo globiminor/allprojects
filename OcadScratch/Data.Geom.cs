@@ -59,7 +59,7 @@ namespace OMapScratch
   {
     Basics.Geom.Curve ISegment.GetGeometry()
     {
-      return new Basics.Geom.Arc(Center.GetGeometry(), Radius, 0, 2 * Math.PI);
+      return new Basics.Geom.Arc(Center.GetGeometry(), Radius, Azi, Ang);
     }
   }
   partial class Bezier : ISegment

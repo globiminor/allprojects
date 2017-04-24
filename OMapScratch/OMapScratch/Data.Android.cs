@@ -160,7 +160,7 @@ namespace OMapScratch
     }
   }
 
-  public partial class Circle
+  partial class Circle
   {
     void ISegment.Init(Path path, float[] matrix)
     { }
@@ -175,7 +175,7 @@ namespace OMapScratch
         Top = lt.Y,
         Bottom = rb.Y,
       };
-      path.AddArc(r, 0, 360);
+      path.AddArc(r, 90 - Azi / (float)System.Math.PI * 180, (float)(-Ang / System.Math.PI) * 180);
     }
   }
 

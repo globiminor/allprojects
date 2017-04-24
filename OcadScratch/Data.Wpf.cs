@@ -69,18 +69,22 @@ namespace OMapScratch
     void ISegment.AppendTo(PathFigure path, float[] matrix)
     {
       ISegment s = this;
-      Pnt m = (new Pnt(Center.X, Center.Y - Radius)).Trans(matrix);
+
+      double scale = matrix?[0] ?? 1;
+      SweepDirection dir = Ang > 0 ? SweepDirection.Clockwise : SweepDirection.Counterclockwise;
+      Pnt m = s.At(0.5f).Trans(matrix);
       path.Segments.Add(new ArcSegment(new System.Windows.Point(m.X, m.Y),
-        new System.Windows.Size(Radius, Radius), 0, true, SweepDirection.Clockwise, true));
+        new System.Windows.Size(scale * Radius, scale * Radius), 180, false, dir, true));
 
       Pnt t = s.To.Trans(matrix);
 
       path.Segments.Add(new ArcSegment(new System.Windows.Point(t.X, t.Y),
-        new System.Windows.Size(Radius, Radius), 0, true, SweepDirection.Clockwise, true));
+        new System.Windows.Size(scale * Radius, scale * Radius), 0, false, dir, true));
 
       //path.Segments.Add(new ArcSegment(new System.Windows.Point(20, 10),
       //  new System.Windows.Size(50, 20), 0, true, SweepDirection.Clockwise, true));
 
+      // path.Segments.Add(new LineSegment(new System.Windows.Point(50,50), false));
     }
   }
 

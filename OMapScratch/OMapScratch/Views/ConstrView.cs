@@ -86,7 +86,7 @@ namespace OMapScratch.Views
         DrawCompass(canvas, ViewModel.GetCompassPoint().Project(prj), declination.Value, wp, bp);
       }
 
-      DrawOrientation(canvas, ViewModel.GetOrientation());
+      DrawOrientation(canvas, ViewModel.GetOrientation(), declination, wp, bp);
 
       bool first = true;
       foreach (Elem textElem in ViewModel.GetTexts())
@@ -142,9 +142,9 @@ namespace OMapScratch.Views
       return (_orientationAngle ?? (_orientationAngle = Utils.GetSurfaceOrientation()).Value);
     }
 
-    private void DrawOrientation(Canvas canvas, float? orientation)
+    private void DrawOrientation(Canvas canvas, float? orientation, double? declination, Paint wp, Paint bp)
     {
-      if (orientation == null)
+      if (orientation == null || _parent.HideCompass)
       {
         _orientationAngle = null;
         return;
@@ -155,19 +155,37 @@ namespace OMapScratch.Views
       double azimuth = -(orientationAngle + orientation.Value) / 180 * System.Math.PI;
       float mm = Utils.GetMmPixel(this);
 
-      float sin = (float)System.Math.Sin(azimuth);
-      float cos = (float)System.Math.Cos(azimuth);
-
-      Paint red = new Paint();
-      red.Color = Color.Red;
-      red.SetStyle(Paint.Style.Fill);
-      red.StrokeWidth = mm;
-
       float x0 = 15 * mm;
-      float b = 0.5f * mm;
-      float l = 10 * mm;
-      Curve c = new Curve().MoveTo(x0 + sin * b, x0 - cos * b).LineTo(x0 + l * cos, x0 + l * sin).LineTo(x0 - sin * b, x0 + cos * b);
-      canvas.DrawPath(SymbolUtils.GetPath(c), red);
+      {
+        float sin = (float)System.Math.Sin(azimuth);
+        float cos = (float)System.Math.Cos(azimuth);
+
+        Paint red = new Paint();
+        red.Color = Color.Red;
+        red.SetStyle(Paint.Style.Fill);
+        red.StrokeWidth = mm;
+
+        float b = 0.5f * mm;
+        float l = 10 * mm;
+        Curve c = new Curve().MoveTo(x0 + sin * b, x0 - cos * b).LineTo(x0 + l * cos, x0 + l * sin).LineTo(x0 - sin * b, x0 + cos * b);
+        canvas.DrawPath(SymbolUtils.GetPath(c), red);
+      }
+
+      if (declination == null)
+      { declination = _parent.MapVm.GetDeclination(); }
+      if (declination != null)
+      {
+        double decl = declination.Value / 180 * System.Math.PI;
+        double sin = System.Math.Sin(decl);
+        double cos = System.Math.Cos(decl);
+
+        float l = 12 * mm;
+
+        float dx = (float)(l * sin);
+        float dy = -(float)(l * cos);
+
+        DrawCurve(canvas, new Curve().MoveTo(x0, x0).LineTo(x0 + dx, x0 + dy), wp, bp);
+      }
     }
 
     private void DrawCurrentLocation(Canvas canvas, Pnt p)

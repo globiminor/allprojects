@@ -490,12 +490,12 @@ namespace OMapScratch
     {
       base.OnResume();
 
-      Button imageButton = FindViewById<Button>(Resource.Id.btnImages);
-      int nImages = 0;
-      foreach (XmlImage img in MapVm.Images)
-      { nImages++; }
-      imageButton.Visibility = (nImages < 2) ? ViewStates.Gone : ViewStates.Visible;
-      imageButton.PostInvalidate();
+      //Button imageButton = FindViewById<Button>(Resource.Id.btnImages);
+      //int nImages = 0;
+      //foreach (XmlImage img in MapVm.Images)
+      //{ nImages++; }
+      //imageButton.Visibility = (nImages < 2) ? ViewStates.Gone : ViewStates.Visible;
+      //imageButton.PostInvalidate();
 
       LocationVm.StartLocation(false);
       if (Settings.UseCompass)

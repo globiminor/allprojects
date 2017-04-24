@@ -141,6 +141,7 @@ namespace OMapScratch.ViewModels
           double l = System.Math.Sqrt(dx * dx + dy * dy);
           double angle = System.Math.Atan2(-dy, dx);
           double azi = 90 - declination - angle * 180 / System.Math.PI;
+          azi = azi % 360;
           if (azi < 0) { azi += 360; }
 
           System.Text.StringBuilder sb = new System.Text.StringBuilder();
@@ -220,14 +221,17 @@ namespace OMapScratch.ViewModels
 
       void IAction.Action()
       {
-        _mapView.ShowOrientation(false);
+        _mapView.StartCompass(hide : true);
         _mapView.SetNextPointAction(this);
       }
 
       string IPointAction.Description { get { return "Orientate this device corresponding to the environment, and click on map when ready"; } }
       void IPointAction.Action(Pnt pnt)
       {
-        _mapVm.SetDeclination(_mapVm.CurrentOrientation + Views.Utils.GetSurfaceOrientation());
+        float? decl = 90 - (_mapVm.CurrentOrientation + Views.Utils.GetSurfaceOrientation());
+        decl = decl % 360;
+        _mapVm.SetDeclination(decl);
+        _mapView.StartCompass(hide : false);
       }
     }
 
