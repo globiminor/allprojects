@@ -175,7 +175,7 @@ namespace OcadScratch
       }
     }
 
-    private void grdElems_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    private void grdElems_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
       WorkElemVm currentElem = grdElems.CurrentItem as WorkElemVm;
       if (currentElem != null && currentElem != cntWorkElem.DataContext)

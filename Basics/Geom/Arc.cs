@@ -77,13 +77,12 @@ namespace Basics.Geom
       if (Math.Abs(_angle) < 2 * Math.PI - 0.1)
       {
         dir0 = _dirStart;
-        while (dir0 < 0)
-        { dir0 += 2 * Math.PI; }
-        while (dir0 > 2 * Math.PI)
-        { dir0 -= 2 * Math.PI; }
+        if (_angle < 0)
+        { dir0 += _angle; }
+        dir0 = dir0 / (2 * Math.PI);
+        dir0 = 4 * (dir0 - Math.Floor(dir0));
 
-        dir0 *= 2 / Math.PI;
-        dir1 = dir0 + 2 * _angle / Math.PI;
+        dir1 = dir0 + 2 * Math.Abs(_angle) / Math.PI;
       }
       else
       {
@@ -94,11 +93,11 @@ namespace Basics.Geom
       double x = Center.X;
       double y = Center.Y;
       double r = Radius;
-      
-      int i = (int)dir0;
-      int di = (_angle > 0) ? 1 : -1;
 
-      while (i != (int)dir1 + di)
+      int i = (int)dir0;
+
+      List<Bezier> parts = new List<Bezier>();
+      while (i <= dir1)
       {
         double t0 = 0;
         double t1 = 1;
@@ -112,11 +111,17 @@ namespace Basics.Geom
         {
           Bezier quart = GetQuart(i, x, y, r);
           Bezier part = quart.Subpart(t0, t1);
-          yield return part;
+          parts.Add(part);
         }
-
-        i += di;
+        i++;
       }
+      if (_angle < 0)
+      {
+        parts.Reverse();
+        for (int iPart = 0; iPart < parts.Count; iPart++)
+        { parts[iPart] = parts[iPart].Invert(); }
+      }
+      return parts;
     }
     private Bezier GetQuart(int quart, double x, double y, double r)
     {

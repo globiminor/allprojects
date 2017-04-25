@@ -235,6 +235,21 @@ namespace OMapScratch.ViewModels
       }
     }
 
+    private class ClearConstrAction : IAction
+    {
+      private readonly ConstrVm _constrVm;
+      public ClearConstrAction(ConstrVm constrVm)
+      {
+        _constrVm = constrVm;
+      }
+
+      void IAction.Action()
+      {
+        _constrVm._constrs.Clear();
+        _constrVm._view.PostInvalidate();
+      }
+    }
+
     private readonly IConstrView _view;
     private readonly List<Curve> _constrs;
 
@@ -303,6 +318,7 @@ namespace OMapScratch.ViewModels
       {
         new ContextAction(pos, new LineAction(mapView, pos, this)) { Name = "Constr. Line" },
         new ContextAction(pos, new CircleAction(mapView, pos, this)) { Name = "Constr. Circle" },
+        new ContextAction(pos, new ClearConstrAction(this)) { Name = "Clear Constrs." },
         new ContextAction(pos, new SetLocationAction(mapView, pos, _view.MapView.MapVm)) { Name = "Set Location" },
         new ContextAction(pos, new SetOrientationAction(mapView, pos, _view.MapView.MapVm)) { Name = "Set Orientation" }
       };

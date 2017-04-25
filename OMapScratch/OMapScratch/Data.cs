@@ -219,6 +219,33 @@ namespace OMapScratch
       }
     }
 
+    private class RotateElementAction : IAction, IPointAction
+    {
+      private readonly IMapView _view;
+      private readonly Map _map;
+      private readonly Elem _elem;
+      private readonly Pnt _origPosition;
+      public RotateElementAction(IMapView view, Map map, Elem elem, Pnt origPosition)
+      {
+        _view = view;
+        _map = map;
+        _elem = elem;
+        _origPosition = origPosition;
+      }
+
+      public string Description { get { return "Click the new direction of the element relative to its position"; } }
+
+      void IAction.Action()
+      { _view.SetNextPointAction(this); }
+      void IPointAction.Action(Pnt pnt)
+      { RotateElement(pnt); }
+      public void RotateElement(Pnt dir)
+      {
+        double azi = Math.Atan2(_origPosition.X - dir.X, _origPosition.Y - dir.Y);
+        _map.SetRotationElement(_elem, (float)azi);
+      }
+    }
+
     private class SetSymbolAction : IAction, ISymbolAction
     {
       private readonly IMapView _view;
@@ -378,6 +405,10 @@ namespace OMapScratch
               elemActions.Add(new ContextAction(elemPnt, new InsertVertexAction(_map, elem, split.Value)) { Name = "Insert Vertex" });
             }
             elemActions.Add(new ContextAction(elemPnt, new SplitAction(_map, elem, split.Value)) { Name = "Split" });
+          }
+          if (curve == null)
+          {
+            elemActions.Add(new ContextAction(elemPnt, new RotateElementAction(view, _map, elem, elemPnt)) { Name = "Rotate" });
           }
           elemActions.Add(new ContextAction(elemPnt, new SetSymbolAction(view, _map, elem)) { Name = "Change Symbol" });
 
@@ -740,6 +771,34 @@ namespace OMapScratch
       }
     }
 
+    private class SetRotationElementOperation : Operation
+    {
+      private readonly Elem _elem;
+      private readonly float _newAzimuth;
+
+      private Pnt _preGeom;
+
+      public SetRotationElementOperation(Elem elem, float azimuth)
+      {
+        _elem = elem;
+        _newAzimuth = azimuth;
+      }
+      public bool LastSuccess { get; private set; }
+      public override void Undo()
+      {
+        _elem.Geometry = _preGeom;
+      }
+      protected override void Redo(Stack<Operation> ops)
+      {
+        _preGeom = _elem.Geometry as Pnt;
+        if (_preGeom == null)
+        { return; }
+
+        _elem.Geometry = DirectedPnt.Create(_preGeom, _newAzimuth);
+        ops.Push(this);
+      }
+    }
+
     private class Translation : IProjection
     {
       private readonly Pnt _offset;
@@ -994,6 +1053,14 @@ namespace OMapScratch
       op.Redo(this, true);
       return op.LastSuccess;
     }
+
+    public bool SetRotationElement(Elem elem, float azimuth)
+    {
+      SetRotationElementOperation op = new SetRotationElementOperation(elem, azimuth);
+      op.Redo(this, true);
+      return op.LastSuccess;
+    }
+
 
     public bool SetSymbol(Elem elem, Symbol symbol, ColorRef color, out string message)
     {
@@ -1628,6 +1695,7 @@ namespace OMapScratch
   public static class DrawableUtils
   {
     public const string Point = "p";
+    public const string DirPoint = "dp";
     public const string Circle = "r";
     public const string Arc = "a";
     public const string MoveTo = "m";
@@ -1655,6 +1723,17 @@ namespace OMapScratch
           p.X = float.Parse(parts[i + 1]);
           p.Y = float.Parse(parts[i + 2]);
           i += 3;
+          d = p;
+        }
+        else if (part == DirPoint)
+        {
+          if (d != null)
+          { throw new InvalidOperationException(); }
+          DirectedPnt p = new DirectedPnt();
+          p.X = float.Parse(parts[i + 1]);
+          p.Y = float.Parse(parts[i + 2]);
+          p.Azimuth = (float)(float.Parse(parts[i + 3]) * Math.PI / 180);
+          i += 4;
           d = p;
         }
         else if (part == Circle)
@@ -1766,6 +1845,26 @@ namespace OMapScratch
       return true;
     }
   }
+  public class DirectedPnt : Pnt
+  {
+    public static DirectedPnt Create(Pnt p, float azimuth)
+    {
+      return new DirectedPnt(p.X, p.Y, azimuth);
+    }
+    public DirectedPnt()
+    { }
+    public DirectedPnt(float x, float y, float azimuth)
+      : base(x,y)
+    {
+      Azimuth = azimuth;
+    }
+    public float Azimuth { get; set; }
+
+    protected override string ToDrawableText()
+    {
+      return $"{DrawableUtils.DirPoint} {X:f1} {Y:f1} {Azimuth * 180 / Math.PI:f1}";
+    }
+  }
   public partial class Pnt : IDrawable, IBox
   {
     public float X { get; set; }
@@ -1781,30 +1880,42 @@ namespace OMapScratch
 
     public Pnt Clone()
     {
-      return new Pnt(X, Y);
+      return CloneCore();
+    }
+
+    protected virtual Pnt CloneCore()
+    {
+      Pnt clone = (Pnt)MemberwiseClone();
+      return clone;
     }
 
     public Pnt Trans(float[] matrix)
     {
+      Pnt trans = Clone();
       if (matrix == null)
-      { return new Pnt(X, Y); }
+      { return trans; }
 
-      Pnt trans = new Pnt(matrix[0] * X + matrix[2], matrix[4] * Y + matrix[5]);
+      trans.X = matrix[0] * X + matrix[2];
+      trans.Y = matrix[4] * Y + matrix[5];
       return trans;
     }
+
+    Pnt IBox.Min { get { return this; } }
+    Pnt IBox.Max { get { return this; } }
 
     public Pnt Project(IProjection prj)
     {
       return prj.Project(this);
     }
 
-    Pnt IBox.Min { get { return this; } }
-    Pnt IBox.Max { get { return this; } }
-
     IDrawable IDrawable.Project(IProjection prj)
     { return Project(prj); }
 
     string IDrawable.ToText()
+    {
+      return ToDrawableText();
+    }
+    protected virtual string ToDrawableText()
     {
       return $"{DrawableUtils.Point} {X:f1} {Y:f1}";
     }

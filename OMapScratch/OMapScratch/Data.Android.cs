@@ -230,6 +230,11 @@ namespace OMapScratch
           pntScale = matrix[0] * symbolScale;
         }
         canvas.Scale(pntScale, -pntScale);
+
+        float? azi = (point as DirectedPnt)?.Azimuth;
+        if (azi != null)
+        { canvas.Rotate(azi.Value * 180 / (float)System.Math.PI); }
+
         foreach (SymbolCurve curve in sym.Curves)
         { DrawCurve(canvas, curve.Curve, null, curve.LineWidth, curve.Fill, curve.Stroke, p); }
       }
