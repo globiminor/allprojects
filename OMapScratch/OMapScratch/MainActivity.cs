@@ -218,7 +218,7 @@ namespace OMapScratch
       _mapView = new MapView(this);
       {
         RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent);
-        lprams.AddRule(LayoutRules.Below, Resource.Id.btnImages);
+        lprams.AddRule(LayoutRules.Below, Resource.Id.lloTools);
         _mapView.LayoutParameters = lprams;
         _mapView.Id = View.GenerateViewId();
       }
@@ -237,7 +237,7 @@ namespace OMapScratch
         mapCtxMenu.Visibility = ViewStates.Invisible;
 
         RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-        lprams.AddRule(LayoutRules.Below, Resource.Id.btnImages);
+        lprams.AddRule(LayoutRules.Below, Resource.Id.lloTools);
         mapCtxMenu.LayoutParameters = lprams;
 
         _mapView.ContextMenu = new ContextMenuView(mapCtxMenu, _mapView);
@@ -256,6 +256,8 @@ namespace OMapScratch
         _mapView.TextInfo = txtInfo;
         _parentLayout.AddView(txtInfo);
       }
+
+      LinearLayout lloTools = FindViewById<LinearLayout>(Resource.Id.lloTools);
 
       Button imageButton = FindViewById<Button>(Resource.Id.btnImages);
       imageButton.Click += (s, e) =>
@@ -285,7 +287,6 @@ namespace OMapScratch
         _btnCurrentMode.SetMinimumWidth(5);
         _btnCurrentMode.SetWidth(SymbolFullWidth / 8);
         RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-        lprams.AddRule(LayoutRules.RightOf, Resource.Id.btnImages);
         _btnCurrentMode.LayoutParameters = lprams;
         _btnCurrentMode.Id = View.GenerateViewId();
 
@@ -309,19 +310,16 @@ namespace OMapScratch
           }
         };
 
-        _parentLayout.AddView(_btnCurrentMode);
+        lloTools.AddView(_btnCurrentMode);
       }
 
       {
-        int viewId = _btnCurrentMode.Id;
-        float dScale = 1.5f;
 
         {
           ImageButton btnGps = new ImageButton(this);
           btnGps.SetBackgroundResource(Resource.Drawable.Location);
           {
             RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-            lprams.AddRule(LayoutRules.RightOf, viewId);
             btnGps.LayoutParameters = lprams;
           }
           btnGps.Id = View.GenerateViewId();
@@ -334,16 +332,15 @@ namespace OMapScratch
               MapView.PostInvalidate();
             }
           };
-          _parentLayout.AddView(btnGps);
-          viewId = btnGps.Id;
+          lloTools.AddView(btnGps);
         }
 
+        //float dScale = 1.5f;
         //{
         //  ImageButton btnZoomIn = new ImageButton(this);
         //  btnZoomIn.SetBackgroundResource(Resource.Drawable.ZoomIn);
         //  {
         //    RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-        //    lprams.AddRule(LayoutRules.RightOf, viewId);
         //    btnZoomIn.LayoutParameters = lprams;
         //  }
         //  btnZoomIn.Id = View.GenerateViewId();
@@ -352,16 +349,13 @@ namespace OMapScratch
         //    _mapView.Scale(dScale);
         //    _mapView.PostInvalidate();
         //  };
-        //  _parentLayout.AddView(btnZoomIn);
-
-        //  viewId = btnZoomIn.Id;
+        //  lloTools.AddView(btnZoomIn);
         //}
         //{
         //  ImageButton btnZoomOut = new ImageButton(this);
         //  btnZoomOut.SetBackgroundResource(Resource.Drawable.ZoomOut);
         //  {
         //    RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-        //    lprams.AddRule(LayoutRules.RightOf, viewId);
         //    btnZoomOut.LayoutParameters = lprams;
         //  }
         //  btnZoomOut.Id = View.GenerateViewId();
@@ -369,8 +363,7 @@ namespace OMapScratch
         //  {
         //    _mapView.Scale(1 / dScale);
         //  };
-        //  _parentLayout.AddView(btnZoomOut);
-        //  viewId = btnZoomOut.Id;
+        //  lloTools.AddView(btnZoomOut);
         //}
 
         {
@@ -378,7 +371,6 @@ namespace OMapScratch
           btnUndo.SetBackgroundResource(Resource.Drawable.Undo);
           {
             RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-            lprams.AddRule(LayoutRules.RightOf, viewId);
             btnUndo.LayoutParameters = lprams;
           }
           btnUndo.Id = View.GenerateViewId();
@@ -387,8 +379,7 @@ namespace OMapScratch
             MapVm.Undo();
             _mapView.PostInvalidate();
           };
-          _parentLayout.AddView(btnUndo);
-          viewId = btnUndo.Id;
+          lloTools.AddView(btnUndo);
         }
 
         {
@@ -396,7 +387,6 @@ namespace OMapScratch
           btnRedo.SetBackgroundResource(Resource.Drawable.Redo);
           {
             RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-            lprams.AddRule(LayoutRules.RightOf, viewId);
             btnRedo.LayoutParameters = lprams;
           }
           btnRedo.Id = View.GenerateViewId();
@@ -405,8 +395,7 @@ namespace OMapScratch
             MapVm.Redo();
             _mapView.PostInvalidate();
           };
-          _parentLayout.AddView(btnRedo);
-          viewId = btnRedo.Id;
+          lloTools.AddView(btnRedo);
         }
       }
 
@@ -418,7 +407,7 @@ namespace OMapScratch
         _symbolGrid = new SymbolGrid(this);
         {
           RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
-          lprams.AddRule(LayoutRules.Below, Resource.Id.btnImages);
+          lprams.AddRule(LayoutRules.Below, Resource.Id.lloTools);
           _symbolGrid.LayoutParameters = lprams;
         }
         _symbolGrid.Init(SymbolFullWidth);
@@ -463,7 +452,11 @@ namespace OMapScratch
       browser.Show((file) =>
       {
         MapVm.Load(file);
+        MapVm.SetRecent(file);
         _mapView.Invalidate();
+        Button btnImages = FindViewById<Button>(Resource.Id.btnImages);
+        btnImages.Visibility = (MapVm.ImageCount > 1) ?
+          ViewStates.Visible : ViewStates.Gone;
         OnResume();
       });
     }

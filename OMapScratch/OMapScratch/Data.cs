@@ -30,6 +30,8 @@ namespace OMapScratch
     void SetGetSymbolAction(ISymbolAction setSymbol);
     void SetNextPointAction(IPointAction actionWithNextPoint);
     void StartCompass(bool hide = false);
+
+    void ShowText(string text, bool success = true);
   }
 
   public partial interface ISegment
@@ -420,6 +422,7 @@ namespace OMapScratch
       return allActions;
     }
 
+    public int ImageCount { get { return _map?.Images?.Count ?? 0; } }
     public IEnumerable<XmlImage> Images
     {
       get
@@ -1219,11 +1222,7 @@ namespace OMapScratch
       { return; }
 
       using (var w = new StreamWriter(path))
-      {
-        Serializer.Serialize(XmlElems.Create(_elems), w);
-        w.Flush();
-        w.Close();
-      }
+      { Serializer.Serialize(XmlElems.Create(_elems), w); }
     }
 
     public void Load(string configPath, XmlConfig config)
@@ -1673,6 +1672,12 @@ namespace OMapScratch
     }
   }
 
+  public class XmlRecents
+  {
+    [XmlElement("recent")]
+    public List<string> Recents { get; set; }
+  }
+
   public static class Serializer
   {
     public static void Serialize<T>(T obj, TextWriter writer)
@@ -1854,7 +1859,7 @@ namespace OMapScratch
     public DirectedPnt()
     { }
     public DirectedPnt(float x, float y, float azimuth)
-      : base(x,y)
+      : base(x, y)
     {
       Azimuth = azimuth;
     }

@@ -124,7 +124,7 @@ namespace OMapScratch.Views
     void IMapView.SetNextPointAction(IPointAction actionWithNextPoint)
     {
       _nextPointAction = actionWithNextPoint;
-      ShowText(actionWithNextPoint.Description);
+      ShowText(actionWithNextPoint?.Description);
     }
 
     void IMapView.SetNextLocationAction(ILocationAction action)
@@ -139,6 +139,11 @@ namespace OMapScratch.Views
       _context.LocationVm.StartLocation(forceInit: true);
     }
 
+    void IMapView.ShowText(string text, bool success)
+    {
+      ShowText(text, success);
+      _keepTextOnDraw = true;
+    }
     public void ShowText(string text, bool success = true)
     {
       if (string.IsNullOrWhiteSpace(text))
@@ -603,7 +608,7 @@ namespace OMapScratch.Views
         wp.StrokeWidth = 3;
         wp.SetStyle(Paint.Style.Stroke);
         Paint bp = new Paint();
-        bp.Color = Color.Black;
+        bp.Color = ConstrView.ConstrColor;
         bp.StrokeWidth = 1;
         bp.SetStyle(Paint.Style.Stroke);
 

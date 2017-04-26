@@ -16,8 +16,9 @@ namespace OMapScratch.Views
     }
 
     private readonly MapView _parent;
-
+    private Color? _constrClr;
     private ViewModels.ConstrVm _constrVm;
+
     public ConstrView(MapView parent)
       : base(parent.Context)
     {
@@ -30,8 +31,15 @@ namespace OMapScratch.Views
       get { return _constrVm ?? (_constrVm = new ViewModels.ConstrVm(this)); }
     }
 
+    public Color ConstrColor
+    { get { return _constrClr ?? Color.Black; } }
+
     IMapView ViewModels.IConstrView.MapView
     { get { return _parent; } }
+
+    void ViewModels.IConstrView.SetConstrColor(ColorRef color)
+    { _constrClr = color?.Color; }
+
 
     public bool IsInStartArea(Pnt p)
     {
@@ -44,7 +52,7 @@ namespace OMapScratch.Views
 
       IProjection prj = new Translation(_parent.ElemMatrixValues);
 
-      Pnt mapCompass =compassPnt.Project(prj);
+      Pnt mapCompass = compassPnt.Project(prj);
       Pnt mapP = p.Project(prj);
 
       double dx = mapP.X - mapCompass.X;
@@ -66,7 +74,7 @@ namespace OMapScratch.Views
       wp.StrokeWidth = 3;
       wp.SetStyle(Paint.Style.Stroke);
       Paint bp = new Paint();
-      bp.Color = Color.Black;
+      bp.Color = ConstrColor;
       bp.StrokeWidth = 1;
       bp.SetStyle(Paint.Style.Stroke);
 

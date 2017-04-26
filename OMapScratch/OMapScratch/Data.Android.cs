@@ -44,6 +44,37 @@ namespace OMapScratch
       ImageChanged?.Invoke(this, null);
     }
 
+    public void SetRecent(string configPath)
+    {
+      Java.IO.File store = Environment.ExternalStorageDirectory;
+      string path = store.AbsolutePath;
+      string home = System.IO.Path.Combine(path, ".oscratch");
+      if (!System.IO.Directory.Exists(home))
+      { System.IO.Directory.CreateDirectory(home); }
+
+      string recent = System.IO.Path.Combine(home, "resent.xml");
+      XmlRecents recentList;
+      if (System.IO.File.Exists(recent))
+      {
+        using (System.IO.TextReader r = new System.IO.StreamReader(recent))
+        { Serializer.Deserialize(out recentList, r); }
+      }
+      else
+      { recentList = new XmlRecents { Recents = new System.Collections.Generic.List<string>() }; }
+
+      recentList.Recents.Insert(0, configPath);
+      for (int iPos = recentList.Recents.Count - 1; iPos > 0; iPos--)
+      {
+        if (recentList.Recents[iPos].Equals(configPath, System.StringComparison.InvariantCultureIgnoreCase))
+        { recentList.Recents.RemoveAt(iPos); }
+      }
+      while (recentList.Recents.Count > 5)
+      { recentList.Recents.RemoveAt(recentList.Recents.Count - 1); }
+
+      using (System.IO.TextWriter w = new System.IO.StreamWriter(recent))
+      { Serializer.Serialize(recentList, w); }
+    }
+
     public void SetCurrentLocation(Android.Locations.Location location)
     {
       _currentWorldLocation = location;

@@ -26,11 +26,11 @@ namespace OMapScratch.Views
         }
         AddView(menu);
         {
-          FileButton top = new FileButton(context, "..");
+          FileButton top = new FileButton(context, "..", true);
           RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
           top.LayoutParameters = lprams;
           top.Text = "..";
-          top.SetBackgroundColor(Color.LightSteelBlue);
+          // top.SetBackgroundColor(Color.LightSteelBlue);
           top.Click += (s, e) => 
           {
             if (top.FullPath.Contains("0"))
@@ -115,9 +115,9 @@ namespace OMapScratch.Views
       _top.FullPath = System.IO.Path.GetDirectoryName(path);
       foreach (string fsi in Select(System.IO.Directory.EnumerateFiles(path), true))
       {
-        FileButton fileButton = new FileButton(Context, fsi);
+        FileButton fileButton = new FileButton(Context, fsi, false);
         fileButton.TextAlignment = TextAlignment.TextStart;
-        fileButton.SetBackgroundColor(Color.LightGreen);
+        // fileButton.SetBackgroundColor(Color.LightGreen);
         fileButton.Text = System.IO.Path.GetFileName(fsi);
         fileButton.Click += (s, e) =>
         {
@@ -129,9 +129,9 @@ namespace OMapScratch.Views
       }
       foreach (string fsi in Select(System.IO.Directory.EnumerateDirectories(path), false))
       {
-        FileButton fileButton = new FileButton(Context, fsi);
+        FileButton fileButton = new FileButton(Context, fsi, true);
         fileButton.TextAlignment = TextAlignment.TextStart;
-        fileButton.SetBackgroundColor(Color.LightBlue);
+        // fileButton.SetBackgroundColor(Color.LightBlue);
         fileButton.Text = System.IO.Path.GetFileName(fsi);
         fileButton.Click += (s, e) =>
         {
@@ -144,10 +144,32 @@ namespace OMapScratch.Views
 
     private class FileButton : Button
     {
-      public FileButton(Context context, string fullPath)
+      public FileButton(Context context, string fullPath, bool isDir)
         : base(context)
-      { }
+      {
+        FullPath = fullPath;
+        IsDir = isDir;
+      }
       public string FullPath { get; set; }
+      public bool IsDir { get; set; }
+
+      protected override void OnDraw(Canvas canvas)
+      {
+        base.OnDraw(canvas);
+        int id = IsDir ? Resource.Drawable.folder : Resource.Drawable.file;
+        Bitmap img = BitmapFactory.DecodeResource(Context.Resources, id);
+        canvas.DrawBitmap(img, 40, 40, null);
+      }
+
+      protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
+      {
+        base.OnLayout(changed, left, top, right, bottom);
+        Gravity = GravityFlags.Left;
+        float mm = Utils.GetMmPixel(this);
+        int topPadding = (int)((bottom - top) - TextSize) / 2;
+        SetPadding((int)(10.0f * mm), topPadding, 0, 0);
+      }
+
     }
 
   }

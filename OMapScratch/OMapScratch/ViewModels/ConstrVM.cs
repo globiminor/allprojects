@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace OMapScratch.ViewModels
 {
   public interface IConstrView
   {
     IMapView MapView { get; }
+    void SetConstrColor(ColorRef color);
     bool IsInStartArea(Pnt pnt);
     void PostInvalidate();
   }
@@ -184,6 +186,59 @@ namespace OMapScratch.ViewModels
       }
     }
 
+    private class MeasureDirAction : IPointAction, IAction
+    {
+      private readonly IMapView _mapView;
+      private readonly Pnt _position;
+      private readonly ConstrVm _constrVm;
+      private readonly bool _to;
+      public MeasureDirAction(IMapView mapView, Pnt position, ConstrVm constrVm, bool to)
+      {
+        _mapView = mapView;
+        _position = position;
+        _constrVm = constrVm;
+        _to = to;
+      }
+
+      public string Description
+      {
+        get
+        {
+          return _to ?
+            "Point the device towards the target and click on map when ready" :
+            "Point the device towards the selected map position and click on map when ready";
+        }
+      }
+      void IAction.Action()
+      {
+        if (_constrVm._view.MapView.MapVm.GetDeclination() == null)
+        {
+          _mapView.SetNextPointAction(null);
+          _mapView.ShowText("Declination is not known. Please set orientation first", success: false);
+          return;
+        }
+        _mapView.StartCompass(hide: true);
+        _mapView.SetNextPointAction(this);
+      }
+
+      void IPointAction.Action(Pnt pnt)
+      {
+        double? azi = _constrVm._view.MapView.MapVm.GetDeclination() - _constrVm.GetOrientation();
+        if (azi == null)
+        { return; }
+        double a = (azi.Value) * System.Math.PI / 180;
+        double l = 100;
+        float dx = (float)(l * System.Math.Cos(a));
+        float dy = (float)(l * System.Math.Sin(a));
+
+        Curve direction = _to ?
+          new Curve().MoveTo(_position.X, _position.Y).LineTo(_position.X + dx, _position.Y + dy) :
+          new Curve().MoveTo(_position.X + dx, _position.Y + dy).LineTo(_position.X, _position.Y);
+
+        _constrVm._constrs.Add(direction);
+      }
+    }
+
     private class SetLocationAction : ILocationAction, IAction
     {
       private readonly IMapView _mapView;
@@ -221,7 +276,7 @@ namespace OMapScratch.ViewModels
 
       void IAction.Action()
       {
-        _mapView.StartCompass(hide : true);
+        _mapView.StartCompass(hide: true);
         _mapView.SetNextPointAction(this);
       }
 
@@ -231,7 +286,28 @@ namespace OMapScratch.ViewModels
         float? decl = 90 - (_mapVm.CurrentOrientation + Views.Utils.GetSurfaceOrientation());
         decl = decl % 360;
         _mapVm.SetDeclination(decl);
-        _mapView.StartCompass(hide : false);
+        _mapView.StartCompass(hide: false);
+      }
+    }
+
+    private class SetConstrColorAction : IAction, ISymbolAction
+    {
+      private readonly IMapView _mapView;
+      private readonly ConstrVm _constrVm;
+      public SetConstrColorAction(IMapView mapView, ConstrVm constrVm)
+      {
+        _mapView = mapView;
+        _constrVm = constrVm;
+      }
+      void IAction.Action()
+      { _mapView.SetGetSymbolAction(this); }
+
+      public string Description { get { return "Click on Color for construction and edit lines"; } }
+      bool ISymbolAction.Action(Symbol symbol, ColorRef color, out string message)
+      {
+        _constrVm._view.SetConstrColor(color);
+        message = null;
+        return true;
       }
     }
 
@@ -318,6 +394,9 @@ namespace OMapScratch.ViewModels
       {
         new ContextAction(pos, new LineAction(mapView, pos, this)) { Name = "Constr. Line" },
         new ContextAction(pos, new CircleAction(mapView, pos, this)) { Name = "Constr. Circle" },
+        new ContextAction(pos, new MeasureDirAction(mapView, pos, this, true)) { Name = "Meas. Dir. From" },
+        new ContextAction(pos, new MeasureDirAction(mapView, pos, this, false)) { Name = "Meas. Dir. To" },
+        new ContextAction(pos, new SetConstrColorAction(mapView, this)) { Name = "Set Constr. color" },
         new ContextAction(pos, new ClearConstrAction(this)) { Name = "Clear Constrs." },
         new ContextAction(pos, new SetLocationAction(mapView, pos, _view.MapView.MapVm)) { Name = "Set Location" },
         new ContextAction(pos, new SetOrientationAction(mapView, pos, _view.MapView.MapVm)) { Name = "Set Orientation" }
