@@ -87,7 +87,7 @@ namespace OcadScratch.ViewModels
       set
       {
         _config.Offset.Declination = value;
-        Changed();
+        ChangedAll();
       }
     }
 
@@ -97,7 +97,7 @@ namespace OcadScratch.ViewModels
       set
       {
         _prj = value;
-        Changed();
+        ChangedAll();
       }
     }
 
@@ -171,7 +171,7 @@ namespace OcadScratch.ViewModels
       CalcWgs84();
       CalcDeclination();
 
-      Changed();
+      ChangedAll();
     }
 
     public void CalcMapCoord()
@@ -188,7 +188,7 @@ namespace OcadScratch.ViewModels
       OffsetX = map.X;
       OffsetY = map.Y;
 
-      Changed();
+      ChangedAll();
     }
 
     public void CalcWgs84()
@@ -220,7 +220,7 @@ namespace OcadScratch.ViewModels
       //double xt = (rr.X - wgs84.X) * w.GeoMatrix00 + (rr.Y - wgs84.Y) * w.GeoMatrix10;
       //double yt = (rr.X - wgs84.X) * w.GeoMatrix01 + (rr.Y - wgs84.Y) * w.GeoMatrix11;
 
-      Changed();
+      ChangedAll();
     }
     public void CalcDeclination()
     {

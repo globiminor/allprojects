@@ -56,10 +56,10 @@ namespace OCourse.Gui
 
         if (notBound)
         {
-          this.Bind(x => x.Course, _bindingSource, _vm.GetPropertyName(x => x.Course),
+          this.Bind(x => x.Course, _bindingSource, nameof(_vm.Course),
             true, DataSourceUpdateMode.Never);
 
-          this.Bind(x => x.BoldCombination, _bindingSource, _vm.GetPropertyName(x => x.SelectedCombination),
+          this.Bind(x => x.BoldCombination, _bindingSource, nameof(_vm.SelectedCombination),
             true, DataSourceUpdateMode.Never);
         }
       }

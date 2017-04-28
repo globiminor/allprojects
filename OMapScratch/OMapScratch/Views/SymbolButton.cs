@@ -15,10 +15,12 @@ namespace OMapScratch.Views
       : base(context)
     { }
 
-    protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
+    protected sealed override void OnLayout(bool changed, int left, int top, int right, int bottom)
     {
-
-      base.OnLayout(changed, left, top, System.Math.Min(right, left + (bottom - top)), bottom);
+      if (right - left > bottom - top)
+      { SetWidth(bottom - top); }
+      else
+      { base.OnLayout(changed, left, top, right, bottom); }
     }
 
     public abstract void MapClicked(float x, float y);
@@ -77,7 +79,7 @@ namespace OMapScratch.Views
         if (_arrow == null)
         {
           Curve raw = new Curve().MoveTo(0.3f, 0.1f).LineTo(0.3f, 0.65f).LineTo(0.43f, 0.52f).
-            LineTo(0.63f,0.9f).LineTo(0.7f, 0.87f).LineTo(0.52f,0.5f).LineTo(0.7f, 0.5f).LineTo(0.3f,0.1f);
+            LineTo(0.63f, 0.9f).LineTo(0.7f, 0.87f).LineTo(0.52f, 0.5f).LineTo(0.7f, 0.5f).LineTo(0.3f, 0.1f);
 
           float d = System.Math.Min(Width, Height);
           _arrow = raw.Project(new Prj(d));
@@ -107,7 +109,6 @@ namespace OMapScratch.Views
       finally
       { canvas.Restore(); }
     }
-
   }
   public class SymbolButton : MapButton
   {
@@ -132,6 +133,26 @@ namespace OMapScratch.Views
     {
       //base.OnDraw(canvas);
       Utils.DrawSymbol(canvas, Symbol, Color.Color, canvasOwner.Width, canvasOwner.Height, 2);
+    }
+  }
+
+  public class ColorButton : Button
+  {
+    public ColorRef Color { get; }
+
+    public ColorButton(MainActivity context, ColorRef color)
+      : base(context)
+    {
+      Color = color;
+      SetBackgroundColor(Color.Color);
+    }
+
+    protected sealed override void OnLayout(bool changed, int left, int top, int right, int bottom)
+    {
+      if (right - left > bottom - top)
+      { SetWidth(bottom - top); }
+      else
+      { base.OnLayout(changed, left, top, right, bottom); }
     }
   }
 }

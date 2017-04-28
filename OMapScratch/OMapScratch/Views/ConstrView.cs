@@ -34,6 +34,12 @@ namespace OMapScratch.Views
     public Color ConstrColor
     { get { return _constrClr ?? Color.Black; } }
 
+    private float? _constrLineWidth;
+    public float ConstrLineWidth
+    {
+      get { return _constrLineWidth ?? (_constrLineWidth = 0.1f * Utils.GetMmPixel(this)).Value; }
+    }
+
     IMapView ViewModels.IConstrView.MapView
     { get { return _parent; } }
 
@@ -71,11 +77,11 @@ namespace OMapScratch.Views
 
       Paint wp = new Paint();
       wp.Color = Color.White;
-      wp.StrokeWidth = 3;
+      wp.StrokeWidth = 3 * ConstrLineWidth;
       wp.SetStyle(Paint.Style.Stroke);
       Paint bp = new Paint();
       bp.Color = ConstrColor;
-      bp.StrokeWidth = 1;
+      bp.StrokeWidth = ConstrLineWidth;
       bp.SetStyle(Paint.Style.Stroke);
 
       IProjection prj = null;
@@ -120,8 +126,8 @@ namespace OMapScratch.Views
 
     private void DrawCurve(Canvas canvas, Curve displayGeom, Paint wp, Paint bp)
     {
-      SymbolUtils.DrawCurve(canvas, displayGeom, null, 3, false, true, wp);
-      SymbolUtils.DrawCurve(canvas, displayGeom, null, 1, false, true, bp);
+      SymbolUtils.DrawCurve(canvas, displayGeom, null, wp.StrokeWidth, false, true, wp);
+      SymbolUtils.DrawCurve(canvas, displayGeom, null, bp.StrokeWidth, false, true, bp);
     }
 
     private static float _compassRadius = 8;

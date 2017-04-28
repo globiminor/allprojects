@@ -30,22 +30,22 @@ namespace Cards.Gui
 
         if (notBound)
         {
-          this.Bind(x => x.Text, _bindingSource, _vm.GetPropertyName(x => x.Title),
+          this.Bind(x => x.Text, _bindingSource, nameof(_vm.Title),
             true, DataSourceUpdateMode.Never);
 
-          txtMoves.Bind(x => x.Text, _bindingSource, _vm.GetPropertyName(x => x.Moves),
+          txtMoves.Bind(x => x.Text, _bindingSource, nameof(_vm.Moves),
             true, DataSourceUpdateMode.Never);
 
-          txtPoints.Bind(x => x.Text, _bindingSource, _vm.GetPropertyName(x => x.Points),
+          txtPoints.Bind(x => x.Text, _bindingSource, nameof(_vm.Points),
             true, DataSourceUpdateMode.Never);
 
-          txtDisp.Bind(x => x.Text, _bindingSource, _vm.GetPropertyName(x => x.DisplaySecs),
+          txtDisp.Bind(x => x.Text, _bindingSource, nameof(_vm.DisplaySecs),
             true, DataSourceUpdateMode.OnPropertyChanged);
 
-          txtInfo.Bind(x => x.Text, _bindingSource, _vm.GetPropertyName(x => x.Info),
+          txtInfo.Bind(x => x.Text, _bindingSource, nameof(_vm.Info),
             true, DataSourceUpdateMode.OnPropertyChanged);
 
-          btnSolve.Bind(x => x.Text, _bindingSource, _vm.GetPropertyName(x => x.SolveText),
+          btnSolve.Bind(x => x.Text, _bindingSource, nameof(_vm.SolveText),
             true, DataSourceUpdateMode.Never);
         }
       }

@@ -47,25 +47,25 @@ namespace OcadScratch
 
       WorkElemVm workElemVm = null;
       {
-        DataGridTextColumn col = new DataGridTextColumn { Header = "Symbol ID", Binding = new Binding(workElemVm.GetPropertyName(x => x.SymbolId)) };
+        DataGridTextColumn col = new DataGridTextColumn { Header = "Symbol ID", Binding = new Binding(nameof(workElemVm.SymbolId)) };
         col.IsReadOnly = true;
         grdElems.Columns.Add(col);
       }
       {
-        DataGridTextColumn col = new DataGridTextColumn { Header = "Color ID", Binding = new Binding(workElemVm.GetPropertyName(x => x.ColorId)) };
+        DataGridTextColumn col = new DataGridTextColumn { Header = "Color ID", Binding = new Binding(nameof(workElemVm.ColorId)) };
         col.IsReadOnly = true;
         grdElems.Columns.Add(col);
       }
       {
         DataGridTemplateColumn col = new DataGridTemplateColumn { Header = "Symbol" };
         FrameworkElementFactory factory = new FrameworkElementFactory(typeof(SymbolPanel));
-        factory.SetBinding(Panel.TagProperty, new Binding(workElemVm.GetPropertyName(x => x.Elem)));
+        factory.SetBinding(Panel.TagProperty, new Binding(nameof(workElemVm.Elem)));
         col.CellTemplate = new DataTemplate { VisualTree = factory };
         col.IsReadOnly = true;
         grdElems.Columns.Add(col);
       }
       {
-        DataGridCheckBoxColumn col = new DataGridCheckBoxColumn { Header = "Handled", Binding = new Binding(workElemVm.GetPropertyName(x => x.Handled)) };
+        DataGridCheckBoxColumn col = new DataGridCheckBoxColumn { Header = "Handled", Binding = new Binding(nameof(workElemVm.Handled)) };
         grdElems.Columns.Add(col);
       }
 

@@ -223,17 +223,18 @@ namespace OMapScratch.ViewModels
 
       void IPointAction.Action(Pnt pnt)
       {
-        double? azi = _constrVm._view.MapView.MapVm.GetDeclination() - _constrVm.GetOrientation();
+        float? azi = 90 - (_constrVm._view.MapView.MapVm.CurrentOrientation + Views.Utils.GetSurfaceOrientation());
         if (azi == null)
         { return; }
-        double a = (azi.Value) * System.Math.PI / 180;
+
+        double a = (azi.Value) * Math.PI / 180;
         double l = 100;
-        float dx = (float)(l * System.Math.Cos(a));
-        float dy = (float)(l * System.Math.Sin(a));
+        float dx = (float)(l * Math.Sin(a));
+        float dy = (float)(-l * Math.Cos(a));
 
         Curve direction = _to ?
           new Curve().MoveTo(_position.X, _position.Y).LineTo(_position.X + dx, _position.Y + dy) :
-          new Curve().MoveTo(_position.X + dx, _position.Y + dy).LineTo(_position.X, _position.Y);
+          new Curve().MoveTo(_position.X - dx, _position.Y - dy).LineTo(_position.X, _position.Y);
 
         _constrVm._constrs.Add(direction);
       }
@@ -290,7 +291,7 @@ namespace OMapScratch.ViewModels
       }
     }
 
-    private class SetConstrColorAction : IAction, ISymbolAction
+    private class SetConstrColorAction : IAction, IColorAction
     {
       private readonly IMapView _mapView;
       private readonly ConstrVm _constrVm;
@@ -300,13 +301,12 @@ namespace OMapScratch.ViewModels
         _constrVm = constrVm;
       }
       void IAction.Action()
-      { _mapView.SetGetSymbolAction(this); }
+      { _mapView.SetGetColorAction(this); }
 
       public string Description { get { return "Click on Color for construction and edit lines"; } }
-      bool ISymbolAction.Action(Symbol symbol, ColorRef color, out string message)
+      bool IColorAction.Action(ColorRef color)
       {
         _constrVm._view.SetConstrColor(color);
-        message = null;
         return true;
       }
     }

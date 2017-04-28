@@ -158,7 +158,8 @@ namespace OMapScratch
       get
       {
         var metrics = Resources.DisplayMetrics;
-        return System.Math.Min(metrics.WidthPixels, metrics.HeightPixels);
+        return metrics.WidthPixels;
+//        return System.Math.Min(metrics.WidthPixels, metrics.HeightPixels);
       }
     }
 
@@ -281,11 +282,15 @@ namespace OMapScratch
           _imageList.Visibility = ViewStates.Visible;
         }
       };
+      if (!(_mapView?.MapVm?.ImageCount > 1))
+      {
+        imageButton.Visibility = ViewStates.Gone;
+      }
 
       {
         _btnCurrentMode = new ModeButton(this, new SymbolButton(MapVm.GetSymbols()[0], this));
         _btnCurrentMode.SetMinimumWidth(5);
-        _btnCurrentMode.SetWidth(SymbolFullWidth / 8);
+//        _btnCurrentMode.SetWidth(SymbolFullWidth / 8);
         RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
         _btnCurrentMode.LayoutParameters = lprams;
         _btnCurrentMode.Id = View.GenerateViewId();
@@ -301,11 +306,11 @@ namespace OMapScratch
           }
           else
           {
-            _setModeFct = (btn) =>
+            ShowSymbols((btn) =>
             {
               _btnCurrentMode.CurrentMode = btn;
               _btnCurrentMode.PostInvalidate();
-            };
+            });
             _symbolGrid.Visibility = ViewStates.Visible;
           }
         };
@@ -316,14 +321,14 @@ namespace OMapScratch
       {
 
         {
-          ImageButton btnGps = new ImageButton(this);
-          btnGps.SetBackgroundResource(Resource.Drawable.Location);
+          ImageButton btnLoc = new ImageButton(this);
+          btnLoc.SetBackgroundResource(Resource.Drawable.Location);
           {
             RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-            btnGps.LayoutParameters = lprams;
+            btnLoc.LayoutParameters = lprams;
           }
-          btnGps.Id = View.GenerateViewId();
-          btnGps.Click += (s, a) =>
+          btnLoc.Id = View.GenerateViewId();
+          btnLoc.Click += (s, a) =>
           {
             Pnt pnt = MapView.GetCurrentMapLocation();
             if (pnt != null)
@@ -332,7 +337,7 @@ namespace OMapScratch
               MapView.PostInvalidate();
             }
           };
-          lloTools.AddView(btnGps);
+          lloTools.AddView(btnLoc);
         }
 
         //float dScale = 1.5f;
@@ -406,7 +411,7 @@ namespace OMapScratch
       {
         _symbolGrid = new SymbolGrid(this);
         {
-          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
+          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
           lprams.AddRule(LayoutRules.Below, Resource.Id.lloTools);
           _symbolGrid.LayoutParameters = lprams;
         }
@@ -464,6 +469,15 @@ namespace OMapScratch
     public void ShowSymbols(System.Action<MapButton> setModeFct)
     {
       _setModeFct = setModeFct;
+      _symbolGrid.ShowAll();
+      _symbolGrid.Visibility = ViewStates.Visible;
+      _symbolGrid.PostInvalidate();
+    }
+
+    public void ShowColors(System.Action<ColorRef> setColorFct)
+    {
+      _symbolGrid.ShowColors();
+      _symbolGrid.OnceColorFct = setColorFct;
       _symbolGrid.Visibility = ViewStates.Visible;
       _symbolGrid.PostInvalidate();
     }

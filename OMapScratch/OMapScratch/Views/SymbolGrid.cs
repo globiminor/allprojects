@@ -12,11 +12,33 @@ namespace OMapScratch
   {
     private class SymbolGrid : GridLayout
     {
-      private MainActivity _activity;
+      private List<SymbolButton> _symBtns;
+      private readonly MainActivity _activity;
+      public System.Action<ColorRef> OnceColorFct { get; set; }
+
       public SymbolGrid(MainActivity context)
         : base(context)
       {
         _activity = context;
+      }
+
+      public void ShowAll()
+      {
+        OnceColorFct = null;
+        for (int i = 0; i < ChildCount; i++)
+        { GetChildAt(i).Visibility = ViewStates.Visible; }
+      }
+
+      public void ShowColors()
+      {
+        OnceColorFct = null;
+
+        for (int i = 0; i < ChildCount; i++)
+        {
+          View btn = GetChildAt(i);
+          if (!(btn is ColorButton))
+          { btn.Visibility = ViewStates.Gone; }
+        }
       }
 
       public void Init(int fullWidth)
@@ -30,7 +52,7 @@ namespace OMapScratch
 
         ColumnCount = nColumns;
         RowCount = 2 + (symbols.Count - 1) / nColumns;
-        List<SymbolButton> symBtns = new List<SymbolButton>();
+        List<SymbolButton> symbolBtns = new List<SymbolButton>();
         EditButton btnEdit = new EditButton(_activity);
         btnEdit.SetMinimumWidth(5);
         btnEdit.SetWidth(fullWidth / nColumns);
@@ -42,21 +64,16 @@ namespace OMapScratch
 
         AddView(btnEdit);
 
-        foreach (ColorRef color in colors)
+        foreach (ColorRef clr in colors)
         {
-          Button btnColor = new Button(Context);
+          ColorButton btnColor = new ColorButton(_activity, clr);
           btnColor.SetMinimumWidth(5);
           btnColor.SetWidth(fullWidth / nColumns);
-          btnColor.SetBackgroundColor(color.Color);
           AddView(btnColor);
 
           btnColor.Click += (s, a) =>
           {
-            foreach (SymbolButton btn in symBtns)
-            {
-              btn.Color = color;
-              btn.PostInvalidate();
-            }
+            ColorClicked(btnColor);
           };
         }
         SymbolButton firstSym = null;
@@ -75,13 +92,38 @@ namespace OMapScratch
           };
 
           AddView(btnSym);
-          symBtns.Add(btnSym);
+          symbolBtns.Add(btnSym);
         }
 
         if (firstSym != null)
         {
           _activity._btnCurrentMode.CurrentMode = firstSym;
           _activity._btnCurrentMode.PostInvalidate();
+        }
+
+        _symBtns = symbolBtns;
+      }
+
+
+      private void ColorClicked(ColorButton btnColor)
+      {
+        System.Action<ColorRef> fct = OnceColorFct;
+        OnceColorFct = null;
+        if (fct != null)
+        {
+          fct(btnColor.Color);
+          Visibility = ViewStates.Invisible;
+          PostInvalidate();
+          return;
+        }
+
+        if (_symBtns == null)
+        { return; }
+
+        foreach (SymbolButton btn in _symBtns)
+        {
+          btn.Color = btnColor.Color;
+          btn.PostInvalidate();
         }
       }
     }

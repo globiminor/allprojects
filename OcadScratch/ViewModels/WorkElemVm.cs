@@ -43,7 +43,7 @@ namespace OcadScratch.ViewModels
       set
       {
         _handled = value;
-        Changed("Handled");
+        Changed();
       }
     }
 

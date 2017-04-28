@@ -20,7 +20,11 @@ namespace OMapScratch
     string Description { get; }
     bool Action(Symbol symbol, ColorRef color, out string message);
   }
-
+  public interface IColorAction
+  {
+    string Description { get; }
+    bool Action(ColorRef color);
+  }
 
   public partial interface IMapView
   {
@@ -28,6 +32,8 @@ namespace OMapScratch
     IPointAction NextPointAction { get; }
 
     void SetGetSymbolAction(ISymbolAction setSymbol);
+    void SetGetColorAction(IColorAction setSymbol);
+
     void SetNextPointAction(IPointAction actionWithNextPoint);
     void StartCompass(bool hide = false);
 
@@ -864,13 +870,14 @@ namespace OMapScratch
       }
       protected override void Redo(Stack<Operation> ops)
       {
+        LastSuccess = false;
         _oldSymbol = _elem.Symbol;
         _oldColor = _elem.Color;
 
         _elem.Symbol = _newSymbol;
         _elem.Color = _newColor;
-
         ops.Push(this);
+        LastSuccess = true;
       }
     }
 

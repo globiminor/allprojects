@@ -180,6 +180,13 @@ namespace OMapScratch.Views
       });
     }
 
+    void IMapView.SetGetColorAction(IColorAction colorAction)
+    {
+      ShowText(colorAction.Description);
+
+      _context.ShowColors((clr) => colorAction.Action(clr));
+    }
+
     public void Scale(float f)
     {
       Rect rect = new Rect();
@@ -605,11 +612,11 @@ namespace OMapScratch.Views
       {
         Paint wp = new Paint();
         wp.Color = Color.White;
-        wp.StrokeWidth = 3;
+        wp.StrokeWidth = 3 * ConstrView.ConstrLineWidth;
         wp.SetStyle(Paint.Style.Stroke);
         Paint bp = new Paint();
         bp.Color = ConstrView.ConstrColor;
-        bp.StrokeWidth = 1;
+        bp.StrokeWidth = ConstrView.ConstrLineWidth;
         bp.SetStyle(Paint.Style.Stroke);
 
         Matrix mat = ElemMatrix;

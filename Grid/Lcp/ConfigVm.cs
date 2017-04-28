@@ -48,7 +48,7 @@ namespace Grid.Lcp
       get { return _heightPath; }
       set
       {
-        using (Changing(MethodBase.GetCurrentMethod()))
+        using (ChangingAll())
         {
           _heightPath = value;
           _grdHeight = null;
@@ -60,7 +60,7 @@ namespace Grid.Lcp
       get { return _veloPath; }
       set
       {
-        using (Changing(MethodBase.GetCurrentMethod()))
+        using (Changing())
         { _veloPath = value; }
       }
     }
@@ -69,7 +69,7 @@ namespace Grid.Lcp
       get { return _resolution; }
       set
       {
-        using (Changing(MethodBase.GetCurrentMethod()))
+        using (Changing())
         {
           if (value > 0)
           { _resolution = value; }
@@ -81,7 +81,7 @@ namespace Grid.Lcp
       get { return _steps; }
       set
       {
-        using (Changing(MethodBase.GetCurrentMethod()))
+        using (Changing())
         { _steps = value; }
       }
     }
@@ -117,7 +117,7 @@ namespace Grid.Lcp
 
     public void SetCostProviderType(ICostProvider costProvider)
     {
-      using (Changing(this.GetPropertyName(x => x.CostProviderName)))
+      using (Changing(nameof(CostProviderName)))
       { _costProvider = costProvider; }
     }
 
@@ -125,7 +125,7 @@ namespace Grid.Lcp
     {
       if (config == null) return;
 
-      using (Changing())
+      using (ChangingAll())
       {
         bool setResol = false;
         if (!File.Exists(HeightPath) && !string.IsNullOrEmpty(config.Dhm))

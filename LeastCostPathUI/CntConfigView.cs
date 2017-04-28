@@ -58,23 +58,22 @@ namespace LeastCostPathUI
 
         if (notBound)
         {
-          txtHeight.Bind(x => x.Text, _bindingSource, _vm.GetPropertyName(x => x.HeightPath),
+          txtHeight.Bind(x => x.Text, _bindingSource, nameof(_vm.HeightPath),
             true, DataSourceUpdateMode.OnPropertyChanged);
 
-          txtVelo.Bind(x => x.Text, _bindingSource, _vm.GetPropertyName(x => x.VeloPath),
+          txtVelo.Bind(x => x.Text, _bindingSource, nameof(_vm.VeloPath),
             true, DataSourceUpdateMode.OnPropertyChanged);
 
-          txtResol.Bind(x => x.Text, _bindingSource, _vm.GetPropertyName(x => x.Resolution),
+          txtResol.Bind(x => x.Text, _bindingSource, nameof(_vm.Resolution),
             true, DataSourceUpdateMode.OnPropertyChanged).FormatString = "N1";
 
-          txtCost.Bind(x => x.Text, _bindingSource, _vm.GetPropertyName(x => x.CostProviderName),
+          txtCost.Bind(x => x.Text, _bindingSource, nameof(_vm.CostProviderName),
             true, DataSourceUpdateMode.Never);
 
-          StepImage t = null;
           _lstStep.DataSource = steps;
-          _lstStep.ValueMember = t.GetPropertyName(x => x.Step);
-          _lstStep.DisplayMember = t.GetPropertyName(x => x.Image);
-          _lstStep.Bind(x => x.SelectedValue, _bindingSource, _vm.GetPropertyName(x => x.StepsMode),
+          _lstStep.ValueMember = nameof(StepImage.Step);
+          _lstStep.DisplayMember = nameof(StepImage.Image);
+          _lstStep.Bind(x => x.SelectedValue, _bindingSource, nameof(_vm.StepsMode),
             true, DataSourceUpdateMode.OnPropertyChanged);
         }
       }

@@ -26,7 +26,7 @@ namespace OcadScratch.ViewModels
 
       _map = map;
       _configPath = scratchFile;
-      Changed();
+      ChangedAll();
     }
 
     public Map Map
@@ -65,7 +65,7 @@ namespace OcadScratch.ViewModels
           foreach (Elem elem in _map.Elems)
           { elems.Add(new WorkElemVm(elem)); }
           _elems = elems;
-          Changed(System.Reflection.MethodBase.GetCurrentMethod());
+          Changed();
         }
         return _elems;
       }

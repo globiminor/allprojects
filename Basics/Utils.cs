@@ -81,19 +81,6 @@ namespace Basics
 
   public static class Extensions
   {
-    /// <summary>
-    /// Returns the name of the property for the given Linq statement.
-    /// </summary>
-    /// <typeparam name="T">The type of the object the property is gotten from.</typeparam>
-    /// <typeparam name="S">The type of Linq expression.</typeparam>
-    /// <param name="obj">The object from which the property is retrieved.</param>
-    /// <param name="expr">The expression of the property.</param>
-    /// <returns>The name of the property.</returns>
-    public static string GetPropertyName<T, S>(this T obj, Expression<Func<T, S>> expr)
-    {
-      return ((MemberExpression)expr.Body).Member.Name;
-    }
-
     public static bool TryParse<T>(string text, out T value)
     {
       if (string.IsNullOrEmpty(text))

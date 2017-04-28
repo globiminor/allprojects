@@ -55,67 +55,67 @@ namespace OCourse.Gui
         _bindingSource.DataSource = _vm;
         if (notBound)
         {
-          _txtCourse.Bind(x => x.Text, _bindingSource, _vm.GetPropertyName(x => x.CourseFile),
+          _txtCourse.Bind(x => x.Text, _bindingSource, nameof(_vm.CourseFile),
             true, DataSourceUpdateMode.OnValidation);
 
-          _txtMin.Bind(x => x.Text, _bindingSource, _vm.GetPropertyName(x => x.StartNrMin),
+          _txtMin.Bind(x => x.Text, _bindingSource, nameof(_vm.StartNrMin),
             true, DataSourceUpdateMode.OnPropertyChanged);
-          _txtMax.Bind(x => x.Text, _bindingSource, _vm.GetPropertyName(x => x.StartNrMax),
+          _txtMax.Bind(x => x.Text, _bindingSource, nameof(_vm.StartNrMax),
             true, DataSourceUpdateMode.OnPropertyChanged);
 
-          txtEstimate.Bind(x => x.Text, _bindingSource, _vm.GetPropertyName(x => x.PermutEstimate),
+          txtEstimate.Bind(x => x.Text, _bindingSource, nameof(_vm.PermutEstimate),
             true, DataSourceUpdateMode.Never);
 
-          _lblProgress.Bind(x => x.Text, _bindingSource, _vm.GetPropertyName(x => x.Progress),
+          _lblProgress.Bind(x => x.Text, _bindingSource, nameof(_vm.Progress),
             true, DataSourceUpdateMode.Never);
 
-          this.Bind(x => x.Working, _bindingSource, _vm.GetPropertyName(x => x.Working),
+          this.Bind(x => x.Working, _bindingSource, nameof(_vm.Working),
             false, DataSourceUpdateMode.Never);
 
-          this.Bind(x => x.Permutations, _bindingSource, _vm.GetPropertyName(x => x.Permutations),
+          this.Bind(x => x.Permutations, _bindingSource, nameof(_vm.Permutations),
             true, DataSourceUpdateMode.Never);
 
-          dgvInfo.Bind(x => x.DataSource, _bindingSource, _vm.GetPropertyName(x => x.Info),
+          dgvInfo.Bind(x => x.DataSource, _bindingSource, nameof(_vm.Info),
               true, DataSourceUpdateMode.Never);
 
           {
             _lstCourses.DataSource = _vm.CourseNames;
-            _lstCourses.Bind(x => x.SelectedItem, _bindingSource, _vm.GetPropertyName(x => x.CourseName),
+            _lstCourses.Bind(x => x.SelectedItem, _bindingSource, nameof(_vm.CourseName),
               true, DataSourceUpdateMode.Never);
-            _lstCourses.Bind(x => x.SelectedValue, _bindingSource, _vm.GetPropertyName(x => x.CourseName),
+            _lstCourses.Bind(x => x.SelectedValue, _bindingSource, nameof(_vm.CourseName),
               true, DataSourceUpdateMode.OnPropertyChanged);
           }
 
           {
             _lstCats.DataSource = _vm.CategoryNames;
-            _lstCats.Bind(x => x.SelectedItem, _bindingSource, _vm.GetPropertyName(x => x.CategoryName),
+            _lstCats.Bind(x => x.SelectedItem, _bindingSource, nameof(_vm.CategoryName),
               true, DataSourceUpdateMode.Never);
-            _lstCats.Bind(x => x.SelectedValue, _bindingSource, _vm.GetPropertyName(x => x.CategoryName),
+            _lstCats.Bind(x => x.SelectedValue, _bindingSource, nameof(_vm.CategoryName),
               true, DataSourceUpdateMode.OnPropertyChanged);
           }
 
           {
             EnumText<VelocityType> t = null;
             _lstVelo.DataSource = _vm.VelocityTypes;
-            _lstVelo.ValueMember = t.GetPropertyName(x => x.Id);
-            _lstVelo.DisplayMember = t.GetPropertyName(x => x.Text);
-            _lstVelo.Bind(x => x.SelectedValue, _bindingSource, _vm.GetPropertyName(x => x.VelocityType),
+            _lstVelo.ValueMember = nameof(t.Id);
+            _lstVelo.DisplayMember = nameof(t.Text);
+            _lstVelo.Bind(x => x.SelectedValue, _bindingSource, nameof(_vm.VelocityType),
               true, DataSourceUpdateMode.OnPropertyChanged);
           }
           {
             EnumText<VarBuilderType> t = null;
             _lstVarBuilders.DataSource = _vm.VarBuilderTypes;
-            _lstVarBuilders.ValueMember = t.GetPropertyName(x => x.Id);
-            _lstVarBuilders.DisplayMember = t.GetPropertyName(x => x.Text);
-            _lstVarBuilders.Bind(x => x.SelectedValue, _bindingSource, _vm.GetPropertyName(x => x.VarBuilderType),
+            _lstVarBuilders.ValueMember = nameof(t.Id);
+            _lstVarBuilders.DisplayMember = nameof(t.Text);
+            _lstVarBuilders.Bind(x => x.SelectedValue, _bindingSource, nameof(_vm.VarBuilderType),
               true, DataSourceUpdateMode.OnPropertyChanged);
           }
           {
             EnumText<DisplayType> t = null;
             _lstDisplayType.DataSource = _vm.DisplayTypes;
-            _lstDisplayType.ValueMember = t.GetPropertyName(x => x.Id);
-            _lstDisplayType.DisplayMember = t.GetPropertyName(x => x.Text);
-            _lstDisplayType.Bind(x => x.SelectedValue, _bindingSource, _vm.GetPropertyName(x => x.DisplayType),
+            _lstDisplayType.ValueMember = nameof(t.Id);
+            _lstDisplayType.DisplayMember = nameof(t.Text);
+            _lstDisplayType.Bind(x => x.SelectedValue, _bindingSource, nameof(_vm.DisplayType),
               true, DataSourceUpdateMode.OnPropertyChanged);
           }
         }
@@ -240,7 +240,7 @@ namespace OCourse.Gui
 
         {
           DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn();
-          col.DataPropertyName = c.GetPropertyName(x => x.Name);
+          col.DataPropertyName = nameof(c.Name);
           col.HeaderText = "Name";
           col.ReadOnly = true;
           col.Width = 60;
@@ -249,7 +249,7 @@ namespace OCourse.Gui
         }
         {
           DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn();
-          col.DataPropertyName = c.GetPropertyName(x => x.DirectLKm);
+          col.DataPropertyName = nameof(c.DirectLKm);
           col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
           col.DefaultCellStyle.Format = "N2";
           col.HeaderText = "DirectLKm";
@@ -261,7 +261,7 @@ namespace OCourse.Gui
         {
           DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn();
 
-          col.DataPropertyName = c.GetPropertyName(x => x.DirectKm);
+          col.DataPropertyName = nameof(c.DirectKm);
           col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
           col.DefaultCellStyle.Format = "N2";
           col.HeaderText = "DirectKm";
@@ -273,7 +273,7 @@ namespace OCourse.Gui
         {
           DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn();
 
-          col.DataPropertyName = c.GetPropertyName(x => x.Climb);
+          col.DataPropertyName = nameof(c.Climb);
           col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
           col.DefaultCellStyle.Format = "N0";
           col.HeaderText = "Climb";
@@ -285,7 +285,7 @@ namespace OCourse.Gui
         {
           DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn();
 
-          col.DataPropertyName = c.GetPropertyName(x => x.OptimalLKm);
+          col.DataPropertyName = nameof(c.OptimalLKm);
           col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
           col.DefaultCellStyle.Format = "N2";
           col.HeaderText = "OptimalLKm";
@@ -297,7 +297,7 @@ namespace OCourse.Gui
         {
           DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn();
 
-          col.DataPropertyName = c.GetPropertyName(x => x.OptimalKm);
+          col.DataPropertyName = nameof(c.OptimalKm);
           col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
           col.DefaultCellStyle.Format = "N2";
           col.HeaderText = "OptimalKm";
@@ -309,7 +309,7 @@ namespace OCourse.Gui
         {
           DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn();
 
-          col.DataPropertyName = c.GetPropertyName(x => x.OptimalCost);
+          col.DataPropertyName = nameof(c.OptimalCost);
           col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
           col.DefaultCellStyle.Format = "N0";
           col.HeaderText = "OptimalCost";
@@ -343,7 +343,7 @@ namespace OCourse.Gui
 
       DataGridViewColumn col = dgvInfo.Columns[e.ColumnIndex];
       ICost item = dgvInfo.Rows[e.RowIndex].DataBoundItem as ICost;
-      if (col.DataPropertyName != item.GetPropertyName(x => x.Name))
+      if (col.DataPropertyName != nameof(item.Name))
       { return; }
 
       IInfo info = item as IInfo;

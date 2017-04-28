@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Basics.Views
@@ -32,7 +32,7 @@ namespace Basics.Views
       set
       {
         _progress = value;
-        Changed(MethodBase.GetCurrentMethod());
+        Changed();
       }
     }
 
@@ -126,15 +126,11 @@ namespace Basics.Views
     }
 
     private ChangingHandler _changing;
-    protected IDisposable Changing()
+    protected IDisposable ChangingAll()
     {
       return new ChangingHandler(this, null);
     }
-    protected IDisposable Changing(MethodBase propertyMethod)
-    {
-      return new ChangingHandler(this, GetProperty(propertyMethod));
-    }
-    protected IDisposable Changing(string property)
+    protected IDisposable Changing([CallerMemberName] string property = "")
     {
       return new ChangingHandler(this, property);
     }
@@ -182,19 +178,15 @@ namespace Basics.Views
       }
     }
 
-    protected void Changed()
+    void INotifyListener.Changed(string property)
+    { Changed(property); }
+    protected void ChangedAll()
     {
-      Changed((string)null);
+      Changed(string.Empty);
     }
-    protected virtual void Changed(MethodBase propertyMethod)
+    protected virtual void Changed([CallerMemberName] string property = "")
     {
-      Changed(GetProperty(propertyMethod));
-    }
-    //    public virtual void Changed(string property)
-    public virtual void Changed(string property)
-    {
-      if (PropertyChanged != null)
-      { PropertyChanged(this, new PropertyChangedEventArgs(property)); }
+      PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
     }
 
     public void Dispose()
@@ -264,12 +256,6 @@ namespace Basics.Views
           _dictErrors[propertyName] = error;
         }
       }
-    }
-
-    protected string GetProperty(MethodBase propertyMethod)
-    {
-      string property = propertyMethod.Name.Substring(4);
-      return property;
     }
 
     protected abstract void Disposing(bool disposing);

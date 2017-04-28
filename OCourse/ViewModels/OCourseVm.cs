@@ -103,7 +103,7 @@ namespace OCourse.ViewModels
       get { return _courseFile; }
       set
       {
-        using (Changing(MethodBase.GetCurrentMethod()))
+        using (Changing())
         {
           _courseFile = value;
           SetCourseList();
@@ -115,7 +115,7 @@ namespace OCourse.ViewModels
       get { return _courseName; }
       set
       {
-        using (Changing(MethodBase.GetCurrentMethod()))
+        using (Changing())
         {
           _courseName = value;
           SetCourse();
@@ -128,7 +128,7 @@ namespace OCourse.ViewModels
       get { return _course; }
       set
       {
-        using (Changing(MethodBase.GetCurrentMethod()))
+        using (Changing())
         {
           _course = value;
 
@@ -154,7 +154,7 @@ namespace OCourse.ViewModels
       get { return _categoryName; }
       set
       {
-        using (Changing(MethodBase.GetCurrentMethod()))
+        using (Changing())
         {
           _categoryName = value;
           InitCategoryName();
@@ -167,7 +167,7 @@ namespace OCourse.ViewModels
       get { return _permutEstimate; }
       set
       {
-        using (Changing(MethodBase.GetCurrentMethod()))
+        using (Changing())
         { _permutEstimate = value; }
       }
     }
@@ -177,7 +177,7 @@ namespace OCourse.ViewModels
       get { return _startNrMin; }
       set
       {
-        using (Changing(MethodBase.GetCurrentMethod()))
+        using (Changing())
         { _startNrMin = value; }
       }
     }
@@ -186,7 +186,7 @@ namespace OCourse.ViewModels
       get { return _startNrMax; }
       set
       {
-        using (Changing(MethodBase.GetCurrentMethod()))
+        using (Changing())
         { _startNrMax = value; }
       }
     }
@@ -196,7 +196,7 @@ namespace OCourse.ViewModels
       get { return _permutations; }
       set
       {
-        using (Changing(MethodBase.GetCurrentMethod()))
+        using (Changing())
         { _permutations = value; }
       }
     }
@@ -221,7 +221,7 @@ namespace OCourse.ViewModels
     {
       string catName = CategoryName;
 
-      using (Changing())
+      using (ChangingAll())
       {
         if (string.IsNullOrEmpty(catName))
         {
@@ -250,7 +250,7 @@ namespace OCourse.ViewModels
       get { return _veloType; }
       set
       {
-        using (Changing(MethodBase.GetCurrentMethod()))
+        using (Changing())
         { _veloType = value; }
       }
     }
@@ -265,7 +265,7 @@ namespace OCourse.ViewModels
       get { return _varBuilderType; }
       set
       {
-        using (Changing(MethodBase.GetCurrentMethod()))
+        using (Changing())
         {
           _varBuilderType = value;
           SetCourse();
@@ -287,7 +287,7 @@ namespace OCourse.ViewModels
       get { return _displayType; }
       set
       {
-        using (Changing(MethodBase.GetCurrentMethod()))
+        using (Changing())
         {
           _displayType = value;
           SetCourse();
@@ -308,7 +308,7 @@ namespace OCourse.ViewModels
       {
         _running = value;
         _cancelCalc = false;
-        Changed(MethodBase.GetCurrentMethod());
+        Changed();
       }
     }
 
@@ -363,7 +363,7 @@ namespace OCourse.ViewModels
       get { return _selectedComb; }
       set
       {
-        using (Changing(MethodBase.GetCurrentMethod()))
+        using (Changing())
         { _selectedComb = value; }
       }
     }
@@ -501,7 +501,7 @@ namespace OCourse.ViewModels
     public void SetCourseList(OcadReader reader, IList<StringParamIndex> pars)
     {
       string oldCourse = CourseName;
-      using (Changing())
+      using (ChangingAll())
       {
         bool oldExists = false;
         try
@@ -541,7 +541,7 @@ namespace OCourse.ViewModels
       try
       {
         _settingCourse = true;
-        using (Changing())
+        using (ChangingAll())
         {
           Course course;
           using (OcadReader reader = OcadReader.Open(CourseFile))
