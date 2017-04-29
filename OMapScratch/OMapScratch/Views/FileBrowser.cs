@@ -141,36 +141,33 @@ namespace OMapScratch.Views
       }
       browse.PostInvalidate();
     }
-
-    private class FileButton : Button
+  }
+  public class FileButton : Button
+  {
+    public FileButton(Context context, string fullPath, bool isDir)
+      : base(context)
     {
-      public FileButton(Context context, string fullPath, bool isDir)
-        : base(context)
-      {
-        FullPath = fullPath;
-        IsDir = isDir;
-      }
-      public string FullPath { get; set; }
-      public bool IsDir { get; set; }
+      FullPath = fullPath;
+      IsDir = isDir;
+    }
+    public string FullPath { get; set; }
+    public bool IsDir { get; set; }
 
-      protected override void OnDraw(Canvas canvas)
-      {
-        base.OnDraw(canvas);
-        int id = IsDir ? Resource.Drawable.folder : Resource.Drawable.file;
-        Bitmap img = BitmapFactory.DecodeResource(Context.Resources, id);
-        canvas.DrawBitmap(img, 40, 40, null);
-      }
-
-      protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
-      {
-        base.OnLayout(changed, left, top, right, bottom);
-        Gravity = GravityFlags.Left;
-        float mm = Utils.GetMmPixel(this);
-        int topPadding = (int)((bottom - top) - TextSize) / 2;
-        SetPadding((int)(10.0f * mm), topPadding, 0, 0);
-      }
-
+    protected override void OnDraw(Canvas canvas)
+    {
+      base.OnDraw(canvas);
+      int id = IsDir ? Resource.Drawable.folder : Resource.Drawable.file;
+      Bitmap img = BitmapFactory.DecodeResource(Context.Resources, id);
+      canvas.DrawBitmap(img, 40, 40, null);
     }
 
+    protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
+    {
+      base.OnLayout(changed, left, top, right, bottom);
+      Gravity = GravityFlags.Left;
+      float mm = Utils.GetMmPixel(this);
+      int topPadding = (int)((bottom - top) - TextSize) / 2;
+      SetPadding((int)(10.0f * mm), topPadding, 0, 0);
+    }
   }
 }

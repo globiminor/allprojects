@@ -44,23 +44,46 @@ namespace OMapScratch
       ImageChanged?.Invoke(this, null);
     }
 
-    public void SetRecent(string configPath)
+    public System.Collections.Generic.IList<string> GetRecents()
+    {
+      string path;
+      XmlRecents recents = GetRecents(out path, create: false);
+      return recents?.Recents;
+    }
+
+    private XmlRecents GetRecents(out string recentPath, bool create)
     {
       Java.IO.File store = Environment.ExternalStorageDirectory;
       string path = store.AbsolutePath;
       string home = System.IO.Path.Combine(path, ".oscratch");
       if (!System.IO.Directory.Exists(home))
-      { System.IO.Directory.CreateDirectory(home); }
-
-      string recent = System.IO.Path.Combine(home, "resent.xml");
-      XmlRecents recentList;
-      if (System.IO.File.Exists(recent))
       {
-        using (System.IO.TextReader r = new System.IO.StreamReader(recent))
+        if (!create)
+        {
+          recentPath = null;
+          return null;
+        }
+        System.IO.Directory.CreateDirectory(home);
+      }
+
+      recentPath = System.IO.Path.Combine(home, "resent.xml");
+      XmlRecents recentList;
+      if (System.IO.File.Exists(recentPath))
+      {
+        using (System.IO.TextReader r = new System.IO.StreamReader(recentPath))
         { Serializer.Deserialize(out recentList, r); }
       }
       else
-      { recentList = new XmlRecents { Recents = new System.Collections.Generic.List<string>() }; }
+      { return null; }
+
+      return recentList;
+    }
+
+    public void SetRecent(string configPath)
+    {
+      string recentPath;
+      XmlRecents recentList = GetRecents(out recentPath, create: true)
+        ?? new XmlRecents { Recents = new System.Collections.Generic.List<string>() }; ;
 
       recentList.Recents.Insert(0, configPath);
       for (int iPos = recentList.Recents.Count - 1; iPos > 0; iPos--)
@@ -71,7 +94,7 @@ namespace OMapScratch
       while (recentList.Recents.Count > 5)
       { recentList.Recents.RemoveAt(recentList.Recents.Count - 1); }
 
-      using (System.IO.TextWriter w = new System.IO.StreamWriter(recent))
+      using (System.IO.TextWriter w = new System.IO.StreamWriter(recentPath))
       { Serializer.Serialize(recentList, w); }
     }
 

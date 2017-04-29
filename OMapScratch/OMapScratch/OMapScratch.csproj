@@ -69,6 +69,7 @@
     <Compile Include="Views\FileBrowser.cs" />
     <Compile Include="Views\MapView.cs" />
     <Compile Include="Views\MotionListener.cs" />
+    <Compile Include="Views\RecentFileBrowser.cs" />
     <Compile Include="Views\SymbolButton.cs" />
     <Compile Include="Views\SymbolGrid.cs" />
     <Compile Include="Views\Utils.cs" />

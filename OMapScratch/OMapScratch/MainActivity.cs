@@ -109,7 +109,7 @@ namespace OMapScratch
     private MapVm _map;
     private ModeButton _btnCurrentMode;
     private SymbolGrid _symbolGrid;
-    private FileBrowser _browser;
+    private RecentFileBrowser _browser;
     private LinearLayout _imageList;
 
     private System.Action<MapButton> _setModeFct;
@@ -420,7 +420,7 @@ namespace OMapScratch
         _parentLayout.AddView(_symbolGrid);
       }
 
-      FileBrowser browser = new FileBrowser(this);
+      RecentFileBrowser browser = new RecentFileBrowser(this);
       {
         RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
         browser.LayoutParameters = lprams;
@@ -451,10 +451,10 @@ namespace OMapScratch
     {
       Java.IO.File store = Environment.ExternalStorageDirectory;
       string path = store.AbsolutePath;
-      FileBrowser browser = _browser;
+      RecentFileBrowser browser = _browser;
       browser.Filter = new[] { ".config" };
       browser.SetDirectory(path);
-      browser.Show((file) =>
+      browser.Show(MapVm.GetRecents(), (file) =>
       {
         MapVm.Load(file);
         MapVm.SetRecent(file);
