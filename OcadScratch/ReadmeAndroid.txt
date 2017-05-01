@@ -10,7 +10,9 @@ Prepare a O-Scratch Project
 1. Create a file called <project>.config on your Windows device (where OCAD is installed)
 Example:
 <oscratch>
-  <offset x="2685000" y="1256000" />
+  <offset x="2685000" y="1256000" declination="2.27">
+    <world lat="47.4492980" lon="8.5656916" geoMat00="75412.37" geoMat01="1084.84" geoMat10="-1596.29" geoMat11="111174.40" />
+  </offset>
   <data scratch="Hardwald.xml" symbol="Symbols.xml" symbolscale="1" />
   <image name="LAS" path="B3_Hardwald 2017_DSM_LasIntensity.jpg" />
   <image name="Hangneigung" path="B3_Hardwald 2017_DTM_Hangneigung.jpg" />
@@ -20,10 +22,12 @@ Example:
 
 where 
 -offset: offset of the co-ordinates in the scratch-File to the "real-world" coordinates
+-offset declination (optional): declination of the magnetic north to the map north (degrees)
+-offset world (optional): Wgs84 co-ordinates (degrees) of offset, together with a local transformation matrix
 -data scratch: name of the file, where the captured data will be stored (will be created by o-scratch)
 -data symbol: name of the file, where the symbols are stored. See description below. 
               Remark: The units in the symbol-files are in meters
--data symbolscale: Scale factor of the symbols use for display
+-data symbolscale (optional): Scale factor of the symbols use for display
 -image name: Name displayed in O-scratch
 -image path: file name of image file. Only jpg-Formats are supported. 
              For each image file, the image-World file (.jgw) must exist, too.
@@ -46,10 +50,10 @@ Open Project
    b) O-Scratch is already running: Choose (Navigatio bar) -> Load
       Remark: The previous project will be save automatically when loading a new project.
 	          If you do not want to save the previous project, close the app.
-2. Navigate to <project>.config and click it. The first of the images is displayed.
+2. Click a recent <project>.config or browse to <project>.config and click it. The first of the images is displayed.
 
-Choose Image
-------------
+Choose Image (only available if more than 1 image)
+--------------------------------------------------
 1. Click LOAD IMAGE. A list of all images is displayed (corresponding to images in <project>.config images)
 2. Click on any image on the list. The corresponding image will be displayed according to the current spatial extent.
 
@@ -84,15 +88,34 @@ Special Actions
 2. Click on Map. A context menu is displayed near the clicked point 
    and a small rectangle is displayed on the map at the position for which the context menu shall be applied.
 3. a) Choose the appropriate menu item 
-   b) Click on map for no action
+   b) Click on map or "Edit tool" for no action
 
-Zoom In
--------
-1. Click Zoom In button. The display is zoomed in.
+Set Location
+------------
+If the wgs84 transformation is defined in the config-file, the current position of the is derived from the device location and displayed on the map as a red circle.
+If the wgs84 is not defined or incorrect, the location can be synchronised:
+1. Chose Edit-Tool "Arrow Tool"
+2. Click the map at your current position
+3. Chose "Set location" in the context menu (submenu of "Constr" or "<Elem>"->"Constr..."). 
+   "Waiting to receive next location" is displayed in the status line untill the next location is captured by the device, 
+   then a red circle is displayed at the current position.
+   Hint: Do not move while the device is waiting for the next location. 
 
-Zoom Out
+Set Orientation
+---------------
+If the declination is defined in the config-file, the current orientation of the map is derived from the device orientation.
+If the declination is not defined or incorrect, the declination can be synchronised:
+1. Chose Edit-Tool "Arrow Tool".
+2. Click the map at any point.
+3. Chose "Set orientation" in the context menu (submenu of "Constr" or "<Elem>"->"Constr...").
+4. Orientate your the device according to the environment.
+5. Click on map. A red arrow (magnetig north) and a thin blackline(declination) is displayed on the map.
+   When the red arrow matches the direction of the thin black line, the device is oriented correctly.
+   Remark: The North arrow can be switched on/off in  (Navigation bar) -> Show/Hide Compass
+
+Location
 --------
-1. Click Zoom Out button. The display is zoomed out.
+1. Click "Loc" button in the toolbar. The behavior is the same as on clicking on the map, but the click occurs at the current location (displayed by red circle).
 
 Undo
 ----
@@ -105,11 +128,11 @@ Redo
 
 Save
 ----
-1. Choose (Navigatio bar) -> Save. The captured objects are written to <scratch.xml> in the same folder as the <project>.config file.
+1. Choose (Navigation bar) -> Save. The captured objects are written to <scratch.xml> in the same folder as the <project>.config file.
 
 Load a different project
 ------------------------
-1. Choose (Navigatio bar) -> Load. Executed Actions:
+1. Choose (Navigation bar) -> Load. Executed Actions:
    - The current objects are written to <scratch.xml> in the same folder as the current <project>.config file.
    - A File navigation is displayed
 2. Navigate to the appropriate .config file an click it. Executed Actions:
