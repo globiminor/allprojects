@@ -98,7 +98,7 @@ namespace OMapScratch.Views
     {
       _editPnt = null;
       _nextPointAction = null;
-      TextInfo.Visibility = Android.Views.ViewStates.Invisible;
+      TextInfo.Visibility = Android.Views.ViewStates.Gone;
       TextInfo.PostInvalidate();
       
       if (clearMenu && ContextMenu.Visibility == Android.Views.ViewStates.Visible)
@@ -148,7 +148,7 @@ namespace OMapScratch.Views
     {
       if (string.IsNullOrWhiteSpace(text))
       {
-        TextInfo.Visibility = Android.Views.ViewStates.Invisible;
+        TextInfo.Visibility = Android.Views.ViewStates.Gone;
       }
       else
       {
@@ -444,17 +444,17 @@ namespace OMapScratch.Views
       menues.AddView(btnConstr);
       menues.AddView(btnOthers);
 
-      btnConstr.Click += (s, e) =>
+      btnConstr.Click += (s, e) => Utils.Try(() =>
       {
         ToggleVisible(menues);
         menues.PostInvalidate();
-      };
+      });
 
-      btnOthers.Click += (s, e) =>
+      btnOthers.Click += (s, e) => Utils.Try(() =>
       {
         ToggleVisible(menues);
         menues.PostInvalidate();
-      };
+      });
 
       AddMenues(menues, constrActions, visibility: Android.Views.ViewStates.Gone);
     }
@@ -474,12 +474,12 @@ namespace OMapScratch.Views
       {
         ActionButton actionButton = new ActionButton(_context, action);
         actionButton.Text = action.Name;
-        actionButton.Click += (s, e) =>
+        actionButton.Click += (s, e) => Utils.Try(() =>
         {
           action.Execute();
           ContextMenu.Visibility = Android.Views.ViewStates.Invisible;
           PostInvalidate();
-        };
+        });
         actionButton.Visibility = visibility;
         menues.AddView(actionButton);
       }
@@ -492,13 +492,13 @@ namespace OMapScratch.Views
       ElemButton actionsButton = new ElemButton(_context, objActions.Elem);
       actionsButton.SetAllCaps(false);
       actionsButton.Text = objActions.Name;
-      actionsButton.Click += (s, e) =>
+      actionsButton.Click += (s, e) => Utils.Try(() =>
       {
         _editPnt = ContextMenu.ToggleMenu(objMenus);
         PositionMenu();
         ContextMenu.PostInvalidate();
         PostInvalidate();
-      };
+      });
 
       AddMenues(objMenus, objActions.Actions);
       if (first)

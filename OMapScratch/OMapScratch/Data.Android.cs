@@ -38,7 +38,7 @@ namespace OMapScratch
     { get { return _currentWorldLocation; } }
     public void RefreshImage()
     {
-      if (Utils.Cancel(this, ImageChanging))
+      if (EventUtils.Cancel(this, ImageChanging))
       { return; }
 
       ImageChanged?.Invoke(this, null);
@@ -120,7 +120,10 @@ namespace OMapScratch
       { return; }
 
       string path = _map.Images[imageIndex].Path;
-      LoadImage(_map.VerifyLocalPath(path));
+      string valid = _map.VerifyLocalPath(path);
+      if (string.IsNullOrEmpty(valid))
+      { throw new System.InvalidOperationException($"Cannot find file '{path}' (Index {imageIndex})"); }
+      LoadImage(valid);
     }
     public void LoadLocalImage(string path)
     {
@@ -132,7 +135,7 @@ namespace OMapScratch
       if (string.IsNullOrEmpty(path))
       { return; }
 
-      if (Utils.Cancel(this, ImageChanging))
+      if (EventUtils.Cancel(this, ImageChanging))
       { return; }
 
       _map.LoadImage(path);

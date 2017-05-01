@@ -31,11 +31,11 @@ namespace OMapScratch.Views
           top.LayoutParameters = lprams;
           top.Text = "..";
           // top.SetBackgroundColor(Color.LightSteelBlue);
-          top.Click += (s, e) => 
+          top.Click += (s, e) => Utils.Try(() =>
           {
             if (top.FullPath.Contains("0"))
             { SetDirectory(top.FullPath); }
-          };
+          });
           _top = top;
           menu.AddView(_top);
         }
@@ -46,7 +46,7 @@ namespace OMapScratch.Views
           btnCancel.LayoutParameters = lprams;
           btnCancel.Text = "Cancel";
           btnCancel.SetBackgroundColor(Color.LightPink);
-          btnCancel.Click += (s, e) => { Visibility = ViewStates.Invisible; };
+          btnCancel.Click += (s, e) => Utils.Try(() => { Visibility = ViewStates.Invisible; });
           menu.AddView(btnCancel);
         }
       }
@@ -119,12 +119,12 @@ namespace OMapScratch.Views
         fileButton.TextAlignment = TextAlignment.TextStart;
         // fileButton.SetBackgroundColor(Color.LightGreen);
         fileButton.Text = System.IO.Path.GetFileName(fsi);
-        fileButton.Click += (s, e) =>
-        {
-          Visibility = ViewStates.Invisible;
-          PostInvalidate();
-          _onSuccess(fsi);
-        };
+        fileButton.Click += (s, e) => Utils.Try(() =>
+          {
+            Visibility = ViewStates.Invisible;
+            PostInvalidate();
+            _onSuccess(fsi);
+          });
         browse.AddView(fileButton);
       }
       foreach (string fsi in Select(System.IO.Directory.EnumerateDirectories(path), false))
@@ -133,10 +133,7 @@ namespace OMapScratch.Views
         fileButton.TextAlignment = TextAlignment.TextStart;
         // fileButton.SetBackgroundColor(Color.LightBlue);
         fileButton.Text = System.IO.Path.GetFileName(fsi);
-        fileButton.Click += (s, e) =>
-        {
-          SetDirectory(fsi);
-        };
+        fileButton.Click += (s, e) => Utils.Try(() => { SetDirectory(fsi); });
         browse.AddView(fileButton);
       }
       browse.PostInvalidate();

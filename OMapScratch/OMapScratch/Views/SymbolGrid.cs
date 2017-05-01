@@ -56,11 +56,11 @@ namespace OMapScratch
         EditButton btnEdit = new EditButton(_activity);
         btnEdit.SetMinimumWidth(5);
         btnEdit.SetWidth(fullWidth / nColumns);
-        btnEdit.Click += (s, e) =>
+        btnEdit.Click += (s, e) => Utils.Try(() =>
         {
           _activity.SetMode(btnEdit);
           Visibility = ViewStates.Invisible;
-        };
+        });
 
         AddView(btnEdit);
 
@@ -71,10 +71,10 @@ namespace OMapScratch
           btnColor.SetWidth(fullWidth / nColumns);
           AddView(btnColor);
 
-          btnColor.Click += (s, a) =>
+          btnColor.Click += (s, a) => Utils.Try(() =>
           {
             ColorClicked(btnColor);
-          };
+          });
         }
         SymbolButton firstSym = null;
         foreach (Symbol sym in symbols)
@@ -85,11 +85,11 @@ namespace OMapScratch
 
           firstSym = firstSym ?? btnSym;
 
-          btnSym.Click += (s, e) =>
+          btnSym.Click += (s, e) => Utils.Try(() =>
           {
             _activity.SetMode(btnSym);
             Visibility = ViewStates.Invisible;
-          };
+          });
 
           AddView(btnSym);
           symbolBtns.Add(btnSym);

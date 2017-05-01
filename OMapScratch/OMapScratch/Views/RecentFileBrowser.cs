@@ -44,12 +44,12 @@ namespace OMapScratch.Views
             }
 
             recent.Text = "Recent";
-            recent.Click += (s, e) =>
+            recent.Click += (s, e) => Utils.Try(() =>
             {
               _recents.Visibility = ViewStates.Visible;
               _browser.Visibility = ViewStates.Invisible;
               PostInvalidate();
-            };
+            });
             grp.AddView(recent);
 
             _default = recent;
@@ -57,12 +57,12 @@ namespace OMapScratch.Views
           {
             RadioButton browse = new RadioButton(Context);
             browse.Text = "Browse";
-            browse.Click += (s, e) =>
+            browse.Click += (s, e) => Utils.Try(() =>
             {
               _recents.Visibility = ViewStates.Invisible;
               _browser.Visibility = ViewStates.Visible;
               PostInvalidate();
-            };
+            });
             grp.AddView(browse);
           }
         }
@@ -78,10 +78,10 @@ namespace OMapScratch.Views
           Button cancel = new Button(Context);
           cancel.SetAllCaps(false);
           cancel.Text = "Cancel";
-          cancel.Click += (s, e) =>
+          cancel.Click += (s, e) => Utils.Try(() =>
           {
             Visibility = ViewStates.Invisible;
-          };
+          });
           tabs.AddView(cancel);
         }
 
@@ -152,12 +152,12 @@ namespace OMapScratch.Views
           FileButton fileButton = new FileButton(Context, recent, false);
           fileButton.TextAlignment = TextAlignment.TextStart;
           fileButton.Text = System.IO.Path.GetFileName(recent);
-          fileButton.Click += (s, e) =>
-          {
-            Visibility = ViewStates.Invisible;
-            PostInvalidate();
-            selected(recent);
-          };
+          fileButton.Click += (s, e) => Utils.Try(() =>
+            {
+              Visibility = ViewStates.Invisible;
+              PostInvalidate();
+              selected(recent);
+            });
           _recents.AddView(fileButton);
         }
         _browser.Visibility = ViewStates.Invisible;

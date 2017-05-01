@@ -473,7 +473,7 @@ namespace OMapScratch
 
     internal void Save()
     {
-      if (Utils.Cancel(this, Saving))
+      if (EventUtils.Cancel(this, Saving))
       { return; }
       _map.Save();
       Saved?.Invoke(this, null);
@@ -490,7 +490,7 @@ namespace OMapScratch
       }
       if (config != null)
       {
-        if (Utils.Cancel(this, Loading))
+        if (EventUtils.Cancel(this, Loading))
         { return; }
         _map.Load(configPath, config);
         Loaded?.Invoke(this, null);
@@ -1252,14 +1252,17 @@ namespace OMapScratch
     private List<Elem> GetValidElems(IEnumerable<Elem> elems)
     {
       List<Elem> valids = new List<Elem>();
-      foreach (Elem elem in elems)
+      if (elems != null)
       {
-        if (elem?.Symbol == null)
-        { continue; }
-        if (elem.Geometry == null)
-        { continue; }
+        foreach (Elem elem in elems)
+        {
+          if (elem?.Symbol == null)
+          { continue; }
+          if (elem.Geometry == null)
+          { continue; }
 
-        valids.Add(elem);
+          valids.Add(elem);
+        }
       }
       return valids;
     }
@@ -2376,7 +2379,7 @@ namespace OMapScratch
     }
   }
 
-  public static class Utils
+  public static class EventUtils
   {
     public static bool Cancel(object sender, System.ComponentModel.CancelEventHandler cancelEvent)
     {
