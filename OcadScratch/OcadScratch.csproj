@@ -137,10 +137,19 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="ReadmeAndroid.txt" />
+    <Resource Include="Help\ReadmeAndroid.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="ReadmeWindows.txt" />
+    <Resource Include="Help\ReadmeWindows.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Help\OscratchHelp.html" />
+    <None Include="Help\Line.png" />
+    <None Include="Help\Point.png" />
+    <None Include="Help\Arrow.png" />
+    <None Include="Help\Location.png" />
+    <None Include="Help\Redo.png" />
+    <None Include="Help\Undo.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

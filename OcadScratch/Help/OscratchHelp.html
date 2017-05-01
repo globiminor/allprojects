@@ -1,0 +1,214 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>O-Scratch Help</title>
+    <style>
+        p {
+            font-size: 14px;
+        }
+
+        .xml {
+            font-family: Consolas;
+            color: blue;
+        }
+
+        .txt {
+            font-family: Arial;
+            font-size: 14px;
+        }
+
+        .cmt {
+            color: forestgreen;
+        }
+    </style>
+</head>
+<body style="font-family: Arial, Helvetica, sans-serif">
+    <h2>Installing O-Scratch on Android Device</h2>
+    <p>1. Copy OMapScratch.OMapScratch-Signed.apk to your android device</p>
+    <p>2. On your android-device, click OMapScratch.OMapScratch-Signed.apk to install it.</p>
+    <p>3. Follow instructions</p>
+    <p>4. Verify that an app called O-Scratch exists.</p>
+    <h2>Prepare a O-Scratch Project</h2>
+    <p>1. Create a file called <span class="xml">&lt;project&gt;.config</span> on your Windows device (where OCAD is installed)</p>
+    <p>Example:</p>
+    <pre class="xml">
+&lt;oscratch&gt;
+  &lt;offset x="2685000" y="1256000" declination="2.27"&gt;
+    &lt;world lat="47.4492980" lon="8.5656916" geoMat00="75412.37" geoMat01="1084.84" geoMat10="-1596.29" geoMat11="111174.40" /&gt;
+  &lt;/offset&gt;
+  &lt;data scratch="Hardwald.xml" symbol="Symbols.xml" symbolscale="1" /&gt;
+  &lt;image name="LAS" path="B3_Hardwald 2017_DSM_LasIntensity.jpg" /&gt;
+  &lt;image name="Hangneigung" path="B3_Hardwald 2017_DTM_Hangneigung.jpg" /&gt;
+  &lt;image name="Relief 1" path="B3_Hardwald 2017_DTM_Reliefschummerung.jpg" /&gt;
+  &lt;image name="Relief 2" path="B4_Hardwald 2017_DTM_Reliefschummerung.jpg" /&gt;
+&lt;/oscratch&gt;</pre>
+    <p>where</p>
+    <pre class="txt">
+&lt;offset&gt;: offset of the co-ordinates in the scratch-File to the "real-world" coordinates
+&lt;offset declination&gt; (optional): declination of the magnetic north to the map north (degrees)
+&lt;offset&gt;&lt;world&gt; (optional): Wgs84 co-ordinates (degrees) of offset, together with a local transformation matrix
+&lt;data scratch&gt;: name of the file, where the captured data will be stored (will be created by o-scratch)
+&lt;data symbol&gt;: name of the file, where the symbols are stored. See description below. 
+               Remark: The units in the symbol-files are in meters
+&lt;data symbolscale&gt; (optional): Scale factor of the symbols use for display. Default is 1.
+&lt;image name&gt;: Name displayed in O-scratch
+&lt;image path&gt;: file name of image file. Only jpg-Formats are supported. 
+              For each image file, the image-World file (.jgw) must exist, too.
+			 You may create these image and world file with OCAD -> Export.
+			 Remark: When working with large image files, split them to several parts 
+			         so that not the entire image must be copied to your android device 
+					 and that the loading of the image is more performant.
+			         Use some overlap for the files of the same theme, because only 1 image file per time is displayed in o-scratch 
+    </pre>
+    <p>
+        2. Copy &lt;project&gt;.config, &lt;symbols.xml&gt; and all referenced image files (.jpg) and image world files (.jgw) to one folder on your android device.<br />
+        <b>Remark:</b> In o-scratch, all used files for one project must lie in one single folder!
+    </p>
+    <h1>Run O-Scratch on Android</h1>
+    <h3>Open Project</h3>
+    <p>
+        1. a) O-Scratch is not open on your device: Start O-Scratch on the android device. A File navigation is displayed<br />
+        &nbsp;&nbsp;&nbsp; b) O-Scratch is already running: Choose (Navigation bar) -> Load<br />
+        <b>Remark:</b> The previous project will be save automatically when loading a new project.
+	          If you do not want to save the previous project, close the app.
+    </p>
+    <p>2. Click a recent &lt;project&gt;.config or browse to &lt;project&gt.config and click it. The first of the images is displayed.</p>
+    <h3>Chose Image</h3>
+    <p>This option is only available if more than 1 image is defined in the .config file</p>
+    <p>1. Click LOAD IMAGE. A list of all images is displayed (corresponding to images in &lt;project&gt;.config images)</p>
+    <p>2. Click on any image on the list. The corresponding image will be displayed according to the current spatial extent.</p>
+    <h3>Chose Edit-Tool</h3>
+    <p>1. Click on "Edit tool" (like <img src="Point.png" style="width:20px;height:20px" />). A list of all available colors and symbols is displayed.</p>
+    <p>2. (Optionally) choose color. The color of all symbols in the list are adapted accordingly.</p>
+    <p>3. Choose symbol or "Arrow Tool". The list is closed and the edit tool is set accordingly.</p>
+
+    <h3>Capture Point</h3>
+    <p>1. Choose Edit-Tool with a point symbol, i.e. <img src="Point.png" style="width:20px;height:20px" /></p>
+    <p>2. Click on Map (repeatedly). The point symbol is displayed a the clicked point(s)</p>
+
+    <h3>Capture Line</h3>
+    <p>1. Choose Edit-Tool with a line symbol, i.e. <img src="Line.png" style="width:20px;height:20px" /></p>
+    <p>2. Click on Map to start the line. A small dot is displayed at the clicked point</p>
+    <p>3. Click the next point(s) on the map. The captured line is displayed.</p>
+    <p>4. (double) click on the Edit-Tool-Button to finish the current line.</p>
+
+    <h3>Special Actions</h3>
+    <p>1. Choose Edit-Tool "Arrow Tool" <img src="Arrow.png" style="width:20px;height:20px" /></p>
+    <p>
+        2. Click on Map. A context menu is displayed near the clicked point 
+   and a small rectangle is displayed on the map at the position for which the context menu shall be applied.
+    </p>
+    <p>
+        3. a) Choose the appropriate menu item
+        <br />
+        &nbsp;&nbsp;&nbsp; b) Click on map or "Edit tool" for no action
+    </p>
+
+    <h3>Set Location</h3>
+
+    <p>
+        If the wgs84 transformation is defined in the config-file, the current position of the is derived from the device location and displayed on the map as a red circle.<br />
+        If the wgs84 is not defined or incorrect, the location can be synchronised:
+    </p>
+    <p>1. Chose Edit-Tool "Arrow Tool" <img src="Arrow.png" style="width:20px;height:20px" /></p>
+    <p>2. Click the map at your current position</p>
+    <p>
+        3. Chose "Set location" in the context menu (submenu of "Constr" or "Elem"-&gt;"Constr...").
+        <br />
+        "Waiting to receive next location" is displayed in the status line untill the next location is captured by the device,
+        <br />
+        then a red circle is displayed at the current position.<br />
+        <b>Hint</b>: Do not move while the device is waiting for the next location.
+    </p>
+
+    <h3>Set Orientation</h3>
+    <p>
+        If the declination is defined in the config-file, the current orientation of the map is derived from the device orientation.<br />
+        If the declination is not defined or incorrect, the declination can be synchronised:
+    </p>
+    <p>1. Chose Edit-Tool "Arrow Tool" <img src="Arrow.png" style="width:20px;height:20px" />.</p>
+    <p>2. Click the map at any point.</p>
+    <p>3. Chose "Set orientation" in the context menu (submenu of "Constr" or "Elem"->"Constr...").</p>
+    <p>4. Orientate your the device according to the environment.</p>
+    <p>
+        5. Click on map. A red arrow (magnetig north) and a thin blackline(declination) is displayed on the map.<br />
+        When the red arrow matches the direction of the thin black line, the device is oriented correctly.<br />
+        Remark: The North arrow can be switched on/off in  (Navigation bar) -> Show/Hide Compass
+    </p>
+
+    <h3>Location</h3>
+    <p>1. Click Location button <img src="Location.png" style="width:20px;height:20px" /> in the toolbar. The behavior is the same as on clicking on the map, but the click occurs at the current location (displayed by red circle).</p>
+
+    <h3>Undo</h3>
+    <p>1. Click Undo button <img src="Undo.png" style="width:20px;height:20px" />. The last action (add symbol, add line point, ...) is undone.</p>
+
+    <h3>Redo</h3>
+    <p>
+        1. Click Redo button <img src="Redo.png" style="width:20px;height:20px" />. The last undo action ist re-done.
+        <br />
+        <b>Remark:</b> The redo stack is emptied with each "normal" action.
+    </p>
+
+    <h3>Save</h3>
+    <p>1. Choose (Navigation bar) -> Save. The captured objects are written to &lt;scratch.xml&gt; in the same folder as the &lt;project&gt;.config file.</p>
+
+    <h3>Load a different project</h3>
+    <p>
+        1. Choose (Navigation bar) -> Load. Executed Actions:<br />
+        - The current objects are written to &lt;scratch.xml&gt; in the same folder as the current &lt;project&gt;.config file.<br />
+        - A File navigation is displayed
+    </p>
+    <p>
+        2. Navigate to the appropriate .config file an click it. Executed Actions:<br />
+        - If existing, the elements of the new &lt;scratch.xml&gt; file are loaded<br />
+        - the first image and the loaded elemens are displayed<br />
+        <b>Remark</b>: Elements with invalid geometry or symbol reference are ignored.  
+    </p>
+
+    <h2>Symbols Definition</h2>
+
+    <p>Example of &lt;symbol.xml&gt; file</p>
+<pre class="xml">
+        &lt;?xml version="1.0" encoding="utf-16" ?&gt;
+        &lt;XmlSymbols&gt;
+            &lt;Color Id="Bl" R="0" G="0" B="0" /&gt;
+            <span class="cmt">&lt;!-- Id : Id of the color (used by scratch elements ) R,G;B : Values of [0,255] --&gt;</span>
+            &lt;Color Id="G" R="0" G="128" B="0" /&gt;
+            <span class="cmt">&lt;!--
+            followed by more Colors
+            --&gt;</span>
+            &lt;Symbol Id="L1"&gt;
+                <span class="cmt">&lt;!-- Symbol, Id: Id of symbol (used by scratch elements) --&gt;</span>
+                &lt;Curve w="1" f="false" s="false" /&gt;
+                <span class="cmt">&lt;!-- Curve without out geom: -&gt; Line Symbol;
+                     w: Line Width (in meters);
+                     f: (optional, ignored for line symbols): fill geometry
+                     s: (optional, ignored for line symbols): stroke geometry --&gt;</span>
+            &lt;/Symbol&gt;
+            &lt;Symbol Id="KrF"&gt;
+                &lt;Curve w="0" f="false" s="false" geom=" r 0.0 0.0 10.0" /&gt;
+                <span class="cmt">&lt;!-- Curve with geom: Point Symbol;
+                     geom: all values in meters. use symbolScale in &lt;project&gt;.config to scale symbols
+                     r &lt;x&gt; &lt;y&gt; &lt;radius&gt;: Circle with center at &lt;x&gt;,&lt;y&gt; and radius &lt;r&gt; --&gt;</span>
+            &lt;/Symbol&gt;
+            &lt;Symbol Id="ReL"&gt;
+                &lt;Curve w="3" geom=" m -12 -12 l -12 12 l 12 12 l 12 -12 l -12 -12" /&gt;
+                <span class="cmt">&lt;!-- m &lt;x&gt; &lt;y&gt; : moveto &lt;x&gt;,&lt;y&gt; (start line)
+                     l &lt;x&gt; &lt;y&gt; : lineto &lt;x&gt;,&lt;y&gt; (continue line)--&gt;</span>
+            &lt;/Symbol&gt;
+            &lt;Symbol Id="K4L"&gt;
+                &lt;Curve w="3" f="false" s="false" geom=" m -10.0 -10.0 l 10.0 10.0" /&gt;
+                &lt;Curve w="3" f="false" s="false" geom=" m 10.0 -10.0 l -10.0 10.0" /&gt;
+                <span class="cmt">&lt;!-- Symbol with multiple lines --&gt;</span>
+            &lt;/Symbol&gt;
+            &lt;Symbol Id="TxA" Text="A" /&gt;
+            <span class="cmt">&lt;!-- Symbol with Text (and no Curve) : Text Symbol --&gt;</span>
+            &lt;Symbol Id="TxB" Text="B" /&gt;
+            <span class="cmt">&lt;!--
+            followed by more Symbols
+            --&gt;</span>
+        &lt;/XmlSymbols&gt;
+</pre>
+</html>
