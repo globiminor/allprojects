@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>O-Scratch Help</title>
+    <style>
+        p {
+            font-size: 14px;
+        }
+
+        .xml {
+            font-family: Consolas;
+            color: blue;
+        }
+
+        .txt {
+            font-family: Arial;
+            font-size: 14px;
+        }
+
+        .cmt {
+            color: forestgreen;
+        }
+    </style>
+</head>
+<body style="font-family: Arial, Helvetica, sans-serif">
+    <h2>OcadScratch<br />
+        <small>Interface between O-Scratch and OCAD</small></h2>
+    <h3>Installing OcadScratch.exe on Windows Device</h3>
+    <p>1. Copy executables of the folder bin (needed: OcadScratch.exe, Basics.dll, Macro.exe, Ocad.dll, Stream.dll) to any folder.</p>
+    <h3>Transfer Data captured in O-Scratch to OCAD</h3>
+    <p>There are different possibilities to transfer the data. This here is the recommended workflow</p>
+    <p>1. Create a copy (&lt;copy&gt;.ocd) of your ocad-File (&lt;orig&gt;.ocd) you want to update. The &lt;copy&gt;.ocd will be used to store o-scratch elements.</p>
+    <p>
+        2. Delete all objects and remove all background data from &lt;copy&gt;.ocd.<br />
+        &nbsp;&nbsp;&nbsp;
+          and close &lt;copy&gt;.ocd.
+    </p>
+    <p>3. Add the &lt;copy&gt;.ocd as first background-Layer in the &lt;orig&gt;.ocd.</p>
+    <p>4. Copy &lt;project&gt;.config, &lt;scratch.xml&gt; (data) and &lt;symobls.xml&gt; from your android device to a the &lt;copy&gt;.ocd-folder.</p>
+    <p>5. Start OcadScratch.exe</p>
+    <p>6. Load &lt;project&gt;.config. All elements of &lt;scratch.xml&gt; will be displayed in the list.</p>
+    <pre class="txt">7. Transfer data to &lt;copy&gt;.ocd.
+     <b>Remark:</b> Make sure &lt;copy&gt;.ocd is not opened in OCAD. It must only exist asa background-layer in the opened OCAD-Session, or not at all.
+     <b>Hint:</b> When transfering data, following actions are executed by the program:
+        - if &lt;copy&gt;.orig.ocd exists, &lt;copy&gt;.orig.ocd is copied to &lt;copy&gt;.ocd.
+        - if &lt;copy&gt;.orig.ocd does not exist, &lt;copy&gt;.ocd is copied to &lt;copy&gt;.orig.ocd.
+        - the elements of the list are integrated as grafics objects to &lt;copy&gt;.ocd</pre>
+    <pre class="txt">8. Open &lt;orig&gt;.ocd (with OCAD) and make background-layer &lt;copy&gt;.ocd visible. 
+    <b>Remark:</b> If &lt;orig&gt;.ocd is already open, toggle (twice) the visibility of the background-layer &lt;copy&gt;.ocd to see the current state of &lt;copy&gt;.ocd.
+    </pre>
+
+    <h3>Navigation</h3>
+    <p>OcadScratch.exe can pan to the position of the current element in OCAD.</p>
+    <p>a) In OcadScratch: Select any element in the list. It get's displayed separatly.    </p>
+    <p>b) "Move to" centers the extent of OCAD to the center of the element    </p>
+    <p>c) "Move to next": The current element is marked as handled, the closest unhandled element is selected and "Move to" is executed.    </p>
+    <p>d) In OCAD: edit the &lt;orig&gt;.ocd as needed.    </p>
+</html>

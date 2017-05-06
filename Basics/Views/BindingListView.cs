@@ -7,68 +7,6 @@ using System.Text;
 
 namespace Basics.Views
 {
-  public static class ListViewUtils
-  {
-    public static ListSortDescriptionCollection AdaptSort(IBindingListView view,
-      string property, bool add)
-    {
-      if (view == null)
-      { return null; }
-
-      Type listType = null;
-      Type e = typeof(IEnumerable<>);
-      foreach (Type type in view.GetType().GetInterfaces())
-      {
-        if (type.IsGenericType && type.GetGenericTypeDefinition() == e)
-        {
-          listType = type.GetGenericArguments()[0];
-          break;
-        }
-      }
-      if (listType == null)
-      { return null; }
-
-      ListSortDescriptionCollection oldSorts = view.SortDescriptions;
-      List<ListSortDescription> newSorts = new List<ListSortDescription>();
-      bool propSortExists = false;
-      if (oldSorts != null)
-      {
-        foreach (ListSortDescription sort in oldSorts)
-        {
-          ListSortDescription newSort;
-          if (sort.PropertyDescriptor.Name == property)
-          {
-            propSortExists = true;
-            if (sort.SortDirection == ListSortDirection.Descending)
-            { continue; }
-
-            newSort = new ListSortDescription(sort.PropertyDescriptor, ListSortDirection.Descending);
-          }
-          else
-          {
-            if (!add)
-            { continue; }
-
-            newSort = new ListSortDescription(sort.PropertyDescriptor, sort.SortDirection);
-          }
-          newSorts.Add(newSort);
-        }
-      }
-      if (!propSortExists)
-      {
-        PropertyDescriptorCollection properties =
-          TypeDescriptor.GetProperties(listType);
-        PropertyDescriptor prop = properties.Find(property, true);
-
-        newSorts.Add(new ListSortDescription(prop, ListSortDirection.Ascending));
-      }
-
-      ListSortDescriptionCollection sortDescs = new ListSortDescriptionCollection(newSorts.ToArray());
-
-      view.ApplySort(sortDescs);
-      return view.SortDescriptions;
-    }
-  }
   public class BindingListView<T> : BindingList<T>, IBindingListView
   {
 

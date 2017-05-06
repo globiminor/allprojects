@@ -137,7 +137,9 @@
     <Compile Include="Utils.cs" />
     <Compile Include="Views\BindingListView.cs" />
     <Compile Include="Views\EnumText.cs" />
+    <Compile Include="Views\ListViewUtils.cs" />
     <Compile Include="Views\NotifyListener.cs" />
+    <Compile Include="Views\PartialListView.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

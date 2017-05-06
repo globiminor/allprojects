@@ -35,12 +35,12 @@ namespace OcadScratch
         {
           Color color = elem.Color?.Color ?? Colors.Red;
           color.A = 255;
-          Pen p = new Pen(new SolidColorBrush(color), 1);
 
           SymbolUtils.DrawSymbol(dc, elem.Symbol, color, (float)ActualWidth, (float)ActualHeight, 1);
         }
       }
     }
+
     public MainWindow()
     {
       InitializeComponent();
@@ -48,6 +48,9 @@ namespace OcadScratch
       WorkElemVm workElemVm = null;
       {
         DataGridTextColumn col = new DataGridTextColumn { Header = "Symbol ID", Binding = new Binding(nameof(workElemVm.SymbolId)) };
+
+        Basics.Window.FilterPanel.CreateHeader(col);
+
         col.IsReadOnly = true;
         grdElems.Columns.Add(col);
       }

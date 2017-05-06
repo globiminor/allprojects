@@ -123,6 +123,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Basics.Window\Basics.Window.csproj">
+      <Project>{0da036ca-6858-4e12-bde0-893f46f6c8c7}</Project>
+      <Name>Basics.Window</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Basics\Basics.csproj">
       <Project>{200E9400-2771-4ACE-A172-78EBD405B67E}</Project>
       <Name>Basics</Name>
@@ -150,6 +154,9 @@
     <None Include="Help\Location.png" />
     <None Include="Help\Redo.png" />
     <None Include="Help\Undo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="HelpOcad\OcadInterface.html" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
