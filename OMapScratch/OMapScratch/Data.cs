@@ -980,6 +980,7 @@ namespace OMapScratch
     private string _configPath;
 
     private XmlWorld _world;
+    private float? _declination;
 
     private static readonly float _defaultMinSearchDist = 10;
 
@@ -1127,7 +1128,6 @@ namespace OMapScratch
       { return null; }
       return new float[] { (float)offset.X, (float)offset.Y };
     }
-    private float? _declination;
     public float? GetDeclination()
     {
       return _declination ?? (float?)_config?.Offset?.Declination;
@@ -1234,19 +1234,30 @@ namespace OMapScratch
 
     public void Load(string configPath, XmlConfig config)
     {
-      _currentImagePath = null;
+      Reset();
 
       _configPath = configPath;
       _config = config;
 
-      _colors = null;
-      _symbols = null;
-      _elems = null;
-      _undoOps = new Stack<Operation>();
-      _redoOps = new Stack<Operation>();
       LoadSymbols();
       List<Elem> elems = LoadElems();
       _elems = GetValidElems(elems);
+    }
+
+    private void Reset()
+    {
+      _currentImagePath = null;
+      _colors = null;
+      _symbols = null;
+      _elems = null;
+      _world = null;
+      _declination = null;
+      _undoOps = new Stack<Operation>();
+      _redoOps = new Stack<Operation>();
+
+      _configPath = null;
+      _config = null;
+
     }
 
     private List<Elem> GetValidElems(IEnumerable<Elem> elems)

@@ -17,7 +17,7 @@ namespace OcadScratch
   /// <summary>
   /// Interaktionslogik für MainWindow.xaml
   /// </summary>
-  public partial class MainWindow : Window
+  public partial class MainWindow : Window, Basics.Window.IDataContext<ViewModels.MapVm>
   {
     private class SymbolPanel : Panel
     {
@@ -45,9 +45,20 @@ namespace OcadScratch
     {
       InitializeComponent();
 
-      WorkElemVm workElemVm = null;
+      WorkElemVm workElemVm;
       {
         DataGridTextColumn col = new DataGridTextColumn { Header = "Symbol ID", Binding = new Binding(nameof(workElemVm.SymbolId)) };
+
+        Basics.Window.FilterPanel.CreateHeader(col);
+
+        col.IsReadOnly = true;
+        grdElems.Columns.Add(col);
+      }
+      {
+        DataGridComboBoxColumn col = new DataGridComboBoxColumn { Header = "Symbol Test" };
+        Basics.Window.Utils.SetBinding(col, this, dc => nameof(dc.SymbolIds));
+
+        col.SelectedItemBinding = new Binding(nameof(workElemVm.SymbolId));
 
         Basics.Window.FilterPanel.CreateHeader(col);
 

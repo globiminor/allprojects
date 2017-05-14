@@ -106,6 +106,7 @@ namespace Basics.Views
 
     public static string GetTextFilterStatement(string text, string property, object list, bool caseSensitive)
     {
+      text = text ?? string.Empty;
       if (text.StartsWith("\\"))
       { return text.Substring(1); }
 

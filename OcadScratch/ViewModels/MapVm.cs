@@ -2,6 +2,7 @@
 using OMapScratch;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace OcadScratch.ViewModels
 {
@@ -11,12 +12,14 @@ namespace OcadScratch.ViewModels
     private Map _map;
     private BindingListView<WorkElemVm> _elems;
     private Basics.Geom.IProjection _globalPrj;
+    private List<string> _symbolIds;
 
     public void Init(string scratchFile)
     {
       _elems = null;
       _globalPrj = null;
       _configPath = null;
+      _symbolIds = null;
 
       XmlConfig config;
       using (TextReader reader = new StreamReader(scratchFile))
@@ -50,6 +53,17 @@ namespace OcadScratch.ViewModels
     protected override void Disposing(bool disposing)
     { }
 
+    public IList<string> SymbolIds
+    {
+      get
+      {
+        if (_symbolIds == null)
+        {
+          _symbolIds = new List<string>(Map.GetSymbols().Select(x => x.Id));
+        }
+        return _symbolIds;
+      }
+    }
     public IList<WorkElemVm> Elems
     {
       get

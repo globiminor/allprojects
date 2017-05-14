@@ -331,8 +331,8 @@ namespace OMapScratch
     {
       if (curve.Count == 0)
       {
-        Pnt pt = curve.From;
-        canvas.DrawPoint(pt.X, pt.Y, p);
+        Pnt pt =  curve.From.Trans(matrix);
+        canvas.DrawLine(pt.X - p.StrokeWidth, pt.Y, pt.X + p.StrokeWidth, pt.Y, p);
         return;
       }
 
