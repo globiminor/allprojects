@@ -197,10 +197,10 @@ namespace Basics.Window
 
     private void HideAllEditFilters()
     {
-      DataGrid grd = GetDataGrid();
+      UIElement headers = Utils.GetParent<System.Windows.Controls.Primitives.DataGridColumnHeadersPresenter>(this);
+      DataGrid grd = Utils.GetParent<DataGrid>(headers);
 
-      StringBuilder filterBuilder = new StringBuilder();
-      foreach (FilterPanel filter in Utils.GetChildren<FilterPanel>(grd))
+      foreach (FilterPanel filter in Utils.GetChildren<FilterPanel>(headers))
       {
         filter.HideEditFilter(grd);
       }
