@@ -1,4 +1,5 @@
-﻿using Basics.Views;
+﻿using Basics;
+using Basics.Views;
 using OMapScratch;
 using System.Collections.Generic;
 using System.IO;

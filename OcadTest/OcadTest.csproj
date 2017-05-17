@@ -35,6 +35,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="itextsharp">
+      <HintPath>..\libs\itextsharp.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -55,7 +58,10 @@
   <ItemGroup>
     <Compile Include="CourseTest.cs" />
     <Compile Include="DataTest.cs" />
+    <Compile Include="OEvent\FuenferStaffel.cs" />
     <Compile Include="LcpTest.cs" />
+    <Compile Include="OEvent\PdfText.cs" />
+    <Compile Include="OEvent\Utils.cs" />
     <Compile Include="OscratchTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SchartenhoeheTest.cs" />

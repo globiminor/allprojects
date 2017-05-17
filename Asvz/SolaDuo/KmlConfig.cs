@@ -41,15 +41,9 @@ namespace Asvz
   {
     public static void Write(string path, Gpx gpx)
     {
-      XmlSerializer ser = new XmlSerializer(typeof(Gpx));
       using (TextWriter w = new StreamWriter(path))
       {
-        XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
-        //ns.Add("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        //ns.Add("ogr", "http://osgeo.org/gdal");
-        //xmlns = "http://www.topografix.com/GPX/1/1" xsi:
-        // schemaLocation = "http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" >
-        ser.Serialize(w, gpx, ns);
+        Basics.Serializer.Serialize(gpx, w);
       }
     }
 

@@ -26,12 +26,12 @@ namespace TMapWin
 
       if (File.Exists(file))
       {
-        XmlSerializer xml = new XmlSerializer(typeof(Settings));
         try
         {
-          TextReader txt = new StreamReader(file);
-          settings = (Settings)xml.Deserialize(txt);
-          txt.Close();
+          using (TextReader txt = new StreamReader(file))
+          {
+            Basics.Serializer.Deserialize(out settings, txt);
+          }
         }
         catch { }
       }
@@ -81,12 +81,10 @@ namespace TMapWin
         Directory.CreateDirectory(dir);
       }
 
-      TextWriter txt = new StreamWriter(_pathName);
-
-      XmlSerializer xml = new XmlSerializer(GetType());
-
-      xml.Serialize(txt, this);
-      txt.Close();
+      using (TextWriter txt = new StreamWriter(_pathName))
+      {
+        Basics.Serializer.Serialize(this, txt);
+      }
     }
 
     private static string DefaultFilePath(Type type)

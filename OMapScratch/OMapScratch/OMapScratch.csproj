@@ -53,6 +53,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\Basics\Serializer.cs">
+      <Link>Serializer.cs</Link>
+    </Compile>
     <Compile Include="Data.Android.cs" />
     <Compile Include="Data.cs" />
     <Compile Include="ImageLoader.cs" />

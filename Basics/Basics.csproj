@@ -134,6 +134,7 @@
     <Compile Include="Num\Polynom.cs" />
     <Compile Include="Num\SpareMatrix.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Serializer.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="Views\BindingListView.cs" />
     <Compile Include="Views\EnumText.cs" />

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Xml.Serialization;
+using Basics;
 
 namespace OMapScratch
 {
@@ -1697,25 +1698,6 @@ namespace OMapScratch
   {
     [XmlElement("recent")]
     public List<string> Recents { get; set; }
-  }
-
-  public static class Serializer
-  {
-    public static void Serialize<T>(T obj, TextWriter writer)
-    {
-      XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
-      ns.Add(string.Empty, string.Empty);
-      XmlSerializer ser = new XmlSerializer(typeof(T));
-
-      ser.Serialize(writer, obj, ns);
-    }
-
-    public static void Deserialize<T>(out T obj, TextReader reader)
-    {
-      XmlSerializer ser = new XmlSerializer(typeof(T));
-      object o = ser.Deserialize(reader);
-      obj = (T)o;
-    }
   }
 
   public static class DrawableUtils

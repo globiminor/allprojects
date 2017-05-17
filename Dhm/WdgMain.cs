@@ -599,11 +599,10 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
       _ocadSymbols.Clear();
       _ocadFallDirSymbols.Clear();
 
-      Config cnf = new Config();
-      System.Xml.Serialization.XmlSerializer reader = new System.Xml.Serialization.XmlSerializer(typeof(Config));
+      Config cnf;
       using (System.IO.TextReader r = new System.IO.StreamReader(name))
       {
-        cnf = (Config)reader.Deserialize(r);
+        Basics.Serializer.Deserialize(out cnf, r);
       }
 
       foreach (ContourSetting row in cnf.Contour)
