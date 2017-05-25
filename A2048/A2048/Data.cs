@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace A2048
 {
-  public class Grid
+  public partial class Grid
   {
     private enum Direction { None = 0, Up = 1, Down = 2, Left = 3, Right = 4 }
     private int _size;
@@ -226,8 +226,12 @@ namespace A2048
       { return; }
 
       _moves.RemoveAt(_moves.Count - 1);
-      foreach (int move in Replay()) { }
+      InitMoves();
     }
+
+    private void InitMoves()
+    { foreach (int move in Replay()) { } }
+
     public IEnumerable<int> Replay()
     {
       List<byte> moves = _moves;

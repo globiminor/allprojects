@@ -136,6 +136,18 @@ namespace A2048
         }
       }
     }
+
+    protected override void OnResume()
+    {
+      base.OnResume();
+      Grid.LoadMoves();
+      MainView.PostInvalidate();
+    }
+    protected override void OnPause()
+    {
+      base.OnPause();
+      Grid.SaveMoves();
+    }
   }
 }
 
