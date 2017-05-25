@@ -15,7 +15,7 @@ namespace Basics
       XmlSerializer ser = new XmlSerializer(typeof(T));
 
       XmlWriterSettings settings = new XmlWriterSettings();
-      if (indent.HasValue == false)
+      if (indent.HasValue)
       { settings.Indent = indent.Value; }
       if (omitXmlDeclaration.HasValue)
       { settings.OmitXmlDeclaration = omitXmlDeclaration.Value; }

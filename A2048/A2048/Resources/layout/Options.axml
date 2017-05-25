@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu android:id="@+id/mnuOptions" xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/mniStart"
+        android:title="Start" />
+    <item
+        android:id="@+id/mniReplay"
+        android:title="Replay" />
+    <item
+        android:id="@+id/mniUndo"
+        android:title="Undo" />
+</menu>
+

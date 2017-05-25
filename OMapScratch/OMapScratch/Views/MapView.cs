@@ -230,7 +230,7 @@ namespace OMapScratch.Views
 
             float[] current = new float[] {
               (mapOffset[0] - imgMat[4]) / imgMat[0],
-              (mapOffset[1] - imgMat[5]) / imgMat[0]
+              -(mapOffset[1] - imgMat[5]) / imgMat[0]
             };
             elemMatrix.MapPoints(current);
 

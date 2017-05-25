@@ -486,9 +486,7 @@ namespace OMapScratch
 
       XmlConfig config;
       using (TextReader r = new StreamReader(configPath))
-      {
-        Serializer.Deserialize(out config, r);
-      }
+      { Serializer.TryDeserialize(out config, r); }
       if (config != null)
       {
         if (EventUtils.Cancel(this, Loading))
@@ -1285,7 +1283,7 @@ namespace OMapScratch
       { return null; }
       XmlElems xml;
       using (TextReader r = new StreamReader(elemsPath))
-      { Serializer.Deserialize(out xml, r); }
+      { Serializer.TryDeserialize(out xml, r); }
       if (xml?.Elems == null)
       { return null; }
 
@@ -1319,7 +1317,7 @@ namespace OMapScratch
       { return; }
       XmlSymbols xml;
       using (TextReader r = new StreamReader(symbolPath))
-      { Serializer.Deserialize(out xml, r); }
+      { Serializer.TryDeserialize(out xml, r); }
 
       _symbols = ReadSymbols(xml?.Symbols);
       _colors = ReadColors(xml?.Colors);

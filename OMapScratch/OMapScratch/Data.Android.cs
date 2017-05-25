@@ -72,7 +72,7 @@ namespace OMapScratch
       if (System.IO.File.Exists(recentPath))
       {
         using (System.IO.TextReader r = new System.IO.StreamReader(recentPath))
-        { Serializer.Deserialize(out recentList, r); }
+        { Serializer.TryDeserialize(out recentList, r); }
       }
       else
       { return null; }
