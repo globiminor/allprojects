@@ -147,6 +147,7 @@ namespace OMapScratch
           {
             _symbolGrid.Init(SymbolFullWidth);
             _mapView.ResetMap();
+            _mapView.ConstrView.ResetMap();
 
             map.LoadLocalImage(0);
           };
@@ -287,8 +288,8 @@ namespace OMapScratch
             btn.LayoutParameters = lprams;
             btn.Click += (bs, be) => Utils.Try(() =>
             {
-              MapVm.LoadLocalImage(img.Path);
               _imageList.Visibility = ViewStates.Invisible;
+              MapVm.LoadLocalImage(img.Path);
             });
 
             _imageList.AddView(btn);

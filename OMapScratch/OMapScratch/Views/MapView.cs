@@ -46,6 +46,7 @@ namespace OMapScratch.Views
 
     private ContextMenuView _contextMenu;
     private bool _keepTextOnDraw;
+    private float? _elemTextSize;
 
     public MapView(MainActivity context)
       : base(context)
@@ -187,6 +188,9 @@ namespace OMapScratch.Views
       _context.ShowColors((clr) => colorAction.Action(clr));
     }
 
+    public float ElemTextSize
+    { get { return _elemTextSize ?? (_elemTextSize = MapVm.GetElemTextSize() ?? 12).Value; }    }
+
     public void Scale(float f)
     {
       Rect rect = new Rect();
@@ -199,6 +203,7 @@ namespace OMapScratch.Views
       _currentWorldMatrix = null;
       _lastWorldMatrix = null;
       _mapOffset = null;
+      _elemTextSize = null;
       ResetElemMatrix();
     }
 
@@ -591,6 +596,7 @@ namespace OMapScratch.Views
       { return; }
 
       Paint p = new Paint();
+      p.TextSize = ElemTextSize;
       canvas.Save();
       try
       {

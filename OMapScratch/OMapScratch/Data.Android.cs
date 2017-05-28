@@ -1,6 +1,7 @@
 using Android.Graphics;
 using Android.OS;
 using Basics;
+using Java.IO;
 
 namespace OMapScratch
 {
@@ -54,7 +55,7 @@ namespace OMapScratch
 
     private XmlRecents GetRecents(out string recentPath, bool create)
     {
-      Java.IO.File store = Environment.ExternalStorageDirectory;
+      File store = Environment.ExternalStorageDirectory;
       string path = store.AbsolutePath;
       string home = System.IO.Path.Combine(path, ".oscratch");
       if (!System.IO.Directory.Exists(home))
@@ -153,9 +154,35 @@ namespace OMapScratch
 
     public void LoadImage(string path)
     {
+      //BitmapFactory.Options bounds = new BitmapFactory.Options();
+      //bounds.InJustDecodeBounds = true;
+      //BitmapFactory.DecodeFile(path, bounds);
+      //int width = bounds.OutWidth;
+      //int height = bounds.OutHeight;
+      //long size = height * width;
+      //const long max = 4096 * 4096;
+      //int resample = 1;
+      //while (size > max)
+      //{
+      //  size /= 4;
+      //  resample *= 2;
+      //}
+
+      //using (BitmapRegionDecoder decoder = BitmapRegionDecoder.NewInstance(path, isShareable: false))
+      //{
+      //}
+
       BitmapFactory.Options opts = new BitmapFactory.Options();
       opts.InPreferredConfig = Bitmap.Config.Argb8888;
-      Bitmap img = BitmapFactory.DecodeFile(path, opts);
+      //if (resample > 1)
+      //{ opts.InSampleSize = resample; }
+
+      Bitmap img;
+      try
+      { img = BitmapFactory.DecodeFile(path, opts); }
+      catch (Java.Lang.OutOfMemoryError e)
+      { throw new System.Exception("Use images smaller than 5000 x 5000 pixels", e); }
+
       _currentImage?.Dispose();
       _currentImage = img;
       _currentImagePath = path;
@@ -332,7 +359,7 @@ namespace OMapScratch
     {
       if (curve.Count == 0)
       {
-        Pnt pt =  curve.From.Trans(matrix);
+        Pnt pt = curve.From.Trans(matrix);
         canvas.DrawLine(pt.X - p.StrokeWidth, pt.Y, pt.X + p.StrokeWidth, pt.Y, p);
         return;
       }

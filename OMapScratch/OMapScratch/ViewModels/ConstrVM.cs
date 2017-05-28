@@ -335,6 +335,15 @@ namespace OMapScratch.ViewModels
       _constrs = new List<Curve>();
     }
 
+    public ColorRef GetConstrColor()
+    {
+      return _view.MapView.MapVm.GetConstrColor();
+    }
+    public float? GetConstrTextSize()
+    {
+      return _view.MapView.MapVm.GetConstrTextSize();
+    }
+
     public float? GetDeclination()
     {
       IHasCompass action = _view.MapView.NextPointAction as IHasCompass;

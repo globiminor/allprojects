@@ -33,7 +33,7 @@ namespace Basics
         Deserialize(out obj, reader);
         return true;
       }
-      catch
+      catch (System.Exception e)
       {
         obj = default(T);
         return false;

@@ -41,7 +41,7 @@ namespace OMapScratch.Views
               pre = null;
             }
           }
-          c = e.InnerException;
+          c = c.InnerException;
           if (c != null)
           {
             sb.AppendLine();
@@ -102,7 +102,6 @@ namespace OMapScratch.Views
         }
         else if (symTyp == SymbolType.Text)
         {
-          Paint.FontMetrics mtr = p.GetFontMetrics();
           p.TextSize = height / 6;
           SymbolUtils.DrawText(canvas, sym.Text, null, 1, new Pnt { X = 0, Y = 0 }, p);
         }

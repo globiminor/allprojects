@@ -17,6 +17,7 @@ namespace OMapScratch.Views
 
     private readonly MapView _parent;
     private Color? _constrClr;
+    private float? _constrTxtSize;
     private ViewModels.ConstrVm _constrVm;
 
     public ConstrView(MapView parent)
@@ -26,13 +27,22 @@ namespace OMapScratch.Views
       parent.ConstrView = this;
     }
 
+    public void ResetMap()
+    {
+      _constrClr = null;
+      _constrTxtSize = null;
+    }
+
     public ViewModels.ConstrVm ViewModel
     {
       get { return _constrVm ?? (_constrVm = new ViewModels.ConstrVm(this)); }
     }
 
     public Color ConstrColor
-    { get { return _constrClr ?? Color.Black; } }
+    { get { return _constrClr ?? (_constrClr = ViewModel.GetConstrColor()?.Color ?? Color.Black).Value; } }
+
+    public float ConstrTxtSize
+    { get { return _constrTxtSize ?? (_constrTxtSize = ViewModel.GetConstrTextSize() ?? 1.6f).Value; } }
 
     private float? _constrLineWidth;
     public float ConstrLineWidth
@@ -110,7 +120,7 @@ namespace OMapScratch.Views
           wp.SetStyle(Paint.Style.Fill);
 
           bp.TextAlign = Paint.Align.Center;
-          bp.TextSize = 1.6f * Utils.GetMmPixel(this);
+          bp.TextSize = ConstrTxtSize * Utils.GetMmPixel(this);
           bp.SetStyle(Paint.Style.Fill);
           first = false;
         }

@@ -304,6 +304,26 @@ namespace OMapScratch
       return _currentLocalLocation;
     }
 
+    public ColorRef GetConstrColor()
+    {
+      return _map.Config?.Data?.ConstrColor?.GetColor();
+    }
+
+    public float? GetElemTextSize()
+    {
+      float? size = _map.Config?.Data?.ElemTextSize;
+      if (size > 0) return size;
+      return null;
+    }
+
+
+    public float? GetConstrTextSize()
+    {
+      float? size = _map.Config?.Data?.ConstrTextSize;
+      if (size > 0) return size;
+      return null;
+    }
+
     public Pnt SetCurrentLocation(double lat, double lon, double alt, double accuracy)
     {
       XmlWorld w = _map.World;
@@ -1462,10 +1482,18 @@ namespace OMapScratch
     public string Symbol { get; set; }
     [XmlAttribute("symbolscale")]
     public float SymbolScale { get; set; }
+    [XmlAttribute("symboltextsize")]
+    public float SymbolTextSize { get; set; }
+    [XmlAttribute("constrtextsize")]
+    public float ConstrTextSize { get; set; }
+    [XmlAttribute("elemtextsize")]
+    public float ElemTextSize { get; set; }
     [XmlAttribute("search")]
     public float Search { get; set; }
     [XmlAttribute("numberformat")]
     public string NumberFormat { get; set; }
+    [XmlElement("constrcolor")]
+    public XmlColor ConstrColor { get; set; }
   }
   public class XmlImage
   {
