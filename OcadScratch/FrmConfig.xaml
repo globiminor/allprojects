@@ -3,52 +3,95 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:local="clr-namespace:OcadScratch.ViewModels"
         mc:Ignorable="d"
-        Title="Prepare Config" Height="400" Width="300">
+        Title="Prepare Config" Height="415.537" Width="302.39">
     <Window.DataContext>
         <local:ConfigVm />
     </Window.DataContext>
-    <StackPanel>
+    <Grid>
         <Menu x:Name="menu" DockPanel.Dock="Top">
             <MenuItem Header="_File">
                 <MenuItem Header="_Init..." Click="mniInit_Click"/>
+                <MenuItem Header="_Load..." Click="mniLoad_Click"/>
                 <MenuItem Header="_Save" Click="mniSave_Click"/>
             </MenuItem>
         </Menu>
-        <Grid>
-            <TextBlock x:Name="lblKoord" HorizontalAlignment="Left" Margin="10,14,0,0" VerticalAlignment="Top"><Run Text="Kartenkoordinaten"/></TextBlock>
-            <Button x:Name="btnGetKoord" Content="aus WGS 84 ..." HorizontalAlignment="Left" Margin="153,14,0,0" VerticalAlignment="Top" Width="129" Click="btnGetKoord_Click"
-                    IsEnabled="{Binding CanGeo2Map}"/>
-            <TextBlock x:Name="lblOffsetX" HorizontalAlignment="Left" Margin="10,40,0,0" VerticalAlignment="Top"><Run Text="Offset X (Ost)"/></TextBlock>
-            <TextBox x:Name="txtOffsetX" Height="23" Margin="153,39,10,0" TextWrapping="Wrap" Text="{Binding OffsetX, StringFormat=N1}" VerticalAlignment="Top" TextAlignment="Right"/>
-            <TextBlock x:Name="lblOffsetY" HorizontalAlignment="Left" Margin="10,67,0,0" VerticalAlignment="Top"><Run Text="Offset Y (Nord)"/></TextBlock>
-            <TextBox x:Name="txtOffsetY" Height="23" Margin="153,66,10,0" TextWrapping="Wrap" 
-                     Text="{Binding OffsetY, StringFormat=N1}" VerticalAlignment="Top" TextAlignment="Right"/>
-            <TextBlock x:Name="lblProjection" HorizontalAlignment="Left" Margin="10,98,0,0" VerticalAlignment="Top"><Run Text="Projektion"/></TextBlock>
-            <ComboBox x:Name="comboBox" HorizontalAlignment="Left" Margin="153,92,0,0" VerticalAlignment="Top" Width="129" 
-                      ItemsSource="{Binding Projections}" SelectedItem="{Binding Projection}"/>
-            <TextBlock x:Name="lblWgs84" HorizontalAlignment="Left" Margin="10,134,0,0" VerticalAlignment="Top"><Run Text="WGS 84"/></TextBlock>
-            <Button x:Name="btnGetWgs" Content="aus Kartenkordinaten ..." HorizontalAlignment="Left" Margin="153,132,0,0" VerticalAlignment="Top" Width="129" Click="btnGetWgs_Click"
-                    IsEnabled="{Binding CanMap2Geo}"/>
-            <TextBlock x:Name="lblLat" HorizontalAlignment="Left" Margin="10,154,0,0" VerticalAlignment="Top"><Run Text="Lat [°]"/></TextBlock>
-            <TextBox x:Name="txtLat" Height="23" Margin="153,157,10,0" TextWrapping="Wrap" 
-                     Text="{Binding Lat, StringFormat=N6}" VerticalAlignment="Top" TextAlignment="Right"/>
-            <TextBlock x:Name="lblLon" HorizontalAlignment="Left" Margin="10,182,0,0" VerticalAlignment="Top"><Run Text="Lon [°]"/></TextBlock>
-            <TextBox x:Name="txtLon" Height="23" Margin="153,185,10,0" TextWrapping="Wrap" Text="{Binding Lon, StringFormat=N6}" VerticalAlignment="Top" TextAlignment="Right"/>
-            <TextBlock x:Name="lblGeomatrix" HorizontalAlignment="Left" Margin="10,210,0,0" VerticalAlignment="Top"><Run Text="Geomatrix"/></TextBlock>
-            <TextBox x:Name="txtGeo00" Height="23" Margin="117,213,95,0" TextWrapping="Wrap" 
-                     Text="{Binding GeoMatrix00, StringFormat=N1}" VerticalAlignment="Top" TextAlignment="Right"/>
-            <TextBox x:Name="txtGeo01" Height="23" Margin="202,213,10,0" TextWrapping="Wrap" 
-                     Text="{Binding GeoMatrix01, StringFormat=N1}" VerticalAlignment="Top" TextAlignment="Right"/>
-            <TextBox x:Name="txtGeo10" Height="23" Margin="117,241,95,0" TextWrapping="Wrap" 
-                     Text="{Binding GeoMatrix10, StringFormat=N1}" VerticalAlignment="Top" TextAlignment="Right"/>
-            <TextBox x:Name="txtGeo11" Height="23" Margin="202,241,10,0" TextWrapping="Wrap" 
-                     Text="{Binding GeoMatrix11, StringFormat=N1}" VerticalAlignment="Top" TextAlignment="Right"/>
-            <TextBlock x:Name="lblDeklination" TextWrapping="Wrap" HorizontalAlignment="Left" Margin="10,310,0,-59" VerticalAlignment="Top" Width="134" Height="23"><Run Text="Deklination [°]"/></TextBlock>
-            <TextBox x:Name="txtDeklination" Height="23" Margin="153,310,10,-59" TextWrapping="Wrap" Text="{Binding Declination}" VerticalAlignment="Top" TextAlignment="Right"/>
-            <Button x:Name="btnGetDeklination" Content="aus Koordinaten..." HorizontalAlignment="Left" Margin="153,285,0,-31" VerticalAlignment="Top" Width="129" Click="btnGetDeklination_Click"
-                    IsEnabled="{Binding CanDeclination}"/>
-        </Grid>
-    </StackPanel>
+        <TabControl x:Name="tabControl" Margin="0,21,0,0">
+            <TabItem Header="Georeference">
+                <Grid>
+                    <TextBlock x:Name="lblKoord" HorizontalAlignment="Left" Margin="10,14,0,0" VerticalAlignment="Top"><Run Text="Kartenkoordinaten"/></TextBlock>
+                    <Button x:Name="btnGetKoord" Content="aus WGS 84 ..." HorizontalAlignment="Left" Margin="153,14,0,0" VerticalAlignment="Top" Width="125"
+        				Click="btnGetKoord_Click"                IsEnabled="{Binding CanGeo2Map}"/>
+                    <TextBlock x:Name="lblOffsetX" HorizontalAlignment="Left" Margin="10,40,0,0" VerticalAlignment="Top"><Run Text="Offset X (Ost)"/></TextBlock>
+                    <TextBox x:Name="txtOffsetX" Height="23" Margin="153,39,0,0" TextWrapping="Wrap" Text="{Binding OffsetX, StringFormat=N1}" VerticalAlignment="Top" TextAlignment="Right" HorizontalAlignment="Left" Width="125"/>
+                    <TextBlock x:Name="lblOffsetY" HorizontalAlignment="Left" Margin="10,67,0,0" VerticalAlignment="Top"><Run Text="Offset Y (Nord)"/></TextBlock>
+                    <TextBox x:Name="txtOffsetY" Height="23" Margin="153,66,0,0" TextWrapping="Wrap" 
+        				Text="{Binding OffsetY, StringFormat=N1}" VerticalAlignment="Top" TextAlignment="Right" HorizontalAlignment="Left" Width="125"/>
+                    <TextBlock x:Name="lblProjection" HorizontalAlignment="Left" Margin="10,98,0,0" VerticalAlignment="Top"><Run Text="Projektion"/></TextBlock>
+                    <ComboBox x:Name="comboBox" HorizontalAlignment="Left" Margin="153,92,0,0" VerticalAlignment="Top" Width="125" 
+        				ItemsSource="{Binding Projections}" SelectedItem="{Binding Projection}"/>
+                    <TextBlock x:Name="lblWgs84" HorizontalAlignment="Left" Margin="10,134,0,0" VerticalAlignment="Top"><Run Text="WGS 84"/></TextBlock>
+                    <Button x:Name="btnGetWgs" Content="aus Kartenkordinaten ..." HorizontalAlignment="Left" Margin="153,132,0,0" VerticalAlignment="Top" Width="125" Click="btnGetWgs_Click"
+        				IsEnabled="{Binding CanMap2Geo}"/>
+                    <TextBlock x:Name="lblLat" HorizontalAlignment="Left" Margin="10,154,0,0" VerticalAlignment="Top"><Run Text="Lat [°]"/></TextBlock>
+                    <TextBox x:Name="txtLat" Height="23" Margin="153,157,0,0" TextWrapping="Wrap" 
+        				Text="{Binding Lat, StringFormat=N6}" VerticalAlignment="Top" TextAlignment="Right" HorizontalAlignment="Left" Width="125"/>
+                    <TextBlock x:Name="lblLon" HorizontalAlignment="Left" Margin="10,182,0,0" VerticalAlignment="Top"><Run Text="Lon [°]"/></TextBlock>
+                    <TextBox x:Name="txtLon" Height="23" Margin="153,185,0,0" TextWrapping="Wrap" Text="{Binding Lon, StringFormat=N6}" VerticalAlignment="Top" TextAlignment="Right" HorizontalAlignment="Left" Width="125"/>
+                    <TextBlock x:Name="lblGeomatrix" HorizontalAlignment="Left" Margin="10,210,0,0" VerticalAlignment="Top"><Run Text="Geomatrix"/></TextBlock>
+                    <TextBox x:Name="txtGeo00" Height="23" Margin="117,213,0,0" TextWrapping="Wrap" 
+        				Text="{Binding GeoMatrix00, StringFormat=N1}" VerticalAlignment="Top" TextAlignment="Right" HorizontalAlignment="Left" Width="76"/>
+                    <TextBox x:Name="txtGeo01" Height="23" Margin="202,213,0,0" TextWrapping="Wrap" 
+        				Text="{Binding GeoMatrix01, StringFormat=N1}" VerticalAlignment="Top" TextAlignment="Right" HorizontalAlignment="Left" Width="76"/>
+                    <TextBox x:Name="txtGeo10" Height="23" Margin="117,241,0,0" TextWrapping="Wrap" 
+        				Text="{Binding GeoMatrix10, StringFormat=N1}" VerticalAlignment="Top" TextAlignment="Right" HorizontalAlignment="Left" Width="76"/>
+                    <TextBox x:Name="txtGeo11" Height="23" Margin="202,241,0,0" TextWrapping="Wrap" 
+        				Text="{Binding GeoMatrix11, StringFormat=N1}" VerticalAlignment="Top" TextAlignment="Right" HorizontalAlignment="Left" Width="76"/>
+                    <TextBlock x:Name="lblDeklination" TextWrapping="Wrap" HorizontalAlignment="Left" Margin="10,310,0,-59" VerticalAlignment="Top" Width="134" Height="23"><Run Text="Deklination [°]"/></TextBlock>
+                    <TextBox x:Name="txtDeklination" Height="23" Margin="153,310,0,0" TextWrapping="Wrap" Text="{Binding Declination}" VerticalAlignment="Top" TextAlignment="Right" HorizontalAlignment="Left" Width="125"/>
+                    <Button x:Name="btnGetDeklination" Content="aus Koordinaten..." HorizontalAlignment="Left" Margin="153,285,0,0" VerticalAlignment="Top" Width="125" Click="btnGetDeklination_Click"
+        				IsEnabled="{Binding CanDeclination}"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Settings">
+                <Grid>
+                    <TextBlock TextWrapping="Wrap" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="81" Height="23"><Run Text="Scratch File"/></TextBlock>
+                    <TextBox Height="23" HorizontalAlignment="Left" Margin="120,10,0,0" TextWrapping="Wrap" Text="{Binding Scratch, ValidatesOnDataErrors=True}" VerticalAlignment="Top"  Width="100"/>
+
+                    <TextBlock TextWrapping="Wrap" HorizontalAlignment="Left" Margin="10,40,0,0" VerticalAlignment="Top" Width="81" Height="23"><Run Text="Symbols File"/></TextBlock>
+                    <TextBox Height="23" HorizontalAlignment="Left" Margin="120,40,0,0" TextWrapping="Wrap" Text="{Binding SymbolPath}" VerticalAlignment="Top" Width="100"/>
+
+                    <TextBlock TextWrapping="Wrap" HorizontalAlignment="Left" Margin="10,70,0,0" VerticalAlignment="Top" Width="81" Height="23"><Run Text="Symbolscale"/></TextBlock>
+                    <TextBox Height="23" HorizontalAlignment="Left" Margin="120,70,0,0" TextWrapping="Wrap" Text="{Binding SymbolScale}" VerticalAlignment="Top" TextAlignment="Right" Width="50"/>
+
+                    <TextBlock TextWrapping="Wrap" HorizontalAlignment="Left" Margin="10,100,0,0" VerticalAlignment="Top" Width="105" Height="23"><Run Text="Searchdistance [m]"/></TextBlock>
+                    <TextBox Height="23" HorizontalAlignment="Left" Margin="120,100,0,0" TextWrapping="Wrap" Text="{Binding Search}" VerticalAlignment="Top" TextAlignment="Right" Width="50"/>
+
+                    <TextBlock TextWrapping="Wrap" HorizontalAlignment="Left" Margin="10,130,0,0" VerticalAlignment="Top" Width="105" Height="23"><Run Text="Constr. Color"/></TextBlock>
+                    <xctk:ColorPicker x:Name="ClrPcker_Background" Height="23" HorizontalAlignment="Left" Margin="120,130,0,0" SelectedColor="{Binding ConstrColor}" VerticalAlignment="Top" Width="50"></xctk:ColorPicker>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Images">
+                <Grid ToolTip="{Binding Path=/ErrorContent}">
+                    <DataGrid x:Name="grdImages">
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Colors/Symbols">
+                <Grid x:Name="grdSymbolsTab">
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition Height="5"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <DataGrid x:Name="grdColors" Grid.Row="0" Margin="10"/>
+                    <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch"/>
+                    <DataGrid x:Name="grdSymbols" Grid.Row="2" Margin="10"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
 </Window>

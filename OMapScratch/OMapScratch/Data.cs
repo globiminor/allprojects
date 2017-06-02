@@ -1001,7 +1001,6 @@ namespace OMapScratch
     private XmlWorld _world;
     private float? _declination;
 
-    private static readonly float _defaultMinSearchDist = 10;
 
     private Stack<Operation> _undoOps = new Stack<Operation>();
     private Stack<Operation> _redoOps = new Stack<Operation>();
@@ -1011,22 +1010,23 @@ namespace OMapScratch
       get { return _config?.Images; }
     }
 
+    public const float DefaultSymbolScale = 1;
     public float SymbolScale
     {
       get
       {
-        float scale = _config?.Data?.SymbolScale ?? 1;
-        if (scale <= 0) { scale = 1; }
-        return scale;
+        float scale = _config?.Data?.SymbolScale ?? 0;
+        return scale > 0 ? scale : DefaultSymbolScale;
       }
     }
 
+    public const float DefaultMinSearchDist = 10;
     public float MinSearchDistance
     {
       get
       {
         float search = _config?.Data?.Search ?? 0;
-        return search > 0 ? search : _defaultMinSearchDist;
+        return search > 0 ? search : DefaultMinSearchDist;
       }
     }
 

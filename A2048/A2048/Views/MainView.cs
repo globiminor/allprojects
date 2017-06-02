@@ -40,6 +40,7 @@ namespace A2048.Views
             DrawCell(canvas, iRow, iCol, cellSize);
           }
         }
+        DrawScore(canvas, _activity.Grid.Score);
       }
       finally
       { canvas.Restore(); }
@@ -50,6 +51,18 @@ namespace A2048.Views
       return System.Math.Min(MeasuredWidth, MeasuredHeight) / _activity.Grid.Size;
     }
 
+    private void DrawScore(Canvas canvas, int score)
+    {
+      Paint p = new Paint();
+      p.Color = Color.White;
+      float mm = Utils.GetMmPixel(this);
+      p.TextSize = 3 * mm;
+      if (MeasuredWidth < MeasuredHeight)
+      {
+        canvas.DrawText("Score", 2 * mm, MeasuredWidth + 2 * p.TextSize, p);
+        canvas.DrawText(score.ToString(), 2 * mm, MeasuredWidth + 3.2f * p.TextSize, p);
+      }
+    }
     private void DrawCell(Canvas canvas, int iRow, int iCol, float size)
     {
       Paint p = new Paint();
@@ -87,27 +100,29 @@ namespace A2048.Views
       if (value == 4)
       { return new Color(234, 234, 234, 255); }
       if (value == 8)
-      { return new Color(255, 224, 192, 255); }
+      { return new Color(255, 255, 224, 255); }
       if (value == 16)
-      { return new Color(255, 192, 128, 255); }
+      { return new Color(240, 255, 224, 255); }
       if (value == 32)
-      { return new Color(255, 160, 64, 255); }
+      { return new Color(224, 255, 224, 255); }
       if (value == 64)
-      { return new Color(255, 128, 0, 255); }
+      { return new Color(208, 255, 240, 255); }
       if (value == 128)
-      { return new Color(255, 255, 234, 255); }
+      { return new Color(192, 255, 255, 255); }
       if (value == 256)
-      { return new Color(255, 255, 192, 255); }
+      { return new Color(192, 224, 255, 255); }
       if (value == 512)
-      { return new Color(255, 255, 128, 255); }
+      { return new Color(208, 208, 255, 255); }
       if (value == 1024)
-      { return new Color(255, 255, 0, 255); }
+      { return new Color(224, 192, 255, 255); }
       if (value == 2048)
-      { return new Color(234, 255, 234, 255); }
+      { return new Color(255, 128, 255, 255); }
       if (value == 4096)
-      { return new Color(192, 255, 192, 255); }
+      { return new Color(255, 128, 192, 255); }
       if (value == 8192)
-      { return new Color(128, 255, 128, 255); }
+      { return new Color(255, 128, 128, 255); }
+      if (value == 16384)
+      { return new Color(255, 192, 64, 255); }
 
       return new Color(255, 0, 0, 255);
     }

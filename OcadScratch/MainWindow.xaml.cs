@@ -73,7 +73,6 @@ namespace OcadScratch
       {
         DataGridTemplateColumn col = new DataGridTemplateColumn { Header = "Symbol" };
         FrameworkElementFactory factory = new FrameworkElementFactory(typeof(SymbolPanel));
-        factory.SetBinding(Panel.TagProperty, new Binding(nameof(workElemVm.Elem)));
         col.CellTemplate = new DataTemplate { VisualTree = factory };
         col.IsReadOnly = true;
         grdElems.Columns.Add(col);

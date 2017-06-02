@@ -7,21 +7,37 @@ using Ocad.StringParams;
 using OcadScratch.Commands;
 using OMapScratch;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace OcadScratch.ViewModels
 {
   public class ConfigVm : NotifyListener
   {
+    private readonly string _configFile;
+
     private readonly XmlConfig _config;
     private readonly List<ProjectionVm> _projections;
     private ProjectionVm _prj;
     private Dictionary<int, ProjectionVm> _projectionDict;
+    private BindingListView<ImageVm> _images;
 
-    public ConfigVm()
+    private BindingListView<ColorRef> _colors;
+    private BindingListView<Symbol> _symbols;
+
+
+    public ConfigVm() :
+      this(null, new XmlConfig())
+    { }
+
+    public ConfigVm(string configFile, XmlConfig config)
     {
-      _config = new XmlConfig();
-      _config.Offset = new XmlOffset();
+      _configFile = configFile;
+
+      _config = config;
+      _config.Offset = _config.Offset ?? new XmlOffset();
+      _config.Data = _config.Data ?? new XmlData();
+      _config.Images = _config.Images ?? new List<XmlImage>();
 
       _projections = new List<ProjectionVm>
       {
@@ -31,8 +47,7 @@ namespace OcadScratch.ViewModels
       };
     }
 
-    public ConfigVm(XmlConfig config)
-    { _config = config; }
+    public string ConfigFile { get { return _configFile; } }
 
     public double OffsetX
     {
@@ -92,6 +107,160 @@ namespace OcadScratch.ViewModels
       }
     }
 
+    public string Scratch
+    {
+      get { return _config.Data.Scratch; }
+      set
+      {
+        if (_config.Data.Scratch != value)
+        {
+          _config.Data.Scratch = value;
+          Validate();
+          Changed();
+        }
+      }
+    }
+
+    public string SymbolPath
+    {
+      get { return _config.Data.Symbol; }
+      set
+      {
+        if (_config.Data.Symbol != value)
+        {
+          _config.Data.Symbol = value;
+          Validate();
+          Changed();
+        }
+      }
+    }
+
+
+    public IList<ImageVm> Images
+    {
+      get
+      {
+        if (_images == null)
+        {
+          BindingListView<ImageVm> imgs = new BindingListView<ImageVm>();
+          if (_config.Images != null)
+          {
+            foreach (XmlImage img in _config.Images)
+            { imgs.Add(new ImageVm(img)); }
+          }
+          _images = imgs;
+        }
+        return _images;
+      }
+    }
+
+    public IList<ColorRef> Colors
+    {
+      get
+      {
+        if (_colors == null)
+        { LoadSymbols(); }
+
+        return _colors;
+      }
+    }
+
+    public IList<Symbol> Symbols
+    {
+      get
+      {
+        if (_symbols == null)
+        { LoadSymbols(); }
+
+        return _symbols;
+      }
+    }
+
+    private void LoadSymbols()
+    {
+      _symbols = new BindingListView<Symbol>();
+      _colors = new BindingListView<ColorRef>();
+
+      _symbols.AllowEdit = false;
+      _symbols.AllowNew = false;
+      _symbols.AllowRemove = false;
+
+      _colors.AllowEdit = false;
+      _colors.AllowNew = false;
+      _colors.AllowRemove = false;
+
+
+      if (_configFile == null)
+      { return; }
+      string symFile = _config?.Data?.Symbol;
+      if (symFile == null)
+      { return; }
+
+      string symPath = Path.Combine(Path.GetDirectoryName(_configFile), symFile);
+      if (!File.Exists(symPath))
+      { return; }
+
+      XmlSymbols xmls;
+      using (TextReader r = new StreamReader(symPath))
+      {
+        Serializer.Deserialize(out xmls, r);
+      }
+
+      foreach (XmlColor clr in xmls.Colors)
+      {
+        _colors.Add(clr.GetColor());
+      }
+      foreach (XmlSymbol sym in xmls.Symbols)
+      {
+        _symbols.Add(sym.GetSymbol());
+      }
+    }
+
+    public float SymbolScale
+    {
+      get
+      {
+        float current = _config.Data.SymbolScale;
+        return current != 0 ? current : Map.DefaultSymbolScale;
+      }
+      set
+      {
+        _config.Data.SymbolScale = value;
+        Validate();
+        Changed();
+      }
+    }
+
+    public float Search
+    {
+      get
+      {
+        float current = _config.Data.Search;
+        return current > 0 ? current : Map.DefaultMinSearchDist;
+      }
+      set
+      {
+        _config.Data.Search = value;
+        Validate();
+        Changed();
+      }
+    }
+
+    public System.Windows.Media.Color ConstrColor
+    {
+      get
+      {
+        System.Windows.Media.Color clr = _config.Data.ConstrColor?.GetColor().Color ?? System.Windows.Media.Colors.Black;
+        return clr;
+      }
+      set
+      {
+        System.Windows.Media.Color clr = value;
+        _config.Data.ConstrColor = new XmlColor { Red = clr.R, Green = clr.G, Blue = clr.B };
+        Changed();
+      }
+    }
+
     public ProjectionVm Projection
     {
       get { return _prj; }
@@ -100,6 +269,42 @@ namespace OcadScratch.ViewModels
         _prj = value;
         ChangedAll();
       }
+    }
+
+    public void Validate()
+    {
+      {
+        string value = Scratch;
+        string error = null;
+        if (System.IO.Path.GetFileName(value) != value)
+        { error = $"{Scratch} must be local"; }
+        SetError(nameof(Scratch), error);
+      }
+
+      {
+        string value = SymbolPath;
+        string error = null;
+        if (System.IO.Path.GetFileName(value) != value)
+        { error = $"{SymbolPath} must be local"; }
+        SetError(nameof(SymbolPath), error);
+      }
+
+      {
+        double value = SymbolScale;
+        string error = null;
+        if (value < 0)
+        { error = $"{SymbolScale} must be > 0"; }
+        SetError(nameof(SymbolScale), error);
+      }
+
+      {
+        double value = Search;
+        string error = null;
+        if (value < 0)
+        { error = $"{Search} must be > 0"; }
+        SetError(nameof(Search), error);
+      }
+
     }
 
     public bool CanGeo2Map

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -36,6 +37,27 @@ namespace Basics.Window
           Path = new PropertyPath($"{nameof(parent.DataContext)}.{prop}"),
           RelativeSource = new RelativeSource { AncestorType = ancestorType }
         }));
+    }
+
+    public static void SetErrorBinding(DataGridTextColumn col, string property)
+    {
+      col.Binding = new Binding(property) { ValidatesOnDataErrors = true };
+
+      ToolTip tooltip = new ToolTip();
+      tooltip.IsVisibleChanged += (s, e) =>
+      {
+        string ttp = null;
+        IDataErrorInfo errInfo = tooltip.DataContext as IDataErrorInfo;
+        if (errInfo != null)
+        {
+          ttp = errInfo[property];
+        }
+        if (string.IsNullOrWhiteSpace(ttp))
+        { ttp = "No Error"; }
+        tooltip.Content = ttp;
+      };
+      col.CellStyle = new Style() { TargetType = typeof(DataGridCell) };
+      col.CellStyle.Setters.Add(new Setter(DataGridCell.ToolTipProperty, tooltip));
     }
 
     public static T GetParent<T>(DependencyObject obj) where T : Visual

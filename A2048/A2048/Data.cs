@@ -13,6 +13,7 @@ namespace A2048
     private double _w2 = 15.0 / 16.0;
 
     private List<byte> _moves;
+    private int _score;
 
     public Grid()
     {
@@ -30,6 +31,8 @@ namespace A2048
       }
     }
 
+    public int Score { get { return _score; } }
+
     public void Reset()
     { Reset(addValues: true); }
 
@@ -37,6 +40,7 @@ namespace A2048
     {
       _values = new List<List<int>>(Size);
       _moves = new List<byte>();
+      _score = 0;
 
       for (int iRow = 0; iRow < Size; iRow++)
       {
@@ -81,7 +85,9 @@ namespace A2048
         if (comb.Count == 0)
         { continue; }
 
-        List<int> reduced = Reduce(comb);
+        int score;
+        List<int> reduced = Reduce(comb, out score);
+        _score += score;
         if (reduced.Count == oldVals.Count)
         { continue; }
 
@@ -164,15 +170,18 @@ namespace A2048
       }
     }
 
-    private List<int> Reduce(List<int> full)
+    private List<int> Reduce(List<int> full, out int score)
     {
+      score = 0;
       List<int> reduced = new List<int>();
       int i = 0;
       while (i < full.Count)
       {
         if (i < full.Count - 1 && full[i] == full[i + 1])
         {
-          reduced.Add(2 * full[i]);
+          int added = 2 * full[i];
+          reduced.Add(added);
+          score += added;
           i++;
         }
         else

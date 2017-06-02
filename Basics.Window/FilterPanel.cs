@@ -11,6 +11,65 @@ using System.Windows.Media;
 
 namespace Basics.Window
 {
+  public class ErrorPanel : StackPanel
+  {
+    public static void CreateGaga(DataGridTemplateColumn col)
+    {
+      FrameworkElementFactory factory = new FrameworkElementFactory(typeof(ErrorPanel));
+      col.CellTemplate = new DataTemplate { VisualTree = factory };
+    }
+
+    TextBlock _lblHeader;
+    public ErrorPanel()
+    {
+      int m = 5;
+      Margin = new Thickness(-m, 0, -m, -3);
+
+      _lblHeader = new TextBlock();
+      _lblHeader.Margin = new Thickness(m, 0, m, 0);
+      _lblHeader.SetBinding(TextBlock.TextProperty, new Binding("Path") { ValidatesOnDataErrors = true });
+      _lblHeader.ToolTip = "Hallo";
+      _lblHeader.ToolTipOpening += (s, e) =>
+      {
+        string ttp = null;
+        IDataErrorInfo errInfo = _lblHeader.DataContext as IDataErrorInfo;
+        if (ttp == null && errInfo != null)
+        {
+          ttp = errInfo["Path"];
+        }
+        if (ttp == null)
+        {
+          ttp = _lblHeader.GetValue(TextBlock.TextProperty) as string;
+        }
+        if (ttp == null)
+        {
+          ttp = "..";
+        }
+        _lblHeader.ToolTip = ttp;
+      };
+      Children.Add(_lblHeader);
+
+      //_brdFilter = new Border();
+      //_brdFilter.BorderThickness = new Thickness(1);
+      //_brdFilter.BorderBrush = Brushes.Gainsboro;
+      //{
+      //  TextBlock lblFilter = new TextBlock();
+      //  lblFilter.SetBinding(TextBlock.TextProperty, new Binding(nameof(FilterText)));
+      //  lblFilter.SetBinding(TextBlock.ToolTipProperty, new Binding(nameof(FilterToolTip)));
+      //  lblFilter.DataContext = this;
+      //  lblFilter.Margin = new Thickness(m, 0, m, 0);
+      //  _brdFilter.Child = lblFilter;
+      //}
+      //Children.Add(_brdFilter);
+
+      //DataContextChanged += (s, a) =>
+      //{
+      //  UpdateHeader();
+      //  InvalidateVisual();
+      //};
+    }
+
+  }
   public class FilterPanel : StackPanel, INotifyPropertyChanged
   {
     private interface IFilterView

@@ -27,7 +27,7 @@ namespace OMapScratch
   {
     private void GetEnvColor(ColorRef color)
     {
-      color.Color = new Color { R = Red, G = Green, B = Blue };
+      color.Color = new Color { R = Red, G = Green, B = Blue, A = 255 };
     }
 
     private void SetEnvColor(ColorRef color)

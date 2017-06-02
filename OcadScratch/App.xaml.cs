@@ -16,6 +16,13 @@ namespace OcadScratch
           new FrameworkPropertyMetadata(
               XmlLanguage.GetLanguage(
               CultureInfo.CurrentCulture.IetfLanguageTag)));
+
+      Dispatcher.UnhandledException += (s,ex) =>
+      {
+        MessageBox.Show(Basics.Utils.GetMsg(ex.Exception), "Error");
+        ex.Handled = true;
+      };
+
       base.OnStartup(e);
     }
   }
