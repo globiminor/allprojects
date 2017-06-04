@@ -357,6 +357,8 @@ namespace OMapScratch
 
     public static void DrawCurve(Canvas canvas, Curve curve, float[] matrix, float lineWidth, bool fill, bool stroke, Paint p)
     {
+      p.StrokeWidth = lineWidth;
+
       if (curve.Count == 0)
       {
         Pnt pt = curve.From.Trans(matrix);
@@ -366,7 +368,6 @@ namespace OMapScratch
 
       Path path = GetPath(curve, matrix);
 
-      p.StrokeWidth = lineWidth;
       if (fill && stroke)
       { p.SetStyle(Paint.Style.FillAndStroke); }
       else if (fill)

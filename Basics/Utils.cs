@@ -56,16 +56,37 @@ namespace Basics
       return x0;
     }
 
-    public static string GetMsg(Exception exp)
+    public static string GetMsg(Exception exp, string stackIgnore = null)
     {
-      string msg = "";
+      StringBuilder sb = new StringBuilder();
       while (exp != null)
       {
-        msg = exp.Message + Environment.NewLine +
-              exp.StackTrace + Environment.NewLine + msg;
+        if (sb.Length > 0)
+        { sb.AppendLine("[InnerException]"); }
+        sb.AppendLine(exp.Message);
+        if (stackIgnore == null)
+        {
+          sb.AppendLine(exp.StackTrace);
+        }
+        else
+        {
+          using (System.IO.TextReader r = new System.IO.StringReader(exp.StackTrace))
+          {
+            string line;
+            while ((line = r.ReadLine()) != null)
+            {
+              if (line.IndexOf(stackIgnore, StringComparison.InvariantCultureIgnoreCase) >= 0)
+              { continue; }
+
+              sb.AppendLine(line);
+            }
+          }
+        }
+        sb.AppendLine();
+
         exp = exp.InnerException;
       }
-      return msg;
+      return sb.ToString();
     }
 
     public static string FindExecutable(string ext)

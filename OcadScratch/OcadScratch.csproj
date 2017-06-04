@@ -162,6 +162,16 @@
   <ItemGroup>
     <None Include="HelpOcad\OcadInterface.html" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Help\Constr.png" />
+    <Resource Include="Help\ContextMenu1.png" />
+    <Resource Include="Help\ContextMenu2.png" />
+    <Resource Include="Help\Instr.png" />
+    <Resource Include="Help\LineCont.png" />
+    <Resource Include="Help\LineStart.png" />
+    <Resource Include="Help\Symbols.png" />
+    <Resource Include="Help\TextElem.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

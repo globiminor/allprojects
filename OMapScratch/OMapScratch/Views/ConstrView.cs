@@ -39,15 +39,15 @@ namespace OMapScratch.Views
     }
 
     public Color ConstrColor
-    { get { return _constrClr ?? (_constrClr = ViewModel.GetConstrColor()?.Color ?? Color.Black).Value; } }
+    { get { return _constrClr ?? (_constrClr = ViewModel.ConstrColor ?.Color ?? Color.Black).Value; } }
 
-    public float ConstrTxtSize
-    { get { return _constrTxtSize ?? (_constrTxtSize = ViewModel.GetConstrTextSize() ?? 1.6f).Value; } }
+    public float ConstrTextSize
+    { get { return _constrTxtSize ?? (_constrTxtSize = ViewModel.ConstrTextSize).Value; } }
 
     private float? _constrLineWidth;
     public float ConstrLineWidth
     {
-      get { return _constrLineWidth ?? (_constrLineWidth = 0.1f * Utils.GetMmPixel(this)).Value; }
+      get { return _constrLineWidth ?? (_constrLineWidth = (ViewModel.ConstrLineWidth) * Utils.GetMmPixel(this)).Value; }
     }
 
     IMapView ViewModels.IConstrView.MapView
@@ -97,6 +97,9 @@ namespace OMapScratch.Views
       IProjection prj = null;
       foreach (Curve geom in ViewModel.GetGeometries())
       {
+        if (!_parent.MaxExtent.Intersects(geom.Extent))
+        { continue; }
+
         prj = prj ?? new Translation(_parent.ElemMatrixValues);
         Curve displayGeom = geom.Project(prj);
 
@@ -120,7 +123,7 @@ namespace OMapScratch.Views
           wp.SetStyle(Paint.Style.Fill);
 
           bp.TextAlign = Paint.Align.Center;
-          bp.TextSize = ConstrTxtSize * Utils.GetMmPixel(this);
+          bp.TextSize = ConstrTextSize * Utils.GetMmPixel(this);
           bp.SetStyle(Paint.Style.Fill);
           first = false;
         }

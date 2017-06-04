@@ -40,6 +40,7 @@ namespace OMapScratch.Views
     private float[] _elemMatrixValues;
     private Matrix _inversElemMatrix;
     private Matrix _initMatrix;
+    private Box _maxExtent;
 
     private Pnt _editPnt;
     private IPointAction _nextPointAction;
@@ -189,7 +190,7 @@ namespace OMapScratch.Views
     }
 
     public float ElemTextSize
-    { get { return _elemTextSize ?? (_elemTextSize = MapVm.GetElemTextSize() ?? 12).Value; }    }
+    { get { return _elemTextSize ?? (_elemTextSize = MapVm.ElemTextSize).Value; }    }
 
     public void Scale(float f)
     {
@@ -212,8 +213,32 @@ namespace OMapScratch.Views
       _elemMatrix = null;
       _elemMatrixValues = null;
       _inversElemMatrix = null;
+
+      _maxExtent = null;
     }
 
+    public Box MaxExtent
+    {
+      get
+      {
+        if (_maxExtent == null)
+        {
+          float[] p00 = { 0, 0 };
+          InversElemMatrix.MapPoints(p00);
+
+          float[] p11 = { Width, Height };
+          InversElemMatrix.MapPoints(p11);
+
+          float maxSymbolSize = MapVm.MaxSymbolSize;
+          Pnt min = new Pnt(System.Math.Min(p00[0], p11[0]) - maxSymbolSize, System.Math.Min(p00[1], p11[1]) - maxSymbolSize);
+          Pnt max = new Pnt(System.Math.Max(p00[0], p11[0]) + maxSymbolSize, System.Math.Max(p00[1], p11[1]) + maxSymbolSize);
+
+          Box maxExtent = new Box(min, max);
+          _maxExtent = maxExtent;
+        }
+        return _maxExtent;
+      }
+    }
     private Matrix ElemMatrix
     {
       get
@@ -585,12 +610,12 @@ namespace OMapScratch.Views
       if (!_keepTextOnDraw)
       { ShowText(null); }
 
-      DrawElems(canvas, _context.MapVm.Elems);
+      DrawElems(canvas, _context.MapVm.Elems, MaxExtent);
 
       ConstrView.PostInvalidate();
     }
 
-    private void DrawElems(Canvas canvas, IEnumerable<Elem> elems)
+    private void DrawElems(Canvas canvas, IEnumerable<Elem> elems, Box maxExtent)
     {
       if (elems == null)
       { return; }
@@ -606,6 +631,9 @@ namespace OMapScratch.Views
 
         foreach (Elem elem in elems)
         {
+          if (!maxExtent.Intersects(elem.Geometry.Extent))
+          { continue; }
+
           p.Color = elem.Color?.Color ?? DefaultColor;
           elem.Geometry.Draw(canvas, elem.Symbol, matrix, symbolScale, p);
         }

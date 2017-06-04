@@ -67,6 +67,12 @@ namespace OcadScratch
       StyleColors(grdColors);
       StyleSymbols(grdSymbols);
 
+      txtElemTextSize.SetBinding(TextBox.TextProperty, new Binding(nameof(DataContext.ElemTextSize)));
+
+      txtConstrTextSize.SetBinding(TextBox.TextProperty, new Binding(nameof(DataContext.ConstrTextSize)));
+      txtConstrLineWidth.SetBinding(TextBox.TextProperty, new Binding(nameof(DataContext.ConstrLineWidth)));
+      clrConstr.SetBinding(Xceed.Wpf.Toolkit.ColorPicker.SelectedColorProperty, new Binding(nameof(DataContext.ConstrColor)));
+
       grdImages.SetBinding(DataGrid.ItemsSourceProperty, new Binding(nameof(DataContext.Images)) { Mode = BindingMode.OneWay });
       grdColors.SetBinding(DataGrid.ItemsSourceProperty, new Binding(nameof(DataContext.Colors)) { Mode = BindingMode.OneWay });
       grdSymbols.SetBinding(DataGrid.ItemsSourceProperty, new Binding(nameof(DataContext.Symbols)) { Mode = BindingMode.OneWay });
@@ -178,7 +184,13 @@ namespace OcadScratch
       XmlConfig config;
       using (TextReader r = new StreamReader(configFile))
       { Serializer.Deserialize(out config, r); }
-      DataContext = new ConfigVm(configFile, config);
+      ConfigVm configVm = new ConfigVm(configFile, config);
+      try
+      {
+        configVm.LoadSymbols();
+      }
+      finally
+      { DataContext = configVm; }
     }
 
 

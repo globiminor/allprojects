@@ -14,7 +14,7 @@
         <Menu x:Name="menu" DockPanel.Dock="Top">
             <MenuItem Header="_File">
                 <MenuItem Header="_Load" Click="mniLoad_Click"/>
-                <MenuItem Header="_Prepare Setup" Click="mniPrepare_Click"/>
+                <MenuItem Header="_Prepare / Edit / Validate Setup" Click="mniPrepare_Click"/>
             </MenuItem>
         </Menu>
         <Grid>

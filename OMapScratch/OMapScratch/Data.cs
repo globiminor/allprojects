@@ -59,6 +59,7 @@ namespace OMapScratch
 
   public partial interface IDrawable
   {
+    IBox Extent { get; }
     string ToText();
     IEnumerable<Pnt> GetVertices();
     IDrawable Project(IProjection prj);
@@ -281,8 +282,9 @@ namespace OMapScratch
       }
     }
 
-    private Map _map;
+    private readonly Map _map;
     private Pnt _currentLocalLocation;
+    private float? _maxSymbolSize;
 
     public event System.ComponentModel.CancelEventHandler Saving;
     public event EventHandler Saved;
@@ -302,26 +304,6 @@ namespace OMapScratch
     public Pnt GetCurrentLocalLocation()
     {
       return _currentLocalLocation;
-    }
-
-    public ColorRef GetConstrColor()
-    {
-      return _map.Config?.Data?.ConstrColor?.GetColor();
-    }
-
-    public float? GetElemTextSize()
-    {
-      float? size = _map.Config?.Data?.ElemTextSize;
-      if (size > 0) return size;
-      return null;
-    }
-
-
-    public float? GetConstrTextSize()
-    {
-      float? size = _map.Config?.Data?.ConstrTextSize;
-      if (size > 0) return size;
-      return null;
     }
 
     public Pnt SetCurrentLocation(double lat, double lon, double alt, double accuracy)
@@ -470,6 +452,33 @@ namespace OMapScratch
       get { return _map.SymbolScale; }
     }
 
+    public ColorRef ConstrColor
+    {
+      get { return _map.Config?.Data?.ConstrColor?.GetColor(); }
+    }
+    /// <summary>
+    /// Font size of Text Symbol Elements in pt.
+    /// </summary>
+    /// <returns></returns>
+    public float ElemTextSize
+    {
+      get { return _map.ElemTextSize; }
+    }
+
+    /// <summary>
+    /// Font size of construction text
+    /// </summary>
+    /// <returns></returns>
+    public float ConstrTextSize
+    {
+      get { return _map.ConstrTextSize; }
+    }
+
+    public float ConstrLineWidth
+    {
+      get { return _map.ConstrLineWidth; }
+    }
+
     internal void AddPoint(float x, float y, Symbol symbol, ColorRef color)
     { _map.AddPoint(x, y, symbol, color); }
     internal void CommitCurrentCurve()
@@ -490,7 +499,33 @@ namespace OMapScratch
     public List<ColorRef> GetColors()
     { return _map.GetColors(); }
 
+    public float MaxSymbolSize
+    {
+      get
+      {
+        if ((_maxSymbolSize ?? 0) <= 0)
+        {
+          float maxSymbolSize2 = 0;
+          foreach (Symbol sym in GetSymbols())
+          {
+            if (sym.Curves == null)
+            { continue; }
 
+            foreach (SymbolCurve curve in sym.Curves)
+            {
+              IBox ext = curve.Curve?.Extent;
+              if (ext == null)
+              { continue; }
+
+              maxSymbolSize2 = Math.Max(maxSymbolSize2, ext.Min.Dist2());
+              maxSymbolSize2 = Math.Max(maxSymbolSize2, ext.Max.Dist2());
+            }
+          }
+          _maxSymbolSize = (float)Math.Sqrt(maxSymbolSize2);
+        }
+        return _maxSymbolSize.Value;
+      }
+    }
 
     internal void Save()
     {
@@ -503,6 +538,7 @@ namespace OMapScratch
     public void Load(string configPath)
     {
       Save();
+      _maxSymbolSize = null;
 
       XmlConfig config;
       using (TextReader r = new StreamReader(configPath))
@@ -1020,6 +1056,36 @@ namespace OMapScratch
       }
     }
 
+    public const float DefaultElemTextSize = 12;
+    public float ElemTextSize
+    {
+      get
+      {
+        float size = _config?.Data?.ElemTextSize ?? 0;
+        return size > 0 ? size : DefaultElemTextSize;
+      }
+    }
+
+    public const float DefaultConstrTextSize = 1.6f;
+    public float ConstrTextSize
+    {
+      get
+      {
+        float size = _config?.Data?.ConstrTextSize ?? 0;
+        return size > 0 ? size : DefaultConstrTextSize;
+      }
+    }
+
+    public const float DefaultConstrLineWidth = 0.1f;
+    public float ConstrLineWidth
+    {
+      get
+      {
+        float size = _config?.Data?.ConstrLineWidth ?? 0;
+        return size > 0 ? size : DefaultConstrLineWidth;
+      }
+    }
+
     public const float DefaultMinSearchDist = 10;
     public float MinSearchDistance
     {
@@ -1482,11 +1548,11 @@ namespace OMapScratch
     public string Symbol { get; set; }
     [XmlAttribute("symbolscale")]
     public float SymbolScale { get; set; }
-    [XmlAttribute("symboltextsize")]
-    public float SymbolTextSize { get; set; }
-    [XmlAttribute("constrtextsize")]
+    [XmlAttribute("constrtextsize_mm")]
     public float ConstrTextSize { get; set; }
-    [XmlAttribute("elemtextsize")]
+    [XmlAttribute("constrlinewidth_mm")]
+    public float ConstrLineWidth { get; set; }
+    [XmlAttribute("elemtextsize_pt")]
     public float ElemTextSize { get; set; }
     [XmlAttribute("search")]
     public float Search { get; set; }
@@ -1741,90 +1807,97 @@ namespace OMapScratch
       if (string.IsNullOrEmpty(geometry))
       { return null; }
 
-      IList<string> parts = geometry.Split();
-      IDrawable d = null;
-      int i = 0;
-      while (i < parts.Count)
+      try
       {
-        string part = parts[i];
-        if (string.IsNullOrEmpty(part))
-        { i++; }
-        else if (part == Point)
+        IList<string> parts = geometry.Split();
+        IDrawable d = null;
+        int i = 0;
+        while (i < parts.Count)
         {
-          if (d != null)
-          { throw new InvalidOperationException(); }
-          Pnt p = new Pnt();
-          p.X = float.Parse(parts[i + 1]);
-          p.Y = float.Parse(parts[i + 2]);
-          i += 3;
-          d = p;
-        }
-        else if (part == DirPoint)
-        {
-          if (d != null)
-          { throw new InvalidOperationException(); }
-          DirectedPnt p = new DirectedPnt();
-          p.X = float.Parse(parts[i + 1]);
-          p.Y = float.Parse(parts[i + 2]);
-          p.Azimuth = (float)(float.Parse(parts[i + 3]) * Math.PI / 180);
-          i += 4;
-          d = p;
-        }
-        else if (part == Circle)
-        {
-          Curve c = (Curve)d ?? new Curve();
-          c.Append(new Circle
+          string part = parts[i];
+          if (string.IsNullOrEmpty(part))
+          { i++; }
+          else if (part == Point)
           {
-            Center = new Pnt { X = float.Parse(parts[i + 1]), Y = float.Parse(parts[i + 2]) },
-            Radius = float.Parse(parts[i + 3])
-          });
-          i += 4;
-          d = c;
-        }
-        else if (part == Arc)
-        {
-          Curve c = (Curve)d ?? new Curve();
-          c.Append(new Circle
+            if (d != null)
+            { throw new InvalidOperationException(); }
+            Pnt p = new Pnt();
+            p.X = float.Parse(parts[i + 1]);
+            p.Y = float.Parse(parts[i + 2]);
+            i += 3;
+            d = p;
+          }
+          else if (part == DirPoint)
           {
-            Center = new Pnt { X = float.Parse(parts[i + 1]), Y = float.Parse(parts[i + 2]) },
-            Radius = float.Parse(parts[i + 3]),
-            Azimuth = float.Parse(parts[i + 4]) / 180 * (float)Math.PI,
-            Angle = float.Parse(parts[i + 5]) / 180 * (float)Math.PI
-          });
-          i += 6;
-          d = c;
+            if (d != null)
+            { throw new InvalidOperationException(); }
+            DirectedPnt p = new DirectedPnt();
+            p.X = float.Parse(parts[i + 1]);
+            p.Y = float.Parse(parts[i + 2]);
+            p.Azimuth = (float)(float.Parse(parts[i + 3]) * Math.PI / 180);
+            i += 4;
+            d = p;
+          }
+          else if (part == Circle)
+          {
+            Curve c = (Curve)d ?? new Curve();
+            c.Append(new Circle
+            {
+              Center = new Pnt { X = float.Parse(parts[i + 1]), Y = float.Parse(parts[i + 2]) },
+              Radius = float.Parse(parts[i + 3])
+            });
+            i += 4;
+            d = c;
+          }
+          else if (part == Arc)
+          {
+            Curve c = (Curve)d ?? new Curve();
+            c.Append(new Circle
+            {
+              Center = new Pnt { X = float.Parse(parts[i + 1]), Y = float.Parse(parts[i + 2]) },
+              Radius = float.Parse(parts[i + 3]),
+              Azimuth = float.Parse(parts[i + 4]) / 180 * (float)Math.PI,
+              Angle = float.Parse(parts[i + 5]) / 180 * (float)Math.PI
+            });
+            i += 6;
+            d = c;
+          }
+          else if (part == MoveTo)
+          {
+            if (d != null)
+            { throw new InvalidOperationException(); }
+            Curve c = new Curve();
+            c.MoveTo(float.Parse(parts[i + 1]), float.Parse(parts[i + 2]));
+            i += 3;
+            d = c;
+          }
+          else if (part == LineTo)
+          {
+            Curve c = (Curve)d;
+            c.LineTo(float.Parse(parts[i + 1]), float.Parse(parts[i + 2]));
+            i += 3;
+          }
+          else if (part == CubicTo)
+          {
+            Curve c = (Curve)d;
+            c.CubicTo(
+              float.Parse(parts[i + 1]), float.Parse(parts[i + 2]),
+              float.Parse(parts[i + 3]), float.Parse(parts[i + 4]),
+              float.Parse(parts[i + 5]), float.Parse(parts[i + 6])
+              );
+            i += 3;
+          }
+          else
+          {
+            throw new NotImplementedException($"Unhandled key '{part}'");
+          }
         }
-        else if (part == MoveTo)
-        {
-          if (d != null)
-          { throw new InvalidOperationException(); }
-          Curve c = new Curve();
-          c.MoveTo(float.Parse(parts[i + 1]), float.Parse(parts[i + 2]));
-          i += 3;
-          d = c;
-        }
-        else if (part == LineTo)
-        {
-          Curve c = (Curve)d;
-          c.LineTo(float.Parse(parts[i + 1]), float.Parse(parts[i + 2]));
-          i += 3;
-        }
-        else if (part == CubicTo)
-        {
-          Curve c = (Curve)d;
-          c.CubicTo(
-            float.Parse(parts[i + 1]), float.Parse(parts[i + 2]),
-            float.Parse(parts[i + 3]), float.Parse(parts[i + 4]),
-            float.Parse(parts[i + 5]), float.Parse(parts[i + 6])
-            );
-          i += 3;
-        }
-        else
-        {
-          throw new NotImplementedException();
-        }
+        return d;
       }
-      return d;
+      catch (Exception e)
+      {
+        throw new Exception($"Error parsing '{geometry}'", e);
+      }
     }
   }
   public class Elem
@@ -1912,6 +1985,8 @@ namespace OMapScratch
       Y = y;
     }
 
+    IBox IDrawable.Extent { get { return this; } }
+
     public Pnt Clone()
     {
       return CloneCore();
@@ -1954,10 +2029,10 @@ namespace OMapScratch
       return $"{DrawableUtils.Point} {X:f1} {Y:f1}";
     }
 
-    public float Dist2(Pnt other)
+    public float Dist2(Pnt other = null)
     {
-      float dx = X - other.X;
-      float dy = Y - other.Y;
+      float dx = X - (other?.X ?? 0);
+      float dy = Y - (other?.Y ?? 0);
       return (dx * dx + dy * dy);
     }
     IEnumerable<Pnt> IDrawable.GetVertices()
@@ -2264,6 +2339,8 @@ namespace OMapScratch
 
   public partial class Curve : List<ISegment>, IDrawable
   {
+    private Box _extent;
+
     private float _tx, _ty;
     public Curve MoveTo(float x, float y)
     {
@@ -2272,6 +2349,26 @@ namespace OMapScratch
       return this;
     }
 
+    public IBox Extent
+    {
+      get
+      {
+        if (_extent == null)
+        {
+          if (Count == 0)
+          { return From; }
+          Box extent = this[0].GetExtent();
+          foreach (ISegment seg in this)
+          {
+            Box segExtent = seg.GetExtent();
+            extent.Include(segExtent.Min);
+            extent.Include(segExtent.Max);
+          }
+          _extent = extent;
+        }
+        return _extent;
+      }
+    }
     public Pnt From
     {
       get
@@ -2287,6 +2384,8 @@ namespace OMapScratch
       Pnt end = segment.To;
       _tx = end.X;
       _ty = end.Y;
+
+      _extent = null;
     }
 
     public Curve LineTo(float x, float y)
@@ -2365,6 +2464,8 @@ namespace OMapScratch
       else
       { SetTo(this[Count - 2].To); }
       RemoveAt(Count - 1);
+
+      _extent = null;
     }
   }
 

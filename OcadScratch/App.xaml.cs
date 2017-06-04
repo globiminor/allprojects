@@ -19,7 +19,7 @@ namespace OcadScratch
 
       Dispatcher.UnhandledException += (s,ex) =>
       {
-        MessageBox.Show(Basics.Utils.GetMsg(ex.Exception), "Error");
+        MessageBox.Show(Basics.Utils.GetMsg(ex.Exception, " System.Windows."), "Error");
         ex.Handled = true;
       };
 

@@ -335,13 +335,17 @@ namespace OMapScratch.ViewModels
       _constrs = new List<Curve>();
     }
 
-    public ColorRef GetConstrColor()
+    public ColorRef ConstrColor
     {
-      return _view.MapView.MapVm.GetConstrColor();
+      get { return _view.MapView.MapVm.ConstrColor; }
     }
-    public float? GetConstrTextSize()
+    public float ConstrTextSize
     {
-      return _view.MapView.MapVm.GetConstrTextSize();
+      get { return _view.MapView.MapVm.ConstrTextSize; }
+    }
+    public float ConstrLineWidth
+    {
+      get { return _view.MapView.MapVm.ConstrLineWidth; }
     }
 
     public float? GetDeclination()

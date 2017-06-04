@@ -49,22 +49,22 @@ namespace OcadScratch
       {
         DataGridTextColumn col = new DataGridTextColumn { Header = "Symbol ID", Binding = new Binding(nameof(workElemVm.SymbolId)) };
 
-        Basics.Window.FilterPanel.CreateHeader(col);
+        //Basics.Window.FilterPanel.CreateHeader(col);
 
         col.IsReadOnly = true;
         grdElems.Columns.Add(col);
       }
-      {
-        DataGridComboBoxColumn col = new DataGridComboBoxColumn { Header = "Symbol Test" };
-        Basics.Window.Utils.SetBinding(col, this, dc => nameof(dc.SymbolIds));
+      //{
+      //  DataGridComboBoxColumn col = new DataGridComboBoxColumn { Header = "Symbol Test" };
+      //  Basics.Window.Utils.SetBinding(col, this, dc => nameof(dc.SymbolIds));
 
-        col.SelectedItemBinding = new Binding(nameof(workElemVm.SymbolId));
+      //  col.SelectedItemBinding = new Binding(nameof(workElemVm.SymbolId));
 
-        Basics.Window.FilterPanel.CreateHeader(col);
+      //  Basics.Window.FilterPanel.CreateHeader(col);
 
-        col.IsReadOnly = true;
-        grdElems.Columns.Add(col);
-      }
+      //  col.IsReadOnly = true;
+      //  grdElems.Columns.Add(col);
+      //}
       {
         DataGridTextColumn col = new DataGridTextColumn { Header = "Color ID", Binding = new Binding(nameof(workElemVm.ColorId)) };
         col.IsReadOnly = true;

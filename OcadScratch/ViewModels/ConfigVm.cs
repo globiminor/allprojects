@@ -14,6 +14,11 @@ namespace OcadScratch.ViewModels
 {
   public class ConfigVm : NotifyListener
   {
+    private class LazySymbols
+    {
+      public BindingListView<ColorRef> Colors { get; set; }
+      public BindingListView<Symbol> Symbols { get; set; }
+    }
     private readonly string _configFile;
 
     private readonly XmlConfig _config;
@@ -22,13 +27,13 @@ namespace OcadScratch.ViewModels
     private Dictionary<int, ProjectionVm> _projectionDict;
     private BindingListView<ImageVm> _images;
 
-    private BindingListView<ColorRef> _colors;
-    private BindingListView<Symbol> _symbols;
-
+    //private System.Lazy<LazySymbols> _lazySymbols;
+    private LazySymbols _lazySymbols;
 
     public ConfigVm() :
       this(null, new XmlConfig())
-    { }
+    {
+    }
 
     public ConfigVm(string configFile, XmlConfig config)
     {
@@ -45,6 +50,8 @@ namespace OcadScratch.ViewModels
         new ProjectionVm("CH1903", new Ch1903()) { OcadId = 14001 },
         new ProjectionVm("CH1903 LV95", new Ch1903_LV95()) { OcadId = 14002 },
       };
+
+      //_lazySymbols = new System.Lazy<LazySymbols>(LoadSymbolsCore);
     }
 
     public string ConfigFile { get { return _configFile; } }
@@ -156,64 +163,66 @@ namespace OcadScratch.ViewModels
 
     public IList<ColorRef> Colors
     {
-      get
-      {
-        if (_colors == null)
-        { LoadSymbols(); }
-
-        return _colors;
-      }
+      //      get { return _lazySymbols.Value.Colors; }
+      get { return _lazySymbols?.Colors; }
     }
 
     public IList<Symbol> Symbols
     {
-      get
-      {
-        if (_symbols == null)
-        { LoadSymbols(); }
-
-        return _symbols;
-      }
+      //    get { return _lazySymbols.Value.Symbols; }
+      get { return _lazySymbols?.Symbols; }
     }
 
-    private void LoadSymbols()
+    public void LoadSymbols()
     {
-      _symbols = new BindingListView<Symbol>();
-      _colors = new BindingListView<ColorRef>();
+      _lazySymbols = LoadSymbolsCore();
+    }
+    private LazySymbols LoadSymbolsCore()
+    {
+      BindingListView<Symbol> symbols = new BindingListView<Symbol>();
+      BindingListView<ColorRef> colors = new BindingListView<ColorRef>();
+      LazySymbols lazy = new LazySymbols { Symbols = symbols, Colors = colors };
 
-      _symbols.AllowEdit = false;
-      _symbols.AllowNew = false;
-      _symbols.AllowRemove = false;
+      symbols.AllowEdit = false;
+      symbols.AllowNew = false;
+      symbols.AllowRemove = false;
 
-      _colors.AllowEdit = false;
-      _colors.AllowNew = false;
-      _colors.AllowRemove = false;
+      colors.AllowEdit = false;
+      colors.AllowNew = false;
+      colors.AllowRemove = false;
 
 
       if (_configFile == null)
-      { return; }
+      { return lazy; }
       string symFile = _config?.Data?.Symbol;
       if (symFile == null)
-      { return; }
+      { return lazy; }
 
       string symPath = Path.Combine(Path.GetDirectoryName(_configFile), symFile);
       if (!File.Exists(symPath))
-      { return; }
+      { return lazy; }
 
-      XmlSymbols xmls;
-      using (TextReader r = new StreamReader(symPath))
+      try
       {
-        Serializer.Deserialize(out xmls, r);
-      }
+        XmlSymbols xmls;
+        using (TextReader r = new StreamReader(symPath))
+        {
+          Serializer.Deserialize(out xmls, r);
+        }
 
-      foreach (XmlColor clr in xmls.Colors)
-      {
-        _colors.Add(clr.GetColor());
+        foreach (XmlColor clr in xmls.Colors)
+        {
+          colors.Add(clr.GetColor());
+        }
+        foreach (XmlSymbol sym in xmls.Symbols)
+        {
+          symbols.Add(sym.GetSymbol());
+        }
+
+        return lazy;
       }
-      foreach (XmlSymbol sym in xmls.Symbols)
-      {
-        _symbols.Add(sym.GetSymbol());
-      }
+      catch(System.Exception e)
+      { throw new System.InvalidOperationException($"Error in Symbols file '{symPath}'", e); }
     }
 
     public float SymbolScale
@@ -241,6 +250,51 @@ namespace OcadScratch.ViewModels
       set
       {
         _config.Data.Search = value;
+        Validate();
+        Changed();
+      }
+    }
+
+    public float ElemTextSize
+    {
+      get
+      {
+        float current = _config.Data.ElemTextSize;
+        return current > 0 ? current : Map.DefaultElemTextSize;
+      }
+      set
+      {
+        _config.Data.ElemTextSize = value;
+        Validate();
+        Changed();
+      }
+    }
+
+    public float ConstrTextSize
+    {
+      get
+      {
+        float current = _config.Data.ConstrTextSize;
+        return current > 0 ? current : Map.DefaultConstrTextSize;
+      }
+      set
+      {
+        _config.Data.ConstrTextSize = value;
+        Validate();
+        Changed();
+      }
+    }
+
+    public float ConstrLineWidth
+    {
+      get
+      {
+        float current = _config.Data.ConstrLineWidth;
+        return current > 0 ? current : Map.DefaultConstrLineWidth;
+      }
+      set
+      {
+        _config.Data.ConstrLineWidth = value;
         Validate();
         Changed();
       }

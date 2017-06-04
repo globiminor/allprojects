@@ -38,7 +38,9 @@
   &lt;offset x="2685000" y="1256000" declination="2.27"&gt;
     &lt;world lat="47.4492980" lon="8.5656916" geoMat00="75412.37" geoMat01="1084.84" geoMat10="-1596.29" geoMat11="111174.40" /&gt;
   &lt;/offset&gt;
-  &lt;data scratch="Hardwald.xml" symbol="Symbols.xml" symbolscale="1" /&gt;
+  &lt;data scratch=&quot;Hardwald.xml&quot; symbol=&quot;Symbols.xml&quot; symbolscale=&quot;0.3&quot; constrtextsize_mm=&quot;2.3&quot; constrlinewidth_mm=&quot;0.1&quot; elemtextsize_pt=&quot;18&quot; search=&quot;5&quot;&gt;
+    &lt;constrcolor R=&quot;255&quot; G=&quot;0&quot; B=&quot;0&quot;/&gt;
+  &lt;/data&gt;
   &lt;image name="LAS" path="B3_Hardwald 2017_DSM_LasIntensity.jpg" /&gt;
   &lt;image name="Hangneigung" path="B3_Hardwald 2017_DTM_Hangneigung.jpg" /&gt;
   &lt;image name="Relief 1" path="B3_Hardwald 2017_DTM_Reliefschummerung.jpg" /&gt;
@@ -53,8 +55,12 @@
 &lt;data symbol&gt;: name of the file, where the symbols are stored. See description below. 
                Remark: The units in the symbol-files are in meters
 &lt;data symbolscale&gt; (optional): Scale factor of the symbols use for display. Default is 1.
+&lt;data elemtextsize_pt&gt; (optional): text size of text elemens. (See symbols and figure below)
+&lt;data constrlinewidth_mm&gt; (optional): line width of construction lines. (See figure below)
+&lt;data constrtextsize_mm&gt; (optional): text size in mm for texts displayed during constructions. (See figure below)
+&lt;data&gt;&lt;constrcolor&gt; (optional): color for construction elements. Remark: This color can be adapted in runtime. (See figure below)
 &lt;image name&gt;: Name displayed in O-scratch
-&lt;image path&gt;: file name of image file. Only jpg-Formats are supported. 
+&lt;image path&gt;: file name of image file. Only jpg-Formats are supported. Use Files with pixel size of less than 5000 x 5000 pixels.
               For each image file, the image-World file (.jgw) must exist, too.
 			 You may create these image and world file with OCAD -> Export.
 			 Remark: When working with large image files, split them to several parts 
@@ -62,6 +68,10 @@
 					 and that the loading of the image is more performant.
 			         Use some overlap for the files of the same theme, because only 1 image file per time is displayed in o-scratch 
     </pre>
+    <img src="Constr.png" style="width:105px;height:96px" />
+     &nbsp;&nbsp
+    <img src="TextElem.png" style="width:105px;height:96px" />
+    <p>Figures: Construction example with color, linewidth and textsize; Elementtextsize;</p>
     <p>
         2. Copy &lt;project&gt;.config, &lt;symbols.xml&gt; and all referenced image files (.jpg) and image world files (.jgw) to one folder on your android device.<br />
         <b>Remark:</b> In o-scratch, all used files for one project must lie in one single folder!
@@ -77,11 +87,12 @@
     <p>2. Click a recent &lt;project&gt;.config or browse to &lt;project&gt.config and click it. The first of the images is displayed.</p>
     <h3>Chose Image</h3>
     <p>This option is only available if more than 1 image is defined in the .config file</p>
-    <p>1. Click LOAD IMAGE. A list of all images is displayed (corresponding to images in &lt;project&gt;.config images)</p>
+    <p>1. Click LOAD IMAGE. A list of all images is displayed (corresponding to images in &lt;project&gt;.config images). Remark: Use Images with a size of less than 5000 x 5000 pixel</p>
     <p>2. Click on any image on the list. The corresponding image will be displayed according to the current spatial extent.</p>
     <h3>Chose Edit-Tool</h3>
     <p>1. Click on "Edit tool" (like <img src="Point.png" style="width:20px;height:20px" />). A list of all available colors and symbols is displayed.</p>
-    <p>2. (Optionally) choose color. The color of all symbols in the list are adapted accordingly.</p>
+    <img src="Symbols.png" style="width:236px;height:125px"/>
+    <p>2. (Optionally) choose color. The colors of all symbols in the list are adapted accordingly.</p>
     <p>3. Choose symbol or "Arrow Tool". The list is closed and the edit tool is set accordingly.</p>
 
     <h3>Capture Point</h3>
@@ -90,9 +101,11 @@
 
     <h3>Capture Line</h3>
     <p>1. Choose Edit-Tool with a line symbol, i.e. <img src="Line.png" style="width:20px;height:20px" /></p>
-    <p>2. Click on Map to start the line. A small dot is displayed at the clicked point</p>
+    <p>2. Click on Map to start the line. A small horizontal line is displayed at the clicked point</p>
+    <img src="LineStart.png" style="width:58px;height:58px" />
     <p>3. Click the next point(s) on the map. The captured line is displayed.</p>
-    <p>4. (double) click on the Edit-Tool-Button to finish the current line.</p>
+    <img src="LineCont.png" style="width:58px;height:58px" />
+    <p>4. (double) click on the Edit-Tool-Button <img src="Line.png" style="width:20px;height:20px" /> to finish the current line.</p>
 
     <h3>Special Actions</h3>
     <p>1. Choose Edit-Tool "Arrow Tool" <img src="Arrow.png" style="width:20px;height:20px" /></p>
@@ -100,10 +113,17 @@
         2. Click on Map. A context menu is displayed near the clicked point 
    and a small rectangle is displayed on the map at the position for which the context menu shall be applied.
     </p>
-    <p>
-        3. a) Choose the appropriate menu item
-        <br />
-        &nbsp;&nbsp;&nbsp; b) Click on map or "Edit tool" for no action
+<p>    <img src="ContextMenu1.png" style="width:80px;height:148px" />&nbsp&nbsp
+    <img src="ContextMenu2.png" style="width:80px;height:148px" /><br />
+    For each found geometry (element, vertex of line element, clicked point), an UPPERCASE entry is displayed in the context menu. <br />
+    Clicking on an UPPERCASE entry toggles the details of the corresponding element or vertex and the context menu is resituated at the chosen geometry. <br />
+    (In the figures above, VERTEX #1 was clicked, and the new context menu for the vertex appears)<br />
+    Clicking another entry in the context menu executes the corresponding action. In some cases, a description is displayed in the lower part of the display with an instruction / help.<br />
+    <img src="Instr.png" style="height:30px" />
+</p>
+<p>
+        3. a) Choose the appropriate menu item<br />
+        &nbsp;&nbsp;&nbsp; b) or click on map or "Edit tool" <img src="Arrow.png" style="width:20px;height:20px" /> for no action
     </p>
 
     <h3>Set Location</h3>
