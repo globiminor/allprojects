@@ -119,7 +119,7 @@ namespace OMapScratch
 
     public MapView MapView
     { get { return _mapView; } }
-    public MapButton BtnCurrentMode
+    public ModeButton BtnCurrentMode
     { get { return _btnCurrentMode; } }
 
     public RelativeLayout ParentLayout { get { return _parentLayout; } }
@@ -434,8 +434,11 @@ namespace OMapScratch
       }
 
       MotionListener listener = new MotionListener(this);
+      _mapView.LongClickable = true;
       _mapView.SetOnTouchListener(listener);
-      _mapView.SetOnGenericMotionListener(listener);
+      //_mapView.SetOnGenericMotionListener(listener);
+      //_mapView.SetOnHoverListener(listener);
+      //_mapView.SetOnLongClickListener(listener);
 
       {
         _symbolGrid = new SymbolGrid(this);

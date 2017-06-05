@@ -4,7 +4,7 @@ using Android.Views;
 
 namespace OMapScratch.Views
 {
-  class MotionListener : Java.Lang.Object, View.IOnGenericMotionListener, View.IOnTouchListener
+  class MotionListener : Java.Lang.Object, View.IOnTouchListener
   {
     private class Touch
     {
@@ -42,22 +42,14 @@ namespace OMapScratch.Views
     {
       _parent = parent;
     }
-    public bool OnGenericMotion(View v, MotionEvent e)
-    {
-      if (e.Action == MotionEventActions.Pointer1Down)
-      { }
-
-      if (e.Action == MotionEventActions.HoverEnter || e.Action == MotionEventActions.HoverExit)
-      { return false; }
-      if (e.Action == MotionEventActions.HoverMove)
-      { return false; }
-      return false;
-    }
 
     private Touch _t1Down;
     private Touch _t2Down;
     private Touch _t1Up;
     private Touch _t2Up;
+
+    private long _downTime;
+    private bool _longTimeAction = false;
 
     private void TouchReset()
     {
@@ -65,6 +57,21 @@ namespace OMapScratch.Views
       _t2Down = null;
       _t1Up = null;
       _t2Up = null;
+
+      _longTimeAction = false;
+      _parent.MapView.ShowDetail = null;
+    }
+
+    private float GetPrec(Rect rect = null)
+    {
+      MapView mapView = _parent.MapView;
+      if (rect == null)
+      {
+        rect = new Rect();
+        mapView.GetGlobalVisibleRect(rect);
+      }
+      float prec = System.Math.Min(rect.Height(), rect.Width()) / mapView.Precision;
+      return prec;
     }
 
     private bool HandleAction()
@@ -73,17 +80,23 @@ namespace OMapScratch.Views
       if (_t1Down == null)
       {
         TouchReset();
-        return true;
+        return false;
       }
       if (_t1Up == null)
       {
-        return true;
+        return false;
       }
       if ((_t2Down == null) != (_t2Up == null))
       {
         if (_t2Up != null)
         { TouchReset(); }
-        return true;
+        return false;
+      }
+
+      if (_longTimeAction)
+      {
+        TouchReset();
+        return false;
       }
 
       Rect rect = new Rect();
@@ -92,7 +105,7 @@ namespace OMapScratch.Views
       {
         float dx = _t1Up.X - _t1Down.X;
         float dy = _t1Up.Y - _t1Down.Y;
-        float prec = System.Math.Min(rect.Height(), rect.Width()) / mapView.Precision;
+        float prec = GetPrec(rect);
 
         if (mapView.IsTouchHandled())
         { }
@@ -108,7 +121,7 @@ namespace OMapScratch.Views
         mapView.PostInvalidate();
 
         TouchReset();
-        return true;
+        return false;
       }
 
       {
@@ -128,24 +141,29 @@ namespace OMapScratch.Views
       }
 
       TouchReset();
-      return true;
+      return false;
     }
 
-    public bool OnTouch(View v, MotionEvent e)
+    bool View.IOnTouchListener.OnTouch(View v, MotionEvent e)
     {
       MapView mapView = _parent.MapView;
 
       if (e.Action == MotionEventActions.Down)
       {
+        _downTime = Java.Lang.JavaSystem.CurrentTimeMillis();
         if (_t1Down == null) _t1Down = Touch.Create(e, 0);
         mapView.OnTouch(_t1Down.X, _t1Down.Y, _t1Down.Action);
         return HandleAction();
       }
       if (e.Action == MotionEventActions.Move)
       {
+
         Touch move = Touch.Create(e, 0);
         mapView.OnTouch(move.X, move.Y, move.Action);
-        return true;
+
+        TryLongClick(move);
+
+        return false;
       }
       if (e.Action == MotionEventActions.Up)
       {
@@ -174,6 +192,54 @@ namespace OMapScratch.Views
         _t1Down = Touch.Create(e, 0);
         return HandleAction();
       }
+
+      return false;
+    }
+
+    bool TryLongClick(Touch move)
+    {
+      if (_t1Down == null)
+      { return false; }
+      if (_t2Down != null)
+      { return false; }
+
+      if (_parent.MapView.IsTouchHandled(checkOnly: true))
+      { return false; }
+
+      if (!(_parent.BtnCurrentMode.CurrentMode is SymbolButton))
+      { return false; }
+
+      float x;
+      float y;
+      if (_longTimeAction)
+      {
+        _parent.MapVm.Undo();
+        x = move.X;
+        y = move.Y;
+      }
+      else
+      {
+        float rect = GetPrec();
+
+        float dx = (move.X - _t1Down.X);
+        float dy = (move.Y - _t1Down.Y);
+        float prec = GetPrec();
+
+        if (System.Math.Abs(dx) > prec || System.Math.Abs(dy) > prec)
+        { return false; }
+
+        long dt = Java.Lang.JavaSystem.CurrentTimeMillis() - _downTime;
+        if (dt < _parent.MapView.LongClickTime)
+        { return false; }
+
+        x = (_t1Down.X + move.X) / 2.0f;
+        y = (_t1Down.Y + move.Y) / 2.0f;
+      }
+
+      _parent.BtnCurrentMode.MapClicked(x, y);
+      _longTimeAction = true;
+      _parent.MapView.ShowDetail = new Pnt(x, y);
+      _parent.MapView.PostInvalidate();
 
       return false;
     }

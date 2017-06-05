@@ -55,13 +55,16 @@ namespace OMapScratch.Views
       _context = context;
 
       SetScaleType(ScaleType.Matrix);
+      Precision = 100;
+      LongClickTime = 500;
     }
 
     public new MainActivity Context { get { return (MainActivity)base.Context; } }
 
     internal ConstrView ConstrView { get; set; }
     public IPointAction NextPointAction { get { return _nextPointAction; } }
-    public float Precision { get { return 100; } }
+    public float Precision { get; set; }
+    public long LongClickTime { get; set; }
 
     public MapVm MapVm
     { get { return _context.MapVm; } }
@@ -96,13 +99,15 @@ namespace OMapScratch.Views
 
     internal bool HideCompass { get; set; }
 
+    public Pnt ShowDetail { get; set; }
+
     public void ResetContextMenu(bool clearMenu = false)
     {
       _editPnt = null;
       _nextPointAction = null;
       TextInfo.Visibility = Android.Views.ViewStates.Gone;
       TextInfo.PostInvalidate();
-      
+
       if (clearMenu && ContextMenu.Visibility == Android.Views.ViewStates.Visible)
       {
         ContextMenu.RemoveAllViews();
@@ -190,7 +195,7 @@ namespace OMapScratch.Views
     }
 
     public float ElemTextSize
-    { get { return _elemTextSize ?? (_elemTextSize = MapVm.ElemTextSize).Value; }    }
+    { get { return _elemTextSize ?? (_elemTextSize = MapVm.ElemTextSize).Value; } }
 
     public void Scale(float f)
     {
@@ -224,20 +229,24 @@ namespace OMapScratch.Views
         if (_maxExtent == null)
         {
           float[] p00 = { 0, 0 };
-          InversElemMatrix.MapPoints(p00);
-
           float[] p11 = { Width, Height };
-          InversElemMatrix.MapPoints(p11);
-
-          float maxSymbolSize = MapVm.MaxSymbolSize;
-          Pnt min = new Pnt(System.Math.Min(p00[0], p11[0]) - maxSymbolSize, System.Math.Min(p00[1], p11[1]) - maxSymbolSize);
-          Pnt max = new Pnt(System.Math.Max(p00[0], p11[0]) + maxSymbolSize, System.Math.Max(p00[1], p11[1]) + maxSymbolSize);
-
-          Box maxExtent = new Box(min, max);
-          _maxExtent = maxExtent;
+          _maxExtent = GetMaxExtent(p00, p11);
         }
         return _maxExtent;
       }
+    }
+
+    private Box GetMaxExtent(float[] p00, float[] p11)
+    {
+      InversElemMatrix.MapPoints(p00);
+      InversElemMatrix.MapPoints(p11);
+
+      float maxSymbolSize = MapVm.MaxSymbolSize;
+      Pnt min = new Pnt(System.Math.Min(p00[0], p11[0]) - maxSymbolSize, System.Math.Min(p00[1], p11[1]) - maxSymbolSize);
+      Pnt max = new Pnt(System.Math.Max(p00[0], p11[0]) + maxSymbolSize, System.Math.Max(p00[1], p11[1]) + maxSymbolSize);
+
+      Box maxExtent = new Box(min, max);
+      return maxExtent;
     }
     private Matrix ElemMatrix
     {
@@ -398,11 +407,15 @@ namespace OMapScratch.Views
       return false;
     }
 
-    public bool IsTouchHandled()
+    public bool IsTouchHandled(bool checkOnly = false)
     {
       ITouchAction touchAction = _nextPointAction as ITouchAction;
       if (touchAction == null)
       { return false; }
+
+      if (checkOnly)
+      { return true; }
+
       if (!touchAction.TryHandle(reInit: true))
       { return false; }
 
@@ -605,17 +618,56 @@ namespace OMapScratch.Views
 
     protected override void OnDraw(Canvas canvas)
     {
+      DrawRegion(canvas);
+      ConstrView.PostInvalidate();
+    }
+
+    private void DrawRegion(Canvas canvas)
+    {
       base.OnDraw(canvas);
 
       if (!_keepTextOnDraw)
       { ShowText(null); }
 
-      DrawElems(canvas, _context.MapVm.Elems, MaxExtent);
+      DrawElems(canvas, _context.MapVm.Elems, MaxExtent, null);
 
-      ConstrView.PostInvalidate();
+      Bitmap current = _context?.MapVm?.CurrentImage;
+      if (current != null && ShowDetail != null)
+      {
+        float[] vals = new float[9]; ImageMatrix.GetValues(vals);
+
+        int det = 300;
+        int det_2 = det / 2;
+        int x0 = (int)((-vals[2] + ShowDetail.X - det_2) / vals[0]);
+        int y0 = (int)((-vals[5] + ShowDetail.Y - det_2) / vals[0]);
+        {
+          Rect source = new Rect(x0, y0, x0 + (int)(det / vals[0]), y0 + (int)(det / vals[0]));
+          int w = Width;
+          int rx = w - det;
+          int ry = 0;
+          Rect dest = new Rect(rx, ry, rx + det, ry + det);
+          try
+          {
+            canvas.Save();
+            canvas.ClipRect(dest);
+            canvas.DrawBitmap(_context.MapVm.CurrentImage, source, dest, null);
+
+            float[] p0 = { ShowDetail.X - det_2, ShowDetail.Y - det_2 };
+            float[] p1 = { ShowDetail.X + det_2, ShowDetail.Y + det_2 };
+            Box maxExtent = GetMaxExtent(p0, p1);
+            float f = 1; // vals[0];
+            float[] dd = { (ShowDetail.X - (rx + det_2)) * f, (ShowDetail.Y - (ry + det_2)) * f };
+            DrawElems(canvas, _context.MapVm.Elems, maxExtent, dd);
+
+          }
+          finally
+          { canvas.Restore(); }
+
+        }
+      }
     }
 
-    private void DrawElems(Canvas canvas, IEnumerable<Elem> elems, Box maxExtent)
+    private void DrawElems(Canvas canvas, IEnumerable<Elem> elems, Box maxExtent, float[] dd)
     {
       if (elems == null)
       { return; }
@@ -626,6 +678,13 @@ namespace OMapScratch.Views
       try
       {
         float[] matrix = ElemMatrixValues;
+
+        if (dd != null)
+        {
+          matrix = (float[])matrix.Clone();
+          matrix[2] -= dd[0];
+          matrix[5] -= dd[1];
+        }
 
         float symbolScale = _context.MapVm.SymbolScale;
 
