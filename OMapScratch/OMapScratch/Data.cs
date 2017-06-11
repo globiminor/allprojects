@@ -16,6 +16,11 @@ namespace OMapScratch
     string Description { get; }
     void Action(Pnt pnt);
   }
+  public interface IEditAction : IPointAction
+  {
+    bool ShowDetail { get; }
+  }
+
   public interface ISymbolAction
   {
     string Description { get; }
@@ -176,7 +181,7 @@ namespace OMapScratch
       { _map.InsertVertex(_elem, _position); }
     }
 
-    private class MoveVertexAction : IAction, IPointAction
+    private class MoveVertexAction : IAction, IPointAction, IEditAction
     {
       private readonly IMapView _view;
       private readonly Map _map;
@@ -200,9 +205,11 @@ namespace OMapScratch
       {
         _map.MoveVertex(_elem, _iVertex, next);
       }
+
+      public bool ShowDetail { get { return true; } }
     }
 
-    private class MoveElementAction : IAction, IPointAction
+    private class MoveElementAction : IAction, IPointAction, IEditAction
     {
       private readonly IMapView _view;
       private readonly Map _map;
@@ -227,9 +234,11 @@ namespace OMapScratch
         Pnt diff = new Pnt(next.X - _origPosition.X, next.Y - _origPosition.Y);
         _map.MoveElement(_elem, diff);
       }
+
+      public bool ShowDetail { get { return true; } }
     }
 
-    private class RotateElementAction : IAction, IPointAction
+    private class RotateElementAction : IAction, IPointAction, IEditAction
     {
       private readonly IMapView _view;
       private readonly Map _map;
@@ -254,6 +263,8 @@ namespace OMapScratch
         double azi = Math.Atan2(_origPosition.X - dir.X, _origPosition.Y - dir.Y);
         _map.SetRotationElement(_elem, (float)azi);
       }
+
+      public bool ShowDetail { get { return false; } }
     }
 
     private class SetSymbolAction : IAction, ISymbolAction

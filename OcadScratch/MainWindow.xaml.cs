@@ -44,6 +44,7 @@ namespace OcadScratch
     public MainWindow()
     {
       InitializeComponent();
+      mniSave.SetBinding(MenuItem.IsEnabledProperty, new Binding(nameof(DataContext.CanSave)));
 
       WorkElemVm workElemVm;
       {
@@ -137,6 +138,64 @@ namespace OcadScratch
       ViewModels.MapVm vm = new ViewModels.MapVm();
       vm.Init(scratchFile);
       DataContext = vm;
+
+      XmlConfig config;
+      using (TextReader r = new StreamReader(scratchFile))
+      { Serializer.Deserialize(out config, r); }
+      ConfigVm configVm = new ConfigVm(scratchFile, config);
+
+      SetConfigVm(configVm);
+    }
+
+    private void mniInit_Click(object sender, RoutedEventArgs e)
+    {
+      string ocdFile;
+      {
+        Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+        dlg.Title = "OCAD file";
+        dlg.Filter = "*.ocd | *.ocd";
+        if (!(dlg.ShowDialog() ?? false))
+        { return; }
+
+        ocdFile = dlg.FileName;
+      }
+
+      DataContext = new ViewModels.MapVm();
+      ConfigVm configVm = new ConfigVm();
+      configVm.Init(ocdFile);
+      SetConfigVm(configVm);
+    }
+
+    private void mniSave_Click(object sender, RoutedEventArgs e)
+    {
+      if (cntGeoref?.DataContext == null)
+      { return; }
+
+      string configFile;
+      {
+        Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
+        dlg.Title = "O-Scratch Config";
+        dlg.Filter = "*.config | *.config";
+        if (!(dlg.ShowDialog() ?? false))
+        { return; }
+
+        configFile = dlg.FileName;
+      }
+      cntGeoref.DataContext.Save(configFile);
+    }
+
+    private void SetConfigVm(ConfigVm configVm)
+    {
+      cntGeoref.DataContext = configVm;
+      cntSettings.DataContext = configVm;
+      cntImages.DataContext = configVm;
+      try
+      {
+        configVm.LoadSymbols();
+      }
+      finally
+      { cntSymbols.DataContext = configVm; }
+      DataContext.ConfigVm = configVm;
     }
 
     private void btnTransfer_Click(object sender, RoutedEventArgs e)
@@ -210,12 +269,6 @@ namespace OcadScratch
         cntWorkElem.DataContext = cmd.NextElem;
       }
       MoveTo();
-    }
-
-    private void mniPrepare_Click(object sender, RoutedEventArgs e)
-    {
-      FrmConfig frm = new FrmConfig();
-      frm.ShowDialog();
     }
   }
 }

@@ -81,35 +81,38 @@ namespace OMapScratch.Views
 
     public static void DrawSymbol(Canvas canvas, Symbol sym, Color color, float width, float height, float scale)
     {
-      Paint p = new Paint();
-      p.Color = color;
-
-      canvas.Save();
-      try
+      using (Paint p = new Paint())
       {
-        canvas.Translate(width / 2, height / 2);
-        canvas.Scale(scale, scale);
+        p.Color = color;
 
-        SymbolType symTyp = sym.GetSymbolType();
-        if (symTyp == SymbolType.Line)
+        canvas.Save();
+        try
         {
-          float w = width / (2 * scale) * 0.8f;
-          SymbolUtils.DrawLine(canvas, sym, null, 1, new Curve().MoveTo(-w, 0).LineTo(w, 0), p);
+          canvas.Translate(width / 2, height / 2);
+          canvas.Scale(scale, scale);
+
+          SymbolType symTyp = sym.GetSymbolType();
+          if (symTyp == SymbolType.Line)
+          {
+            float w = width / (2 * scale) * 0.8f;
+            SymbolUtils.DrawLine(canvas, sym, null, 1, new Curve().MoveTo(-w, 0).LineTo(w, 0), p);
+          }
+          else if (symTyp == SymbolType.Point)
+          {
+            SymbolUtils.DrawPoint(canvas, sym, null, 1, new Pnt(0, 0), p);
+          }
+          else if (symTyp == SymbolType.Text)
+          {
+            p.TextSize = height / 6;
+            SymbolUtils.DrawText(canvas, sym.Text, null, 1, new Pnt { X = 0, Y = 0 }, p);
+          }
+          else
+          { throw new System.NotImplementedException($"unknown SymbolType {symTyp}"); }
+
         }
-        else if (symTyp == SymbolType.Point)
-        {
-          SymbolUtils.DrawPoint(canvas, sym, null, 1, new Pnt(0, 0), p);
-        }
-        else if (symTyp == SymbolType.Text)
-        {
-          p.TextSize = height / 6;
-          SymbolUtils.DrawText(canvas, sym.Text, null, 1, new Pnt { X = 0, Y = 0 }, p);
-        }
-        else
-        { throw new System.NotImplementedException($"unknown SymbolType {symTyp}"); }
+        finally
+        { canvas.Restore(); }
       }
-      finally
-      { canvas.Restore(); }
     }
   }
 }

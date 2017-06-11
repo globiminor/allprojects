@@ -27,7 +27,6 @@ namespace A2048.Views
       if (!_keepTextOnDraw)
       { ShowText(null); }
 
-      Paint p = new Paint();
       canvas.Save();
       try
       {
@@ -53,42 +52,44 @@ namespace A2048.Views
 
     private void DrawScore(Canvas canvas, int score)
     {
-      Paint p = new Paint();
-      p.Color = Color.White;
-      float mm = Utils.GetMmPixel(this);
-      p.TextSize = 3 * mm;
-      if (MeasuredWidth < MeasuredHeight)
+      using (Paint p = new Paint())
       {
-        canvas.DrawText("Score", 2 * mm, MeasuredWidth + 2 * p.TextSize, p);
-        canvas.DrawText(score.ToString(), 2 * mm, MeasuredWidth + 3.2f * p.TextSize, p);
+        p.Color = Color.White;
+        float mm = Utils.GetMmPixel(this);
+        p.TextSize = 3 * mm;
+        if (MeasuredWidth < MeasuredHeight)
+        {
+          canvas.DrawText("Score", 2 * mm, MeasuredWidth + 2 * p.TextSize, p);
+          canvas.DrawText(score.ToString(), 2 * mm, MeasuredWidth + 3.2f * p.TextSize, p);
+        }
       }
     }
     private void DrawCell(Canvas canvas, int iRow, int iCol, float size)
     {
-      Paint p = new Paint();
-
-      RectF rect = new RectF(iCol * size, iRow * size, (iCol + 1) * size, (iRow + 1) * size);
-
-      int value = _activity.Grid.GetValue(iRow, iCol);
-      p.Color = GetColor(value);
-      p.SetStyle(Paint.Style.Fill);
-      canvas.DrawRect(rect, p);
-
-      p.SetStyle(Paint.Style.Stroke);
-
-      if (value > 1)
+      using (Paint p = new Paint())
+      using (RectF rect = new RectF(iCol * size, iRow * size, (iCol + 1) * size, (iRow + 1) * size))
       {
-        p.Color = Color.Black;
-        p.TextSize = size / 4;
-        p.TextAlign = Paint.Align.Center;
-        canvas.DrawText(value.ToString(), (iCol + 0.5f) * size, (iRow + 0.5f) * size, p);
+        int value = _activity.Grid.GetValue(iRow, iCol);
+        p.Color = GetColor(value);
+        p.SetStyle(Paint.Style.Fill);
+        canvas.DrawRect(rect, p);
+
+        p.SetStyle(Paint.Style.Stroke);
+
+        if (value > 1)
+        {
+          p.Color = Color.Black;
+          p.TextSize = size / 4;
+          p.TextAlign = Paint.Align.Center;
+          canvas.DrawText(value.ToString(), (iCol + 0.5f) * size, (iRow + 0.5f) * size, p);
+        }
+
+        p.Color = Color.DarkGray;
+        p.StrokeWidth = 0.5f * Utils.GetMmPixel(this);
+        p.SetStyle(Paint.Style.Stroke);
+
+        canvas.DrawRect(rect, p);
       }
-
-      p.Color = Color.DarkGray;
-      p.StrokeWidth = 0.5f * Utils.GetMmPixel(this);
-      p.SetStyle(Paint.Style.Stroke);
-
-      canvas.DrawRect(rect, p);
     }
 
     private Color GetColor(int value)
@@ -122,7 +123,15 @@ namespace A2048.Views
       if (value == 8192)
       { return new Color(255, 128, 128, 255); }
       if (value == 16384)
-      { return new Color(255, 192, 64, 255); }
+      { return new Color(255, 160, 64, 255); }
+
+      if (value == 2 * 16384)
+      { return new Color(255, 128, 0, 255); }
+      if (value == 4 * 16384)
+      { return new Color(255, 112, 32, 255); }
+      if (value == 8 * 16384)
+      { return new Color(192, 96, 0, 255); }
+
 
       return new Color(255, 0, 0, 255);
     }

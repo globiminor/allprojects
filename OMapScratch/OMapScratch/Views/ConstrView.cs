@@ -39,7 +39,7 @@ namespace OMapScratch.Views
     }
 
     public Color ConstrColor
-    { get { return _constrClr ?? (_constrClr = ViewModel.ConstrColor ?.Color ?? Color.Black).Value; } }
+    { get { return _constrClr ?? (_constrClr = ViewModel.ConstrColor?.Color ?? Color.Black).Value; } }
 
     public float ConstrTextSize
     { get { return _constrTxtSize ?? (_constrTxtSize = ViewModel.ConstrTextSize).Value; } }
@@ -85,55 +85,57 @@ namespace OMapScratch.Views
 
       DrawCurrentLocation(canvas, _parent.GetCurrentMapLocation());
 
-      Paint wp = new Paint();
-      wp.Color = Color.White;
-      wp.StrokeWidth = 3 * ConstrLineWidth;
-      wp.SetStyle(Paint.Style.Stroke);
-      Paint bp = new Paint();
-      bp.Color = ConstrColor;
-      bp.StrokeWidth = ConstrLineWidth;
-      bp.SetStyle(Paint.Style.Stroke);
-
-      IProjection prj = null;
-      foreach (Curve geom in ViewModel.GetGeometries())
+      using (Paint wp = new Paint())
+      using (Paint bp = new Paint())
       {
-        if (!_parent.MaxExtent.Intersects(geom.Extent))
-        { continue; }
+        wp.Color = Color.White;
+        wp.StrokeWidth = 3 * ConstrLineWidth;
+        wp.SetStyle(Paint.Style.Stroke);
+        bp.Color = ConstrColor;
+        bp.StrokeWidth = ConstrLineWidth;
+        bp.SetStyle(Paint.Style.Stroke);
 
-        prj = prj ?? new Translation(_parent.ElemMatrixValues);
-        Curve displayGeom = geom.Project(prj);
-
-        DrawCurve(canvas, displayGeom, wp, bp);
-      }
-
-      double? declination = ViewModel.GetDeclination();
-      if (declination != null)
-      {
-        prj = prj ?? new Translation(_parent.ElemMatrixValues);
-        DrawCompass(canvas, ViewModel.GetCompassPoint().Project(prj), declination.Value, wp, bp);
-      }
-
-      DrawOrientation(canvas, ViewModel.GetOrientation(), declination, wp, bp);
-
-      bool first = true;
-      foreach (Elem textElem in ViewModel.GetTexts())
-      {
-        if (first)
+        IProjection prj = null;
+        foreach (Curve geom in ViewModel.GetGeometries())
         {
-          wp.SetStyle(Paint.Style.Fill);
+          if (!_parent.MaxExtent.Intersects(geom.Extent))
+          { continue; }
 
-          bp.TextAlign = Paint.Align.Center;
-          bp.TextSize = ConstrTextSize * Utils.GetMmPixel(this);
-          bp.SetStyle(Paint.Style.Fill);
-          first = false;
+          prj = prj ?? new Translation(_parent.ElemMatrixValues);
+          Curve displayGeom = geom.Project(prj);
+
+          DrawCurve(canvas, displayGeom, wp, bp);
         }
-        prj = prj ?? new Translation(_parent.ElemMatrixValues);
-        Pnt pos = (Pnt)textElem.Geometry;
-        Pnt t = pos.Project(prj);
 
-        float width = bp.MeasureText(textElem.Symbol.Text);
-        canvas.DrawRect(t.X - 0.6f * width, t.Y - 1.0f * bp.TextSize, t.X + 0.6f * width, t.Y + 0.2f * bp.TextSize, wp);
-        canvas.DrawText(textElem.Symbol.Text, t.X, t.Y, bp);
+        double? declination = ViewModel.GetDeclination();
+        if (declination != null)
+        {
+          prj = prj ?? new Translation(_parent.ElemMatrixValues);
+          DrawCompass(canvas, ViewModel.GetCompassPoint().Project(prj), declination.Value, wp, bp);
+        }
+
+        DrawOrientation(canvas, ViewModel.GetOrientation(), declination, wp, bp);
+
+        bool first = true;
+        foreach (Elem textElem in ViewModel.GetTexts())
+        {
+          if (first)
+          {
+            wp.SetStyle(Paint.Style.Fill);
+
+            bp.TextAlign = Paint.Align.Center;
+            bp.TextSize = ConstrTextSize * Utils.GetMmPixel(this);
+            bp.SetStyle(Paint.Style.Fill);
+            first = false;
+          }
+          prj = prj ?? new Translation(_parent.ElemMatrixValues);
+          Pnt pos = (Pnt)textElem.Geometry;
+          Pnt t = pos.Project(prj);
+
+          float width = bp.MeasureText(textElem.Symbol.Text);
+          canvas.DrawRect(t.X - 0.6f * width, t.Y - 1.0f * bp.TextSize, t.X + 0.6f * width, t.Y + 0.2f * bp.TextSize, wp);
+          canvas.DrawText(textElem.Symbol.Text, t.X, t.Y, bp);
+        }
       }
     }
 
@@ -183,11 +185,11 @@ namespace OMapScratch.Views
       float mm = Utils.GetMmPixel(this);
 
       float x0 = 15 * mm;
+      using (Paint red = new Paint())
       {
         float sin = (float)System.Math.Sin(azimuth);
         float cos = (float)System.Math.Cos(azimuth);
 
-        Paint red = new Paint();
         red.Color = Color.Red;
         red.SetStyle(Paint.Style.Fill);
         red.StrokeWidth = mm;
@@ -195,7 +197,10 @@ namespace OMapScratch.Views
         float b = 0.5f * mm;
         float l = 10 * mm;
         Curve c = new Curve().MoveTo(x0 + sin * b, x0 - cos * b).LineTo(x0 + l * cos, x0 + l * sin).LineTo(x0 - sin * b, x0 + cos * b);
-        canvas.DrawPath(SymbolUtils.GetPath(c), red);
+        using (Path path = SymbolUtils.GetPath(c))
+        {
+          canvas.DrawPath(path, red);
+        }
       }
 
       if (declination == null)
@@ -222,20 +227,21 @@ namespace OMapScratch.Views
 
       float mm = Utils.GetMmPixel(this);
 
-      Paint red = new Paint();
-      red.Color = new Color(255, 0, 0, 128);
-      red.StrokeWidth = 0.3f * mm;
-      red.SetStyle(Paint.Style.Stroke);
+      using (Paint red = new Paint())
+      {
+        red.Color = new Color(255, 0, 0, 128);
+        red.StrokeWidth = 0.3f * mm;
+        red.SetStyle(Paint.Style.Stroke);
 
-      float r = 2.5f * mm;
-      canvas.DrawCircle(p.X, p.Y, r, red);
+        float r = 2.5f * mm;
+        canvas.DrawCircle(p.X, p.Y, r, red);
 
-      canvas.DrawLine(p.X - r, p.Y, p.X - 1.8f * r, p.Y, red);
-      canvas.DrawLine(p.X + r, p.Y, p.X + 1.8f * r, p.Y, red);
+        canvas.DrawLine(p.X - r, p.Y, p.X - 1.8f * r, p.Y, red);
+        canvas.DrawLine(p.X + r, p.Y, p.X + 1.8f * r, p.Y, red);
 
-      canvas.DrawLine(p.X, p.Y - r, p.X, p.Y - 1.8f * r, red);
-      canvas.DrawLine(p.X, p.Y + r, p.X, p.Y + 1.8f * r, red);
-
+        canvas.DrawLine(p.X, p.Y - r, p.X, p.Y - 1.8f * r, red);
+        canvas.DrawLine(p.X, p.Y + r, p.X, p.Y + 1.8f * r, red);
+      }
     }
   }
 }

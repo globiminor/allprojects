@@ -215,8 +215,12 @@ namespace OMapScratch.Views
 
     private void ResetElemMatrix()
     {
+      _elemMatrix?.Dispose();
       _elemMatrix = null;
+
       _elemMatrixValues = null;
+
+      _inversElemMatrix?.Dispose();
       _inversElemMatrix = null;
 
       _maxExtent = null;
@@ -300,7 +304,7 @@ namespace OMapScratch.Views
         return _elemMatrixValues;
       }
     }
-    private Matrix InversElemMatrix
+    public Matrix InversElemMatrix
     {
       get
       {
@@ -640,29 +644,32 @@ namespace OMapScratch.Views
         int det_2 = det / 2;
         int x0 = (int)((-vals[2] + ShowDetail.X - det_2) / vals[0]);
         int y0 = (int)((-vals[5] + ShowDetail.Y - det_2) / vals[0]);
+
+        using (Rect source = new Rect(x0, y0, x0 + (int)(det / vals[0]), y0 + (int)(det / vals[0])))
         {
-          Rect source = new Rect(x0, y0, x0 + (int)(det / vals[0]), y0 + (int)(det / vals[0]));
+
           int w = Width;
           int rx = w - det;
           int ry = 0;
-          Rect dest = new Rect(rx, ry, rx + det, ry + det);
-          try
+          using (Rect dest = new Rect(rx, ry, rx + det, ry + det))
           {
-            canvas.Save();
-            canvas.ClipRect(dest);
-            canvas.DrawBitmap(_context.MapVm.CurrentImage, source, dest, null);
+            try
+            {
+              canvas.Save();
+              canvas.ClipRect(dest);
+              canvas.DrawBitmap(_context.MapVm.CurrentImage, source, dest, null);
 
-            float[] p0 = { ShowDetail.X - det_2, ShowDetail.Y - det_2 };
-            float[] p1 = { ShowDetail.X + det_2, ShowDetail.Y + det_2 };
-            Box maxExtent = GetMaxExtent(p0, p1);
-            float f = 1; // vals[0];
-            float[] dd = { (ShowDetail.X - (rx + det_2)) * f, (ShowDetail.Y - (ry + det_2)) * f };
-            DrawElems(canvas, _context.MapVm.Elems, maxExtent, dd);
+              float[] p0 = { ShowDetail.X - det_2, ShowDetail.Y - det_2 };
+              float[] p1 = { ShowDetail.X + det_2, ShowDetail.Y + det_2 };
+              Box maxExtent = GetMaxExtent(p0, p1);
+              float f = 1; // vals[0];
+              float[] dd = { (ShowDetail.X - (rx + det_2)) * f, (ShowDetail.Y - (ry + det_2)) * f };
+              DrawElems(canvas, _context.MapVm.Elems, maxExtent, dd);
 
+            }
+            finally
+            { canvas.Restore(); }
           }
-          finally
-          { canvas.Restore(); }
-
         }
       }
     }
@@ -672,65 +679,72 @@ namespace OMapScratch.Views
       if (elems == null)
       { return; }
 
-      Paint p = new Paint();
-      p.TextSize = ElemTextSize;
-      canvas.Save();
-      try
+      using (Paint p = new Paint())
       {
-        float[] matrix = ElemMatrixValues;
-
-        if (dd != null)
+        p.TextSize = ElemTextSize;
+        canvas.Save();
+        try
         {
-          matrix = (float[])matrix.Clone();
-          matrix[2] -= dd[0];
-          matrix[5] -= dd[1];
+          float[] matrix = ElemMatrixValues;
+
+          if (dd != null)
+          {
+            matrix = (float[])matrix.Clone();
+            matrix[2] -= dd[0];
+            matrix[5] -= dd[1];
+          }
+
+          float symbolScale = _context.MapVm.SymbolScale;
+
+          foreach (Elem elem in elems)
+          {
+            if (!maxExtent.Intersects(elem.Geometry.Extent))
+            { continue; }
+
+            p.Color = elem.Color?.Color ?? DefaultColor;
+            elem.Geometry.Draw(canvas, elem.Symbol, matrix, symbolScale, p);
+          }
         }
+        finally
+        { canvas.Restore(); }
 
-        float symbolScale = _context.MapVm.SymbolScale;
-
-        foreach (Elem elem in elems)
+        if (ContextMenu.Visibility == Android.Views.ViewStates.Visible &&
+          _editPnt != null)
         {
-          if (!maxExtent.Intersects(elem.Geometry.Extent))
-          { continue; }
+          using (Paint wp = new Paint())
+          using (Paint bp = new Paint())
+          {
+            wp.Color = Color.White;
+            wp.StrokeWidth = 3 * ConstrView.ConstrLineWidth;
+            wp.SetStyle(Paint.Style.Stroke);
 
-          p.Color = elem.Color?.Color ?? DefaultColor;
-          elem.Geometry.Draw(canvas, elem.Symbol, matrix, symbolScale, p);
+            bp.Color = ConstrView.ConstrColor;
+            bp.StrokeWidth = ConstrView.ConstrLineWidth;
+            bp.SetStyle(Paint.Style.Stroke);
+
+            Matrix mat = ElemMatrix;
+
+            Pnt pnt = _editPnt;
+            float[] draw = new float[] { pnt.X, pnt.Y };
+            mat.MapPoints(draw);
+
+            int x0 = (int)draw[0];
+            int y0 = (int)draw[1];
+
+            float size = 10;
+            using (Path path = new Path())
+            {
+              path.MoveTo(draw[0] - size, draw[1] - size);
+              path.LineTo(draw[0] - size, draw[1] + size);
+              path.LineTo(draw[0] + size, draw[1] + size);
+              path.LineTo(draw[0] + size, draw[1] - size);
+              path.LineTo(draw[0] - size, draw[1] - size);
+
+              canvas.DrawPath(path, wp);
+              canvas.DrawPath(path, bp);
+            }
+          }
         }
-      }
-      finally
-      { canvas.Restore(); }
-
-      if (ContextMenu.Visibility == Android.Views.ViewStates.Visible &&
-        _editPnt != null)
-      {
-        Paint wp = new Paint();
-        wp.Color = Color.White;
-        wp.StrokeWidth = 3 * ConstrView.ConstrLineWidth;
-        wp.SetStyle(Paint.Style.Stroke);
-        Paint bp = new Paint();
-        bp.Color = ConstrView.ConstrColor;
-        bp.StrokeWidth = ConstrView.ConstrLineWidth;
-        bp.SetStyle(Paint.Style.Stroke);
-
-        Matrix mat = ElemMatrix;
-
-        Pnt pnt = _editPnt;
-        float[] draw = new float[] { pnt.X, pnt.Y };
-        mat.MapPoints(draw);
-
-        int x0 = (int)draw[0];
-        int y0 = (int)draw[1];
-
-        float size = 10;
-        Path path = new Path();
-        path.MoveTo(draw[0] - size, draw[1] - size);
-        path.LineTo(draw[0] - size, draw[1] + size);
-        path.LineTo(draw[0] + size, draw[1] + size);
-        path.LineTo(draw[0] + size, draw[1] - size);
-        path.LineTo(draw[0] - size, draw[1] - size);
-
-        canvas.DrawPath(path, wp);
-        canvas.DrawPath(path, bp);
       }
     }
   }

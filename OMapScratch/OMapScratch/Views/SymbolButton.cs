@@ -95,19 +95,21 @@ namespace OMapScratch.Views
 
     internal override void OnDrawCore(MapButton canvasOwner, Canvas canvas)
     {
-      Paint p = new Paint();
-      p.Color = Color.White;
-
-      canvas.Save();
-      try
+      using (Paint p = new Paint())
       {
-        float width = canvasOwner.Width;
-        float height = canvasOwner.Height;
-        canvas.Translate(width / 2, height / 2);
-        SymbolUtils.DrawCurve(canvas, Arrow, null, 3, false, true, p);
+        p.Color = Color.White;
+
+        canvas.Save();
+        try
+        {
+          float width = canvasOwner.Width;
+          float height = canvasOwner.Height;
+          canvas.Translate(width / 2, height / 2);
+          SymbolUtils.DrawCurve(canvas, Arrow, null, 3, false, true, p);
+        }
+        finally
+        { canvas.Restore(); }
       }
-      finally
-      { canvas.Restore(); }
     }
   }
   public class SymbolButton : MapButton

@@ -62,14 +62,15 @@ namespace OMapScratch.Views
       _parent.MapView.ShowDetail = null;
     }
 
-    private float GetPrec(Rect rect = null)
+    private float GetPrec()
+    {
+      using (Rect rect = new Rect())
+      { return GetPrec(rect); }
+    }
+    private float GetPrec(Rect rect)
     {
       MapView mapView = _parent.MapView;
-      if (rect == null)
-      {
-        rect = new Rect();
-        mapView.GetGlobalVisibleRect(rect);
-      }
+      mapView.GetGlobalVisibleRect(rect);
       float prec = System.Math.Min(rect.Height(), rect.Width()) / mapView.Precision;
       return prec;
     }
@@ -96,48 +97,51 @@ namespace OMapScratch.Views
       if (_longTimeAction)
       {
         TouchReset();
+        IMapView mv = _parent.MapView;
+        mv.SetNextPointAction(null);
         return false;
       }
 
-      Rect rect = new Rect();
-      mapView.GetGlobalVisibleRect(rect);
-      if (_t2Down == null)
+      using (Rect rect = new Rect())
       {
-        float dx = _t1Up.X - _t1Down.X;
-        float dy = _t1Up.Y - _t1Down.Y;
-        float prec = GetPrec(rect);
-
-        if (mapView.IsTouchHandled())
-        { }
-        else if (System.Math.Abs(dx) <= prec && System.Math.Abs(dy) <= prec)
+        mapView.GetGlobalVisibleRect(rect);
+        if (_t2Down == null)
         {
-          float x = (_t1Down.X + _t1Up.X) / 2.0f;
-          float y = (_t1Down.Y + _t1Up.Y) / 2.0f;
+          float dx = _t1Up.X - _t1Down.X;
+          float dy = _t1Up.Y - _t1Down.Y;
+          float prec = GetPrec(rect);
 
-          _parent.BtnCurrentMode.MapClicked(x, y);
+          if (mapView.IsTouchHandled())
+          { }
+          else if (System.Math.Abs(dx) <= prec && System.Math.Abs(dy) <= prec)
+          {
+            float x = (_t1Down.X + _t1Up.X) / 2.0f;
+            float y = (_t1Down.Y + _t1Up.Y) / 2.0f;
+
+            _parent.BtnCurrentMode.MapClicked(x, y);
+          }
+          else
+          { mapView.Translate(dx, dy); }
+          mapView.PostInvalidate();
+
+          TouchReset();
+          return false;
         }
-        else
-        { mapView.Translate(dx, dy); }
-        mapView.PostInvalidate();
+        {
+          float dxDown = _t2Down.X - _t1Down.X;
+          float dyDown = _t2Down.Y - _t1Down.Y;
+          float lDown = (float)System.Math.Sqrt(dxDown * dxDown + dyDown * dyDown);
 
-        TouchReset();
-        return false;
-      }
+          float dxUp = _t2Up.X - _t1Up.X;
+          float dyUp = _t2Up.Y - _t1Up.Y;
+          float lUp = (float)System.Math.Sqrt(dxUp * dxUp + dyUp * dyUp);
+          float scale = lUp / lDown;
 
-      {
-        float dxDown = _t2Down.X - _t1Down.X;
-        float dyDown = _t2Down.Y - _t1Down.Y;
-        float lDown = (float)System.Math.Sqrt(dxDown * dxDown + dyDown * dyDown);
+          float centerX = (_t1Down.X + _t1Up.X + _t2Down.X + _t2Up.X) / 4 - rect.Left;
+          float centerY = (_t1Down.Y + _t1Up.Y + _t2Down.Y + _t2Up.Y) / 4 - rect.Top;
 
-        float dxUp = _t2Up.X - _t1Up.X;
-        float dyUp = _t2Up.Y - _t1Up.Y;
-        float lUp = (float)System.Math.Sqrt(dxUp * dxUp + dyUp * dyUp);
-        float scale = lUp / lDown;
-
-        float centerX = (_t1Down.X + _t1Up.X + _t2Down.X + _t2Up.X) / 4 - rect.Left;
-        float centerY = (_t1Down.Y + _t1Up.Y + _t2Down.Y + _t2Up.Y) / 4 - rect.Top;
-
-        mapView.Scale(scale, centerX, centerY);
+          mapView.Scale(scale, centerX, centerY);
+        }
       }
 
       TouchReset();
@@ -203,10 +207,9 @@ namespace OMapScratch.Views
       if (_t2Down != null)
       { return false; }
 
-      if (_parent.MapView.IsTouchHandled(checkOnly: true))
-      { return false; }
+      IEditAction editAction = _parent.MapView.NextPointAction as IEditAction;
 
-      if (!(_parent.BtnCurrentMode.CurrentMode is SymbolButton))
+      if (editAction == null && !(_parent.BtnCurrentMode.CurrentMode is SymbolButton))
       { return false; }
 
       float x;
@@ -236,9 +239,22 @@ namespace OMapScratch.Views
         y = (_t1Down.Y + move.Y) / 2.0f;
       }
 
-      _parent.BtnCurrentMode.MapClicked(x, y);
+      if (editAction != null)
+      {
+        float[] inverted = { x, y };
+        _parent.MapView.InversElemMatrix.MapPoints(inverted);
+        Pnt pnt = new Pnt(inverted[0], inverted[1]);
+
+        editAction.Action(pnt);
+      }
+      else
+      { _parent.BtnCurrentMode.MapClicked(x, y); }
+
       _longTimeAction = true;
-      _parent.MapView.ShowDetail = new Pnt(x, y);
+
+      if (editAction?.ShowDetail ?? true)
+      { _parent.MapView.ShowDetail = new Pnt(x, y); }
+
       _parent.MapView.PostInvalidate();
 
       return false;

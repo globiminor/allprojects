@@ -366,18 +366,19 @@ namespace OMapScratch
         return;
       }
 
-      Path path = GetPath(curve, matrix);
+      using (Path path = GetPath(curve, matrix))
+      {
+        if (fill && stroke)
+        { p.SetStyle(Paint.Style.FillAndStroke); }
+        else if (fill)
+        { p.SetStyle(Paint.Style.Fill); }
+        else if (lineWidth > 0)
+        { p.SetStyle(Paint.Style.Stroke); }
+        else
+        { p.SetStyle(Paint.Style.Fill); }
 
-      if (fill && stroke)
-      { p.SetStyle(Paint.Style.FillAndStroke); }
-      else if (fill)
-      { p.SetStyle(Paint.Style.Fill); }
-      else if (lineWidth > 0)
-      { p.SetStyle(Paint.Style.Stroke); }
-      else
-      { p.SetStyle(Paint.Style.Fill); }
-
-      canvas.DrawPath(path, p);
+        canvas.DrawPath(path, p);
+      }
     }
   }
 

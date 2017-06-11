@@ -14,6 +14,7 @@ namespace OcadScratch.ViewModels
     private BindingListView<WorkElemVm> _elems;
     private Basics.Geom.IProjection _globalPrj;
     private List<string> _symbolIds;
+    private ConfigVm _configVm;
 
     public void Init(string scratchFile)
     {
@@ -39,6 +40,22 @@ namespace OcadScratch.ViewModels
     {
       get { return _configPath; }
       set { }
+    }
+    
+    public ConfigVm ConfigVm
+    {
+      get { return _configVm; }
+      set
+      {
+        _configVm = value;
+        Changed();
+        Changed(nameof(CanSave));
+      }
+    }
+
+    public bool CanSave
+    {
+      get { return _configVm != null; }
     }
 
     public Basics.Geom.IProjection GlobalPrj
