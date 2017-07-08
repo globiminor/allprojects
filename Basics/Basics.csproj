@@ -136,6 +136,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serializer.cs" />
     <Compile Include="Utils.cs" />
+    <Compile Include="Views\BaseVm.cs" />
     <Compile Include="Views\BindingListView.cs" />
     <Compile Include="Views\EnumText.cs" />
     <Compile Include="Views\ListViewUtils.cs" />

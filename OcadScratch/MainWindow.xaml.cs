@@ -1,16 +1,15 @@
 ﻿using Basics;
-using Basics.Views;
 using OcadScratch.Commands;
 using OcadScratch.ViewModels;
 using OMapScratch;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
+using Basics.Window.Browse;
 
 namespace OcadScratch
 {
@@ -123,6 +122,14 @@ namespace OcadScratch
       { throw new InvalidDataException(""); }
     }
 
+    private void mniLoadTest_Click(object sender, RoutedEventArgs e)
+    {
+      {
+        FrmBrowser frm = new FrmBrowser();
+        frm.DataContext = BrowserVm.Create("C:\\");
+        frm.ShowDialog();
+      }
+    }
     private void mniLoad_Click(object sender, RoutedEventArgs e)
     {
       string scratchFile;
@@ -130,11 +137,13 @@ namespace OcadScratch
         Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
         dlg.Title = "Load Scratch file";
         dlg.Filter = "*.config | *.config";
+
         if (!(dlg.ShowDialog() ?? false))
         { return; }
 
         scratchFile = dlg.FileName;
       }
+
       ViewModels.MapVm vm = new ViewModels.MapVm();
       vm.Init(scratchFile);
       DataContext = vm;

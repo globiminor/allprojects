@@ -133,30 +133,32 @@ namespace OcadTest.OEvent
       int maxPages = 80;
 
       FuenferJoinPdfs(settings, maxPages);
-      return;
-      string pdfRoot = @"C:\daten\felix\kapreolo\karten\chomberg_bruetten\2015\";
+      string pdfRoot = @"C:\daten\felix\kapreolo\karten\stadlerberg\2017\Bahnen";
 
       {
-        string exp = string.Format("{0}__4a.pdf", settings.OutRoot);
+        string exp = string.Format("{0}_4a.pdf", settings.OutRoot);
         PdfText.OverprintFrontBack(exp, new string[] {
-          Path.Combine(pdfRoot, "Staffel_Front_4a.pdf"),
+          Path.Combine(pdfRoot, "Strecke4a.pdf"),
           Path.Combine(pdfRoot, "Rueck.4a.pdf")},
           settings.FrontBackground, settings.RueckBackgroud);
       }
       {
-        string exp = string.Format("{0}__4b.pdf", settings.OutRoot);
+        string exp = string.Format("{0}_4b.pdf", settings.OutRoot);
         PdfText.OverprintFrontBack(exp, new string[] {
-          Path.Combine(pdfRoot, "Staffel_Front_4b.pdf"),
+          Path.Combine(pdfRoot, "Strecke4b.pdf"),
           Path.Combine(pdfRoot, "Rueck.4b.pdf")},
           settings.FrontBackground, settings.RueckBackgroud);
       }
       {
-        string exp = string.Format("{0}__4c.pdf", settings.OutRoot);
+        string exp = string.Format("{0}_4c.pdf", settings.OutRoot);
         PdfText.OverprintFrontBack(exp, new string[] {
-          Path.Combine(pdfRoot, "Staffel_Front_4c.pdf"),
+          Path.Combine(pdfRoot, "Strecke4c.pdf"),
           Path.Combine(pdfRoot, "Rueck.4c.pdf")},
           settings.FrontBackground, settings.RueckBackgroud);
       }
+
+      return;
+
       List<int[]> pairs = new List<int[]> { new[] { 201, 210 }, new[] { 211, 220 }, new[] { 221, 230 } };
       foreach (int[] pair in pairs)
       {
@@ -249,7 +251,8 @@ namespace OcadTest.OEvent
       foreach (string file in Directory.GetFiles(dir))
       {
         string fileName = Path.GetFileName(file);
-        if (!fileName.StartsWith("Front.Staffel") &&
+        if (
+          //!fileName.StartsWith("Front.Staffel") &&
           !fileName.StartsWith("Rueck.Staffel"))
         { continue; }
 
@@ -259,7 +262,7 @@ namespace OcadTest.OEvent
         if (fileName.EndsWith(".4.ocd"))
         { continue; }
 
-        //AdaptBahn2015(file);
+        AdaptBahn2017(file);
         files.Add(file);
       }
       string optScript = Path.Combine(dir, "optScript.xml");
@@ -323,6 +326,52 @@ namespace OcadTest.OEvent
           { new Point2D(693503.4,  260320.9),
             new Point2D(693431.4,  260347.1),
             new Point2D(693058.2,  260252.2) });
+          replaceElem.Geometry = replace.Project(setup.Prj2Map);
+
+          w.Append(replaceElem);
+        }
+      }
+    }
+
+    private void AdaptBahn2017(string fileName)
+    {
+      if (!fileName.Contains(".2.ocd") && !fileName.Contains(".5.ocd"))
+      { return; }
+
+      using (OcadWriter w = Ocad9Writer.AppendTo(fileName))
+      {
+        Setup setup = w.Reader.ReadSetup();
+        IList<ElementIndex> indices = w.Reader.GetIndices();
+
+        ElementIndex delIndex = null;
+        ElementIndex controlIndex = null;
+        Element replaceElem = null;
+        foreach (ElementIndex e in indices)
+        {
+          Element elem = w.Reader.ReadElement(e);
+          if (elem == null)
+          { continue; }
+
+          if (elem.Text == null)
+          { continue; }
+
+          if (!elem.Text.Contains("-138"))
+          { continue; }
+
+          delIndex = e;
+          replaceElem = elem;
+        }
+        if (delIndex != null)
+        {
+          w.DeleteElements(delegate (ElementIndex i)
+          { return i.Index == delIndex.Index; });
+
+          PointCollection replace = new PointCollection();
+          replace.Add(new Point2D(2675554.3, 1266229.6));
+          replace.Add(new Point2D(2675554.3, 1266217.6));
+          replace.Add(new Point2D(2675726.4, 1266217.6));
+          replace.Add(new Point2D(2675726.4, 1266287.6));
+          replace.Add(new Point2D(2675554.3, 1266287.6));
           replaceElem.Geometry = replace.Project(setup.Prj2Map);
 
           w.Append(replaceElem);

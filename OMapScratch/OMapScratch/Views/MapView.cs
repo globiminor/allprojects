@@ -364,9 +364,12 @@ namespace OMapScratch.Views
           float scale = newMat[0] / _lastWorldMatrix[0];
           float dx = current[0] - last[0];
           float dy = current[1] - last[1];
-          ImageMatrix.PostTranslate(dx, dy);
+          ImageMatrix.PostTranslate(dx, -dy);
+
           if (scale != 1)
-          { Scale(scale, current[0], current[1]); }
+          {
+            ImageMatrix.PreScale(scale, scale);
+          }
           return;
         }
         if (_initMatrix != null)
