@@ -1379,8 +1379,7 @@ namespace OMapScratch
       if (string.IsNullOrEmpty(elemsPath))
       { return null; }
       XmlElems xml;
-      using (TextReader r = new StreamReader(elemsPath))
-      { Serializer.TryDeserialize(out xml, r); }
+      Deserialize(elemsPath, out xml);
       if (xml?.Elems == null)
       { return null; }
 
@@ -1413,8 +1412,7 @@ namespace OMapScratch
       if (string.IsNullOrEmpty(symbolPath))
       { return; }
       XmlSymbols xml;
-      using (TextReader r = new StreamReader(symbolPath))
-      { Serializer.TryDeserialize(out xml, r); }
+      Deserialize(symbolPath, out xml);
 
       _symbols = ReadSymbols(xml?.Symbols);
       _colors = ReadColors(xml?.Colors);
@@ -1532,9 +1530,11 @@ namespace OMapScratch
 
     internal string VerifyLocalPath(string path)
     {
-      string fullPath = GetLocalPath(path);
-      if (fullPath == null || !File.Exists(fullPath))
+      if (string.IsNullOrEmpty(path) || string.IsNullOrEmpty(_configPath))
       { return null; }
+      string dir = Path.GetDirectoryName(_configPath);
+      string fullPath = Path.Combine(dir, Path.GetFileName(path));
+
       return fullPath;
     }
   }
@@ -1771,6 +1771,8 @@ namespace OMapScratch
     public bool Fill { get; set; }
     [XmlAttribute("s")]
     public bool Stroke { get; set; }
+    [XmlAttribute("dash")]
+    public string Dash { get; set; }
     [XmlAttribute("geom")]
     public string Geometry { get; set; }
 
@@ -1791,6 +1793,7 @@ namespace OMapScratch
       curve.LineWidth = LineWidth;
       curve.Fill = Fill;
       curve.Stroke = Stroke;
+      curve.Dash = DrawableUtils.GetDash(Dash);
 
       curve.Curve = (Curve)DrawableUtils.GetGeometry(Geometry);
       return curve;
@@ -1813,6 +1816,35 @@ namespace OMapScratch
     public const string LineTo = "l";
     public const string CubicTo = "c";
 
+    internal static Dash GetDash(string dash)
+    {
+      if (string.IsNullOrEmpty(dash))
+      { return null; }
+      IList<string> parts = dash.Split(';');
+      if (parts.Count > 3)
+      { return null; }
+      IList<string> intervalls = parts[0].Split(',');
+      if (intervalls.Count < 1)
+      { return null; }
+
+      List<float> ints = new List<float>();
+      foreach (string i in intervalls)
+      {
+        float intervall;
+        if (!float.TryParse(i, out intervall))
+        { return null; }
+        ints.Add(intervall);
+      }
+
+      Dash d = new Dash { Intervals = ints.ToArray() };
+      float t;
+      if (parts.Count > 1 && float.TryParse(parts[1], out t))
+      { d.StartOffset = t; }
+      if (parts.Count > 2 && float.TryParse(parts[2], out t))
+      { d.EndOffset = t; }
+
+      return d;
+    }
     internal static IDrawable GetGeometry(string geometry)
     {
       if (string.IsNullOrEmpty(geometry))
@@ -2486,7 +2518,31 @@ namespace OMapScratch
     public bool Fill { get; set; }
     public bool Stroke { get; set; }
 
+    public Dash Dash { get; set; }
+
     public Curve Curve { get; set; }
+  }
+  public class Dash
+  {
+    public float[] Intervals { get; set; }
+    public float StartOffset { get; set; }
+    public float EndOffset { get; set; }
+
+    public IEnumerable<float> GetPositions(float fullLength = -1)
+    {
+      if (fullLength > 0 && EndOffset > 0)
+      { }
+      float pos = StartOffset;
+      yield return pos;
+      while (true)
+      {
+        foreach (float interval in Intervals)
+        {
+          pos += interval;
+          yield return pos;
+        }
+      }
+    }
   }
 
   public enum SymbolType { Point, Line, Text }
@@ -2503,7 +2559,7 @@ namespace OMapScratch
       if (nCurves == 0)
       { return SymbolType.Text; }
 
-      if (nCurves == 1 && Curves[0].Curve == null)
+      if (Curves[0].Curve == null || Curves[0].Dash != null)
       { return SymbolType.Line; }
 
       return SymbolType.Point;

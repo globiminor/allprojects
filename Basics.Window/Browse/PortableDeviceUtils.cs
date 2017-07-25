@@ -1,12 +1,60 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace Basics.Window.Browse
 {
-  static class PortableDeviceUtils
+  class PdEntry
   {
+    public string Id { get; set; }
+    public string Name { get; set; }
+  }
+
+  public static class PortableDeviceUtils
+  {
+    private class DevMgr : IDisposable
+    {
+      private PortableDeviceApiLib.PortableDeviceManager _devMgr;
+      public DevMgr()
+      {
+        _devMgr = new PortableDeviceApiLib.PortableDeviceManager();
+      }
+      public PortableDeviceApiLib.PortableDeviceManager Base { get { return _devMgr; } }
+      public void Dispose()
+      {
+        if (_devMgr != null)
+        { Marshal.ReleaseComObject(_devMgr); }
+        _devMgr = null;
+      }
+    }
+
+    private class DevContent : IDisposable
+    {
+      private PortableDeviceApiLib.IPortableDeviceValues _devVals;
+      private PortableDeviceApiLib.IPortableDeviceContent _content;
+      public DevContent(string deviceId)
+      {
+        _devVals = InitDeviceValues();
+        PortableDeviceApiLib.PortableDeviceFTM dev = new PortableDeviceApiLib.PortableDeviceFTM();
+
+        dev.Open(deviceId, _devVals);
+
+        dev.Content(out _content);
+      }
+
+      public PortableDeviceApiLib.IPortableDeviceContent Base { get { return _content; } }
+      public void Dispose()
+      {
+        if (_devVals != null)
+        {
+          Marshal.ReleaseComObject(_devVals);
+        }
+        _devVals = null;
+      }
+    }
+
     [StructLayout(LayoutKind.Explicit, Size = 16)]
     public struct PropVariant
     {
@@ -22,34 +70,80 @@ namespace Basics.Window.Browse
 
     public static IEnumerable<string> GetDevices()
     {
-      PortableDeviceApiLib.PortableDeviceManager devMgr = new PortableDeviceApiLib.PortableDeviceManager();
-      PortableDeviceApiLib.IPortableDeviceManager iDevMgr = devMgr;
-      uint nDev = 0;
-      devMgr.RefreshDeviceList();
-
-      devMgr.GetDevices(null, ref nDev);
-      string[] devices = new string[nDev];
-      devMgr.GetDevices(devices, ref nDev);
-
-      for (int i = 0; i < nDev; i++)
+      using (DevMgr mgr = new DevMgr())
       {
-        uint maxChar = 1024;
-        ushort[] t = new ushort[maxChar];
-
-        uint nChar = maxChar;
-        devMgr.GetDeviceFriendlyName(devices[i], ref t[0], ref nChar);
-        string device = GetString(t, nChar);
-
-        yield return device;
+        foreach (string deviceId in GetDeviceIds(mgr.Base))
+        {
+          yield return GetDeviceFriendlyName(mgr.Base, deviceId);
+        }
       }
-
-      System.Runtime.InteropServices.Marshal.ReleaseComObject(devMgr);
     }
 
-    public static IEnumerable<string> GetContent(IList<string> dirs)
+    public static void Deserialize<T>(string path, out T obj)
     {
-      PortableDeviceApiLib.PortableDeviceManager devMgr = new PortableDeviceApiLib.PortableDeviceManager();
-      PortableDeviceApiLib.IPortableDeviceManager iDevMgr = devMgr;
+      if (!File.Exists(path))
+      {
+        using (Stream s = new MemoryStream())
+        {
+          Read(path, s);
+
+          s.Seek(0, SeekOrigin.Begin);
+
+          using (TextReader r = new StreamReader(s))
+          { Serializer.Deserialize(out obj, r); }
+        }
+      }
+      else
+      {
+        using (TextReader r = new StreamReader(path))
+        { Serializer.Deserialize(out obj, r); }
+      }
+    }
+    public static void Read(string path, Stream stream)
+    {
+      IList<string> dirs = path.Split(Path.DirectorySeparatorChar);
+
+      using (DevMgr mgr = new DevMgr())
+      {
+        foreach (string deviceId in GetDeviceIds(mgr.Base))
+        {
+          string device = GetDeviceFriendlyName(mgr.Base, deviceId);
+          if (!device.Equals(dirs[0]))
+          { continue; }
+
+          using (DevContent dev = new DevContent(deviceId))
+          {
+            PdEntry fileEntry = GetEntry(dev.Base, "DEVICE", dirs, 1);
+
+            ReadContent(dev.Base, fileEntry.Id, stream);
+          }
+        }
+      }
+    }
+    internal static IEnumerable<PdEntry> GetContent(IList<string> dirs)
+    {
+      using (DevMgr mgr = new DevMgr())
+      {
+        foreach (string deviceId in GetDeviceIds(mgr.Base))
+        {
+          string device = GetDeviceFriendlyName(mgr.Base, deviceId);
+          if (!device.Equals(dirs[0]))
+          { continue; }
+
+          using (DevContent dev = new DevContent(deviceId))
+          {
+            PdEntry parent = GetEntry(dev.Base, "DEVICE", dirs, 1);
+            foreach (PdEntry entry in GetContent(dev.Base, parent.Id))
+            {
+              yield return entry;
+            }
+          }
+        }
+      }
+    }
+
+    private static IEnumerable<string> GetDeviceIds(PortableDeviceApiLib.PortableDeviceManager devMgr)
+    {
       uint nDev = 0;
       devMgr.RefreshDeviceList();
 
@@ -57,39 +151,96 @@ namespace Basics.Window.Browse
       string[] devices = new string[nDev];
       devMgr.GetDevices(devices, ref nDev);
 
-      for (int i = 0; i < nDev; i++)
+      return devices;
+    }
+
+    private static string GetDeviceFriendlyName(PortableDeviceApiLib.PortableDeviceManager devMgr, string deviceId)
+    {
+      uint maxChar = 1024;
+      ushort[] t = new ushort[maxChar];
+
+      uint nChar = maxChar;
+      devMgr.GetDeviceFriendlyName(deviceId, ref t[0], ref nChar);
+      string device = GetString(t, nChar);
+      return device;
+    }
+
+    public static void TransferContent(string device, string fileId, Stream target)
+    {
+      using (DevMgr mgr = new DevMgr())
       {
-        uint maxChar = 1024;
-        ushort[] t = new ushort[maxChar];
-
-        uint nChar = maxChar;
-        devMgr.GetDeviceFriendlyName(devices[i], ref t[0], ref nChar);
-        string device = GetString(t, nChar);
-
-        if (device.Equals(dirs[0]))
+        foreach (string deviceId in GetDeviceIds(mgr.Base))
         {
-          PortableDeviceApiLib.IPortableDeviceValues devVals = InitDeviceValues();
-          PortableDeviceApiLib.PortableDeviceFTM dev = new PortableDeviceApiLib.PortableDeviceFTM();
+          string deviceName = GetDeviceFriendlyName(mgr.Base, deviceId);
+          if (!device.Equals(deviceName))
+          { continue; }
 
-          dev.Open(devices[i], devVals);
-
-          PortableDeviceApiLib.IPortableDeviceContent content;
-          dev.Content(out content);
-
-          foreach (string entry in EnumRecursive(content, "DEVICE", dirs, 1))
+          using (DevContent dev = new DevContent(deviceId))
           {
-            yield return entry;
+            ReadContent(dev.Base, fileId, target);
           }
+        }
+      }
+    }
 
-          Marshal.ReleaseComObject(devVals);
+    private static void ReadContent(PortableDeviceApiLib.IPortableDeviceContent content, string fileId,
+      Stream target)
+    {
+      PortableDeviceApiLib.IPortableDeviceResources resources;
+      content.Transfer(out resources);
+
+      PortableDeviceApiLib.IStream wpdStream;
+      uint optimalTransferSize = 0;
+      var property = new PortableDeviceApiLib._tagpropertykey();
+      property.fmtid = new Guid(0xE81E79BE, 0x34F0, 0x41BF, 0xB5, 0x3F,
+                                0xF1, 0xA0, 0x6A, 0xE8, 0x78, 0x42);
+      property.pid = 0;
+      resources.GetStream(fileId, ref property, 0, ref optimalTransferSize,
+                          out wpdStream);
+
+      System.Runtime.InteropServices.ComTypes.IStream sourceStream =
+          (System.Runtime.InteropServices.ComTypes.IStream)wpdStream;
+
+      unsafe
+      {
+        var buffer = new byte[1024];
+        int bytesRead;
+
+        do
+        {
+          sourceStream.Read(buffer, 1024, new IntPtr(&bytesRead));
+          target.Write(buffer, 0, bytesRead);
+        } while (bytesRead > 0);
+      }
+      Marshal.ReleaseComObject(wpdStream);
+    }
+
+    private static PdEntry GetEntry(PortableDeviceApiLib.IPortableDeviceContent content,
+      string parentId, IList<string> dirs, int pos)
+    {
+      if (pos == dirs.Count)
+      { return new PdEntry { Id = parentId, Name = "" }; }
+      List<string> ids = GetObjectIds(content, parentId);
+
+      foreach (string id in ids)
+      {
+        PdEntry idEntry = GetEntry(content, id);
+        if (idEntry == null)
+        { continue; }
+
+        if (idEntry.Name == dirs[pos])
+        {
+          if (pos == dirs.Count - 1)
+          { return idEntry; }
+          return GetEntry(content, idEntry.Id, dirs, pos + 1);
         }
       }
 
-      Marshal.ReleaseComObject(devMgr);
+      return null;
     }
 
-    private static IEnumerable<string> EnumRecursive(PortableDeviceApiLib.IPortableDeviceContent content, 
-      string parentId, IList<string> dirs, int pos)
+    private static List<string> GetObjectIds(PortableDeviceApiLib.IPortableDeviceContent content,
+      string parentId)
     {
       PortableDeviceApiLib.IEnumPortableDeviceObjectIDs enumObjIds;
       content.EnumObjects(0, parentId, null, out enumObjIds);
@@ -103,62 +254,65 @@ namespace Basics.Window.Browse
         if (fetched > 0)
         { ids.Add(objId); }
       }
+      return ids;
+    }
+
+    private static IEnumerable<PdEntry> GetContent(PortableDeviceApiLib.IPortableDeviceContent content,
+      string parentId)
+    {
+      List<string> ids = GetObjectIds(content, parentId);
 
       foreach (string id in ids)
       {
-        PortableDeviceApiLib.IPortableDeviceProperties props;
-        content.Properties(out props);
+        yield return GetEntry(content, id);
+      }
+    }
 
-        PortableDeviceApiLib.IPortableDeviceValues values;
-        props.GetValues(id, null, out values);
+    private static PdEntry GetEntry(PortableDeviceApiLib.IPortableDeviceContent content, string id)
+    {
+      PortableDeviceApiLib.IPortableDeviceProperties props;
+      content.Properties(out props);
 
-        uint nValues = 0;
-        values.GetCount(ref nValues);
-        for (uint iValue = 0; iValue < nValues; iValue++)
+      PortableDeviceApiLib.IPortableDeviceValues values;
+      props.GetValues(id, null, out values);
+
+      uint nValues = 0;
+      values.GetCount(ref nValues);
+      for (uint iValue = 0; iValue < nValues; iValue++)
+      {
+        PortableDeviceApiLib._tagpropertykey propKey =
+                new PortableDeviceApiLib._tagpropertykey();
+        PortableDeviceApiLib.tag_inner_PROPVARIANT ipValue =
+                        new PortableDeviceApiLib.tag_inner_PROPVARIANT();
+        values.GetAt(iValue, ref propKey, ref ipValue);
+
+        if (propKey.pid != 4)
         {
-          PortableDeviceApiLib._tagpropertykey propKey =
-                  new PortableDeviceApiLib._tagpropertykey();
-          PortableDeviceApiLib.tag_inner_PROPVARIANT ipValue =
-                          new PortableDeviceApiLib.tag_inner_PROPVARIANT();
-          values.GetAt(iValue, ref propKey, ref ipValue);
+          continue;
+        }
+        //
+        // Allocate memory for the intermediate marshalled object
+        // and marshal it as a pointer
+        //
+        IntPtr ptrValue = Marshal.AllocHGlobal(Marshal.SizeOf(ipValue));
+        Marshal.StructureToPtr(ipValue, ptrValue, false);
 
-          if (propKey.pid != 4)
-          {
-            continue;
-          }
-          //
-          // Allocate memory for the intermediate marshalled object
-          // and marshal it as a pointer
-          //
-          IntPtr ptrValue = Marshal.AllocHGlobal(Marshal.SizeOf(ipValue));
-          Marshal.StructureToPtr(ipValue, ptrValue, false);
+        //
+        // Marshal the pointer into our C# object
+        //
+        PropVariant pvValue =
+            (PropVariant)Marshal.PtrToStructure(ptrValue, typeof(PropVariant));
 
-          //
-          // Marshal the pointer into our C# object
-          //
-          PropVariant pvValue =
-              (PropVariant)Marshal.PtrToStructure(ptrValue, typeof(PropVariant));
-
-          //
-          // Display the property if it a string (VT_LPWSTR is decimal 31)
-          //
-          if (pvValue.variantType == 31 /*VT_LPWSTR*/)
-          {
-            string value = Marshal.PtrToStringUni(pvValue.pointerValue);
-            if (pos >= dirs.Count)
-            {
-              yield return value;
-            }
-            else if (value == dirs[pos])
-            {
-              foreach (string entry in EnumRecursive(content, id, dirs, pos + 1))
-              {
-                yield return entry;
-              }
-            }
-          }
+        //
+        // Display the property if it a string (VT_LPWSTR is decimal 31)
+        //
+        if (pvValue.variantType == 31 /*VT_LPWSTR*/)
+        {
+          string value = Marshal.PtrToStringUni(pvValue.pointerValue);
+          return new PdEntry { Id = id, Name = value };
         }
       }
+      return null;
     }
 
     private static PortableDeviceApiLib.IPortableDeviceValues InitDeviceValues()

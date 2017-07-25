@@ -13,6 +13,9 @@ using Basics.Window.Browse;
 
 namespace OcadScratch
 {
+  public class Serializer
+  { }
+
   /// <summary>
   /// Interaktionslogik für MainWindow.xaml
   /// </summary>
@@ -100,14 +103,14 @@ namespace OcadScratch
         syms.Colors = new List<XmlColor>();
         foreach (ColorRef color in map.GetColors())
         { syms.Colors.Add(XmlColor.Create(color)); }
-        Serializer.Serialize(syms, w);
+        Basics.Serializer.Serialize(syms, w);
       }
 
       string first = sb.ToString();
       XmlSymbols des;
       using (var r = new StringReader(first))
       {
-        Serializer.Deserialize(out des, r);
+        Basics.Serializer.Deserialize(out des, r);
       }
 
       List<Symbol> symbols = new List<Symbol>();
@@ -116,7 +119,7 @@ namespace OcadScratch
       sb = new StringBuilder();
       using (var w = new StringWriter(sb))
       {
-        Serializer.Serialize(XmlSymbols.Create(symbols), w);
+        Basics.Serializer.Serialize(XmlSymbols.Create(symbols), w);
       }
       if (sb.ToString() != first)
       { throw new InvalidDataException(""); }
@@ -124,34 +127,40 @@ namespace OcadScratch
 
     private void mniLoadTest_Click(object sender, RoutedEventArgs e)
     {
+      string fullPath;
       {
         FrmBrowser frm = new FrmBrowser();
-        frm.DataContext = BrowserVm.Create("C:\\");
-        frm.ShowDialog();
+        BrowserVm browserVm = BrowserVm.Create("C:\\", ".config");
+        frm.DataContext = browserVm;
+        if (frm.ShowDialog() == true)
+        { }
+        else
+        { return; }
+        fullPath = browserVm.Selected.FullPath;
       }
+      LoadConfig(fullPath);
     }
     private void mniLoad_Click(object sender, RoutedEventArgs e)
     {
-      string scratchFile;
-      {
-        Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
-        dlg.Title = "Load Scratch file";
-        dlg.Filter = "*.config | *.config";
+      Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+      dlg.Title = "Load Scratch file";
+      dlg.Filter = "*.config | *.config";
 
-        if (!(dlg.ShowDialog() ?? false))
-        { return; }
+      if (!(dlg.ShowDialog() ?? false))
+      { return; }
 
-        scratchFile = dlg.FileName;
-      }
+      LoadConfig(dlg.FileName);
+    }
 
+    private void LoadConfig(string configFile)
+    {
       ViewModels.MapVm vm = new ViewModels.MapVm();
-      vm.Init(scratchFile);
+      vm.Init(configFile);
       DataContext = vm;
 
       XmlConfig config;
-      using (TextReader r = new StreamReader(scratchFile))
-      { Serializer.Deserialize(out config, r); }
-      ConfigVm configVm = new ConfigVm(scratchFile, config);
+      PortableDeviceUtils.Deserialize(configFile, out config);
+      ConfigVm configVm = new ConfigVm(configFile, config);
 
       SetConfigVm(configVm);
     }

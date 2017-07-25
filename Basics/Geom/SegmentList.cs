@@ -33,7 +33,7 @@ namespace Basics.Geom
 
         for (int i = 0; i < index; i++)
         { _polyline.NextNodes(ref p0, ref c); }
-        return Curve.Create(p0.Value, p0.Next.Value, c.Value);
+        return Curve.Create(p0.Value, p0.Next.Value, c?.Value);
       }
     }
     public Curve First

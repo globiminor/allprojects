@@ -199,16 +199,11 @@ namespace OcadScratch.ViewModels
       { return lazy; }
 
       string symPath = Path.Combine(Path.GetDirectoryName(_configFile), symFile);
-      if (!File.Exists(symPath))
-      { return lazy; }
 
       try
       {
         XmlSymbols xmls;
-        using (TextReader r = new StreamReader(symPath))
-        {
-          Serializer.Deserialize(out xmls, r);
-        }
+        Basics.Window.Browse.PortableDeviceUtils.Deserialize(symPath, out xmls);
 
         foreach (XmlColor clr in xmls.Colors)
         {
@@ -393,9 +388,9 @@ namespace OcadScratch.ViewModels
     {
       if (_config == null)
       { return; }
-      using (System.IO.TextWriter w = new System.IO.StreamWriter(configFile))
+      using (TextWriter w = new StreamWriter(configFile))
       {
-        Serializer.Serialize(_config, w);
+        Basics.Serializer.Serialize(_config, w);
       }
     }
 

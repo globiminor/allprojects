@@ -76,6 +76,11 @@ namespace Basics.Window.Browse
       grdFiles.MouseDoubleClick += (s, e) =>
       {
         DataContext?.SetContent(grdFiles.CurrentItem as ContentVm);
+        if ((DataContext?.Selected?.IsDirectory ?? true) == false)
+        {
+          DialogResult = true;
+          Close();
+        }
       };
       grdFiles.SelectedCellsChanged += (s, e) =>
       {

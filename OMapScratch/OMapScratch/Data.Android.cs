@@ -188,6 +188,12 @@ namespace OMapScratch
       _currentImagePath = path;
     }
 
+    public static void Deserialize<T>(string path, out T obj)
+    {
+      using (System.IO.TextReader r = new System.IO.StreamReader(path))
+      { Serializer.Deserialize(out obj, r); }
+    }
+
     public System.Collections.Generic.List<ColorRef> GetDefaultColors()
     {
       return new System.Collections.Generic.List<ColorRef>
@@ -290,11 +296,74 @@ namespace OMapScratch
 
   public static class SymbolUtils
   {
-    public static void DrawLine(Canvas canvas, Symbol sym, float[] matrix, float symbolScale, Curve line, Paint p)
+    private class Dash : System.IDisposable
+    {
+      private readonly Paint _p;
+      private DashPathEffect _dash;
+      private readonly PathEffect _orig;
+      public Dash(SymbolCurve sym, float scale, Paint p, Curve line)
+      {
+        _p = p;
+        if (sym.Dash == null)
+        { return; }
+
+        _orig = p.PathEffect;
+        int n = sym.Dash.Intervals.Length;
+        float[] dash = new float[n];
+        for (int i = 0; i < n; i++)
+        { dash[i] = sym.Dash.Intervals[i] * scale; }
+
+        _dash = new DashPathEffect(dash, sym.Dash.StartOffset * scale);
+        p.SetPathEffect(_dash);
+      }
+      public void Dispose()
+      {
+        if (_dash != null)
+        {
+          _p.SetPathEffect(_orig);
+          _dash.Dispose();
+          _dash = null;
+        }
+      }
+    }
+    public static void DrawLine(Canvas canvas, Symbol symbol, float[] matrix, float symbolScale, Curve line, Paint p)
     {
       float lineScale = matrix?[0] * symbolScale ?? 1;
-      foreach (SymbolCurve curve in sym.Curves)
-      { DrawCurve(canvas, line, matrix, curve.LineWidth * lineScale, curve.Fill, curve.Stroke, p); }
+      foreach (SymbolCurve sym in symbol.Curves)
+      {
+        if (sym.Curve == null)
+        {
+          using (new Dash(sym, lineScale, p, line))
+          {
+            DrawCurve(canvas, line, matrix, sym.LineWidth * lineScale, sym.Fill, sym.Stroke, p);
+          }
+        }
+        else if (sym.Dash != null && line.Count > 0)
+        {
+          using (Path path = GetPath(line, null))
+          {
+            using (PathMeasure m = new PathMeasure(path, false))
+            {
+              float l = m.Length;
+
+              Symbol pntSym = new Symbol { Curves = new System.Collections.Generic.List<SymbolCurve> { sym }, };
+
+              foreach (float dist in sym.Dash.GetPositions())
+              {
+                if (dist > l)
+                { break; }
+
+                float[] pos = new float[2];
+                float[] tan = new float[2];
+                m.GetPosTan(dist, pos, tan);
+
+                DirectedPnt pnt = new DirectedPnt { X = pos[0], Y = pos[1], Azimuth = (float)(System.Math.Atan2(tan[0], tan[1]) + System.Math.PI / 2)};
+                DrawPoint(canvas, pntSym, matrix, symbolScale, pnt, p);
+              }
+            }
+          }
+        }
+      }
     }
 
     public static void DrawPoint(Canvas canvas, Symbol sym, float[] matrix, float symbolScale, Pnt point, Paint p)

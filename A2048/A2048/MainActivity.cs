@@ -87,7 +87,7 @@ namespace A2048
       while (_replay != null && _replay.MoveNext())
       {
         _mainView?.PostInvalidate();
-        await Task.Delay(100);
+        await Task.Delay(10);
       }
       _replay = null;
     }

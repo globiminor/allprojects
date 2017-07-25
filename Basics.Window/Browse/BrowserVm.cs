@@ -10,8 +10,12 @@ namespace Basics.Window.Browse
     private string _directory;
     private string _fileName;
 
+    private ContentVm _selected;
+
     public BindingListView<ContentVm> Items { get; private set; }
     public BindingListView<ContentVm> Devices { get; private set; }
+
+    public string Filter { get; set; }
 
     public string DirectoryPath
     {
@@ -25,6 +29,11 @@ namespace Basics.Window.Browse
 
         Changed(null);
       }
+    }
+
+    public ContentVm Selected
+    {
+      get { return _selected; }
     }
 
     public string FileName
@@ -54,6 +63,8 @@ namespace Basics.Window.Browse
 
     public bool SetSelected(ContentVm content)
     {
+      _selected = content;
+
       if (content == null)
       { return false; }
 
@@ -61,8 +72,7 @@ namespace Basics.Window.Browse
       return true;
     }
 
-
-    public static BrowserVm Create(string parentPath)
+    public static BrowserVm Create(string parentPath, string filter = null)
     {
       if (Directory.Exists(parentPath))
       {
@@ -77,8 +87,9 @@ namespace Basics.Window.Browse
         devices.AllowEdit = false;
 
         LoadDevices(devices);
-        TryLoadContent(parentPath, items);
         BrowserVm newContent = new BrowserVm { Devices = devices, Items = items, _directory = parentPath };
+        newContent.Filter = filter;
+        newContent.TryLoadContent(parentPath, items);
 
         return newContent;
       }
@@ -99,7 +110,7 @@ namespace Basics.Window.Browse
       }
     }
 
-    private static bool TryLoadContent(string path, BindingListView<ContentVm> contents)
+    private bool TryLoadContent(string path, BindingListView<ContentVm> contents)
     {
       if (Directory.Exists(path))
       {
@@ -110,22 +121,46 @@ namespace Basics.Window.Browse
       { return false; }
       if (parts.Count == 1)
       {
-        return TryLoadContent(new DeviceContentVm { FullPath = path}, contents);
+        return TryLoadContent(new DeviceContentVm { FullPath = path }, contents);
       }
       if (parts.Count > 1)
       {
         List<string> dirs = new List<string>(parts);
         dirs.RemoveAt(dirs.Count - 1);
-        return TryLoadContent(new DevEntryContentVm(dirs, parts[parts.Count - 1]), contents);
+        return TryLoadContent(new DevEntryContentVm(dirs, new PdEntry { Name = parts[parts.Count - 1] }), contents);
       }
       return false;
     }
 
-    private static bool TryLoadContent(ContentVm content, BindingListView<ContentVm> contents)
+    private bool TryLoadContent(ContentVm content, BindingListView<ContentVm> contents)
     {
+      if (!content.IsDirectory)
+      { return false; }
+
       IEnumerable<ContentVm> enumContent = content?.GetContent();
       if (enumContent == null)
       { return false; }
+
+      List<ContentVm> toSort = new List<ContentVm>();
+      foreach (ContentVm child in enumContent)
+      {
+        if (Filter != null && !child.IsDirectory && !child.Name.EndsWith(Filter, System.StringComparison.InvariantCultureIgnoreCase))
+        { continue; }
+
+        toSort.Add(child);
+      }
+      toSort.Sort((x, y) =>
+      {
+        if (x == y)
+        { return 0; }
+
+        int d = x.IsDirectory.CompareTo(y.IsDirectory);
+        if (d != 0)
+        { return d; }
+
+        d = x.Name.CompareTo(y.Name);
+        return d;
+      });
 
       bool orig = contents.RaiseListChangedEvents;
       try
@@ -133,10 +168,9 @@ namespace Basics.Window.Browse
 
         contents.RaiseListChangedEvents = false;
         contents.Clear();
-
-        foreach (ContentVm child in enumContent)
+        foreach (ContentVm contentVm in toSort)
         {
-          contents.Add(child);
+          contents.Add(contentVm);
         }
       }
       finally

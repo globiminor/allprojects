@@ -93,7 +93,7 @@ namespace OcadScratch.Commands
 
       XmlGeomag xmlGeomag;
       using (TextReader r = new StringReader(xml))
-      { Serializer.Deserialize(out xmlGeomag, r); }
+      { Basics.Serializer.Deserialize(out xmlGeomag, r); }
 
       Declination = xmlGeomag.Result.Declination.Value;
     }

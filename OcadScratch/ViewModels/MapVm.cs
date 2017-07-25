@@ -24,8 +24,8 @@ namespace OcadScratch.ViewModels
       _symbolIds = null;
 
       XmlConfig config;
-      using (TextReader reader = new StreamReader(scratchFile))
-      { Serializer.Deserialize(out config, reader); }
+      Basics.Window.Browse.PortableDeviceUtils.Deserialize(scratchFile, out config);
+
       Map map = new Map();
       map.Load(scratchFile, config);
 

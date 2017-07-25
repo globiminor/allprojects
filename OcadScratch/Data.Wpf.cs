@@ -18,7 +18,12 @@ namespace OMapScratch
         new ColorRef { Id = "R", Color = Colors.Red },
         new ColorRef { Id = "B", Color = Colors.Blue } };
     }
+    public static void Deserialize<T>(string path, out T obj)
+    {
+      Basics.Window.Browse.PortableDeviceUtils.Deserialize(path, out obj);
+    }
   }
+
   partial class ColorRef
   {
     public Color Color { get; set; }
@@ -132,11 +137,53 @@ namespace OMapScratch
 
       else if (symTyp == SymbolType.Line)
       {
-        //float w = width / (2 * scale) * 0.8f;
-        float lineWidth = symbol.Curves[0].LineWidth;
-        Pen pen = new Pen(br, lineWidth * scale);
-        DrawCurve(dc, new Curve().MoveTo(3, height / 2).LineTo(width - 3, height / 2), 
-          null,  lineWidth * scale, false, true, pen);
+        foreach (SymbolCurve sym in symbol.Curves)
+        {
+          if (sym.Curve == null)
+          {
+            //float w = width / (2 * scale) * 0.8f;
+            float lineWidth = sym.LineWidth;
+            Pen pen = new Pen(br, lineWidth * scale);
+            if (sym.Dash == null)
+            {
+              DrawCurve(dc, new Curve().MoveTo(3, height / 2).LineTo(width - 3, height / 2),
+                null, lineWidth * scale, false, true, pen);
+            }
+            else
+            {
+              int i = 0;
+              float pre = 0;
+              foreach (float pos in sym.Dash.GetPositions())
+              {
+                i++;
+                float current = pos * scale + 3;
+
+                if (i % 2 == 0)
+                {
+                  DrawCurve(dc, new Curve().MoveTo(pre, height / 2).LineTo(Math.Min(current, width - 3), height / 2), null, sym.LineWidth * scale, false, true, pen);
+                }
+                pre = current;
+
+                if (current > width - 3)
+                { break; }
+              }
+            }
+          }
+          else if (sym.Dash != null)
+          {
+            float[] matrix = GetMatrix(width, height, scale);
+            Pen pen = new Pen(br, sym.LineWidth * scale);
+            foreach (float pos in sym.Dash.GetPositions())
+            {
+              if (pos * scale > width - 6)
+              { break; }
+
+              matrix[2] = pos * scale + 3;
+
+              DrawCurve(dc, sym.Curve, matrix, sym.LineWidth * scale, sym.Fill, sym.Stroke, pen);
+            }
+          }
+        }
       }
     }
 
