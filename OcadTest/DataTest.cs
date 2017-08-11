@@ -1,11 +1,15 @@
 using Basics.Geom;
+using Dhm;
+using Grid;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Ocad;
 using Ocad.Data;
 using Shape;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
+using System.IO;
 
 namespace OcadTest
 {
@@ -24,6 +28,84 @@ namespace OcadTest
           { continue; }
           byte[] color = BitConverter.GetBytes(e.Color);
         }
+      }
+    }
+
+    [TestMethod]
+    public void TestLasShp()
+    {
+      int n = 0;
+      List<Point3D> pts = new List<Point3D>(15100100);
+      using (ShpReader r = new ShpReader(@"C:\daten\felix\kapreolo\karten\hardwald\2017\26870_12535"))
+      {
+        foreach (Point3D p in r)
+        {
+          //pts.Add(p);
+          n++;
+        }
+      }
+      Console.WriteLine(n);
+    }
+
+    [TestMethod]
+    public void TestLasTxt()
+    {
+      double res = 1;
+      string dir = @"C:\daten\felix\kapreolo\karten\hardwald\2017";
+      foreach (string key in new[] { "26855_12545", "26855_12550",
+        "26860_12540", "26860_12545", "26860_12550", "26860_12555",
+        "26865_12530", "26865_12535", "26865_12540", "26865_12545", "26865_12550",
+        "26870_12530", "26870_12535", "26870_12540", "26870_12545" })
+      {
+        string lazName = Path.Combine(dir, key + ".laz");
+        string resName = $"obstr{key}";
+        string tifPath = Path.Combine(dir, $"{resName}.tif");
+
+        if (File.Exists(tifPath))
+        { continue; }
+
+        if (File.Exists(Path.Combine(dir, $"{key}.tif")))
+        {
+          File.Move(Path.Combine(dir, $"{key}.tif"), tifPath);
+          File.Move(Path.Combine(dir, $"{key}.tfw"), Path.Combine(dir, $"{resName}.tfw"));
+          continue;
+        }
+
+        if (!File.Exists(Path.ChangeExtension(lazName, ".txt")))
+        {
+          if (!File.Exists(lazName))
+          {
+            if (File.Exists(Path.ChangeExtension(lazName, ".html")))
+            { File.Move(Path.ChangeExtension(lazName, ".html"), lazName); }
+          }
+          if (!File.Exists(lazName))
+          { continue; }
+
+          Process p = new Process();
+          p.StartInfo = new ProcessStartInfo
+          {
+            FileName = @"C:\daten\felix\src\temp\LAStools\bin\las2txt.exe",
+            Arguments = $"-i {lazName} -parse xyzi"
+          };
+          p.Start();
+          p.WaitForExit();
+        }
+
+        DoubleGrid grd;
+        using (TextReader reader = new StreamReader(Path.ChangeExtension(lazName, ".txt")))
+        {
+          grd = LasUtils.CreateGrid(reader, res, LasUtils.Obstruction);
+        }
+
+        byte[] r = new byte[256];
+        byte[] g = new byte[256];
+        byte[] b = new byte[256];
+        LeastCostPathUI.Common.InitColors(r, g, b);
+        r[0] = 255;
+        g[0] = 255;
+        b[0] = 255;
+
+        ImageGrid.GridToTif(grd.ToIntGrid(), tifPath, r, g, b);
       }
     }
 
@@ -67,7 +149,7 @@ namespace OcadTest
         {
           ElementV9 e = (ElementV9)r.ReadElement(idx);
           if (!string.IsNullOrWhiteSpace(e.Text))
-          { 
+          {
           }
         }
       }

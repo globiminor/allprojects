@@ -52,6 +52,7 @@
     <Compile Include="ContourSorter.cs" />
     <Compile Include="Dhm.cs" />
     <Compile Include="FallDir.cs" />
+    <Compile Include="LasUtils.cs" />
     <Compile Include="NeighborInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SetGridHeight.cs" />

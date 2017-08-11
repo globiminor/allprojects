@@ -22,7 +22,11 @@ namespace Basics.Data
       /// <summary>
       /// Key fields can be changed
       /// </summary>
-      KeyVariable = 2
+      KeyVariable = 2,
+      /// <summary>
+      /// return keys on insert
+      /// </summary>
+      NoKeysReturn = 4
     }
 
     public const string UpdateDone = "UpdateDone";
@@ -239,6 +243,9 @@ namespace Basics.Data
     {
       foreach (DataColumn column in table.PrimaryKey)
       {
+        if (!column.AutoIncrement)
+        { continue; }
+
         DbParameter p = command.CreateParameter();
         p.ParameterName = column.ColumnName;
         p.SourceColumn = column.ColumnName;
@@ -258,7 +265,7 @@ namespace Basics.Data
 
       foreach (DataColumn column in table.Columns)
       {
-        if (keyFix && keys.Contains(column))
+        if (keyFix && keys.Contains(column) && column.AutoIncrement)
         { continue; }
 
         if (column.ReadOnly)
@@ -322,7 +329,8 @@ namespace Basics.Data
                                         mapping == null ? table.TableName : mapping.SourceTable,
                                         ValueFields(table, formatMode), ReturnFields(table, formatMode));
         AppendFieldParameters(cmd, table, formatMode);
-        if ((formatMode & CommandFormatMode.Auto) == CommandFormatMode.Auto)
+        if ((formatMode & CommandFormatMode.Auto) == CommandFormatMode.Auto &&
+          (formatMode & CommandFormatMode.NoKeysReturn) != CommandFormatMode.NoKeysReturn)
         { AppendKeyParameters(cmd, table, DataRowVersion.Current, ParameterDirection.Output); }
         adapter.InsertCommand = cmd;
 
@@ -431,7 +439,7 @@ namespace Basics.Data
       StringBuilder values = new StringBuilder();
       foreach (DataColumn column in table.Columns)
       {
-        if (autoKeys && keys.Contains(column))
+        if (autoKeys && keys.Contains(column) && column.AutoIncrement)
         { continue; }
 
         if (column.ReadOnly)
@@ -451,8 +459,10 @@ namespace Basics.Data
 
     private static string ReturnFields(DataTable table, CommandFormatMode formatMode)
     {
-      bool autoKeys = (formatMode & CommandFormatMode.Auto) == CommandFormatMode.Auto;
-      if (autoKeys == false)
+      if ((formatMode & CommandFormatMode.Auto) == CommandFormatMode.Auto)
+      { return null; }
+
+      if ((formatMode & CommandFormatMode.NoKeysReturn) == CommandFormatMode.NoKeysReturn)
       { return null; }
 
       bool first;
@@ -461,6 +471,9 @@ namespace Basics.Data
       first = true;
       foreach (DataColumn column in table.PrimaryKey)
       {
+        if (!column.AutoIncrement)
+        { continue; }
+
         if (first == false)
         { keys.Append(", "); }
         else
@@ -472,6 +485,9 @@ namespace Basics.Data
       first = true;
       foreach (DataColumn column in table.PrimaryKey)
       {
+        if (!column.AutoIncrement)
+        { continue; }
+
         if (first == false)
         { keys.Append(", "); }
         else

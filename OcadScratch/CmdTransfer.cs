@@ -165,9 +165,9 @@ namespace OcadScratch
           else
           {
             double length = line.Length();
-            float pre = -1;
+            double pre = -1;
             int i = 0;
-            foreach (float pos in sym.Dash.GetPositions((float)length))
+            foreach (double pos in sym.Dash.GetPositions(length))
             {
               i++;
               if (i % 2 == 0)
@@ -192,7 +192,7 @@ namespace OcadScratch
         else if (sym.Dash != null)
         {
           double length = line.Length();
-          foreach (float pos in sym.Dash.GetPositions((float)length))
+          foreach (float pos in sym.Dash.GetPositions(length))
           {
             if (pos > length)
             { break; }
@@ -202,13 +202,13 @@ namespace OcadScratch
             Basics.Geom.Point tan = seg.TangentAt(pars[1]);
 
             double azimuth = Math.Atan2(tan.X, tan.Y) + Math.PI / 2;
-            TransferPoint(seg.PointAt(pars[1]), (float)azimuth, new[] { sym }, color, w);
+            TransferPoint(seg.PointAt(pars[1]), azimuth, new[] { sym }, color, w);
           }
         }
       }
 
     }
-    private void TransferPoint(Basics.Geom.IPoint pnt, float? azimuth, IEnumerable<SymbolCurve> symParts, int color, Ocad9Writer w)
+    private void TransferPoint(Basics.Geom.IPoint pnt, double? azimuth, IEnumerable<SymbolCurve> symParts, int color, Ocad9Writer w)
     {
       MyPrjRotate rotate = null;
       if (azimuth != null) { rotate = new MyPrjRotate(azimuth.Value); }

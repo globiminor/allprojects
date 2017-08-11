@@ -228,7 +228,7 @@ namespace Basics.Window.Browse
         if (idEntry == null)
         { continue; }
 
-        if (idEntry.Name == dirs[pos])
+        if (idEntry.Name.Equals(dirs[pos], StringComparison.InvariantCultureIgnoreCase))
         {
           if (pos == dirs.Count - 1)
           { return idEntry; }
