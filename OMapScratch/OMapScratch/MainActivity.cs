@@ -536,13 +536,15 @@ namespace OMapScratch
       //imageButton.Visibility = (nImages < 2) ? ViewStates.Gone : ViewStates.Visible;
       //imageButton.PostInvalidate();
 
-      LocationVm.StartLocation(false);
+      if (Settings.UseLocation)
+      { LocationVm.StartLocation(false); }
       if (Settings.UseCompass)
       { CompassVm.StartCompass(); }
     }
     protected override void OnPause()
     {
       base.OnPause();
+      MapVm.Save(backup: true);
       LocationVm.PauseLocation();
       CompassVm.StopCompass();
     }

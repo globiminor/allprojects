@@ -538,12 +538,13 @@ namespace OMapScratch
       }
     }
 
-    internal void Save()
+    internal void Save(bool backup = false)
     {
       if (EventUtils.Cancel(this, Saving))
       { return; }
-      _map.Save();
-      Saved?.Invoke(this, null);
+      _map.Save(backup);
+      if (!backup)
+      { Saved?.Invoke(this, null); }
     }
 
     public void Load(string configPath)
@@ -1316,13 +1317,16 @@ namespace OMapScratch
       }
     }
 
-    public void Save()
+    public void Save(bool backup = false)
     {
       if (_elems == null)
       { return; }
       string path = GetLocalPath(_config?.Data?.Scratch);
       if (path == null)
       { return; }
+
+      if (backup)
+      { path = $"{path}.bck"; }
 
       using (var w = new StreamWriter(path))
       { Serializer.Serialize(XmlElems.Create(_elems), w); }
@@ -2239,7 +2243,7 @@ namespace OMapScratch
       if (Azimuth != null && Angle != null)
       {
         projected.Azimuth = (float)Math.Atan2(dx, dy);
-        projected.Angle = radius;
+        projected.Angle = Angle;
       }
       return projected;
     }
@@ -2524,21 +2528,44 @@ namespace OMapScratch
   }
   public class Dash
   {
+    public Dash Scale(float f)
+    {
+      Dash scaled = new Dash { Intervals = new float[Intervals.Length], StartOffset = f * StartOffset, EndOffset = f * EndOffset };
+      for (int i = 0; i < Intervals.Length; i++)
+      { scaled.Intervals[i] = f * Intervals[i]; }
+      return scaled;
+    }
     public float[] Intervals { get; set; }
     public float StartOffset { get; set; }
     public float EndOffset { get; set; }
 
-    public IEnumerable<float> GetPositions(float fullLength = -1)
+    public double GetFactor(double fullLength)
     {
-      if (fullLength > 0 && EndOffset > 0)
-      { }
-      float pos = StartOffset;
+      double f = 1;
+      if (fullLength > 0 && EndOffset != 0)
+      {
+        double sum = 0;
+        foreach (double interval in Intervals)
+        { sum += interval; }
+
+        double l = fullLength - StartOffset + EndOffset;
+        int d = (int)Math.Round(l / sum);
+        if (d < 1)
+        { d = 1; }
+        f = l / (d * sum);
+      }
+      return f;
+    }
+    public IEnumerable<double> GetPositions(double fullLength = -1)
+    {
+      double f = GetFactor(fullLength);
+      double pos = f * StartOffset;
       yield return pos;
       while (true)
       {
-        foreach (float interval in Intervals)
+        foreach (double interval in Intervals)
         {
-          pos += interval;
+          pos += f * interval;
           yield return pos;
         }
       }

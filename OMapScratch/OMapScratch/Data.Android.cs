@@ -68,7 +68,7 @@ namespace OMapScratch
         System.IO.Directory.CreateDirectory(home);
       }
 
-      recentPath = System.IO.Path.Combine(home, "resent.xml");
+      recentPath = System.IO.Path.Combine(home, "recent.xml");
       XmlRecents recentList;
       if (System.IO.File.Exists(recentPath))
       {
@@ -151,6 +151,8 @@ namespace OMapScratch
     private Bitmap _currentImage;
 
     public Bitmap CurrentImage { get { return _currentImage; } }
+
+    public Matrix ImageMatrix { get; set; }
 
     public void LoadImage(string path)
     {
@@ -307,6 +309,18 @@ namespace OMapScratch
         if (sym.Dash == null)
         { return; }
 
+        if (sym.Dash.EndOffset != 0 && line.Count > 0)
+        {
+          using (Path path = GetPath(line, null))
+          {
+            using (PathMeasure m = new PathMeasure(path, false))
+            {
+              float l = m.Length;
+              scale = (float)(scale * sym.Dash.GetFactor(l));
+            }
+          }
+        }
+
         _orig = p.PathEffect;
         int n = sym.Dash.Intervals.Length;
         float[] dash = new float[n];
@@ -347,8 +361,9 @@ namespace OMapScratch
               float l = m.Length;
 
               Symbol pntSym = new Symbol { Curves = new System.Collections.Generic.List<SymbolCurve> { sym }, };
+              OMapScratch.Dash scaled = matrix != null ? sym.Dash.Scale(symbolScale) : sym.Dash;
 
-              foreach (float dist in sym.Dash.GetPositions())
+              foreach (float dist in scaled.GetPositions(l))
               {
                 if (dist > l)
                 { break; }
@@ -357,7 +372,7 @@ namespace OMapScratch
                 float[] tan = new float[2];
                 m.GetPosTan(dist, pos, tan);
 
-                DirectedPnt pnt = new DirectedPnt { X = pos[0], Y = pos[1], Azimuth = (float)(System.Math.Atan2(tan[0], tan[1]) + System.Math.PI / 2)};
+                DirectedPnt pnt = new DirectedPnt { X = pos[0], Y = pos[1], Azimuth = (float)(System.Math.Atan2(tan[0], tan[1]) + System.Math.PI / 2) };
                 DrawPoint(canvas, pntSym, matrix, symbolScale, pnt, p);
               }
             }
@@ -366,6 +381,18 @@ namespace OMapScratch
       }
     }
 
+    private class ScalePrj : IProjection
+    {
+      private readonly float _scale;
+
+      public ScalePrj(float scale)
+      { _scale = scale; }
+
+      public Pnt Project(Pnt pnt)
+      {
+        return new Pnt(pnt.X * _scale, pnt.Y * _scale);
+      }
+    }
     public static void DrawPoint(Canvas canvas, Symbol sym, float[] matrix, float symbolScale, Pnt point, Paint p)
     {
       if (!string.IsNullOrEmpty(sym.Text))
@@ -383,14 +410,17 @@ namespace OMapScratch
         {
           pntScale = matrix[0] * symbolScale;
         }
-        canvas.Scale(pntScale, -pntScale);
+        canvas.Scale(1, -1);
 
         float? azi = (point as DirectedPnt)?.Azimuth;
         if (azi != null)
         { canvas.Rotate(azi.Value * 180 / (float)System.Math.PI); }
 
+        ScalePrj prj = new ScalePrj(pntScale);
         foreach (SymbolCurve curve in sym.Curves)
-        { DrawCurve(canvas, curve.Curve, null, curve.LineWidth, curve.Fill, curve.Stroke, p); }
+        {
+          DrawCurve(canvas, curve.Curve.Project(prj), null, curve.LineWidth * pntScale, curve.Fill, curve.Stroke, p);
+        }
       }
       finally
       { canvas.Restore(); }

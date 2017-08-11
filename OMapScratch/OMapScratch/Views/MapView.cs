@@ -49,6 +49,8 @@ namespace OMapScratch.Views
     private bool _keepTextOnDraw;
     private float? _elemTextSize;
 
+    private static Matrix _preImgMatrix;
+
     public MapView(MainActivity context)
       : base(context)
     {
@@ -258,6 +260,9 @@ namespace OMapScratch.Views
       {
         if (_elemMatrix == null)
         {
+          _preImgMatrix?.Dispose();
+          _preImgMatrix = new Matrix(ImageMatrix);
+
           Matrix elemMatrix = new Matrix(ImageMatrix);
 
           float[] imgMat = CurrentWorldMatrix;
@@ -378,9 +383,16 @@ namespace OMapScratch.Views
 
       if (_initMatrix == null)
       {
-        Matrix m = new Matrix();
-        m.PostTranslate(10, 10);
-        _initMatrix = m;
+        if (_preImgMatrix != null)
+        {
+          _initMatrix = new Matrix(_preImgMatrix);
+        }
+        else
+        {
+          Matrix m = new Matrix();
+          m.PostTranslate(10, 10);
+          _initMatrix = m;
+        }
       }
       ImageMatrix = _initMatrix;
     }
