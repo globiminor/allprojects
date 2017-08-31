@@ -222,18 +222,21 @@ namespace OMapScratch.Views
       }
       else
       {
-        float rect = GetPrec();
+        if (!_parent.DrawOnlyMode)
+        {
+          float rect = GetPrec();
 
-        float dx = (move.X - _t1Down.X);
-        float dy = (move.Y - _t1Down.Y);
-        float prec = GetPrec();
+          float dx = (move.X - _t1Down.X);
+          float dy = (move.Y - _t1Down.Y);
+          float prec = GetPrec();
 
-        if (System.Math.Abs(dx) > prec || System.Math.Abs(dy) > prec)
-        { return false; }
+          if (System.Math.Abs(dx) > prec || System.Math.Abs(dy) > prec)
+          { return false; }
 
-        long dt = Java.Lang.JavaSystem.CurrentTimeMillis() - _downTime;
-        if (dt < _parent.MapView.LongClickTime)
-        { return false; }
+          long dt = Java.Lang.JavaSystem.CurrentTimeMillis() - _downTime;
+          if (dt < _parent.MapView.LongClickTime)
+          { return false; }
+        }
 
         x = (_t1Down.X + move.X) / 2.0f;
         y = (_t1Down.Y + move.Y) / 2.0f;

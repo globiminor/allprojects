@@ -383,7 +383,7 @@ namespace OMapScratch.Views
 
       if (_initMatrix == null)
       {
-        if (_preImgMatrix != null)
+        if (_preImgMatrix != null && !_preImgMatrix.IsIdentity)
         {
           _initMatrix = new Matrix(_preImgMatrix);
         }

@@ -51,11 +51,15 @@ namespace OcadTest
     public void TestLasTxt()
     {
       double res = 1;
-      string dir = @"C:\daten\felix\kapreolo\karten\hardwald\2017";
-      foreach (string key in new[] { "26855_12545", "26855_12550",
-        "26860_12540", "26860_12545", "26860_12550", "26860_12555",
-        "26865_12530", "26865_12535", "26865_12540", "26865_12545", "26865_12550",
-        "26870_12530", "26870_12535", "26870_12540", "26870_12545" })
+      string dir = @"C:\daten\felix\kapreolo\karten\hardwald\2017\lidar";
+
+      Dictionary<string, string> tiles = new Dictionary<string, string>();
+      foreach (string path in Directory.EnumerateFiles(dir))
+      {
+        string key = Path.GetFileNameWithoutExtension(path);
+        tiles[key] = path;
+      }
+      foreach (string key in tiles.Keys)
       {
         string lazName = Path.Combine(dir, key + ".laz");
         string resName = $"obstr{key}";

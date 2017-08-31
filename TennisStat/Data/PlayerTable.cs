@@ -32,6 +32,8 @@ namespace TennisStat.Data
     public static readonly TypedColumn<int> IdPlayerColumn = new TypedColumn<int>("IdPlayer");
     public static readonly TypedColumn<string> KeyNameColumn = new TypedColumn<string>("KeyName");
     public static readonly TypedColumn<string> NameColumn = new TypedColumn<string>("Name");
+    public static readonly TypedColumn<string> UrlRefColumn = new TypedColumn<string>("UrlRef");
+    public static readonly TypedColumn<string> MatchCountColumn = new TypedColumn<string>("MatchCount");
 
     public PlayerTable()
       : base("Player")
@@ -39,6 +41,8 @@ namespace TennisStat.Data
       IdPlayerColumn.CreatePrimaryKey(this).AutoIncrement = true;
       Columns.Add(KeyNameColumn.CreateColumn());
       Columns.Add(NameColumn.CreateColumn());
+      Columns.Add(UrlRefColumn.CreateColumn());
+      Columns.Add(MatchCountColumn.CreateColumn());
     }
 
     public new Row NewRow()

@@ -13,6 +13,11 @@ namespace Basics.Data
       _name = name;
     }
 
+    public override string ToString()
+    {
+      return _name;
+    }
+
     public abstract DataColumn CreatePrimaryKey(DataTable table);
     public abstract DataColumn CreateColumn();
 
@@ -33,7 +38,6 @@ namespace Basics.Data
     public TypedColumn(string name)
       : base(name)
     { }
-
 
     public override DataColumn CreatePrimaryKey(DataTable table)
     {

@@ -77,7 +77,8 @@ namespace OMapScratch
 
       double scale = matrix?[0] ?? 1;
       SweepDirection dir = Ang > 0 ? SweepDirection.Clockwise : SweepDirection.Counterclockwise;
-      Pnt m = s.At(0.5f).Trans(matrix);
+      Pnt mRaw = s.At(0.5f);
+      Pnt m = mRaw.Trans(matrix);
       path.Segments.Add(new ArcSegment(new System.Windows.Point(m.X, m.Y),
         new System.Windows.Size(scale * Radius, scale * Radius), 180, false, dir, true));
 

@@ -13,6 +13,33 @@ namespace TennisStat
 {
   public class QueryAtp
   {
+    public Dictionary<string, int> GetMatchCounts()
+    {
+      string result;
+      using (WebClient webClient = new WebClient())
+      {
+        string url = string.Format(@"http://www.atpworldtour.com/en/content/ajax/fedex-performance-full-table/career/All/All");
+
+        byte[] resultStream = webClient.UploadValues(url, "POST", new NameValueCollection());
+        result = Encoding.UTF8.GetString(resultStream);
+      }
+      HtmlDocument doc = new HtmlDocument();
+      doc.LoadHtml(result);
+
+      Dictionary<string, int> matchDict = new Dictionary<string, int>();
+      HtmlNodeCollection nodes = doc.DocumentNode.SelectNodes("//tbody[@id='winLossTableContent']");
+      foreach (HtmlNode player in nodes[0].SelectNodes("tr"))
+      {
+        string playerRef = player.SelectSingleNode("td[@class='player-cell']").SelectSingleNode("a").Attributes["href"].Value;
+        string stats = player.SelectSingleNode("td[@class='fifty-two-week-win-loss-cell']").InnerText;
+        IList<string> winLoss = stats.Split('-');
+        int nMatches = int.Parse(winLoss[0]) + int.Parse(winLoss[1]);
+
+        matchDict.Add(playerRef, nMatches);
+      }
+
+      return matchDict;
+    }
     public void GetResults(PlayerTable.Row player, int year)
     {
       using (WebClient webClient = new WebClient())

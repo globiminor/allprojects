@@ -105,6 +105,20 @@ namespace Basics.Geom
       return v;
     }
 
+    public Point3D VectorProduct3D(IPoint p1)
+    {
+      if (p1 == null)
+      { return null; }
+
+      Point3D p = new Point3D
+      {
+        X = Y * p1.Z - Z * p1.Y,
+        Y = Z * p1.X - X * p1.Z,
+        Z = X * p1.Y - Y * p1.X
+      };
+      return p;
+    }
+
     public override IBox Extent
     {
       get { return this; }
@@ -491,21 +505,26 @@ namespace Basics.Geom
     }
 
     public static Vector operator +(Vector v0, Vector v1)
+    { return v0.Add(v1); }
+    public Vector Add(Vector v1)
     {
-      Debug.Assert(v0.Dimension == v1.Dimension);
-      int iDim = v0.Dimension;
+      Debug.Assert(Dimension == v1.Dimension);
+      int iDim = Dimension;
       Vector v = new Vector(iDim);
       for (int i = 0; i < iDim; i++)
-      { v[i] = v0[i] + v1[i]; }
+      { v[i] = this[i] + v1[i]; }
       return v;
     }
+
     public static Vector operator -(Vector v0, Vector v1)
+    { return v0.Sub(v1); }
+    public Vector Sub(Vector v1)
     {
-      Debug.Assert(v0.Dimension == v1.Dimension);
-      int iDim = v0.Dimension;
+      Debug.Assert(Dimension == v1.Dimension);
+      int iDim = Dimension;
       Vector v = new Vector(iDim);
       for (int i = 0; i < iDim; i++)
-      { v[i] = v0[i] - v1[i]; }
+      { v[i] = this[i] - v1[i]; }
       return v;
     }
 

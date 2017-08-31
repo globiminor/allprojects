@@ -115,6 +115,8 @@ namespace OMapScratch
     private RecentFileBrowser _browser;
     private LinearLayout _imageList;
 
+    private CheckBox chkDrawOnly;
+
     private System.Action<MapButton> _setModeFct;
 
     public MapView MapView
@@ -399,6 +401,16 @@ namespace OMapScratch
         }
 
         {
+          chkDrawOnly = new CheckBox(this);
+          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+          chkDrawOnly.LayoutParameters = lprams;
+          chkDrawOnly.Text = "D.o.";
+
+          chkDrawOnly.Id = View.GenerateViewId();
+
+          lloTools.AddView(chkDrawOnly);
+        }
+        {
           View dummy = new View(this);
           {
             LinearLayout.LayoutParams lprams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.MatchParent, 1f);
@@ -517,6 +529,9 @@ namespace OMapScratch
     {
       _setModeFct?.Invoke(modeButton);
     }
+
+    public bool DrawOnlyMode
+    { get { return chkDrawOnly?.Checked ?? false; } }
 
     private LocationVm _locationVm;
     public LocationVm LocationVm

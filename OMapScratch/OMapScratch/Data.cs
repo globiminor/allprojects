@@ -2195,7 +2195,7 @@ namespace OMapScratch
       double sin = Math.Sin(angle);
       double cos = Math.Cos(angle);
 
-      double x = Center.X - sin * Radius;
+      double x = Center.X + sin * Radius;
       double y = Center.Y + cos * Radius;
       return new Pnt((float)x, (float)y);
     }

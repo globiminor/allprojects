@@ -120,22 +120,31 @@ namespace OcadScratch
       }
       else if (type == SymbolType.Text)
       {
-        ElementV9 elem = new ElementV9(true);
-        elem.Type = GeomType.unformattedText;
-        elem.Color = color;
-        Basics.Geom.PointCollection points = new Basics.Geom.PointCollection();
-        Basics.Geom.Point2D center = (Basics.Geom.Point2D)geom;
-        points.Add(new Basics.Geom.Point2D(center.X - 2, center.Y - 2));
-        //points.Add(center);
-        //points.Add(new Basics.Geom.Point2D(center.X - 0.1, center.Y - 0.1));
-        //points.Add(new Basics.Geom.Point2D(center.X + 0.1, center.Y - 0.1));
-        //points.Add(new Basics.Geom.Point2D(center.X + 0.1, center.Y + 0.2));
-        //points.Add(new Basics.Geom.Point2D(center.X - 0.1, center.Y + 0.2));
-        elem.Geometry = points;
-        elem.Text = e.Symbol.Text;
-        elem.Symbol = -3;
+        List<SymbolCurve> curves;
+        if (_charSymbols.TryGetValue(e.Symbol.Text, out curves))
+        {
+          Basics.Geom.Point2D center = (Basics.Geom.Point2D)geom;
+          TransferPoint(new Basics.Geom.Point2D(center.X - 2, center.Y - 2), (eGeom as DirectedPnt)?.Azimuth, curves, color, w);
+        }
+        else
+        {
+          ElementV9 elem = new ElementV9(true);
+          elem.Type = GeomType.unformattedText;
+          elem.Color = color;
+          Basics.Geom.PointCollection points = new Basics.Geom.PointCollection();
+          Basics.Geom.Point2D center = (Basics.Geom.Point2D)geom;
+          points.Add(new Basics.Geom.Point2D(center.X - 2, center.Y - 2));
+          //points.Add(center);
+          //points.Add(new Basics.Geom.Point2D(center.X - 0.1, center.Y - 0.1));
+          //points.Add(new Basics.Geom.Point2D(center.X + 0.1, center.Y - 0.1));
+          //points.Add(new Basics.Geom.Point2D(center.X + 0.1, center.Y + 0.2));
+          //points.Add(new Basics.Geom.Point2D(center.X - 0.1, center.Y + 0.2));
+          elem.Geometry = points;
+          elem.Text = e.Symbol.Text;
+          elem.Symbol = -3;
 
-        w.Append(elem);
+          w.Append(elem);
+        }
       }
       else if (type == SymbolType.Line)
       {
@@ -143,6 +152,34 @@ namespace OcadScratch
       }
       else
       { throw new NotImplementedException($"unhandled type {type}"); }
+    }
+
+    private Dictionary<string, List<SymbolCurve>> _charSymbols = new Dictionary<string, List<SymbolCurve>>
+    {
+      { "0", GetGeom(" a 0 3 3 270 180"," m 3 3 l 3 -3"," a 0 -3 3 90 180"," m -3 -3 l -3 3") },
+      { "1", GetGeom(" m -2.0 4 l 2 6 l 2 -6") },
+      { "2", GetGeom(" a 0 3 3 270 210", " m 2.0 1.5 l -3 -6 l 3 -6") },
+      { "3", GetGeom(" a 0 3 3 270 270", " a 0 -3 3 0 270") },
+      { "4", GetGeom(" m 1 -6 l 1 6 l -3 -2 l 3 -2") },
+      { "5", GetGeom(" m 3 6 l -3 6 l -3 1 l 0 1", " a -0.5 -2.5 3.5 0 240") },
+      { "6", GetGeom(" a 3 0 6 270 90", " m -3 -3 l -3 0 l 0 0", " a 0 -3 3 0 270") },
+      { "7", GetGeom(" m -3 6 l 3 6 l -3 -6") },
+      { "8", GetGeom(" r 0 3 3", " r 0 -3 3") },
+      { "A", GetGeom(" m -3 -6 l 0 6 l 3 -6", " m -2 -2 l 2 -2 ") },
+      { "B", GetGeom(" a 0 3 3 0 180", " a 0 -3 3 0 180", " m 0 -6 l -3 -6 l -3 6 l 0 6", " m -3 0 l 0 0") },
+      { "C", GetGeom(" a 0 3 3 270 180", " a 0 -3 3 90 180", " m -3 -3 l -3 3") },
+    };
+
+    private static List<SymbolCurve> GetGeom(params string[] parts)
+    {
+      List<SymbolCurve> curves = new List<SymbolCurve>();
+      foreach (string part in parts)
+      {
+        SymbolCurve curve = new SymbolCurve { Curve = (Curve)DrawableUtils.GetGeometry(part), LineWidth = 1, Stroke = true };
+        curves.Add(curve);
+      }
+
+      return curves;
     }
 
     private void TransferLine(Basics.Geom.Polyline line, IEnumerable<SymbolCurve> symParts, int color, Ocad9Writer w)

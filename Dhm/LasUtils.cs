@@ -45,28 +45,151 @@ namespace Dhm
       }
     }
 
-    public static double VegeHeight(List<Vector> pts)
+    public static double VegeHeight(int ix, int iy, Func<int, int, List<Vector>> getPts)
     {
+      List<Vector> pts = getPts(ix, iy);
+
       double h = pts[pts.Count - 1][2] - pts[0][2];
       if (h > 19.2)
       { h = 19.2; }
       return 10 * h;
     }
 
-    public static double Obstruction(List<Vector> pts)
+    public static double Obstruction(int ix, int iy, Func<int, int, List<Vector>> getPts)
     {
       int dens = 0;
 
+      List<Vector> pts = getPts(ix, iy);
+
+      Vector pA0 = getPts(ix + 1, iy)?[0];
+      Vector p0A = getPts(ix, iy + 1)?[0];
+      Vector pM0 = getPts(ix - 1, iy)?[0];
+      Vector p0M = getPts(ix, iy - 1)?[0];
+
+      Quads q = new Quads(pts[0], pA0, p0A, pM0, p0M);
+      double min = 0.3;
+      double max = 2.0;
       foreach (Vector pt in pts)
       {
-        double d = pt[2] - pts[0][2];
-        if (d > 0.3 && d < 2)
+
+        double dMax = pt[2] - q.Max;
+        if (dMax > max)
+        { continue; }
+        double dMin = pt[2] - q.Min;
+        if (dMin < min)
+        { continue; }
+
+
+        if (dMin < max && dMax > min)
         { dens++; }
+        else
+        {
+          double d = q.GetDh(pt);
+          if (d > min && d < max)
+          { dens++; }
+        }
       }
       return 10 * dens;
     }
 
-    public static DoubleGrid CreateGrid(TextReader reader, double res, Func<List<Vector>, double> grdFct)
+    private class Quads
+    {
+      private readonly Vector _center;
+      private readonly Vector _pA0;
+      private readonly Vector _p0A;
+      private readonly Vector _pM0;
+      private readonly Vector _p0M;
+
+      private double _max = double.NaN;
+      private double _min = double.NaN;
+
+      public Quads(Vector center, Vector pA0, Vector p0A, Vector pM0, Vector p0M)
+      {
+        _center = center;
+        _pA0 = pA0;
+        _p0A = p0A;
+        _pM0 = pM0;
+        _p0M = p0M;
+      }
+
+      public double Max
+      {
+        get
+        {
+          if (double.IsNaN(_max))
+          {
+            _max = _center[2];
+            _max = Math.Max(_pA0?[2] ?? _max, _max);
+            _max = Math.Max(_p0A?[2] ?? _max, _max);
+            _max = Math.Max(_pM0?[2] ?? _max, _max);
+            _max = Math.Max(_p0M?[2] ?? _max, _max);
+          }
+          return _max;
+        }
+      }
+
+      public double Min
+      {
+        get
+        {
+          if (double.IsNaN(_min))
+          {
+            _min = _center[2];
+            _min = Math.Min(_pA0?[2] ?? _min, _min);
+            _min = Math.Min(_p0A?[2] ?? _min, _min);
+            _min = Math.Min(_pM0?[2] ?? _min, _min);
+            _min = Math.Min(_p0M?[2] ?? _min, _min);
+          }
+          return _min;
+        }
+      }
+
+      private Point[] _normal;
+      private Point Normal
+      {
+        get
+        {
+          return (_normal ?? (_normal = new[] { GetNormal() }))[0];
+        }
+      }
+      private Point GetNormal()
+      {
+        List<Vector> vs = new List<Vector> {
+          _pA0?.Sub(_center),
+          _p0A?.Sub(_center),
+          _pM0?.Sub(_center),
+          _p0M?.Sub(_center),
+        };
+
+        Vector pre = vs[3];
+        Point sumN = null;
+        foreach (Vector v in vs)
+        {
+          Point3D n = pre?.VectorProduct3D(v);
+          pre = v;
+
+          if (n == null)
+          { continue; }
+          if (sumN == null)
+          { sumN = n; }
+          else
+          { sumN = sumN + n; }
+        }
+        if (sumN == null)
+        { return null; }
+        return (1.0 / Math.Sqrt(sumN.OrigDist2())) * sumN;
+      }
+
+      public double GetDh(Vector p)
+      {
+        if (_center == p)
+        { return 0; }
+
+        return Normal?.SkalarProduct(p - _center) ?? (p[2] - _center[2]);
+      }
+    }
+
+    public static DoubleGrid CreateGrid(TextReader reader, double res, Func<int, int, Func<int, int, List<Vector>>, double> grdFct)
     {
       Dictionary<Cell, List<Vector>> ptsDict = new Dictionary<Cell, List<Vector>>(new CellComparer());
 
@@ -113,9 +236,23 @@ namespace Dhm
         int iy = yMax - c.IY;
         List<Vector> pts = pair.Value;
         pts.Sort((x, y) => { return x[2].CompareTo(y[2]); });
-
-        grd[ix, iy] = grdFct(pts);
       }
+      foreach (var pair in ptsDict)
+      {
+        Cell c = pair.Key;
+        int ix = c.IX - xMin;
+        int iy = yMax - c.IY;
+
+        grd[ix, iy] = grdFct(c.IX, c.IY, (tx, ty) =>
+        {
+          Cell key = new Cell { IX = tx, IY = ty };
+          List<Vector> pts;
+          if (!ptsDict.TryGetValue(key, out pts))
+          { return null; }
+          return pts;
+        });
+      }
+
       return grd;
     }
   }
