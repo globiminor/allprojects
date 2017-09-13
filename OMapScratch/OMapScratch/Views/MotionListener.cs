@@ -71,7 +71,7 @@ namespace OMapScratch.Views
     {
       MapView mapView = _parent.MapView;
       mapView.GetGlobalVisibleRect(rect);
-      float prec = System.Math.Min(rect.Height(), rect.Width()) / mapView.Precision;
+      float prec = mapView.PrecisionMm * Utils.GetMmPixel(mapView); // System.Math.Min(rect.Height(), rect.Width()) / mapView.Precision;
       return prec;
     }
 
@@ -224,8 +224,6 @@ namespace OMapScratch.Views
       {
         if (!_parent.DrawOnlyMode)
         {
-          float rect = GetPrec();
-
           float dx = (move.X - _t1Down.X);
           float dy = (move.Y - _t1Down.Y);
           float prec = GetPrec();

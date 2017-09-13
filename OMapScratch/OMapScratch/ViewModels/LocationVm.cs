@@ -33,9 +33,17 @@ namespace OMapScratch.ViewModels
     private LocationManager InitLocationManager(out string locationProvider)
     {
       LocationManager locMgr = _context.GetLocationManager();
-      Criteria criteria = new Criteria { Accuracy = Accuracy.Fine };
-      IList<string> locProviders = locMgr.GetProviders(criteria, enabledOnly: true);
-      locationProvider = locProviders?.FirstOrDefault();
+
+      if (locMgr.IsProviderEnabled(LocationManager.GpsProvider))
+      {
+        locationProvider = LocationManager.GpsProvider;
+      }
+      else
+      {
+        Criteria criteria = new Criteria { Accuracy = Accuracy.Fine };
+        IList<string> locProviders = locMgr.GetProviders(criteria, enabledOnly: true);
+        locationProvider = locProviders?.FirstOrDefault();
+      }
       return locMgr;
     }
 

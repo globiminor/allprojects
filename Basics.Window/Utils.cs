@@ -10,6 +10,7 @@ using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Interop;
+using System.Windows.Threading;
 
 namespace Basics.Window
 {
@@ -71,6 +72,21 @@ namespace Basics.Window
         parent = VisualTreeHelper.GetParent(parent);
       }
       return (T)parent;
+    }
+
+    public static void AllowUIToUpdate()
+    {
+      DispatcherFrame frame = new DispatcherFrame();
+      Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Render, new DispatcherOperationCallback(delegate (object parameter)
+      {
+        frame.Continue = false;
+        return null;
+      }), null);
+
+      Dispatcher.PushFrame(frame);
+      //EDIT:
+      Application.Current.Dispatcher.Invoke(DispatcherPriority.Background,
+                                    new Action(delegate { }));
     }
 
     public static IEnumerable<T> GetChildren<T>(DependencyObject parent) where T : Visual

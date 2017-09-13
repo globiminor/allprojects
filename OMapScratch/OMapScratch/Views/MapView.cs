@@ -57,7 +57,7 @@ namespace OMapScratch.Views
       _context = context;
 
       SetScaleType(ScaleType.Matrix);
-      Precision = 100;
+      PrecisionMm = 2.0f;
       LongClickTime = 500;
     }
 
@@ -65,7 +65,7 @@ namespace OMapScratch.Views
 
     internal ConstrView ConstrView { get; set; }
     public IPointAction NextPointAction { get { return _nextPointAction; } }
-    public float Precision { get; set; }
+    public float PrecisionMm { get; set; }
     public long LongClickTime { get; set; }
 
     public MapVm MapVm
@@ -463,7 +463,7 @@ namespace OMapScratch.Views
 
       Rect rect = new Rect();
       GetGlobalVisibleRect(rect);
-      float prec = System.Math.Min(rect.Width(), rect.Height()) / Precision;
+      float prec = PrecisionMm * Utils.GetMmPixel(this); // System.Math.Min(rect.Width(), rect.Height()) / Precision;
 
       float[] max = { x + prec, y + prec };
       InversElemMatrix.MapPoints(max);
@@ -662,10 +662,19 @@ namespace OMapScratch.Views
 
         using (Rect source = new Rect(x0, y0, x0 + (int)(det / vals[0]), y0 + (int)(det / vals[0])))
         {
-
-          int w = Width;
-          int rx = w - det;
-          int ry = 0;
+          int rx, ry;
+          if (_context?.DetailUpperRight ?? true)
+          {
+            int w = Width;
+            rx = w - det;
+            ry = 0;
+          }
+          else
+          {
+            int h = Height;
+            rx = 0;
+            ry = h - det;
+          }
           using (Rect dest = new Rect(rx, ry, rx + det, ry + det))
           {
             try

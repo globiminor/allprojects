@@ -116,6 +116,7 @@ namespace OMapScratch
     private LinearLayout _imageList;
 
     private CheckBox chkDrawOnly;
+    private CheckBox chkDetailPosition;
 
     private System.Action<MapButton> _setModeFct;
 
@@ -404,12 +405,50 @@ namespace OMapScratch
           chkDrawOnly = new CheckBox(this);
           RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
           chkDrawOnly.LayoutParameters = lprams;
-          chkDrawOnly.Text = "D.o.";
+          chkDrawOnly.Text = " ";
+          chkDrawOnly.SetButtonDrawable(Resource.Drawable.ExtentMove);
+          chkDrawOnly.Click += (s, e) =>
+          {
+            chkDrawOnly.Text = " ";
+            if (chkDrawOnly.Checked)
+            {
+              chkDrawOnly.SetButtonDrawable(Resource.Drawable.ExtentFix);
+            }
+            else
+            {
+              chkDrawOnly.SetButtonDrawable(Resource.Drawable.ExtentMove);
+            }
+          };
 
           chkDrawOnly.Id = View.GenerateViewId();
 
           lloTools.AddView(chkDrawOnly);
         }
+
+        {
+          chkDetailPosition = new CheckBox(this);
+          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+          chkDetailPosition.LayoutParameters = lprams;
+          chkDetailPosition.Text = " ";
+          chkDetailPosition.SetButtonDrawable(Resource.Drawable.DetailUr);
+          chkDetailPosition.Click += (s, e) =>
+          {
+            chkDetailPosition.Text = " ";
+            if (chkDetailPosition.Checked)
+            {
+              chkDetailPosition.SetButtonDrawable(Resource.Drawable.DetailLl);
+            }
+            else
+            {
+              chkDetailPosition.SetButtonDrawable(Resource.Drawable.DetailUr);
+            }
+          };
+
+          chkDetailPosition.Id = View.GenerateViewId();
+
+          lloTools.AddView(chkDetailPosition);
+        }
+
         {
           View dummy = new View(this);
           {
@@ -532,6 +571,11 @@ namespace OMapScratch
 
     public bool DrawOnlyMode
     { get { return chkDrawOnly?.Checked ?? false; } }
+
+    public bool DetailUpperRight
+    {
+      get { return !(chkDetailPosition?.Checked ?? false); }
+    }
 
     private LocationVm _locationVm;
     public LocationVm LocationVm
