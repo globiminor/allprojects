@@ -171,6 +171,27 @@
         <b>Remark:</b> The redo stack is emptied with each "normal" action.
     </p>
 
+    <h3>Swipe / Fix extent</h3>
+    <p>
+        When <img src="ExtentMove.png" style="width:20px;height:20px" /> is active, swiping and zooming of the the map extent is enabled. Precision drawing mode is activated about 1 sec after pressing on the display without moving.
+        Moving on the display before leads to change of the displayed extent.<br />
+        When <img src="ExtentFix.png" style="width:20px;height:20px" /> is active, swiping and zooming of the the map extent is disabled. Precision drawing mode is activated immediately when pressing the display.
+        The displayed extent remains constant.<br />
+        Clicking the button toggles between <img src="ExtentMove.png" style="width:20px;height:20px" /> and <img src="ExtentFix.png" style="width:20px;height:20px" />.
+    </p>
+
+    <h3>Precision drawing mode</h3>
+    <p>
+        When a point is clicked for capturing a geometry, the position cannot be controlled very well. Further more, the area around the pressed point is not visible due to the finger or pen used to capture the point. To overcome this problem, precision drawing mode was introduced.
+        <br />
+        Precision drawing mode is activated when pressing the display for capturing a geometry and remaining long enough (see swipe/fix extent) on the same spot.
+        <br />
+        When precision drawing mode is activated, the area around the pressed point is mirrored in the upper right <img src="DetailUr.png" style="width:20px;height:20px" /> or lower left edge <img src="DetailLl.png" style="width:20px;height:20px" /> and when moving around on the display, the new captured geometry is adapted accordingly.
+        <br />
+        Clicking the button toggles between <img src="DetailUr.png" style="width:20px;height:20px" /> and <img src="DetailLl.png" style="width:20px;height:20px" />.
+        <br />
+    </p>
+
     <h3>Save</h3>
     <p>1. Choose (Navigation bar) -> Save. The captured objects are written to &lt;scratch.xml&gt; in the same folder as the &lt;project&gt;.config file.</p>
 

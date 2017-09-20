@@ -1382,6 +1382,8 @@ namespace OMapScratch
       string elemsPath = VerifyLocalPath(_config?.Data?.Scratch);
       if (string.IsNullOrEmpty(elemsPath))
       { return null; }
+      if (!File.Exists(elemsPath))
+      { return null; }
       XmlElems xml;
       Deserialize(elemsPath, out xml);
       if (xml?.Elems == null)
