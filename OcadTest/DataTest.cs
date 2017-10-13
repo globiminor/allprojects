@@ -50,7 +50,7 @@ namespace OcadTest
     [TestMethod]
     public void TestLasTxt()
     {
-      double res = 1;
+      double resolution = 1;
       string dir = @"C:\daten\felix\kapreolo\karten\hardwald\2017\lidar";
 
       Dictionary<string, string> tiles = new Dictionary<string, string>();
@@ -59,58 +59,144 @@ namespace OcadTest
         string key = Path.GetFileNameWithoutExtension(path);
         tiles[key] = path;
       }
+      byte[] r = new byte[256];
+      byte[] g = new byte[256];
+      byte[] b = new byte[256];
+      LeastCostPathUI.Common.InitColors(r, g, b);
+      r[0] = 255;
+      g[0] = 255;
+      b[0] = 255;
+
       foreach (string key in tiles.Keys)
       {
-        string lazName = Path.Combine(dir, key + ".laz");
-        string resName = $"obstr{key}";
-        string tifPath = Path.Combine(dir, $"{resName}.tif");
-
-        if (File.Exists(tifPath))
-        { continue; }
-
-        if (File.Exists(Path.Combine(dir, $"{key}.tif")))
-        {
-          File.Move(Path.Combine(dir, $"{key}.tif"), tifPath);
-          File.Move(Path.Combine(dir, $"{key}.tfw"), Path.Combine(dir, $"{resName}.tfw"));
-          continue;
-        }
-
-        if (!File.Exists(Path.ChangeExtension(lazName, ".txt")))
-        {
-          if (!File.Exists(lazName))
-          {
-            if (File.Exists(Path.ChangeExtension(lazName, ".html")))
-            { File.Move(Path.ChangeExtension(lazName, ".html"), lazName); }
-          }
-          if (!File.Exists(lazName))
-          { continue; }
-
-          Process p = new Process();
-          p.StartInfo = new ProcessStartInfo
-          {
-            FileName = @"C:\daten\felix\src\temp\LAStools\bin\las2txt.exe",
-            Arguments = $"-i {lazName} -parse xyzi"
-          };
-          p.Start();
-          p.WaitForExit();
-        }
-
-        DoubleGrid grd;
-        using (TextReader reader = new StreamReader(Path.ChangeExtension(lazName, ".txt")))
-        {
-          grd = LasUtils.CreateGrid(reader, res, LasUtils.Obstruction);
-        }
-
-        byte[] r = new byte[256];
-        byte[] g = new byte[256];
-        byte[] b = new byte[256];
-        LeastCostPathUI.Common.InitColors(r, g, b);
-        r[0] = 255;
-        g[0] = 255;
-        b[0] = 255;
-
-        ImageGrid.GridToTif(grd.ToIntGrid(), tifPath, r, g, b);
+        Export(dir, key, $"obstr{key}", resolution, LasUtils.Obstruction, r, g, b);
       }
+    }
+
+    [TestMethod]
+    public void TestLasVege()
+    {
+      double resolution = 1;
+      string dir = @"C:\daten\felix\kapreolo\karten\hardwald\2017\lidar";
+
+      Dictionary<string, string> tiles = new Dictionary<string, string>();
+      foreach (string path in Directory.EnumerateFiles(dir))
+      {
+        string key = Path.GetFileNameWithoutExtension(path);
+        tiles[key] = path;
+      }
+      byte[] r = new byte[256];
+      byte[] g = new byte[256];
+      byte[] b = new byte[256];
+      LeastCostPathUI.Common.InitColors(r, g, b);
+      r[0] = 255;
+      g[0] = 255;
+      b[0] = 255;
+      {
+        string key = "26880_12545";
+        Export(dir, key, $"vege{key}", resolution, LasUtils.VegeHeight, r, g, b);
+      }
+    }
+
+    [TestMethod]
+    public void TestLasStruct()
+    {
+      double resolution = 1;
+      string dir = @"C:\daten\felix\kapreolo\karten\hardwald\2017\lidar";
+
+      Dictionary<string, string> tiles = new Dictionary<string, string>();
+      foreach (string path in Directory.EnumerateFiles(dir))
+      {
+        string key = Path.GetFileNameWithoutExtension(path);
+        if (!char.IsDigit(key[0]))
+        { continue; }
+        tiles[key] = path;
+      }
+      byte[] r = new byte[256];
+      byte[] g = new byte[256];
+      byte[] b = new byte[256];
+      LeastCostPathUI.Common.InitColors(r, g, b);
+      LasUtils.InitStructColors(r, g, b);
+      foreach (string key in tiles.Keys)
+      {
+        //string key = "26880_12545";
+        Export(dir, key, $"strc{key}", resolution, LasUtils.Struct, r, g, b);
+      }
+    }
+
+    [TestMethod]
+    public void TestLasDom()
+    {
+      double resolution = 1;
+      string dir = @"C:\daten\felix\kapreolo\karten\hardwald\2017\lidar";
+
+      Dictionary<string, string> tiles = new Dictionary<string, string>();
+      foreach (string path in Directory.EnumerateFiles(dir))
+      {
+        string key = Path.GetFileNameWithoutExtension(path);
+        if (!char.IsDigit(key[0]))
+        { continue; }
+        tiles[key] = path;
+      }
+      byte[] r = new byte[256];
+      byte[] g = new byte[256];
+      byte[] b = new byte[256];
+      for (int i = 0; i < 256; i++)
+      {
+        byte bb = (byte)(255 - i);
+        r[i] = bb; g[i] = bb; b[i] = bb; 
+      }
+      foreach (string key in tiles.Keys)
+      {
+        //string key = "26880_12545"; 
+        Export(dir, key, $"dom{key}", resolution, LasUtils.Dom, r, g, b);
+      }
+    }
+
+    private void Export(string dir, string key, string resName, double resolution,
+      Func<int, int, Func<int, int, List<Vector>>, double> grdFct,
+       byte[] r, byte[] g, byte[] b)
+    {
+      string lazName = Path.Combine(dir, key + ".laz");
+      string tifPath = Path.Combine(dir, $"{resName}.tif");
+
+      if (File.Exists(tifPath))
+      { return; }
+
+      if (File.Exists(Path.Combine(dir, $"{key}.tif")))
+      {
+        File.Move(Path.Combine(dir, $"{key}.tif"), tifPath);
+        File.Move(Path.Combine(dir, $"{key}.tfw"), Path.Combine(dir, $"{resName}.tfw"));
+        return;
+      }
+
+      if (!File.Exists(Path.ChangeExtension(lazName, ".txt")))
+      {
+        if (!File.Exists(lazName))
+        {
+          if (File.Exists(Path.ChangeExtension(lazName, ".html")))
+          { File.Move(Path.ChangeExtension(lazName, ".html"), lazName); }
+        }
+        if (!File.Exists(lazName))
+        { return; }
+
+        Process p = new Process();
+        p.StartInfo = new ProcessStartInfo
+        {
+          FileName = @"C:\daten\felix\src\temp\LAStools\bin\las2txt.exe",
+          Arguments = $"-i {lazName} -parse xyzi"
+        };
+        p.Start();
+        p.WaitForExit();
+      }
+
+      DoubleGrid grd;
+      using (TextReader reader = new StreamReader(Path.ChangeExtension(lazName, ".txt")))
+      {
+        grd = LasUtils.CreateGrid(reader, resolution, grdFct);
+      }
+
+      ImageGrid.GridToTif(grd.ToIntGrid(), tifPath, r, g, b);
     }
 
     [TestMethod]

@@ -56,6 +56,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="AsvzTest.cs" />
     <Compile Include="CourseTest.cs" />
     <Compile Include="DataTest.cs" />
     <Compile Include="OEvent\FuenferStaffel.cs" />
@@ -73,6 +74,10 @@
     <ProjectReference Include="..\ArcSde\ArcSde.csproj">
       <Project>{7a5011bb-8649-40e8-9f98-8ac314ee93d1}</Project>
       <Name>ArcSde</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Asvz\Asvz.csproj">
+      <Project>{d15a3272-818c-4a86-afba-1424ae2e00d4}</Project>
+      <Name>Asvz</Name>
     </ProjectReference>
     <ProjectReference Include="..\Basics\Basics.csproj">
       <Project>{200e9400-2771-4ace-a172-78ebd405b67e}</Project>

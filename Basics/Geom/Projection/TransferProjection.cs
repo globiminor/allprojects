@@ -16,6 +16,9 @@ namespace Basics.Geom.Projection
       _datum = prj0.Ellipsoid.Datum - prj1.Ellipsoid.Datum;
     }
 
+    public Projection Prj0 { get { return _prj0; } }
+    public Projection Prj1 { get { return _prj1; } }
+
     public IPoint Project(IPoint p)
     {
       IPoint p1 = _prj0.Prj2Gg(p);

@@ -4,6 +4,7 @@ using Grid;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Dhm
 {
@@ -53,6 +54,145 @@ namespace Dhm
       if (h > 19.2)
       { h = 19.2; }
       return 10 * h;
+    }
+
+    static byte[] Red = new byte[] { 0, 64, 128, 160, 192, 255};
+    static byte[] Green = new byte[] { 0, 64, 128, 160, 192, 224, 255 };
+    static byte[] Blue = new byte[] { 0, 64, 128, 160, 192, 255 };
+
+    public static void InitStructColors(byte[] r, byte[] g, byte[] b)
+    {
+
+      int idx = 1;
+      for (int iHeight = 0; iHeight < Red.Length; iHeight++)
+      {
+        for (int iDens = 0; iDens < Green.Length; iDens++)
+        {
+          for (int iUndef = 0; iUndef < Blue.Length; iUndef++)
+          {
+            r[idx] = Red[iHeight];
+            g[idx] = Green[iDens];
+            b[idx] = Blue[iUndef];
+            idx++;
+          }
+        }
+      }
+      r[0] = 255;
+      g[0] = 255;
+      b[0] = 255;
+    }
+
+    public static double Struct(int ix, int iy, Func<int, int, List<Vector>> getPts)
+    {
+      List<Vector> pts = getPts(ix, iy);
+
+      Vector pA0 = getPts(ix + 1, iy)?[0];
+      Vector p0A = getPts(ix, iy + 1)?[0];
+      Vector pM0 = getPts(ix - 1, iy)?[0];
+      Vector p0M = getPts(ix, iy - 1)?[0];
+
+      Quads q = new Quads(pts[0], pA0, p0A, pM0, p0M);
+      double vegMin = 0.3;
+      double vegMax = 2.0;
+      bool forest = false;
+      List<double> vegHs = new List<double>(pts.Count);
+      List<int> intens = new List<int>(pts.Count);
+      foreach (Vector pt in pts)
+      {
+        double d = q.GetDh(pt);
+        if (d < vegMin)
+        { intens.Add((int)pt[3]); }
+        else if (d < vegMax)
+        { vegHs.Add(d); }
+        else
+        { forest = true; }
+      }
+      if (vegHs.Count > 0)
+      {
+        double max = 0;
+        double sum = 0;
+        double sum2 = 0;
+        int nDens = vegHs.Count;
+        foreach (double d in vegHs)
+        {
+          max = Math.Max(d, max);
+          sum += d;
+          sum2 += d * d;
+        }
+        double m = sum / nDens;
+        double dev = Math.Sqrt((sum2 - m * m) / nDens);
+
+        int iGreen =
+          nDens < 3 ? 6
+          : nDens < 6 ? 5
+          : nDens < 10 ? 4
+          : nDens < 15 ? 3
+          : nDens < 25 ? 2 : 1;
+
+        int iRed;
+        int iBlue;
+        double mm = (vegMin + vegMax) / 2.0;
+        if (m < mm)
+        {
+          iRed = Math.Min(iGreen, (int)((mm - m) / (mm - vegMin) * (Red.Length - 1)));
+          iBlue = 0;
+        }
+        else
+        {
+          iRed = 0;
+          iBlue = Math.Min(iGreen, (int)((m - mm) / (vegMax - mm) * (Blue.Length - 1)));
+        }
+
+        return 1 + iRed * Green.Length * Blue.Length + iGreen * Blue.Length + iBlue;
+      }
+      //if (forest)
+      //{ return 0; }
+
+      {
+        int sumIntens = 0;
+        foreach (int inten in intens)
+        {
+          sumIntens += inten;
+        }
+        int mean = sumIntens / intens.Count;
+
+        int i = mean > 700 ? 0
+          : mean > 600 ? 1
+          : mean > 500 ? 2
+          : mean > 400 ? 3
+          : mean > 300 ? 4 : 5;
+
+        int idx = 1 + (Red.Length - 1) * Green.Length * Blue.Length + i * Blue.Length + i;
+
+        return idx;
+      }
+    }
+
+    public static double Dom(int ix, int iy, Func<int, int, List<Vector>> getPts)
+    {
+      List<Vector> pts = getPts(ix, iy);
+
+      List<Vector> pA0 = getPts(ix + 1, iy);
+      List<Vector> p0A = getPts(ix, iy + 1);
+      List<Vector> pM0 = getPts(ix - 1, iy);
+      List<Vector> p0M = getPts(ix, iy - 1);
+
+      if (pts == null || p0A == null || pA0 == null || pM0 == null || p0M == null)
+      { return 0; }
+
+      Vector p0 = pts[pts.Count - 1];
+
+
+      double da = (p0A[p0A.Count - 1].Z + pA0[pA0.Count - 1].Z - 2 * p0.Z);
+      double dm = (p0M[p0M.Count - 1].Z + pM0[pM0.Count - 1].Z - 2 * p0.Z);
+
+      double d = Math.Sqrt(da * da + dm * dm);
+
+      return 5 * d;
+      //      int iColor = (int)Math.Min(max / 2, 15);
+      //      int iStd = (int)Math.Min(15 * dev / max, 15);
+      //      return Math.Min(m * 8, 255);
+      //      return Math.Min(16 * iColor + iStd, 255);
     }
 
     public static double Obstruction(int ix, int iy, Func<int, int, List<Vector>> getPts)

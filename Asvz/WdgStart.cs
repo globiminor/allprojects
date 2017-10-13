@@ -1023,8 +1023,7 @@ namespace Asvz
       {
         string orig = _txtCreate.Text;
         Gesamtplan pGesamt = new Gesamtplan(orig, Ddx.DhmPfad);
-        string s = Path.GetDirectoryName(_txtCreate.Text) + Path.DirectorySeparatorChar +
-          "gesamtplan.ocd";
+        string s = Path.Combine(Path.GetDirectoryName(_txtCreate.Text), "gesamtplan.ocd");
         pGesamt.WriteStrecken(s);
       }
       finally
