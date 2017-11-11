@@ -190,10 +190,18 @@ namespace OMapScratch
       _currentImagePath = path;
     }
 
-    public static void Deserialize<T>(string path, out T obj)
+    public static bool Deserialize<T>(string path, out T obj)
     {
+      if (!System.IO.File.Exists(path))
+      {
+        obj = default(T);
+        return false;
+      }
+
       using (System.IO.TextReader r = new System.IO.StreamReader(path))
       { Serializer.Deserialize(out obj, r); }
+
+      return true;
     }
 
     public System.Collections.Generic.List<ColorRef> GetDefaultColors()

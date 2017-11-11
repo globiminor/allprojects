@@ -79,27 +79,35 @@ namespace Basics.Window.Browse
       }
     }
 
-    public static void Deserialize<T>(string path, out T obj)
+    public static bool Deserialize<T>(string path, out T obj)
     {
       if (!File.Exists(path))
       {
         using (Stream s = new MemoryStream())
         {
-          Read(path, s);
+          if (!Read(path, s))
+          {
+            obj = default(T);
+            return false;
+          }
 
           s.Seek(0, SeekOrigin.Begin);
 
           using (TextReader r = new StreamReader(s))
           { Serializer.Deserialize(out obj, r); }
+
+          return true;
         }
       }
       else
       {
         using (TextReader r = new StreamReader(path))
         { Serializer.Deserialize(out obj, r); }
+
+        return true;
       }
     }
-    public static void Read(string path, Stream stream)
+    public static bool Read(string path, Stream stream)
     {
       IList<string> dirs = path.Split(Path.DirectorySeparatorChar);
 
@@ -114,11 +122,15 @@ namespace Basics.Window.Browse
           using (DevContent dev = new DevContent(deviceId))
           {
             PdEntry fileEntry = GetEntry(dev.Base, "DEVICE", dirs, 1);
-
-            ReadContent(dev.Base, fileEntry.Id, stream);
+            if (fileEntry != null)
+            {
+              ReadContent(dev.Base, fileEntry.Id, stream);
+              return true;
+            }
           }
         }
       }
+      return false;
     }
     internal static IEnumerable<PdEntry> GetContent(IList<string> dirs)
     {

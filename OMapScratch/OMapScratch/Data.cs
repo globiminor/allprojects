@@ -343,14 +343,23 @@ namespace OMapScratch
     public void SetDeclination(float? declination)
     { _map.SetDeclination(declination); }
 
+    private class ActionDistance
+    {
+      public ContextActions Actions { get; set; }
+      public double Distance { get; set; }
+      public List<ContextActions> VertexActionsList { get; set; }
+    }
     public List<ContextActions> GetContextActions(IMapView view, float x0, float y0, float dx)
     {
       float dd = Math.Max(Math.Abs(dx), _map.MinSearchDistance);
       Box box = new Box(new Pnt(x0 - dd, y0 - dd), new Pnt(x0 + dd, y0 + dd));
 
-      List<ContextActions> allActions = new List<ContextActions>();
+      List<ActionDistance> distActions = new List<ActionDistance>();
       foreach (Elem elem in _map.Elems)
       {
+        if (!box.Intersects(elem.Geometry.Extent))
+        { continue; }
+
         Curve curve = elem.Geometry as Curve;
 
         Pnt elemPnt = null;
@@ -359,17 +368,23 @@ namespace OMapScratch
         Pnt down = new Pnt { X = x0, Y = y0 };
         int iVertex = 0;
         float? split = null;
+        double elemDist = double.MaxValue;
         foreach (Pnt point in elem.Geometry.GetVertices())
         {
           if (box.Intersects(point))
           {
+            double pointDist = down.Dist2(point);
             if (elemPnt == null)
-            { elemPnt = point; }
+            {
+              elemPnt = point;
+              elemDist = pointDist;
+            }
             else
             {
-              if (down.Dist2(elemPnt) > down.Dist2(point))
+              if (elemDist > pointDist)
               {
                 elemPnt = point;
+                elemDist = pointDist;
                 if (iVertex > 0 && curve?.Count > iVertex)
                 { split = iVertex; }
               }
@@ -403,9 +418,11 @@ namespace OMapScratch
               if (along > 0 && along < 1)
               {
                 Pnt at = seg.At(along);
-                if (elemPnt == null || down.Dist2(elemPnt) > down.Dist2(at))
+                double distAt = down.Dist2(at);
+                if (elemPnt == null || elemDist > distAt)
                 {
                   elemPnt = at;
+                  elemDist = distAt;
                   split = iSeg + along;
                 }
               }
@@ -434,11 +451,30 @@ namespace OMapScratch
           }
           elemActions.Add(new ContextAction(elemPnt, new SetSymbolAction(view, _map, elem)) { Name = "Change Symbol" });
 
-          allActions.Add(new ContextActions("Elem", elem, elemPnt, elemActions));
+          distActions.Add(new ActionDistance
+          {
+            Actions = new ContextActions("Elem", elem, elemPnt, elemActions),
+            Distance = elemDist,
+            VertexActionsList = vertexActionsList
+          });
         }
-        allActions.AddRange(vertexActionsList);
+        else if (vertexActionsList.Count > 0)
+        {
+          distActions.Add(new ActionDistance {
+            Distance = elemDist,
+            VertexActionsList = vertexActionsList
+          });
+        }
       }
 
+      distActions.Sort((x, y) => x.Distance.CompareTo(y.Distance));
+      List<ContextActions> allActions = new List<ContextActions>();
+      foreach (ActionDistance distAction in distActions)
+      {
+        if (distAction.Actions != null)
+        { allActions.Add(distAction.Actions); }
+        allActions.AddRange(distAction.VertexActionsList);
+      }
       return allActions;
     }
 
@@ -1382,10 +1418,9 @@ namespace OMapScratch
       string elemsPath = VerifyLocalPath(_config?.Data?.Scratch);
       if (string.IsNullOrEmpty(elemsPath))
       { return null; }
-      if (!File.Exists(elemsPath))
-      { return null; }
       XmlElems xml;
-      Deserialize(elemsPath, out xml);
+      if (!Deserialize(elemsPath, out xml))
+      { return null; }
       if (xml?.Elems == null)
       { return null; }
 

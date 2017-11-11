@@ -279,6 +279,7 @@ namespace OMapScratch
       LinearLayout lloTools = FindViewById<LinearLayout>(Resource.Id.lloTools);
 
       Button imageButton = FindViewById<Button>(Resource.Id.btnImages);
+      //ImageButton imageButton = FindViewById<ImageButton>(Resource.Id.btnImages);
       imageButton.Click += (s, e) => Utils.Try(() =>
       {
         _imageList.RemoveAllViews();
@@ -338,36 +339,36 @@ namespace OMapScratch
 
       {
 
-        //float dScale = 1.5f;
-        //{
-        //  ImageButton btnZoomIn = new ImageButton(this);
-        //  btnZoomIn.SetBackgroundResource(Resource.Drawable.ZoomIn);
-        //  {
-        //    RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-        //    btnZoomIn.LayoutParameters = lprams;
-        //  }
-        //  btnZoomIn.Id = View.GenerateViewId();
-        //  btnZoomIn.Click += (s, a) =>
-        //  {
-        //    _mapView.Scale(dScale);
-        //    _mapView.PostInvalidate();
-        //  };
-        //  lloTools.AddView(btnZoomIn);
-        //}
-        //{
-        //  ImageButton btnZoomOut = new ImageButton(this);
-        //  btnZoomOut.SetBackgroundResource(Resource.Drawable.ZoomOut);
-        //  {
-        //    RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-        //    btnZoomOut.LayoutParameters = lprams;
-        //  }
-        //  btnZoomOut.Id = View.GenerateViewId();
-        //  btnZoomOut.Click += (s, a) =>
-        //  {
-        //    _mapView.Scale(1 / dScale);
-        //  };
-        //  lloTools.AddView(btnZoomOut);
-        //}
+        float dScale = 1.5f;
+        {
+          ImageButton btnZoomIn = new ImageButton(this);
+          btnZoomIn.SetBackgroundResource(Resource.Drawable.ZoomIn);
+          {
+            RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+            btnZoomIn.LayoutParameters = lprams;
+          }
+          btnZoomIn.Id = View.GenerateViewId();
+          btnZoomIn.Click += (s, a) =>
+          {
+            _mapView.Scale(dScale);
+            _mapView.PostInvalidate();
+          };
+          lloTools.AddView(btnZoomIn);
+        }
+        {
+          ImageButton btnZoomOut = new ImageButton(this);
+          btnZoomOut.SetBackgroundResource(Resource.Drawable.ZoomOut);
+          {
+            RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+            btnZoomOut.LayoutParameters = lprams;
+          }
+          btnZoomOut.Id = View.GenerateViewId();
+          btnZoomOut.Click += (s, a) =>
+          {
+            _mapView.Scale(1 / dScale);
+          };
+          lloTools.AddView(btnZoomOut);
+        }
 
         {
           ImageButton btnUndo = new ImageButton(this);
@@ -401,29 +402,29 @@ namespace OMapScratch
           lloTools.AddView(btnRedo);
         }
 
-        {
-          chkDrawOnly = new CheckBox(this);
-          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-          chkDrawOnly.LayoutParameters = lprams;
-          chkDrawOnly.Text = " ";
-          chkDrawOnly.SetButtonDrawable(Resource.Drawable.ExtentMove);
-          chkDrawOnly.Click += (s, e) =>
-          {
-            chkDrawOnly.Text = " ";
-            if (chkDrawOnly.Checked)
-            {
-              chkDrawOnly.SetButtonDrawable(Resource.Drawable.ExtentFix);
-            }
-            else
-            {
-              chkDrawOnly.SetButtonDrawable(Resource.Drawable.ExtentMove);
-            }
-          };
+        //{
+        //  chkDrawOnly = new CheckBox(this);
+        //  RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+        //  chkDrawOnly.LayoutParameters = lprams;
+        //  chkDrawOnly.Text = " ";
+        //  chkDrawOnly.SetButtonDrawable(Resource.Drawable.ExtentMove);
+        //  chkDrawOnly.Click += (s, e) =>
+        //  {
+        //    chkDrawOnly.Text = " ";
+        //    if (chkDrawOnly.Checked)
+        //    {
+        //      chkDrawOnly.SetButtonDrawable(Resource.Drawable.ExtentFix);
+        //    }
+        //    else
+        //    {
+        //      chkDrawOnly.SetButtonDrawable(Resource.Drawable.ExtentMove);
+        //    }
+        //  };
 
-          chkDrawOnly.Id = View.GenerateViewId();
+        //  chkDrawOnly.Id = View.GenerateViewId();
 
-          lloTools.AddView(chkDrawOnly);
-        }
+        //  lloTools.AddView(chkDrawOnly);
+        //}
 
         {
           chkDetailPosition = new CheckBox(this);

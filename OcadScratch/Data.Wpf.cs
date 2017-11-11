@@ -18,9 +18,9 @@ namespace OMapScratch
         new ColorRef { Id = "R", Color = Colors.Red },
         new ColorRef { Id = "B", Color = Colors.Blue } };
     }
-    public static void Deserialize<T>(string path, out T obj)
+    public static bool Deserialize<T>(string path, out T obj)
     {
-      Basics.Window.Browse.PortableDeviceUtils.Deserialize(path, out obj);
+      return Basics.Window.Browse.PortableDeviceUtils.Deserialize(path, out obj);
     }
   }
 
