@@ -93,19 +93,27 @@
     <p>1. Click on "Edit tool" (like <img src="Point.png" style="width:20px;height:20px" />). A list of all available colors and symbols is displayed.</p>
     <img src="Symbols.png" style="width:236px;height:125px"/>
     <p>2. (Optionally) choose color. The colors of all symbols in the list are adapted accordingly.</p>
-    <p>3. Choose symbol or "Arrow Tool". The list is closed and the edit tool is set accordingly.</p>
+    <p>3. Choose symbol (<img src="Point.png" style="width:20px;height:20px" />,<img src="Line.png" style="width:20px;height:20px" />,...) or "Arrow Tool"<img src="Arrow.png" style="width:20px;height:20px" />. The list is closed and the edit tool is set accordingly.</p>
+
+    <h3>Navigate</h3>
+    <p>Swipe over display to change the displayed area. See also <a href="#swipeFixExtent">Swipe/Fix extent</a> and <a href="#precisionDrawingMode">precision drawing mode</a>.</p>
+    <p>Use 2 fingers extending / narrowing to zoom in / zoom out.</p>
+    <p>Use <img src="ZoomIn.png" style="width:20px;height:20px" /> to zoom in.</p>
+    <p>Use <img src="ZoomOut.png" style="width:20px;height:20px" /> to zoom out.</p>
 
     <h3>Capture Point</h3>
     <p>1. Choose Edit-Tool with a point symbol, i.e. <img src="Point.png" style="width:20px;height:20px" /></p>
-    <p>2. Click on Map (repeatedly). The point symbol is displayed a the clicked point(s)</p>
+    <p>2. Click on Map (repeatedly). The point symbol is displayed a the clicked point(s).</p>
+    <p>See also <a href="#precisionDrawingMode">precision drawing mode</a>.</p>
 
     <h3>Capture Line</h3>
     <p>1. Choose Edit-Tool with a line symbol, i.e. <img src="Line.png" style="width:20px;height:20px" /></p>
-    <p>2. Click on Map to start the line. A small horizontal line is displayed at the clicked point</p>
+    <p>2. Click on Map to start the line. A small horizontal line is displayed at the clicked point.</p>
     <img src="LineStart.png" style="width:58px;height:58px" />
     <p>3. Click the next point(s) on the map. The captured line is displayed.</p>
     <img src="LineCont.png" style="width:58px;height:58px" />
     <p>4. (double) click on the Edit-Tool-Button <img src="Line.png" style="width:20px;height:20px" /> to finish the current line.</p>
+    <p>See also <a href="#precisionDrawingMode">precision drawing mode</a>.</p>
 
     <h3>Special Actions</h3>
     <p>1. Choose Edit-Tool "Arrow Tool" <img src="Arrow.png" style="width:20px;height:20px" /></p>
@@ -171,22 +179,22 @@
         <b>Remark:</b> The redo stack is emptied with each "normal" action.
     </p>
 
-    <h3>Swipe / Fix extent</h3>
+    <h3 id="swipeFixExtent">Swipe / Fix extent</h3>
     <p>
-        When <img src="ExtentMove.png" style="width:20px;height:20px" /> is active, swiping and zooming of the the map extent is enabled. Precision drawing mode is activated about 1 sec after pressing on the display without moving.
+        When <img src="ExtentMove.png" style="width:20px;height:20px" /> or <img src="ExtentFix.png" style="width:20px;height:20px" /> is displayed in the toolbar, touch events can be handled in different ways. When neither symbol is displayed, touch events are handled as <img src="ExtentMove.png" style="width:20px;height:20px" />:<br />
+        When <img src="ExtentMove.png" style="width:20px;height:20px" /> is active, swiping and zooming of the the map extent is enabled. <a href="#precisionDrawingMode">Precision drawing mode</a> is activated about 1 sec after pressing on the display without moving.
         Moving on the display before leads to change of the displayed extent.<br />
-        When <img src="ExtentFix.png" style="width:20px;height:20px" /> is active, swiping and zooming of the the map extent is disabled. Precision drawing mode is activated immediately when pressing the display.
+        When <img src="ExtentFix.png" style="width:20px;height:20px" /> is active, swiping and zooming of the the map extent is disabled. <a href="#precisionDrawingMode">Precision drawing mode</a> is activated immediately when pressing the display.
         The displayed extent remains constant.<br />
         Clicking the button toggles between <img src="ExtentMove.png" style="width:20px;height:20px" /> and <img src="ExtentFix.png" style="width:20px;height:20px" />.
     </p>
 
-    <h3>Precision drawing mode</h3>
+    <h3 id="precisionDrawingMode">Precision drawing mode</h3>
     <p>
         When a point is clicked for capturing a geometry, the position cannot be controlled very well. Further more, the area around the pressed point is not visible due to the finger or pen used to capture the point. To overcome this problem, precision drawing mode was introduced.
         <br />
-        Precision drawing mode is activated when pressing the display for capturing a geometry and remaining long enough (see swipe/fix extent) on the same spot.
-        <br />
-        When precision drawing mode is activated, the area around the pressed point is mirrored in the upper right <img src="DetailUr.png" style="width:20px;height:20px" /> or lower left edge <img src="DetailLl.png" style="width:20px;height:20px" /> and when moving around on the display, the new captured geometry is adapted accordingly.
+        Precision drawing mode is activated when pressing the display for capturing a geometry and remaining about 1 sec on the same spot (see also <a href="#swipeFixExtent">swipe/fix extent</a>) . <br />
+        When precision drawing mode is activated, the area around the pressed point is mirrored in the upper right <img src="DetailUr.png" style="width:20px;height:20px" /> or lower left edge <img src="DetailLl.png" style="width:20px;height:20px" /> and when moving around on the display, the newly captured geometry is adapted accordingly.
         <br />
         Clicking the button toggles between <img src="DetailUr.png" style="width:20px;height:20px" /> and <img src="DetailLl.png" style="width:20px;height:20px" />.
         <br />
@@ -228,11 +236,21 @@
                      f: (optional, ignored for line symbols): fill geometry
                      s: (optional, ignored for line symbols): stroke geometry --&gt;</span>
             &lt;/Symbol&gt;
+            &lt;Symbol Id="Ld"&gt;
+                &lt;Curve w=&quot;2" f="false" s="false" dash=&quot;18,6;0;6.1&quot; /&gt;
+                <span class="cmt">&lt;!-- L&lt;!-- Line symbol for dashed line. Format of dash: &lt;displayed&gt;&lt;not displayed&gt;[...];[start offset[;end offset]]--&gt;</span>
+            &lt;/Symbol&gt;
             &lt;Symbol Id="KrF"&gt;
                 &lt;Curve w="0" f="false" s="false" geom=" r 0.0 0.0 10.0" /&gt;
                 <span class="cmt">&lt;!-- Curve with geom: Point Symbol;
                      geom: all values in meters. use symbolScale in &lt;project&gt;.config to scale symbols
-                     r &lt;x&gt; &lt;y&gt; &lt;radius&gt;: Circle with center at &lt;x&gt;,&lt;y&gt; and radius &lt;r&gt; --&gt;</span>
+                     r &lt;x&gt; &lt;y&gt; &lt;r&gt;: Circle with center at &lt;x&gt;,&lt;y&gt; and radius &lt;r&gt; --&gt;</span>
+            &lt;/Symbol&gt;
+            &lt;Symbol Id="ArL"&gt;
+                &lt;Curve w="0" f="false" s="false" geom=" a 0 0 12 80 200" /&gt;
+                <span class="cmt">&lt;!-- Curve with geom: Point Symbol;
+                     a &lt;x&gt; &lt;y&gt; &lt;r&gt; &lt;azi&gt; &lt;angle&gt;: Arc with center at &lt;x&gt;,&lt;y&gt;, radius &lt;r&gt;, 
+                                                  starting at azimuth &lt;azi&gt; and covering an angle of &lt;angle&gt;--&gt;</span>
             &lt;/Symbol&gt;
             &lt;Symbol Id="ReL"&gt;
                 &lt;Curve w="3" geom=" m -12 -12 l -12 12 l 12 12 l 12 -12 l -12 -12" /&gt;
@@ -244,6 +262,15 @@
                 &lt;Curve w="3" f="false" s="false" geom=" m 10.0 -10.0 l -10.0 10.0" /&gt;
                 <span class="cmt">&lt;!-- Symbol with multiple lines --&gt;</span>
             &lt;/Symbol&gt;
+            &lt;Symbol Id="Lx"&gt;
+                &lt;Curve w=&quot;2&quot; f=&quot;false&quot; s=&quot;false&quot; /&gt;
+                &lt;Curve w=&quot;2&quot; f=&quot;false&quot; s=&quot;false&quot; dash=&quot;18;9&quot; geom=&quot; m 0 0 l 0 10&quot;  /&gt;
+                <span class="cmt">&lt;!-- Curve with geom and dash: line with symbols. Format of dash: &lt;distance&gt;[...];[start offset[;end offset]] --&gt;</span>
+            &lt;/Symbol&gt;
+            &lt;Symbol Id="Lp"&gt;
+                &lt;Curve w=&quot;0&quot; f=&quot;true&quot; s=&quot;false&quot; dash=&quot;15;0;-0.1&quot; geom=&quot; r 0.0 0.0 5.0&quot;  /&gt;
+                <span class="cmt">&lt;!-- Curve with geom and dash: line symbol for dotted line--&gt;</span>
+            &lt;/Symbol&gt;
             &lt;Symbol Id="TxA" Text="A" /&gt;
             <span class="cmt">&lt;!-- Symbol with Text (and no Curve) : Text Symbol --&gt;</span>
             &lt;Symbol Id="TxB" Text="B" /&gt;
@@ -252,4 +279,5 @@
             --&gt;</span>
         &lt;/XmlSymbols&gt;
 </pre>
+    </body>
 </html>

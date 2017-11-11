@@ -166,10 +166,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Help\ReadmeAndroid.txt" />
+    <None Include="Help\ReadmeAndroid.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Help\ReadmeWindows.txt" />
+    <None Include="Help\ReadmeWindows.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Help\OscratchHelp.html" />
@@ -184,20 +184,24 @@
     <None Include="HelpOcad\OcadInterface.html" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Help\Constr.png" />
-    <Resource Include="Help\ContextMenu1.png" />
-    <Resource Include="Help\ContextMenu2.png" />
-    <Resource Include="Help\Instr.png" />
-    <Resource Include="Help\LineCont.png" />
-    <Resource Include="Help\LineStart.png" />
-    <Resource Include="Help\Symbols.png" />
-    <Resource Include="Help\TextElem.png" />
+    <None Include="Help\Constr.png" />
+    <None Include="Help\ContextMenu1.png" />
+    <None Include="Help\ContextMenu2.png" />
+    <None Include="Help\Instr.png" />
+    <None Include="Help\LineCont.png" />
+    <None Include="Help\LineStart.png" />
+    <None Include="Help\Symbols.png" />
+    <None Include="Help\TextElem.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Help\DetailLl.png" />
-    <Resource Include="Help\DetailUr.png" />
-    <Resource Include="Help\ExtentFix.png" />
-    <Resource Include="Help\ExtentMove.png" />
+    <None Include="Help\DetailLl.png" />
+    <None Include="Help\DetailUr.png" />
+    <None Include="Help\ExtentFix.png" />
+    <None Include="Help\ExtentMove.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Help\ZoomIn.png" />
+    <None Include="Help\ZoomOut.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
