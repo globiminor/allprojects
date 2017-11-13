@@ -154,7 +154,7 @@ namespace OMapScratch
             {
               int i = 0;
               float pre = 0;
-              foreach (float pos in sym.Dash.GetPositions())
+              foreach (float pos in sym.Dash.GetPositions(width - 6))
               {
                 i++;
                 float current = pos * scale + 3;
@@ -174,7 +174,7 @@ namespace OMapScratch
           {
             float[] matrix = GetMatrix(width, height, scale);
             Pen pen = new Pen(br, sym.LineWidth * scale);
-            foreach (float pos in sym.Dash.GetPositions())
+            foreach (float pos in sym.Dash.GetPositions(width - 6))
             {
               if (pos * scale > width - 6)
               { break; }

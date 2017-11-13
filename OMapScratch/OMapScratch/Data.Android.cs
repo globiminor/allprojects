@@ -311,7 +311,7 @@ namespace OMapScratch
       private readonly Paint _p;
       private DashPathEffect _dash;
       private readonly PathEffect _orig;
-      public Dash(SymbolCurve sym, float scale, Paint p, Curve line)
+      public Dash(SymbolCurve sym, float scale, float symbolScale, Paint p, Curve line)
       {
         _p = p;
         if (sym.Dash == null)
@@ -323,7 +323,7 @@ namespace OMapScratch
           {
             using (PathMeasure m = new PathMeasure(path, false))
             {
-              float l = m.Length;
+              float l = m.Length / symbolScale;
               scale = (float)(scale * sym.Dash.GetFactor(l));
             }
           }
@@ -355,7 +355,7 @@ namespace OMapScratch
       {
         if (sym.Curve == null)
         {
-          using (new Dash(sym, lineScale, p, line))
+          using (new Dash(sym, lineScale, symbolScale, p, line))
           {
             DrawCurve(canvas, line, matrix, sym.LineWidth * lineScale, sym.Fill, sym.Stroke, p);
           }
