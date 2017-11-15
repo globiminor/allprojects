@@ -4,12 +4,38 @@ using Grid;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace Dhm
 {
   public static class LasUtils
   {
+    private class LasPoint
+    {
+      public float X { get; set; }
+      public float Y { get; set; }
+      public float Z { get; set; }
+      public int Intesity { get; set; }
+
+      public Vector ToVector(double x0, double y0)
+      {
+        Vector v = new Vector(4);
+        v[0] = x0 + X;
+        v[1] = y0 + Y;
+        v[2] = Z;
+        v[3] = Intesity;
+
+        return v;
+      }
+
+      public static List<Vector> GetVectors(double x0, double y0, List<LasPoint> pts)
+      {
+        List<Vector> vectors = new List<Vector>(pts.Count);
+        foreach (LasPoint pt in pts)
+        { vectors.Add(pt.ToVector(x0, y0)); }
+        return vectors;
+      }
+    }
+
     private class Cell
     {
       public int IX { get; set; }
@@ -56,7 +82,7 @@ namespace Dhm
       return 10 * h;
     }
 
-    static byte[] Red = new byte[] { 0, 64, 128, 160, 192, 255};
+    static byte[] Red = new byte[] { 0, 64, 128, 160, 192, 255 };
     static byte[] Green = new byte[] { 0, 64, 128, 160, 192, 224, 255 };
     static byte[] Blue = new byte[] { 0, 64, 128, 160, 192, 255 };
 
@@ -181,7 +207,6 @@ namespace Dhm
       { return 0; }
 
       Vector p0 = pts[pts.Count - 1];
-
 
       double da = (p0A[p0A.Count - 1].Z + pA0[pA0.Count - 1].Z - 2 * p0.Z);
       double dm = (p0M[p0M.Count - 1].Z + pM0[pM0.Count - 1].Z - 2 * p0.Z);
@@ -331,26 +356,33 @@ namespace Dhm
 
     public static DoubleGrid CreateGrid(TextReader reader, double res, Func<int, int, Func<int, int, List<Vector>>, double> grdFct)
     {
-      Dictionary<Cell, List<Vector>> ptsDict = new Dictionary<Cell, List<Vector>>(new CellComparer());
+      Dictionary<Cell, List<LasPoint>> ptsDict = new Dictionary<Cell, List<LasPoint>>(new CellComparer());
 
       string line;
       while ((line = reader.ReadLine()) != null)
       {
         IList<string> parts = line.Split();
-        Vector v = new Vector(4);
-        v[0] = double.Parse(parts[0]);
-        v[1] = double.Parse(parts[1]);
-        v[2] = double.Parse(parts[2]);
-        v[3] = int.Parse(parts[3]);
+        double x = double.Parse(parts[0]);
+        double y = double.Parse(parts[1]);
+        double z = double.Parse(parts[2]);
+        int intens = int.Parse(parts[3]);
 
-        int ix = (int)(v.X / res);
-        int iy = (int)(v.Y / res);
+        int ix = (int)(x / res);
+        int iy = (int)(y / res);
+
+        LasPoint v = new LasPoint
+        {
+          X = (float)(x - ix * res),
+          Y = (float)(y - iy * res),
+          Z = (float)z,
+          Intesity = intens
+        };
 
         Cell key = new Cell { IX = ix, IY = iy };
-        List<Vector> pts;
+        List<LasPoint> pts;
         if (!ptsDict.TryGetValue(key, out pts))
         {
-          pts = new List<Vector>();
+          pts = new List<LasPoint>();
           ptsDict.Add(key, pts);
         }
         pts.Add(v);
@@ -374,8 +406,8 @@ namespace Dhm
         Cell c = pair.Key;
         int ix = c.IX - xMin;
         int iy = yMax - c.IY;
-        List<Vector> pts = pair.Value;
-        pts.Sort((x, y) => { return x[2].CompareTo(y[2]); });
+        List<LasPoint> pts = pair.Value;
+        pts.Sort((x, y) => { return x.Z.CompareTo(y.Z); });
       }
       foreach (var pair in ptsDict)
       {
@@ -386,10 +418,10 @@ namespace Dhm
         grd[ix, iy] = grdFct(c.IX, c.IY, (tx, ty) =>
         {
           Cell key = new Cell { IX = tx, IY = ty };
-          List<Vector> pts;
+          List<LasPoint> pts;
           if (!ptsDict.TryGetValue(key, out pts))
           { return null; }
-          return pts;
+          return LasPoint.GetVectors(tx * res, ty * res, pts);
         });
       }
 

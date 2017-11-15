@@ -102,7 +102,8 @@ namespace OcadTest
     public void TestLasStruct()
     {
       double resolution = 1;
-      string dir = @"C:\daten\felix\kapreolo\karten\hardwald\2017\lidar";
+      string dir = @"C:\daten\felix\kapreolo\karten\blauen\2018\lidar";
+      //string dir = @"C:\daten\felix\kapreolo\karten\hardwald\2017\lidar";
 
       Dictionary<string, string> tiles = new Dictionary<string, string>();
       foreach (string path in Directory.EnumerateFiles(dir))
