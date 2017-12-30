@@ -201,15 +201,17 @@ namespace OcadScratch
           }
           else
           {
-            double length = line.Length();
+            double lUnscaled = line.Length();
+            double lScaled = lUnscaled / _symbolScale;
             double pre = -1;
             int i = 0;
-            foreach (double pos in sym.Dash.GetPositions(length))
+            foreach (double posScaled in sym.Dash.GetPositions(lScaled))
             {
               i++;
+              double posUnscaled = posScaled * _symbolScale;
               if (i % 2 == 0)
               {
-                Basics.Geom.Polyline dash = line.SubPart(pre, Math.Min(pos, length) - pre);
+                Basics.Geom.Polyline dash = line.SubPart(pre, Math.Min(posUnscaled, lUnscaled) - pre);
 
                 ElementV9 elem = new ElementV9(true);
                 elem.Type = GeomType.line;
@@ -220,21 +222,23 @@ namespace OcadScratch
 
                 w.Append(elem);
               }
-              pre = pos;
-              if (pos > length)
+              pre = posUnscaled;
+              if (posUnscaled > lUnscaled)
               { break; }
             }
           }
         }
         else if (sym.Dash != null)
         {
-          double length = line.Length();
-          foreach (float pos in sym.Dash.GetPositions(length))
+          double lUnscaled = line.Length();
+          double lScaled = lUnscaled / _symbolScale;
+          foreach (float posScaled in sym.Dash.GetPositions(lScaled))
           {
-            if (pos > length)
+            double posUnscaled = posScaled * _symbolScale;
+            if (posUnscaled > lUnscaled)
             { break; }
 
-            double[] pars = line.ParamAt(pos);
+            double[] pars = line.ParamAt(posUnscaled);
             Basics.Geom.Curve seg = line.Segments[(int)pars[0]];
             Basics.Geom.Point tan = seg.TangentAt(pars[1]);
 
