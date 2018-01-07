@@ -348,7 +348,6 @@ namespace Basics.Window.Browse
 
     }
 
-
     private static string GetString(ushort[] t, uint count)
     {
       char[] charArray = new char[count - 1];
@@ -356,6 +355,153 @@ namespace Basics.Window.Browse
       string s = new string(charArray);
       return s;
     }
+
+    #region Get Files URL From Cache
+    //Declare the WIN32 API calls to get the entries from IE's history cache  
+    [DllImport("wininet.dll", SetLastError = true)]
+    private static extern IntPtr FindFirstUrlCacheEntry(string lpszUrlSearchPattern, IntPtr lpFirstCacheEntryInfo, out UInt32 lpdwFirstCacheEntryInfoBufferSize);
+
+    [DllImport("wininet.dll", SetLastError = true)]
+    private static extern long FindNextUrlCacheEntry(IntPtr hEnumHandle, IntPtr lpNextCacheEntryInfo, out UInt32 lpdwNextCacheEntryInfoBufferSize);
+
+    [DllImport("wininet.dll", SetLastError = true)]
+    private static extern long FindCloseUrlCache(IntPtr hEnumHandle);
+
+    [DllImport("Wininet.dll", SetLastError = true, CharSet = CharSet.Auto)]
+    private static extern bool GetUrlCacheEntryInfo(String lpxaUrlName, IntPtr lpCacheEntryInfo, ref int lpdwCacheEntryInfoBufferSize);
+    [StructLayout(LayoutKind.Sequential)]
+    private struct INTERNET_CACHE_ENTRY_INFO
+    {
+      public UInt32 dwStructSize;
+      public string lpszSourceUrlName;
+      public string lpszLocalFileName;
+      public UInt32 CacheEntryType;
+      public UInt32 dwUseCount;
+      public UInt32 dwHitRate;
+      public UInt32 dwSizeLow;
+      public UInt32 dwSizeHigh;
+      public System.Runtime.InteropServices.ComTypes.FILETIME LastModifiedTime;
+      public System.Runtime.InteropServices.ComTypes.FILETIME ExpireTime;
+      public System.Runtime.InteropServices.ComTypes.FILETIME LastAccessTime;
+      public System.Runtime.InteropServices.ComTypes.FILETIME LastSyncTime;
+      public IntPtr lpHeaderInfo;
+      public UInt32 dwHeaderInfoSize;
+      public string lpszFileExtension;
+      public UInt32 dwExemptDelta;
+    };
+
+    public static class Hresults
+    {
+      public const int ERROR_SUCCESS = 0;
+      public const int ERROR_FILE_NOT_FOUND = 2;
+      public const int ERROR_ACCESS_DENIED = 5;
+      public const int ERROR_INSUFFICIENT_BUFFER = 122;
+      public const int ERROR_NO_MORE_ITEMS = 259;
+    };
+
+    private static void Free(ref IntPtr buffer, ref uint structSize)
+    {
+      // Free the buffer  
+      if (buffer != IntPtr.Zero)
+      {
+        try { Marshal.FreeHGlobal(buffer); }
+        catch { }
+        buffer = IntPtr.Zero;
+        structSize = 0;
+      }
+    }
+
+
+    private static IEnumerable<INTERNET_CACHE_ENTRY_INFO> getUrlEntriesInHistory()
+    {
+      List<string> filesList = new List<string>();
+      IntPtr buffer = IntPtr.Zero;
+      uint structSize;
+
+      IntPtr hEnum = FindFirstUrlCacheEntry(null, buffer, out structSize);
+      try
+      {
+        if (hEnum == IntPtr.Zero)
+        {
+          int lastError = Marshal.GetLastWin32Error();
+          if (lastError == Hresults.ERROR_INSUFFICIENT_BUFFER)
+          {
+            //Allocate buffer  
+            buffer = Marshal.AllocHGlobal((int)structSize);
+            //Call again, this time it should succeed  
+            //hEnum = FindFirstUrlCacheEntry(urlPattern, buffer, out structSize);  
+            hEnum = FindFirstUrlCacheEntry(null, buffer, out structSize);
+          }
+          else if (lastError == Hresults.ERROR_NO_MORE_ITEMS)
+          {
+            Console.Error.WriteLine("No entries in IE's history cache");
+            yield break;
+          }
+          else if (lastError != Hresults.ERROR_SUCCESS)
+          {
+            Console.Error.WriteLine("Unable to fetch entries from IE's history cache");
+            yield break;
+          }
+        }
+
+        INTERNET_CACHE_ENTRY_INFO result = (INTERNET_CACHE_ENTRY_INFO)Marshal.PtrToStructure(buffer, typeof(INTERNET_CACHE_ENTRY_INFO));
+        yield return result;
+
+        Free(ref buffer, ref structSize);
+
+        //Loop through all entries, attempt to find matches  
+        while (true)
+        {
+          long nextResult = FindNextUrlCacheEntry(hEnum, buffer, out structSize);
+          if (nextResult != 1) //TRUE  
+          {
+            int lastError = Marshal.GetLastWin32Error();
+            if (lastError == Hresults.ERROR_INSUFFICIENT_BUFFER)
+            {
+              buffer = Marshal.AllocHGlobal((int)structSize);
+              nextResult = FindNextUrlCacheEntry(hEnum, buffer, out structSize);
+            }
+            else if (lastError == Hresults.ERROR_NO_MORE_ITEMS)
+            {
+              break;
+            }
+          }
+
+          result = (INTERNET_CACHE_ENTRY_INFO)Marshal.PtrToStructure(buffer, typeof(INTERNET_CACHE_ENTRY_INFO));
+          yield return result;
+
+          Free(ref buffer, ref structSize);
+        }
+      }
+      finally
+      {
+        if (hEnum != IntPtr.Zero)
+        {
+          FindCloseUrlCache(hEnum);
+        }
+        if (buffer != IntPtr.Zero)
+        {
+          try { Marshal.FreeHGlobal(buffer); }
+          catch { }
+        }
+      }
+    }
+
+    public static bool IsDevicePath(string fileName)
+    {
+      foreach (var entry in getUrlEntriesInHistory())
+      {
+        string localUrl = entry.lpszLocalFileName;
+        string fileUrl = entry.lpszSourceUrlName.Substring(entry.lpszSourceUrlName.LastIndexOf('@') + 1);
+        if (localUrl?.Contains(fileName) == true)
+        {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    #endregion
 
   }
 }

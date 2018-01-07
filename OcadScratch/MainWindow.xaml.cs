@@ -130,7 +130,7 @@ namespace OcadScratch
       string fullPath;
       {
         FrmBrowser frm = new FrmBrowser();
-        BrowserVm browserVm = BrowserVm.Create("C:\\", ".config");
+        BrowserVm browserVm = BrowserVm.Create(Directory.GetCurrentDirectory(), ".config");
         frm.DataContext = browserVm;
         if (frm.ShowDialog() == true)
         { }
@@ -140,13 +140,26 @@ namespace OcadScratch
       }
       LoadConfig(fullPath);
     }
+
     private void mniLoad_Click(object sender, RoutedEventArgs e)
     {
       Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
       dlg.Title = "Load Scratch file";
       dlg.Filter = "*.config | *.config";
 
-      if (!(dlg.ShowDialog() ?? false))
+      dlg.FileOk += (s, arg) =>
+      {
+        if (PortableDeviceUtils.IsDevicePath(dlg.FileName))
+        {
+          MessageBox.Show(this, 
+            "Files on a device are not supported, please copy the relevant data to a drive and chose appropriate file",
+            "Device files not supported");
+          arg.Cancel = true;
+        }
+      };
+
+
+      if (!(dlg.ShowDialog(this) ?? false))
       { return; }
 
       LoadConfig(dlg.FileName);
