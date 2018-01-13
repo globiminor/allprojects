@@ -8,6 +8,7 @@ using System.Threading;
 using System.Windows.Forms;
 using Basics.Data;
 using Basics.Geom;
+using Macro;
 
 namespace Dhm
 {
@@ -65,7 +66,7 @@ namespace Dhm
       Process ocdProc = StartOcad();
 
 
-      Macro.Macro m = new Macro.Macro();
+      Processor m = new Processor();
       OcadInitFile(m, ocdProc, txtOcad.Text);
 
       if (args.Progress == ContourSorter.Progress.Intersection)
@@ -96,18 +97,18 @@ Continue?",
       }
     }
 
-    private void OcadCenter(Macro.Macro m, IBox extent)
+    private void OcadCenter(Processor m, IBox extent)
     {
       List<byte> code = new List<byte>();
       IBox b = extent;
       Point2D p = new Point2D((b.Min.X + b.Max.X) / 2.0, (b.Min.Y + b.Max.Y) / 2.0);
       code.Clear();
-      code.Add(Macro.Macro.VK_CONTROL);
+      code.Add(Ui.VK_CONTROL);
       m.SendCommand('g', code);
 
       Clipboard.SetText(p.X.ToString("f0"));
       code.Clear();
-      code.Add(Macro.Macro.VK_CONTROL);
+      code.Add(Ui.VK_CONTROL);
       m.SendCommand('v', code);
 
       code.Clear();
@@ -117,19 +118,19 @@ Continue?",
 
       Clipboard.SetText(p.Y.ToString("f0"));
       code.Clear();
-      code.Add(Macro.Macro.VK_CONTROL);
+      code.Add(Ui.VK_CONTROL);
       m.SendCommand('v', code);
 
       code.Clear();
 
-      code.Add(Macro.Macro.VK_RETURN);
+      code.Add(Ui.VK_RETURN);
       m.SendCode(code);
 
       m.WaitForInputIdle();
       m.WaitIdle();
     }
 
-    private void OcadSetZoom32(Macro.Macro m, Process ocdProc)
+    private void OcadSetZoom32(Processor m, Process ocdProc)
     {
       List<byte> code = new List<byte>();
 
@@ -137,7 +138,7 @@ Continue?",
       m.WaitForInputIdle();
       m.WaitIdle();
       code.Clear();
-      code.Add(Macro.Macro.VK_ALT);
+      code.Add(Ui.VK_ALT);
       m.SendCommand('n', code); // Ansicht
       code.Clear();
       m.WaitForInputIdle();
@@ -154,13 +155,13 @@ Continue?",
       m.WaitIdle();
     }
 
-    private static void OcadInitFile(Macro.Macro m, Process ocdProc, string fileName)
+    private static void OcadInitFile(Processor m, Process ocdProc, string fileName)
     {
       List<byte> code = new List<byte>();
       m.SetForegroundProcess(ocdProc);
       m.WaitIdle();
       m.WaitForInputIdle();
-      string windowName = m.ForeGroundWindowName();
+      string windowName = Processor.ForeGroundWindowName();
       if (!windowName.Contains(fileName))
       {
         {
@@ -168,7 +169,7 @@ Continue?",
           m.WaitIdle();
           m.WaitForInputIdle();
           m.WaitIdle();
-          code.Add(Macro.Macro.VK_CONTROL);
+          code.Add(Ui.VK_CONTROL);
           m.SendCommand('o', code);
           code.Clear();
         }
@@ -176,7 +177,7 @@ Continue?",
           //m.SetForegroundProcess(ocdProc);
           m.WaitForInputIdle();
           m.WaitIdle();
-          code.Add(Macro.Macro.VK_ALT);
+          code.Add(Ui.VK_ALT);
           m.SendCommand('n', code);
           code.Clear();
         }
@@ -186,7 +187,7 @@ Continue?",
           m.WaitIdle();
           Clipboard.Clear();
           Clipboard.SetText(fileName);
-          code.Add(Macro.Macro.VK_CONTROL);
+          code.Add(Ui.VK_CONTROL);
           m.SendCommand('v', code);
           code.Clear();
         }
@@ -194,7 +195,7 @@ Continue?",
           // m.SetForegroundProcess(ocdProc);
           m.WaitForInputIdle();
           m.WaitIdle();
-          code.Add(Macro.Macro.VK_ALT);
+          code.Add(Ui.VK_ALT);
           m.SendCommand('f', code);
           code.Clear();
           m.WaitForInputIdle();

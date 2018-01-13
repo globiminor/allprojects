@@ -1,4 +1,4 @@
-﻿namespace Macro
+﻿namespace MacroUi
 {
   partial class MacroWdg
   {

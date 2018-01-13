@@ -5,8 +5,9 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using Macro;
 
-namespace Macro
+namespace MacroUi
 {
   public partial class MacroWdg : Form
   {
@@ -100,7 +101,7 @@ namespace Macro
         while (line.StartsWith("#"))
         {
           string execName = line.Substring(1);
-          Process proc = Macro.InitProcess(macro, execName);
+          Process proc = Processor.InitProcess(macro, execName);
 
           if (_proc == null)
           {
@@ -125,7 +126,7 @@ namespace Macro
 
     private void GetLastForegroundWindow()
     {
-      IntPtr active = Macro.GetForegroundWindow();
+      IntPtr active = Ui.GetForegroundWindow();
       if (active != IntPtr.Zero && active != _handle)
       { _active = active; }
 
@@ -193,7 +194,7 @@ namespace Macro
     {
       txtProgress.TopLevelControl.Refresh();
     }
-    private void reader_Progress(object sender, ProgressEventArgs e)
+    private void reader_Progress(object sender, Macro.ProgressEventArgs e)
     {
       if (e != null)
       {
@@ -238,7 +239,7 @@ namespace Macro
     private static readonly string OcadProgram = @"C:\Program Files (x86)\OCAD\OCAD11\Ocad11Std.exe";
 
     private delegate bool FuncBool();
-    private bool Try(Macro macro, int tries, int sleep, FuncBool function)
+    private bool Try(Processor macro, int tries, int sleep, FuncBool function)
     {
       for (int i = 0; i < tries; i++)
       {
@@ -250,23 +251,23 @@ namespace Macro
       return false;
     }
 
-    private bool TryWindowName(string name, Macro macro, int tries, int sleep)
+    private bool TryWindowName(string name, Processor macro, int tries, int sleep)
     {
       bool success = Try(macro, tries, sleep,
         delegate
         {
           string wndName;
-          wndName = macro.ForeGroundWindowName();
+          wndName = Processor.ForeGroundWindowName();
           return (wndName.StartsWith(name));
         });
       return success;
     }
 
-    private bool Open(Macro macro, string fileName)
+    private bool Open(Processor macro, string fileName)
     {
       macro.SetForegroundProcess();
 
-      macro.SendCommands('o', Macro.VK_CONTROL);
+      macro.SendCommands('o', Ui.VK_CONTROL);
       macro.Sleep(100);
 
       if (TryWindowName(OcadKarteOpen, macro, 5, 200) == false)
@@ -296,9 +297,9 @@ namespace Macro
       return true;
     }
 
-    private void WriteName(Macro macro, string name)
+    private void WriteName(Processor macro, string name)
     {
-      macro.SendCommands('n', Macro.VK_ALT);
+      macro.SendCommands('n', Ui.VK_ALT);
       macro.Sleep(100);
 
       foreach (char c in name)
@@ -306,7 +307,7 @@ namespace Macro
 
       macro.Sleep(100);
 
-      macro.SendCodes(Macro.VK_RETURN);
+      macro.SendCodes(Ui.VK_RETURN);
       macro.Sleep(100);
     }
 
@@ -328,7 +329,7 @@ namespace Macro
           File.Delete(pdf);
         }
 
-        Macro macro = new Macro();
+        Processor macro = new Processor();
 
         bool procSuccess = false;
         while (procSuccess == false)
@@ -365,10 +366,10 @@ namespace Macro
           { File.Delete(pdf); }
         }
 
-        macro.SendCommands('w', Macro.VK_CONTROL);
+        macro.SendCommands('w', Ui.VK_CONTROL);
         macro.Sleep(200);
 
-        macro.SendCommands('n', Macro.VK_ALT);
+        macro.SendCommands('n', Ui.VK_ALT);
         macro.Sleep(200);
 
         Application.DoEvents();
@@ -377,7 +378,7 @@ namespace Macro
       }
     }
 
-    private bool Export(Macro macro, string pdf, string export)
+    private bool Export(Processor macro, string pdf, string export)
     {
       bool success;
       int iTry = 0;
@@ -388,10 +389,10 @@ namespace Macro
         macro.Sleep(300);
         macro.ForegroundClick(100, 10);
         macro.Sleep(100);
-        macro.SendCommands('e', Macro.VK_CONTROL);
+        macro.SendCommands('e', Ui.VK_CONTROL);
         macro.Sleep(100);
 
-        macro.SendCodes(Macro.VK_RETURN);
+        macro.SendCodes(Ui.VK_RETURN);
         success = TryWindowName(export, macro, 5, 200);
         iTry++;
       } while (success == false && iTry < 10);
@@ -426,7 +427,7 @@ namespace Macro
 
         if (finished)
         {
-          macro.SendCommands('o', Macro.VK_ALT);
+          macro.SendCommands('o', Ui.VK_ALT);
           macro.Sleep(100);
           macro.SendKey('p');
           macro.Sleep(100);
@@ -434,7 +435,7 @@ namespace Macro
           if (TryWindowName(OcadPraef, macro, 5, 100))
           {
             macro.Sleep(100);
-            macro.SendCodes(Macro.VK_RETURN);
+            macro.SendCodes(Ui.VK_RETURN);
             macro.Sleep(100);
 
             praefSuccess = true;
@@ -444,14 +445,14 @@ namespace Macro
 
         macro.SetForegroundProcess();
         macro.Sleep(100);
-        IntPtr hWnd = Macro.GetForegroundWindow();
-        Rectangle rect = Macro.GetWindowRect(hWnd);
+        IntPtr hWnd = Ui.GetForegroundWindow();
+        Rectangle rect = Processor.GetWindowRect(hWnd);
         if (rect.Width < 500 && rect.Height < 200 &&
           rect.Height > 0 && rect.Width > 0)
         {
           // Error
           macro.Sleep(100);
-          macro.SendCodes(Macro.VK_RETURN);
+          macro.SendCodes(Ui.VK_RETURN);
           macro.Sleep(100);
           return false;
         }
@@ -521,7 +522,7 @@ namespace Macro
           dgvData.Invalidate();
           Application.DoEvents();
 
-          Macro macro = new Macro();
+          Processor macro = new Processor();
 
           //macro.SetForegroundProcess(OcadProcName);
           //macro.SendCommands('o', Macro.VK_CONTROL);

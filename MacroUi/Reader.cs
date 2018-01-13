@@ -1,10 +1,11 @@
+using Macro;
 using System;
 using System.IO;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
-namespace Macro
+namespace MacroUi
 {
   public class Reader
   {
@@ -49,7 +50,7 @@ namespace Macro
         { _variables.Add(pair.Key, pair.Value); }
       }
 
-      Macro macro = new Macro();
+      Processor macro = new Processor();
       try
       {
         macro.Progress += macro_Progress;
@@ -67,7 +68,7 @@ namespace Macro
       }
     }
 
-    private void RunReader(Macro macro, StreamReader reader, bool first)
+    private void RunReader(Processor macro, StreamReader reader, bool first)
     {
       for (string line = reader.ReadLine(); line != null;
            line = reader.ReadLine())
@@ -196,15 +197,15 @@ namespace Macro
           { context.Add((byte)'\t'); }
           else if (key == "VK_PRIOR")
           {
-            context.Add(Macro.VK_SHIFT);
+            context.Add(Ui.VK_SHIFT);
             context.Add((byte)'\t');
           }
           else if (key == "VK_RETURN")
-          { context.Add(Macro.VK_RETURN); }
+          { context.Add(Ui.VK_RETURN); }
           else if (key == "VK_CONTROL")
-          { context.Add(Macro.VK_CONTROL); }
+          { context.Add(Ui.VK_CONTROL); }
           else if (key == "VK_ALT")
-          { context.Add(Macro.VK_ALT); }
+          { context.Add(Ui.VK_ALT); }
           else if (keys.Length == 1)
           { macro.SendKeys(key); }
           else

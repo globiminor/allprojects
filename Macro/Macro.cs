@@ -9,105 +9,11 @@ using System.Windows.Forms;
 
 namespace Macro
 {
-  public class Macro
+  public class Processor
   {
-    #region external
-
-    [DllImport("user32.dll")]
-    public static extern bool ToAscii(int VirtualKey, int ScanCode,
-                                      byte[] lpKeyState, ref uint lpChar, int uFlags);
-
-    [DllImport("user32")]
-    private static extern bool EnumChildWindows(IntPtr window, EnumWindowProc callback, IntPtr param);
-
-    [DllImport("user32")]
-    private static extern IntPtr GetWindowThreadProcessId(IntPtr hwnd, out IntPtr lpdwProcessId);
-
-    [DllImport("user32.dll")]
-    private static extern short VkKeyScan(char ch);
-    [DllImport("user32")]
-    internal static extern IntPtr DestroyWindow(IntPtr hWnd);
-    [DllImport("user32")]
-    internal static extern IntPtr CloseWindow(IntPtr hWnd);
-    [DllImport("user32.dll")]
-    internal static extern bool EndDialog(IntPtr hWnd, IntPtr result);
-    [DllImport("user32")]
-    internal static extern IntPtr GetForegroundWindow();
-    [DllImport("user32")]
-    private static extern IntPtr FindWindow(string cls, string title);
-    [DllImport("user32")]
-    private static extern int GetWindowText(IntPtr hWnd, StringBuilder title, int max);
-    [DllImport("user32.dll")]
-    public static extern bool IsWindowVisible(IntPtr hWnd);
-    [DllImport("user32")]
-    private static extern int SetForegroundWindow(IntPtr hWnd);
-    [DllImport("user32")]
-    private static extern IntPtr GetParent(IntPtr hWnd);
-    [DllImport("user32.dll")]
-    private static extern bool GetWindowRect(IntPtr hWnd, ref Rectangle rect);
-    [DllImport("user32.dll")]
-    private static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
-
-    [DllImport("user32.dll")]
-    private static extern void keybd_event(byte bVk, byte bScan, uint dwFlags,
-       IntPtr dwExtraInfo);
-    [DllImport("user32.dll")]
-    public static extern int GetKeyboardState(byte[] lpKeyState);
-    [DllImport("user32.dll")]
-    private static extern void mouse_event(uint dwFlags, uint dx, uint dy,
-      uint dwData, IntPtr dwExtraInfo);
-    #endregion
-
-    private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
-    private delegate bool EnumWindowProc(IntPtr hWnd, IntPtr parameter);
-
-    #region constants
-    private const int MOUSEEVENTF_LEFTDOWN = 0x00000002;
-    private const int MOUSEEVENTF_LEFTUP = 0x00000004;
-    private const int MOUSEEVENTF_MIDDLEDOWN = 0x00000020;
-    private const int MOUSEEVENTF_MIDDLEUP = 0x00000040;
-    private const int MOUSEEVENTF_MOVE = 0x00000001;
-    private const int MOUSEEVENTF_ABSOLUTE = 0x00008000;
-    private const int MOUSEEVENTF_RIGHTDOWN = 0x00000008;
-    private const int MOUSEEVENTF_RIGHTUP = 0x00000010;
-
-    private const byte VK_CLEAR = 12;
-    public const byte VK_RETURN = 13;
-
-    public const byte VK_SHIFT = 16;
-    public const byte VK_CONTROL = 17;
-    public const byte VK_ALT = 0x12;
-    private const byte VK_MENU = 18;
-    private const byte VK_PAUSE = 19;
-    private const byte VK_CAPITAL = 20;
-
-    private const byte VK_ESCAPE = 27;
-
-    private const byte VK_SPACE = 32;
-    public const byte VK_PRIOR = 33;
-    public const byte VK_NEXT = 34;
-    private const byte VK_END = 35;
-    private const byte VK_HOME = 36;
-    private const byte VK_LEFT = 37;
-    private const byte VK_UP = 38;
-    private const byte VK_RIGHT = 39;
-    private const byte VK_DOWN = 40;
-    private const byte VK_SELECT = 21;
-    private const byte VK_PRINT = 42;
-    private const byte VK_EXECUTE = 43;
-    private const byte VK_SNAPSHOT = 44;
-    private const byte VK_INSERT = 45;
-    private const byte VK_DELETE = 46;
-    private const byte VK_HELP = 47;
-
-    private const int KEYEVENTF_KEYUP = 0x2;
-    #endregion
-
     public event ProgressEventHandler Progress;
     private int _sleep = 200;
     private Process _currentProc = null;
-
-    private Dictionary<IntPtr, string> _windows;
 
     public static Process InitProcess(string workDir, string execName)
     {
@@ -183,16 +89,40 @@ namespace Macro
       SetWindow(_currentProc.MainWindowHandle);
     }
 
+    private class WindowsHandler
+    {
+      private List<WindowPtr> _windows = new List<WindowPtr>();
+
+      public void InitWindows(IntPtr? data = null)
+      {
+        _windows.Clear();
+        Ui.EnumWindows(AddWindow, data ?? IntPtr.Zero);
+      }
+
+      public void InitChildWindows(IntPtr hWnd, IntPtr? data = null)
+      {
+        _windows.Clear();
+        Ui.EnumChildWindows(hWnd, AddWindow, data ?? IntPtr.Zero);
+      }
+
+      private bool AddWindow(IntPtr hWnd, IntPtr data)
+      {
+        _windows.Add(new WindowPtr { HWnd = hWnd, Data = data });
+        return true;
+      }
+      public IList<WindowPtr> Windows { get { return _windows; } }
+    }
+
     public IntPtr SetForegroundWindow(string textStart)
     {
       IntPtr hWnd = IntPtr.Zero;
-      _windows = new Dictionary<IntPtr, string>();
-      EnumWindows(AddWindow, IntPtr.Zero);
-      foreach (KeyValuePair<IntPtr, string> pair in _windows)
+      WindowsHandler w = new WindowsHandler();
+      w.InitWindows();
+      foreach (WindowPtr window in w.Windows)
       {
-        if (pair.Value.ToUpper().Contains(textStart.ToUpper()))
+        if (window.GetWindowText().ToUpper().Contains(textStart.ToUpper()))
         {
-          hWnd = pair.Key;
+          hWnd = window.HWnd;
           break;
         }
       }
@@ -203,47 +133,46 @@ namespace Macro
       return hWnd;
     }
 
-    public Dictionary<IntPtr, string> GetChildWindowsText(IntPtr hWnd)
+    public static IList<WindowPtr> GetChildWindows(IntPtr hWnd)
     {
-      Dictionary<IntPtr, string> children = new Dictionary<IntPtr, string>();
-      _windows = children;
-      EnumChildWindows(hWnd, AddWindow, IntPtr.Zero);
-      return children;
+      WindowsHandler w = new WindowsHandler();
+      w.InitChildWindows(hWnd);
+      return w.Windows;
     }
 
     private void SetWindow(IntPtr hWnd)
     {
-      SetForegroundWindow(hWnd);
-      IntPtr current = GetForegroundWindow();
+      Ui.SetForegroundWindow(hWnd);
+      IntPtr current = Ui.GetForegroundWindow();
       int nTrys = 0;
-      while (current != hWnd && GetParent(current) != hWnd && nTrys < 8)
+      while (current != hWnd && Ui.GetParent(current) != hWnd && nTrys < 8)
       {
         IntPtr currentProcId;
-        IntPtr currentThreadId = GetWindowThreadProcessId(current, out currentProcId);
+        IntPtr currentThreadId = Ui.GetWindowThreadProcessId(current, out currentProcId);
 
         IntPtr setProcId;
-        IntPtr setThreadId = GetWindowThreadProcessId(hWnd, out setProcId);
+        IntPtr setThreadId = Ui.GetWindowThreadProcessId(hWnd, out setProcId);
 
         if (currentThreadId == setThreadId)
         {
           return;
         }
 
-        _windows = new Dictionary<IntPtr, string>();
-        EnumChildWindows(current, AddWindow, IntPtr.Zero);
-        foreach (KeyValuePair<IntPtr, string> pair in _windows)
+        WindowsHandler w = new WindowsHandler();
+        w.InitChildWindows(current, IntPtr.Zero);
+        foreach (WindowPtr pair in w.Windows)
         {
-          if (pair.Key == hWnd)
+          if (pair.HWnd == hWnd)
           {
             return;
           }
         }
-        string msg = string.Format("Soll: {0}; Ist: {1} {2}", hWnd, current, GetParent(hWnd));
+        string msg = string.Format("Soll: {0}; Ist: {1} {2}", hWnd, current, Ui.GetParent(hWnd));
         OnProgress(new ProgressEventArgs(msg));
         System.Threading.Thread.Sleep(_sleep);
-        SetForegroundWindow(hWnd);
+        Ui.SetForegroundWindow(hWnd);
         System.Threading.Thread.Sleep(_sleep);
-        current = GetForegroundWindow();
+        current = Ui.GetForegroundWindow();
         nTrys++;
       }
     }
@@ -251,7 +180,7 @@ namespace Macro
 
     private static List<byte> GetKeyBytes(char key)
     {
-      short s = VkKeyScan(key);
+      short s = Ui.VkKeyScan(key);
       if (s == 0)
       { return null; } // Unhandled
 
@@ -261,11 +190,11 @@ namespace Macro
       List<byte> all = new List<byte>();
 
       if ((state & 1) != 0)
-      { all.Add(VK_SHIFT); }
+      { all.Add(Ui.VK_SHIFT); }
       if ((state & 2) != 0)
-      { all.Add(VK_CONTROL); }
+      { all.Add(Ui.VK_CONTROL); }
       if ((state & 4) != 0)
-      { all.Add(VK_ALT); }
+      { all.Add(Ui.VK_ALT); }
 
       all.Add(code);
 
@@ -298,11 +227,11 @@ namespace Macro
       int n = codes.Count;
       for (int i = 0; i < n; i++)
       {
-        keybd_event(codes[i], 0, 0, IntPtr.Zero);
+        Ui.keybd_event(codes[i], 0, 0, IntPtr.Zero);
       }
       for (int i = n - 1; i >= 0; i--)
       {
-        keybd_event(codes[i], 0, KEYEVENTF_KEYUP, IntPtr.Zero);
+        Ui.keybd_event(codes[i], 0, Ui.KEYEVENTF_KEYUP, IntPtr.Zero);
       }
     }
 
@@ -322,11 +251,11 @@ namespace Macro
 
     private IntPtr WaitNewWindow(string text)
     {
-      for (IntPtr hWnd = GetForegroundWindow(); true;
-        hWnd = GetForegroundWindow())
+      for (IntPtr hWnd = Ui.GetForegroundWindow(); true;
+        hWnd = Ui.GetForegroundWindow())
       {
         StringBuilder title = new StringBuilder(256);
-        GetWindowText(hWnd, title, 256);
+        Ui.GetWindowText(hWnd, title, 256);
         if (title.ToString().StartsWith(text))
         {
           return hWnd;
@@ -336,24 +265,16 @@ namespace Macro
       return IntPtr.Zero;
     }
 
-    private bool AddWindow(IntPtr hWnd, IntPtr data)
-    {
-      StringBuilder title = new StringBuilder(256);
-      GetWindowText(hWnd, title, 256);
-      _windows.Add(hWnd, title.ToString());
-      return true;
-    }
-
     public Rectangle GetWindowRect()
     {
-      IntPtr hWnd = GetForegroundWindow();
+      IntPtr hWnd = Ui.GetForegroundWindow();
       return GetWindowRect(hWnd);
     }
     public static Rectangle GetWindowRect(IntPtr hWnd)
     {
       Rectangle rect = new Rectangle();
       // returns with rect.Width = MaxX; rect.Height = MaxY
-      GetWindowRect(hWnd, ref rect);
+      Ui.GetWindowRect(hWnd, ref rect);
 
       // Correct for Width, Height
       rect.Width = rect.Width - rect.Left;
@@ -361,21 +282,21 @@ namespace Macro
 
       return rect;
     }
-    public string ForeGroundWindowName()
+    public static string ForeGroundWindowName()
     {
-      IntPtr hWnd = GetForegroundWindow();
+      IntPtr hWnd = Ui.GetForegroundWindow();
       StringBuilder title = new StringBuilder(256);
-      GetWindowText(hWnd, title, 256);
+      Ui.GetWindowText(hWnd, title, 256);
 
       return title.ToString();
     }
     private IntPtr WaitNewWindow(IntPtr hWnd)
     {
-      while (GetForegroundWindow() == hWnd)
+      while (Ui.GetForegroundWindow() == hWnd)
       {
         System.Threading.Thread.Sleep(200);
       }
-      IntPtr nWnd = GetForegroundWindow();
+      IntPtr nWnd = Ui.GetForegroundWindow();
       SetWindow(nWnd);
       return nWnd;
     }
@@ -430,7 +351,7 @@ namespace Macro
     #region maus
     public void ForegroundClick(int x, int y)
     {
-      IntPtr foreGround = GetForegroundWindow();
+      IntPtr foreGround = Ui.GetForegroundWindow();
       Rectangle rect = GetWindowRect(foreGround);
       int ix;
       int iy;
@@ -452,12 +373,12 @@ namespace Macro
       x = (uint)(x * 65535 / Screen.PrimaryScreen.Bounds.Width);
       y = (uint)(y * 65535 / Screen.PrimaryScreen.Bounds.Height);
 
-      mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE, x, y, 0, IntPtr.Zero);
+      Ui.mouse_event(Ui.MOUSEEVENTF_ABSOLUTE | Ui.MOUSEEVENTF_MOVE, x, y, 0, IntPtr.Zero);
       Sleep(50);
-      mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE | MOUSEEVENTF_LEFTDOWN,
+      Ui.mouse_event(Ui.MOUSEEVENTF_ABSOLUTE | Ui.MOUSEEVENTF_MOVE | Ui.MOUSEEVENTF_LEFTDOWN,
         x, y, 0, IntPtr.Zero);
       Sleep(50);
-      mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTUP,
+      Ui.mouse_event(Ui.MOUSEEVENTF_ABSOLUTE | Ui.MOUSEEVENTF_LEFTUP,
         x, y, 0, IntPtr.Zero);
     }
     private void MausDoubleClick(uint x, uint y)

@@ -1,5 +1,6 @@
 ﻿using OcadScratch.ViewModels;
 using System;
+using Macro;
 
 namespace OcadScratch.Commands
 {
@@ -44,14 +45,14 @@ namespace OcadScratch.Commands
       string y = $"{((ext.Min.Y + ext.Max.Y) / 2.0):f1}";
 
 
-      Macro.Macro macro = new Macro.Macro();
+      Processor macro = new Processor();
       if (macro.SetForegroundWindow("OCAD") == System.IntPtr.Zero)
       {
         Error = "Keine OCAD-Instanz gefunden";
         return false;
       }
 
-      macro.SendCommands('n', Macro.Macro.VK_ALT);
+      macro.SendCommands('n', Ui.VK_ALT);
       macro.SendKey('c');
 
       System.Threading.Thread.Sleep(500);

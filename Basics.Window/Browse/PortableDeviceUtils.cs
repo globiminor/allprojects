@@ -487,18 +487,20 @@ namespace Basics.Window.Browse
       }
     }
 
-    public static bool IsDevicePath(string fileName)
+    public static string GetDevicePathName(string fileName)
     {
       foreach (var entry in getUrlEntriesInHistory())
       {
         string localUrl = entry.lpszLocalFileName;
         string fileUrl = entry.lpszSourceUrlName.Substring(entry.lpszSourceUrlName.LastIndexOf('@') + 1);
-        if (localUrl?.Contains(fileName) == true)
+        if (localUrl == null)
+        { continue; }
+        if (localUrl.EndsWith(fileName))
         {
-          return true;
+          return fileUrl;
         }
       }
-      return false;
+      return null;
     }
 
     #endregion

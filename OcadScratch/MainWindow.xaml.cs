@@ -1,4 +1,4 @@
-﻿using Basics;
+﻿using Macro;
 using OcadScratch.Commands;
 using OcadScratch.ViewModels;
 using OMapScratch;
@@ -10,11 +10,13 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 using Basics.Window.Browse;
+using System;
+using System.Runtime.InteropServices;
+using System.Security.Permissions;
+using System.Linq;
 
 namespace OcadScratch
 {
-  public class Serializer
-  { }
 
   /// <summary>
   /// Interaktionslogik für MainWindow.xaml
@@ -147,14 +149,17 @@ namespace OcadScratch
       dlg.Title = "Load Scratch file";
       dlg.Filter = "*.config | *.config";
 
+      string fullPath = null;
       dlg.FileOk += (s, arg) =>
       {
-        if (PortableDeviceUtils.IsDevicePath(dlg.FileName))
+        string deviceName = PortableDeviceUtils.GetDevicePathName(dlg.FileName);
+        if (deviceName != null)
         {
-          MessageBox.Show(this, 
-            "Files on a device are not supported, please copy the relevant data to a drive and chose appropriate file",
-            "Device files not supported");
-          arg.Cancel = true;
+          string path = Wm.GetFileDialogFolder(dlg.Title);
+          string dir = path.Substring(path.IndexOf(Path.DirectorySeparatorChar) + 1);
+          string name = deviceName.Substring(deviceName.IndexOf(":") + 1);
+
+          fullPath = $"{dir}{Path.DirectorySeparatorChar}{name}";
         }
       };
 
@@ -162,7 +167,7 @@ namespace OcadScratch
       if (!(dlg.ShowDialog(this) ?? false))
       { return; }
 
-      LoadConfig(dlg.FileName);
+      LoadConfig(fullPath ?? dlg.FileName);
     }
 
     private void LoadConfig(string configFile)
