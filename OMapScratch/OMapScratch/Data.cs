@@ -1823,6 +1823,18 @@ namespace OMapScratch
       created.LineWidth = curve.LineWidth;
       created.Fill = curve.Fill;
       created.Stroke = curve.Stroke;
+      if (curve.Dash != null)
+      {
+        StringBuilder sb = new StringBuilder();
+        foreach (float f in curve.Dash.Intervals)
+        { sb.Append($"{f:f1},"); }
+        sb.Remove(sb.Length - 1, 1);
+        if (curve.Dash.EndOffset != 0 || curve.Dash.StartOffset != 0)
+        { sb.Append($";{curve.Dash.StartOffset:f1}"); }
+        if (curve.Dash.EndOffset != 0)
+        { sb.Append($";{curve.Dash.EndOffset:f1}"); }
+        created.Dash = sb.ToString();
+      }
       IDrawable geom = curve.Curve;
       created.Geometry = geom?.ToText();
       return created;
@@ -2294,7 +2306,7 @@ namespace OMapScratch
       if (Azimuth == null || Angle == null)
       { sb.Append($" {DrawableUtils.Circle} {Center.X:f1} {Center.Y:f1} {Radius:f1}"); }
       else
-      { sb.Append($" {DrawableUtils.Arc} {Center.X:f1} {Center.Y:f1} {Radius:f1} {Azimuth * Math.PI / 180:f1} {Angle * Math.PI / 180:f1}"); }
+      { sb.Append($" {DrawableUtils.Arc} {Center.X:f1} {Center.Y:f1} {Radius:f1} {Azimuth * 180 / Math.PI :f1} {Angle * 180 / Math.PI:f1}"); }
     }
   }
 

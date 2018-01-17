@@ -173,11 +173,29 @@ namespace OcadScratch.ViewModels
       get { return _lazySymbols?.Symbols; }
     }
 
-    public void LoadSymbols()
+    public void LoadSymbols(XmlSymbols xmlSymbols = null)
     {
-      _lazySymbols = LoadSymbolsCore();
+      _lazySymbols = InitSymbolsCore();
+
+      _lazySymbols.Symbols.Clear();
+      _lazySymbols.Colors.Clear();
+
+      XmlSymbols xmls = xmlSymbols ?? InitXmlSymbols();
+
+      if (xmls != null)
+      {
+        foreach (XmlColor clr in xmls.Colors)
+        {
+          _lazySymbols.Colors.Add(clr.GetColor());
+        }
+        foreach (XmlSymbol sym in xmls.Symbols)
+        {
+          _lazySymbols.Symbols.Add(sym.GetSymbol());
+        }
+      }
     }
-    private LazySymbols LoadSymbolsCore()
+
+    private LazySymbols InitSymbolsCore()
     {
       BindingListView<Symbol> symbols = new BindingListView<Symbol>();
       BindingListView<ColorRef> colors = new BindingListView<ColorRef>();
@@ -191,12 +209,16 @@ namespace OcadScratch.ViewModels
       colors.AllowNew = false;
       colors.AllowRemove = false;
 
+      return lazy;
+    }
 
+    private XmlSymbols InitXmlSymbols()
+    {
       if (_configFile == null)
-      { return lazy; }
+      { return null; }
       string symFile = _config?.Data?.Symbol;
       if (symFile == null)
-      { return lazy; }
+      { return null; }
 
       string symPath = Path.Combine(Path.GetDirectoryName(_configFile), symFile);
 
@@ -205,18 +227,9 @@ namespace OcadScratch.ViewModels
         XmlSymbols xmls;
         Basics.Window.Browse.PortableDeviceUtils.Deserialize(symPath, out xmls);
 
-        foreach (XmlColor clr in xmls.Colors)
-        {
-          colors.Add(clr.GetColor());
-        }
-        foreach (XmlSymbol sym in xmls.Symbols)
-        {
-          symbols.Add(sym.GetSymbol());
-        }
-
-        return lazy;
+        return xmls;
       }
-      catch(System.Exception e)
+      catch (System.Exception e)
       { throw new System.InvalidOperationException($"Error in Symbols file '{symPath}'", e); }
     }
 
@@ -390,7 +403,35 @@ namespace OcadScratch.ViewModels
       { return; }
       using (TextWriter w = new StreamWriter(configFile))
       {
-        Basics.Serializer.Serialize(_config, w);
+        Serializer.Serialize(_config, w);
+      }
+      string dir = Path.GetDirectoryName(configFile);
+      string scratchFile = Path.Combine(dir, Path.GetFileName(Scratch));
+      if (!File.Exists(scratchFile))
+      {
+        XmlElems elems = new XmlElems();
+        elems.Elems = new List<XmlElem>();
+        using (TextWriter w = new StreamWriter(scratchFile))
+        {
+          Serializer.Serialize(elems, w);
+        }
+      }
+      string symbolsFile = Path.Combine(dir, Path.GetFileName(SymbolPath));
+      if (!File.Exists(symbolsFile))
+      {
+        XmlSymbols symbols = new XmlSymbols();
+        symbols.Colors = new List<XmlColor>();
+        foreach (ColorRef color in Colors)
+        { symbols.Colors.Add(XmlColor.Create(color)); }
+
+        symbols.Symbols = new List<XmlSymbol>();
+        foreach (Symbol sym in Symbols)
+        { symbols.Symbols.Add(XmlSymbol.Create(sym)); }
+
+        using (TextWriter w = new StreamWriter(symbolsFile))
+        {
+          Serializer.Serialize(symbols, w);
+        }
       }
     }
 

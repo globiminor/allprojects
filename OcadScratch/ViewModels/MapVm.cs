@@ -39,7 +39,11 @@ namespace OcadScratch.ViewModels
     public string ConfigPath
     {
       get { return _configPath; }
-      set { }
+      set {
+        _configPath = value;
+        Changed();
+        Changed(nameof(CanSave));
+      }
     }
     
     public ConfigVm ConfigVm

@@ -8,10 +8,10 @@
              mc:Ignorable="d"              >
     <Grid>
         <TextBlock TextWrapping="Wrap" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="81" Height="23"><Run Text="Scratch File"/></TextBlock>
-        <TextBox Height="23" HorizontalAlignment="Left" Margin="140,10,0,0" TextWrapping="Wrap" Text="{Binding Scratch, ValidatesOnDataErrors=True}" VerticalAlignment="Top"  Width="100"/>
+        <TextBox Height="23" Margin="140,10,10,0" TextWrapping="Wrap" Text="{Binding Scratch, ValidatesOnDataErrors=True}" VerticalAlignment="Top"/>
 
         <TextBlock TextWrapping="Wrap" HorizontalAlignment="Left" Margin="10,40,0,0" VerticalAlignment="Top" Width="81" Height="23"><Run Text="Symbols File"/></TextBlock>
-        <TextBox Height="23" HorizontalAlignment="Left" Margin="140,40,0,0" TextWrapping="Wrap" Text="{Binding SymbolPath}" VerticalAlignment="Top" Width="100"/>
+        <TextBox Height="23" Margin="140,40,10,0" TextWrapping="Wrap" Text="{Binding SymbolPath}" VerticalAlignment="Top" />
 
         <TextBlock TextWrapping="Wrap" HorizontalAlignment="Left" Margin="10,70,0,0" VerticalAlignment="Top" Width="81" Height="23"><Run Text="Symbolscale"/></TextBlock>
         <TextBox Height="23" HorizontalAlignment="Left" Margin="140,70,0,0" TextWrapping="Wrap" Text="{Binding SymbolScale}" VerticalAlignment="Top" TextAlignment="Right" Width="50"/>

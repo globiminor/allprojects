@@ -21,7 +21,7 @@
         </Menu>
         <Grid>
             <TextBox x:Name="txtScratch" Height="23" Margin="10,10,10,0" TextWrapping="Wrap" Text="{Binding ConfigPath}" VerticalAlignment="Top"/>
-            <TabControl Margin="10,38,10,10">
+            <TabControl x:Name="tabData" Margin="10,38,10,10">
                 <TabItem Header="Data">
                     <Grid>
                         <Button x:Name="btnSymbols" Content="Button" HorizontalAlignment="Left" Margin="54,118,0,0" Visibility="Collapsed" VerticalAlignment="Top" Width="75" Click="btnSymbols_Click" RenderTransformOrigin="-0.417,4.245"/>
@@ -32,7 +32,7 @@
                         <Button x:Name="btnTransfer" Content="Transfer" HorizontalAlignment="Left" Margin="10,122,0,0" VerticalAlignment="Top" Width="75" Click="btnTransfer_Click"/>
                     </Grid>
                 </TabItem>
-                <TabItem Header="Georeference">
+                <TabItem x:Name="tpgGeorefence" Header="Georeference">
                     <Grid>
                         <local:CntGeoref x:Name="cntGeoref" />
                     </Grid>

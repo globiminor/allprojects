@@ -14,6 +14,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
 using System.Linq;
+using System.Reflection;
 
 namespace OcadScratch
 {
@@ -180,7 +181,7 @@ namespace OcadScratch
       PortableDeviceUtils.Deserialize(configFile, out config);
       ConfigVm configVm = new ConfigVm(configFile, config);
 
-      SetConfigVm(configVm);
+      SetConfigVm(configVm, loadSymbols: true);
     }
 
     private void mniInit_Click(object sender, RoutedEventArgs e)
@@ -196,15 +197,35 @@ namespace OcadScratch
         ocdFile = dlg.FileName;
       }
 
+      string name = Path.GetFileNameWithoutExtension(ocdFile);
+
       DataContext = new ViewModels.MapVm();
       ConfigVm configVm = new ConfigVm();
       configVm.Init(ocdFile);
-      SetConfigVm(configVm);
+
+      configVm.Scratch = $"{name}.xml";
+      configVm.SymbolPath = "Symbols.xml";
+
+      Assembly assembly = Assembly.GetExecutingAssembly();
+      var s = assembly.GetManifestResourceNames();
+      string resourceName = "OcadScratch.Symbols.xml";
+
+      using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+      using (StreamReader reader = new StreamReader(stream))
+      {
+        XmlSymbols defaultSyms; Basics.Serializer.Deserialize(out defaultSyms, reader);
+        configVm.LoadSymbols(defaultSyms);
+      }
+
+      SetConfigVm(configVm, loadSymbols: false);
+
+      tabData.SelectedValue = tpgGeorefence;
     }
 
     private void mniSave_Click(object sender, RoutedEventArgs e)
     {
-      if (cntGeoref?.DataContext == null)
+      ConfigVm dataContext = cntGeoref?.DataContext;
+      if (dataContext == null)
       { return; }
 
       string configFile;
@@ -212,22 +233,44 @@ namespace OcadScratch
         Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
         dlg.Title = "O-Scratch Config";
         dlg.Filter = "*.config | *.config";
+        dlg.FileOk += (s, ca) =>
+        {
+          string dir = Path.GetDirectoryName(dlg.FileName);
+          if (!Directory.Exists(dir))
+          {
+            ca.Cancel = true;
+            return;
+          }
+          int nEntries = Directory.GetFileSystemEntries(dir).Length;
+          if (nEntries > 0)
+          {
+            MessageBoxResult r = MessageBox.Show($"Expected empty directory, found {nEntries} entries in {dir}. Do you want to proceed?", "Directory not emtpy", 
+              MessageBoxButton.YesNoCancel, MessageBoxImage.Warning, MessageBoxResult.No);
+            if (r != MessageBoxResult.Yes)
+            {
+              ca.Cancel = true;
+              return;
+            }
+          }
+        };
         if (!(dlg.ShowDialog() ?? false))
         { return; }
 
         configFile = dlg.FileName;
       }
-      cntGeoref.DataContext.Save(configFile);
+      dataContext.Save(configFile);
+      DataContext.ConfigPath = configFile;
     }
 
-    private void SetConfigVm(ConfigVm configVm)
+    private void SetConfigVm(ConfigVm configVm, bool loadSymbols)
     {
       cntGeoref.DataContext = configVm;
       cntSettings.DataContext = configVm;
       cntImages.DataContext = configVm;
       try
       {
-        configVm.LoadSymbols();
+        if (loadSymbols)
+        { configVm.LoadSymbols(); }
       }
       finally
       { cntSymbols.DataContext = configVm; }
