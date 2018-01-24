@@ -104,7 +104,7 @@ namespace OCourse.Gui
       return courseNames;
     }
 
-    private void btnCreateRaw_Click(object sender, System.EventArgs e)
+    private void BtnCreateRaw_Click(object sender, System.EventArgs e)
     {
       try
       {
@@ -115,7 +115,7 @@ namespace OCourse.Gui
       { Cursor = Cursors.Default; }
     }
 
-    private void btnCreateClean_Click(object sender, System.EventArgs e)
+    private void BtnCreateClean_Click(object sender, System.EventArgs e)
     {
       try
       {
@@ -128,7 +128,7 @@ namespace OCourse.Gui
       { Cursor = Cursors.Default; }
     }
 
-    private void btnCreateCat_Click(object sender, System.EventArgs e)
+    private void BtnCreateCat_Click(object sender, System.EventArgs e)
     {
       try
       {
@@ -151,12 +151,12 @@ namespace OCourse.Gui
 
     }
 
-    private void lstCourse_TextChanged(object sender, System.EventArgs e)
+    private void LstCourse_TextChanged(object sender, System.EventArgs e)
     {
       SetRawParent();
     }
 
-    private void btnBahnexport_Click(object sender, System.EventArgs e)
+    private void BtnBahnexport_Click(object sender, System.EventArgs e)
     {
       if (dlgSave.ShowDialog(this) != DialogResult.OK)
       { return; }

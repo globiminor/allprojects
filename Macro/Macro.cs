@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 
@@ -22,9 +21,11 @@ namespace Macro
       Process proc;
       if (processes == null || processes.Length == 0)
       {
-        ProcessStartInfo startInfo = new ProcessStartInfo();
-        startInfo.WorkingDirectory = Path.GetDirectoryName(workDir);
-        startInfo.FileName = execName;
+        ProcessStartInfo startInfo = new ProcessStartInfo
+        {
+          WorkingDirectory = Path.GetDirectoryName(workDir),
+          FileName = execName
+        };
         proc = Process.Start(startInfo);
       }
       else
@@ -45,8 +46,7 @@ namespace Macro
 
     protected virtual void OnProgress(ProgressEventArgs args)
     {
-      if (Progress != null)
-      { Progress(this, args); }
+      Progress?.Invoke(this, args);
     }
 
     public void Sleep(int milliseconds)
@@ -147,11 +147,9 @@ namespace Macro
       int nTrys = 0;
       while (current != hWnd && Ui.GetParent(current) != hWnd && nTrys < 8)
       {
-        IntPtr currentProcId;
-        IntPtr currentThreadId = Ui.GetWindowThreadProcessId(current, out currentProcId);
+        IntPtr currentThreadId = Ui.GetWindowThreadProcessId(current, out IntPtr currentProcId);
 
-        IntPtr setProcId;
-        IntPtr setThreadId = Ui.GetWindowThreadProcessId(hWnd, out setProcId);
+        IntPtr setThreadId = Ui.GetWindowThreadProcessId(hWnd, out IntPtr setProcId);
 
         if (currentThreadId == setThreadId)
         {

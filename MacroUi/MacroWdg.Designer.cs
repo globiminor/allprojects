@@ -60,8 +60,8 @@
       // 
       // txtMacro
       // 
-      this.txtMacro.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
-                  | System.Windows.Forms.AnchorStyles.Right)));
+      this.txtMacro.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
       this.txtMacro.Location = new System.Drawing.Point(12, 386);
       this.txtMacro.Name = "txtMacro";
       this.txtMacro.Size = new System.Drawing.Size(343, 20);
@@ -101,9 +101,9 @@
       // 
       // dgvData
       // 
-      this.dgvData.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                  | System.Windows.Forms.AnchorStyles.Left)
-                  | System.Windows.Forms.AnchorStyles.Right)));
+      this.dgvData.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
       this.dgvData.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
       this.dgvData.Location = new System.Drawing.Point(12, 12);
       this.dgvData.Name = "dgvData";
@@ -115,7 +115,7 @@
       this.btnSelectFiles.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
       this.btnSelectFiles.Location = new System.Drawing.Point(309, 12);
       this.btnSelectFiles.Name = "btnSelectFiles";
-      this.btnSelectFiles.Size = new System.Drawing.Size(23, 23);
+      this.btnSelectFiles.Size = new System.Drawing.Size(24, 23);
       this.btnSelectFiles.TabIndex = 7;
       this.btnSelectFiles.Text = "...";
       this.btnSelectFiles.UseVisualStyleBackColor = true;
@@ -152,8 +152,8 @@
       // 
       // txtProgress
       // 
-      this.txtProgress.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
-                  | System.Windows.Forms.AnchorStyles.Right)));
+      this.txtProgress.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
       this.txtProgress.Location = new System.Drawing.Point(12, 413);
       this.txtProgress.Name = "txtProgress";
       this.txtProgress.Size = new System.Drawing.Size(372, 108);
@@ -191,8 +191,8 @@
       this.Text = "Macro";
       this.TopMost = true;
       this.TransparencyKey = System.Drawing.Color.Silver;
-      this.Load += new System.EventHandler(this.WdgMacro_Load);
       this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
+      this.Load += new System.EventHandler(this.WdgMacro_Load);
       this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MacroWdg_KeyDown);
       ((System.ComponentModel.ISupportInitialize)(this.dgvData)).EndInit();
       this.ResumeLayout(false);

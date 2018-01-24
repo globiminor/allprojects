@@ -4,9 +4,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:OcadScratch"
-             mc:Ignorable="d" >
+             mc:Ignorable="d" MinWidth="100" MinHeight="80" >
     <Grid>
-        <DataGrid x:Name="grdImages">
+        <Button x:Name="btnAdd" Content="Add..." Height="24" VerticalAlignment="Top" HorizontalAlignment="Left" Width="42" Click="btnAddClick"></Button>
+        <DataGrid x:Name="grdImages" Margin="0,24,0,0">
         </DataGrid>
     </Grid>
 </UserControl>

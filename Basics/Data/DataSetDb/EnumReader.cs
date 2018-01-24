@@ -14,7 +14,6 @@ namespace Basics.Data.DataSetDb
       private readonly EnumReader _reader;
       private IEnumerator _enumerator;
       private DataRow _currentElem;
-      IGeometry _intersect = null;
 
       public Enumerator(EnumReader reader)
       {

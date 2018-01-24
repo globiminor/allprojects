@@ -70,7 +70,7 @@ namespace Asvz.Sola
     private readonly int[] _symbols = {
         SymD.UeVorherNachher, SymD.UeNeustart, SymD.UeCircle, SymD.Uebergabe, SymD.Detail,
         SymD.GepBleibt, SymD.GepVon, SymD.GepNach, SymD.Sanitaet,
-        SymD.Bus, SymD.Tram, SymD.Bahn, SymD.Lsb, SymD.WC, SymD.Imbiss,
+        SymD.Bus, SymD.Tram, SymD.Bahn, SymD.Lsb, SymD.WC, SymD.WC_D, SymD.WC_H, SymD.Imbiss,
         SymD.IdxRot, SymD.IdxSchwarz, SymD.UeAusserhalb,  SymD.Objekt,
         SymD.TextGross, SymD.TextMittel, SymD.BoxText,
         SymD.UeLegendeBox,  SymD.UeTextLegende, SymD.UeMassstab, SymD.UeNordpfeil

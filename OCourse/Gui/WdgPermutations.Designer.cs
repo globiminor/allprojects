@@ -88,7 +88,7 @@
       this.btnCreateRaw.TabIndex = 16;
       this.btnCreateRaw.Text = "Create Raw Parent";
       this.btnCreateRaw.UseVisualStyleBackColor = true;
-      this.btnCreateRaw.Click += new System.EventHandler(this.btnCreateRaw_Click);
+      this.btnCreateRaw.Click += new System.EventHandler(this.BtnCreateRaw_Click);
       // 
       // lblRawParent
       // 
@@ -251,7 +251,7 @@
       this.btnCreateClean.TabIndex = 26;
       this.btnCreateClean.Text = "Create Clean Parts";
       this.btnCreateClean.UseVisualStyleBackColor = true;
-      this.btnCreateClean.Click += new System.EventHandler(this.btnCreateClean_Click);
+      this.btnCreateClean.Click += new System.EventHandler(this.BtnCreateClean_Click);
       // 
       // label4
       // 
@@ -270,7 +270,7 @@
       this.lstCourse.Name = "lstCourse";
       this.lstCourse.Size = new System.Drawing.Size(110, 21);
       this.lstCourse.TabIndex = 27;
-      this.lstCourse.TextChanged += new System.EventHandler(this.lstCourse_TextChanged);
+      this.lstCourse.TextChanged += new System.EventHandler(this.LstCourse_TextChanged);
       // 
       // btnCreateCat
       // 
@@ -280,7 +280,7 @@
       this.btnCreateCat.TabIndex = 32;
       this.btnCreateCat.Text = "Create Category";
       this.btnCreateCat.UseVisualStyleBackColor = true;
-      this.btnCreateCat.Click += new System.EventHandler(this.btnCreateCat_Click);
+      this.btnCreateCat.Click += new System.EventHandler(this.BtnCreateCat_Click);
       // 
       // chkConstant
       // 
@@ -331,7 +331,7 @@
       this.btnBahnexport.TabIndex = 40;
       this.btnBahnexport.Text = "Bahnexport V8";
       this.btnBahnexport.UseVisualStyleBackColor = true;
-      this.btnBahnexport.Click += new System.EventHandler(this.btnBahnexport_Click);
+      this.btnBahnexport.Click += new System.EventHandler(this.BtnBahnexport_Click);
       // 
       // dlgSave
       // 

@@ -55,6 +55,7 @@ namespace OcadScratch.ViewModels
     }
 
     public string ConfigFile { get { return _configFile; } }
+    public XmlConfig BaseConfig { get { return _config; } }
 
     public double OffsetX
     {
@@ -67,6 +68,9 @@ namespace OcadScratch.ViewModels
       get { return _config.Offset.Y; }
       set { _config.Offset.Y = value; }
     }
+
+    public bool IsInit
+    { get { return _config != null; } }
 
     public double? Lat
     {
@@ -142,8 +146,16 @@ namespace OcadScratch.ViewModels
       }
     }
 
-
-    public IList<ImageVm> Images
+    public void AddImage(ImageVm img)
+    {
+      ImagesCore.Add(img);
+      _config.Images.Add(img.BaseImage);
+    }
+    public IReadOnlyList<ImageVm> Images
+    {
+      get { return ImagesCore; }
+    }
+    private BindingListView<ImageVm> ImagesCore
     {
       get
       {
@@ -175,7 +187,7 @@ namespace OcadScratch.ViewModels
 
     public void LoadSymbols(XmlSymbols xmlSymbols = null)
     {
-      _lazySymbols = InitSymbolsCore();
+      _lazySymbols = _lazySymbols ?? InitSymbolsCore();
 
       _lazySymbols.Symbols.Clear();
       _lazySymbols.Colors.Clear();
@@ -224,8 +236,7 @@ namespace OcadScratch.ViewModels
 
       try
       {
-        XmlSymbols xmls;
-        Basics.Window.Browse.PortableDeviceUtils.Deserialize(symPath, out xmls);
+        Basics.Window.Browse.PortableDeviceUtils.Deserialize(symPath, out XmlSymbols xmls);
 
         return xmls;
       }
@@ -267,7 +278,7 @@ namespace OcadScratch.ViewModels
     {
       get
       {
-        float current = _config.Data.ElemTextSize;
+        float current = _config.Data.ElemTextSize ?? 0;
         return current > 0 ? current : Map.DefaultElemTextSize;
       }
       set
@@ -397,44 +408,6 @@ namespace OcadScratch.ViewModels
     protected override void Disposing(bool disposing)
     { }
 
-    public void Save(string configFile)
-    {
-      if (_config == null)
-      { return; }
-      using (TextWriter w = new StreamWriter(configFile))
-      {
-        Serializer.Serialize(_config, w);
-      }
-      string dir = Path.GetDirectoryName(configFile);
-      string scratchFile = Path.Combine(dir, Path.GetFileName(Scratch));
-      if (!File.Exists(scratchFile))
-      {
-        XmlElems elems = new XmlElems();
-        elems.Elems = new List<XmlElem>();
-        using (TextWriter w = new StreamWriter(scratchFile))
-        {
-          Serializer.Serialize(elems, w);
-        }
-      }
-      string symbolsFile = Path.Combine(dir, Path.GetFileName(SymbolPath));
-      if (!File.Exists(symbolsFile))
-      {
-        XmlSymbols symbols = new XmlSymbols();
-        symbols.Colors = new List<XmlColor>();
-        foreach (ColorRef color in Colors)
-        { symbols.Colors.Add(XmlColor.Create(color)); }
-
-        symbols.Symbols = new List<XmlSymbol>();
-        foreach (Symbol sym in Symbols)
-        { symbols.Symbols.Add(XmlSymbol.Create(sym)); }
-
-        using (TextWriter w = new StreamWriter(symbolsFile))
-        {
-          Serializer.Serialize(symbols, w);
-        }
-      }
-    }
-
     public void Init(string ocdFile)
     {
       int? gridAndZone = null;
@@ -458,8 +431,7 @@ namespace OcadScratch.ViewModels
         }
       }
 
-      ProjectionVm prj;
-      if (gridAndZone.HasValue && ProjectionDict.TryGetValue(gridAndZone.Value, out prj))
+      if (gridAndZone.HasValue && ProjectionDict.TryGetValue(gridAndZone.Value, out ProjectionVm prj))
       {
         Projection = prj;
       }

@@ -135,6 +135,8 @@ namespace Asvz.Sola
     public const int Lsb = 224000;
 
     public const int WC = 225000;
+    public const int WC_D = 225001;
+    public const int WC_H = 225002;
     public const int Imbiss = 226000;
 
     public const int Sponser   = 250000;

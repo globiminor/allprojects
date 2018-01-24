@@ -1,5 +1,7 @@
-﻿using OcadScratch.ViewModels;
+﻿using Microsoft.Win32;
+using OcadScratch.ViewModels;
 using OMapScratch;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -66,11 +68,13 @@ namespace OcadScratch
 
       grdColors.SetBinding(DataGrid.ItemsSourceProperty, new Binding(nameof(DataContext.Colors)) { Mode = BindingMode.OneWay });
       grdSymbols.SetBinding(DataGrid.ItemsSourceProperty, new Binding(nameof(DataContext.Symbols)) { Mode = BindingMode.OneWay });
+
+      btnLoad.SetBinding(MenuItem.IsEnabledProperty, new Binding(nameof(DataContext.IsInit)));
     }
 
     public new ConfigVm DataContext
     {
-      get { return (ConfigVm)base.DataContext; }
+      get { return base.DataContext as ConfigVm; }
       set { base.DataContext = value; }
     }
 
@@ -110,6 +114,20 @@ namespace OcadScratch
         col.CellTemplate = new DataTemplate { VisualTree = factory };
         col.IsReadOnly = true;
         grd.Columns.Add(col);
+      }
+    }
+
+    private void btnLoad_Click(object sender, RoutedEventArgs e)
+    {
+      OpenFileDialog dlg = new OpenFileDialog();
+      dlg.Filter = ".xml | *.xml";
+      if (dlg.ShowDialog() != true)
+      { return; }
+
+      using (TextReader reader = new StreamReader(dlg.FileName))
+      {
+        XmlSymbols symbols; Basics.Serializer.Deserialize(out symbols, reader);
+        DataContext.LoadSymbols(symbols);
       }
     }
   }

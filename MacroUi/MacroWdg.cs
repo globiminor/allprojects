@@ -322,8 +322,6 @@ namespace MacroUi
 
       while (success == false)
       {
-        string wndName;
-
         if (File.Exists(pdf))
         {
           File.Delete(pdf);

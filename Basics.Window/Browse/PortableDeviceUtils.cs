@@ -199,17 +199,17 @@ namespace Basics.Window.Browse
     private static void ReadContent(PortableDeviceApiLib.IPortableDeviceContent content, string fileId,
       Stream target)
     {
-      PortableDeviceApiLib.IPortableDeviceResources resources;
-      content.Transfer(out resources);
+      content.Transfer(out PortableDeviceApiLib.IPortableDeviceResources resources);
 
-      PortableDeviceApiLib.IStream wpdStream;
       uint optimalTransferSize = 0;
-      var property = new PortableDeviceApiLib._tagpropertykey();
-      property.fmtid = new Guid(0xE81E79BE, 0x34F0, 0x41BF, 0xB5, 0x3F,
-                                0xF1, 0xA0, 0x6A, 0xE8, 0x78, 0x42);
-      property.pid = 0;
+      var property = new PortableDeviceApiLib._tagpropertykey
+      {
+        fmtid = new Guid(0xE81E79BE, 0x34F0, 0x41BF, 0xB5, 0x3F,
+                                0xF1, 0xA0, 0x6A, 0xE8, 0x78, 0x42),
+        pid = 0
+      };
       resources.GetStream(fileId, ref property, 0, ref optimalTransferSize,
-                          out wpdStream);
+                          out PortableDeviceApiLib.IStream wpdStream);
 
       System.Runtime.InteropServices.ComTypes.IStream sourceStream =
           (System.Runtime.InteropServices.ComTypes.IStream)wpdStream;
@@ -255,15 +255,13 @@ namespace Basics.Window.Browse
     private static List<string> GetObjectIds(PortableDeviceApiLib.IPortableDeviceContent content,
       string parentId)
     {
-      PortableDeviceApiLib.IEnumPortableDeviceObjectIDs enumObjIds;
-      content.EnumObjects(0, parentId, null, out enumObjIds);
+      content.EnumObjects(0, parentId, null, out PortableDeviceApiLib.IEnumPortableDeviceObjectIDs enumObjIds);
 
       List<string> ids = new List<string>();
-      string objId;
       uint fetched = 1;
       while (fetched > 0)
       {
-        enumObjIds.Next(1, out objId, ref fetched);
+        enumObjIds.Next(1, out string objId, ref fetched);
         if (fetched > 0)
         { ids.Add(objId); }
       }
@@ -283,11 +281,9 @@ namespace Basics.Window.Browse
 
     private static PdEntry GetEntry(PortableDeviceApiLib.IPortableDeviceContent content, string id)
     {
-      PortableDeviceApiLib.IPortableDeviceProperties props;
-      content.Properties(out props);
+      content.Properties(out PortableDeviceApiLib.IPortableDeviceProperties props);
 
-      PortableDeviceApiLib.IPortableDeviceValues values;
-      props.GetValues(id, null, out values);
+      props.GetValues(id, null, out PortableDeviceApiLib.IPortableDeviceValues values);
 
       uint nValues = 0;
       values.GetCount(ref nValues);
@@ -413,13 +409,12 @@ namespace Basics.Window.Browse
     }
 
 
-    private static IEnumerable<INTERNET_CACHE_ENTRY_INFO> getUrlEntriesInHistory()
+    private static IEnumerable<INTERNET_CACHE_ENTRY_INFO> GetUrlEntriesInHistory()
     {
       List<string> filesList = new List<string>();
       IntPtr buffer = IntPtr.Zero;
-      uint structSize;
 
-      IntPtr hEnum = FindFirstUrlCacheEntry(null, buffer, out structSize);
+      IntPtr hEnum = FindFirstUrlCacheEntry(null, buffer, out uint structSize);
       try
       {
         if (hEnum == IntPtr.Zero)
@@ -490,7 +485,7 @@ namespace Basics.Window.Browse
 
     public static string GetDevicePathName(string fileName)
     {
-      foreach (var entry in getUrlEntriesInHistory())
+      foreach (var entry in GetUrlEntriesInHistory())
       {
         string localUrl = entry.lpszLocalFileName;
         string fileUrl = entry.lpszSourceUrlName.Substring(entry.lpszSourceUrlName.LastIndexOf('@') + 1);

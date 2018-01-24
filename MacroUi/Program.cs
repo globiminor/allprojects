@@ -18,7 +18,7 @@ namespace MacroUi
       MacroWdg wdg = new MacroWdg();
       try
       {
-        wdg.Init(args); // args: Environment.GetCommandLineArgs()
+        wdg.Init(Environment.GetCommandLineArgs()); // args: Environment.GetCommandLineArgs()
       }
       catch (Exception e)
       {

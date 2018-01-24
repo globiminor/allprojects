@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Xml.Serialization;
 using Basics;
+using System.Globalization;
 
 namespace OMapScratch
 {
@@ -431,10 +432,12 @@ namespace OMapScratch
         }
         if (elemPnt != null)
         {
-          List<ContextAction> elemActions = new List<ContextAction>();
-          elemActions.Add(new ContextAction(elemPnt, new DeleteElemAction(_map, elem)) { Name = "Delete" });
+          List<ContextAction> elemActions = new List<ContextAction>
+          {
+            new ContextAction(elemPnt, new DeleteElemAction(_map, elem)) { Name = "Delete" },
 
-          elemActions.Add(new ContextAction(elemPnt, new MoveElementAction(view, _map, elem, elemPnt)) { Name = "Move", });
+            new ContextAction(elemPnt, new MoveElementAction(view, _map, elem, elemPnt)) { Name = "Move", }
+          };
           if (curve != null && split != null)
           {
             float at = split.Value - (int)split.Value;
@@ -460,7 +463,8 @@ namespace OMapScratch
         }
         else if (vertexActionsList.Count > 0)
         {
-          distActions.Add(new ActionDistance {
+          distActions.Add(new ActionDistance
+          {
             Distance = elemDist,
             VertexActionsList = vertexActionsList
           });
@@ -1232,8 +1236,8 @@ namespace OMapScratch
       }
       if (_world == null)
       {
-        XmlWorld world = new XmlWorld();
-        world.GeoMatrix11 = 111175;
+        XmlWorld world = new XmlWorld
+        { GeoMatrix11 = 111175 };
         world.GeoMatrix00 = Math.Cos(Math.PI * lat / 180) * world.GeoMatrix11;
         _world = world;
       }
@@ -1287,13 +1291,12 @@ namespace OMapScratch
 
       using (TextReader r = new StreamReader(worldFile))
       {
-        float x00, x01, x10, x11, dx, dy;
-        if (!float.TryParse(r.ReadLine(), out x00)) return null;
-        if (!float.TryParse(r.ReadLine(), out x01)) return null;
-        if (!float.TryParse(r.ReadLine(), out x10)) return null;
-        if (!float.TryParse(r.ReadLine(), out x11)) return null;
-        if (!float.TryParse(r.ReadLine(), out dx)) return null;
-        if (!float.TryParse(r.ReadLine(), out dy)) return null;
+        if (!float.TryParse(r.ReadLine(), out float x00)) return null;
+        if (!float.TryParse(r.ReadLine(), out float x01)) return null;
+        if (!float.TryParse(r.ReadLine(), out float x10)) return null;
+        if (!float.TryParse(r.ReadLine(), out float x11)) return null;
+        if (!float.TryParse(r.ReadLine(), out float dx)) return null;
+        if (!float.TryParse(r.ReadLine(), out float dy)) return null;
 
         return new float[] { x00, x01, x10, x11, dx, dy };
       }
@@ -1418,8 +1421,7 @@ namespace OMapScratch
       string elemsPath = VerifyLocalPath(_config?.Data?.Scratch);
       if (string.IsNullOrEmpty(elemsPath))
       { return null; }
-      XmlElems xml;
-      if (!Deserialize(elemsPath, out xml))
+      if (!Deserialize(elemsPath, out XmlElems xml))
       { return null; }
       if (xml?.Elems == null)
       { return null; }
@@ -1436,11 +1438,9 @@ namespace OMapScratch
       foreach (XmlElem xmlElem in xml.Elems)
       {
         Elem elem = xmlElem.GetElem();
-        Symbol sym;
-        if (symbolDict.TryGetValue(xmlElem.SymbolId ?? "", out sym))
+        if (symbolDict.TryGetValue(xmlElem.SymbolId ?? "", out Symbol sym))
         { elem.Symbol = sym; }
-        ColorRef clr;
-        if (colorDict.TryGetValue(xmlElem.ColorId ?? "", out clr))
+        if (colorDict.TryGetValue(xmlElem.ColorId ?? "", out ColorRef clr))
         { elem.Color = clr; }
 
         elems.Add(elem);
@@ -1452,8 +1452,7 @@ namespace OMapScratch
       string symbolPath = VerifyLocalPath(_config?.Data?.Symbol);
       if (string.IsNullOrEmpty(symbolPath))
       { return; }
-      XmlSymbols xml;
-      Deserialize(symbolPath, out xml);
+      Deserialize(symbolPath, out XmlSymbols xml);
 
       _symbols = ReadSymbols(xml?.Symbols);
       _colors = ReadColors(xml?.Colors);
@@ -1604,8 +1603,15 @@ namespace OMapScratch
     public float ConstrTextSize { get; set; }
     [XmlAttribute("constrlinewidth_mm")]
     public float ConstrLineWidth { get; set; }
+    [XmlIgnore]
+    public float? ElemTextSize { get; set; }
     [XmlAttribute("elemtextsize_pt")]
-    public float ElemTextSize { get; set; }
+    public string SElemTextSize
+    {
+      get { return string.Format(CultureInfo.InvariantCulture, "{0}", ElemTextSize); }
+      set { if (float.TryParse(value, out float v)) ElemTextSize = v; }
+    }
+
     [XmlAttribute("search")]
     public float Search { get; set; }
     [XmlAttribute("numberformat")]
@@ -1641,8 +1647,7 @@ namespace OMapScratch
       get { return $"{Declination}"; }
       set
       {
-        double decl;
-        if (double.TryParse(value, out decl))
+        if (double.TryParse(value, out double decl))
         { Declination = decl; }
         else
         { Declination = null; }
@@ -1684,8 +1689,10 @@ namespace OMapScratch
 
     public static XmlElems Create(IEnumerable<Elem> elems)
     {
-      XmlElems created = new XmlElems();
-      created.Elems = new List<XmlElem>();
+      XmlElems created = new XmlElems
+      {
+        Elems = new List<XmlElem>()
+      };
       foreach (Elem elem in elems)
       { created.Elems.Add(XmlElem.Create(elem)); }
 
@@ -1703,10 +1710,12 @@ namespace OMapScratch
 
     public static XmlElem Create(Elem elem)
     {
-      XmlElem created = new XmlElem();
-      created.SymbolId = elem.Symbol?.Id;
-      created.ColorId = elem.Color?.Id;
-      created.Geometry = elem.Geometry.ToText();
+      XmlElem created = new XmlElem
+      {
+        SymbolId = elem.Symbol?.Id,
+        ColorId = elem.Color?.Id,
+        Geometry = elem.Geometry.ToText()
+      };
 
       return created;
     }
@@ -1726,8 +1735,8 @@ namespace OMapScratch
 
     public static XmlSymbols Create(IEnumerable<Symbol> symbols)
     {
-      XmlSymbols created = new XmlSymbols();
-      created.Symbols = new List<XmlSymbol>();
+      XmlSymbols created = new XmlSymbols
+      { Symbols = new List<XmlSymbol>() };
       foreach (Symbol symbol in symbols)
       { created.Symbols.Add(XmlSymbol.Create(symbol)); }
 
@@ -1779,10 +1788,12 @@ namespace OMapScratch
 
     public static XmlSymbol Create(Symbol symbol)
     {
-      XmlSymbol created = new XmlSymbol();
-      created.Id = symbol.Id;
-      created.Text = symbol.Text;
-      created.Curves = new List<XmlSymbolCurve>();
+      XmlSymbol created = new XmlSymbol
+      {
+        Id = symbol.Id,
+        Text = symbol.Text,
+        Curves = new List<XmlSymbolCurve>()
+      };
       foreach (SymbolCurve curve in symbol.Curves)
       {
         created.Curves.Add(XmlSymbolCurve.Create(curve));
@@ -1792,10 +1803,12 @@ namespace OMapScratch
 
     public Symbol GetSymbol()
     {
-      Symbol sym = new Symbol();
-      sym.Id = Id;
-      sym.Text = Text;
-      sym.Curves = new List<SymbolCurve>();
+      Symbol sym = new Symbol
+      {
+        Id = Id,
+        Text = Text,
+        Curves = new List<SymbolCurve>()
+      };
       if (Curves != null)
       {
         foreach (XmlSymbolCurve curve in Curves)
@@ -1819,10 +1832,12 @@ namespace OMapScratch
 
     public static XmlSymbolCurve Create(SymbolCurve curve)
     {
-      XmlSymbolCurve created = new XmlSymbolCurve();
-      created.LineWidth = curve.LineWidth;
-      created.Fill = curve.Fill;
-      created.Stroke = curve.Stroke;
+      XmlSymbolCurve created = new XmlSymbolCurve
+      {
+        LineWidth = curve.LineWidth,
+        Fill = curve.Fill,
+        Stroke = curve.Stroke
+      };
       if (curve.Dash != null)
       {
         StringBuilder sb = new StringBuilder();
@@ -1842,13 +1857,15 @@ namespace OMapScratch
 
     internal SymbolCurve GetCurve()
     {
-      SymbolCurve curve = new SymbolCurve();
-      curve.LineWidth = LineWidth;
-      curve.Fill = Fill;
-      curve.Stroke = Stroke;
-      curve.Dash = DrawableUtils.GetDash(Dash);
+      SymbolCurve curve = new SymbolCurve
+      {
+        LineWidth = LineWidth,
+        Fill = Fill,
+        Stroke = Stroke,
+        Dash = DrawableUtils.GetDash(Dash),
 
-      curve.Curve = (Curve)DrawableUtils.GetGeometry(Geometry);
+        Curve = (Curve)DrawableUtils.GetGeometry(Geometry)
+      };
       return curve;
     }
   }
@@ -1883,15 +1900,13 @@ namespace OMapScratch
       List<float> ints = new List<float>();
       foreach (string i in intervalls)
       {
-        float intervall;
-        if (!float.TryParse(i, out intervall))
+        if (!float.TryParse(i, out float intervall))
         { return null; }
         ints.Add(intervall);
       }
 
       Dash d = new Dash { Intervals = ints.ToArray() };
-      float t;
-      if (parts.Count > 1 && float.TryParse(parts[1], out t))
+      if (parts.Count > 1 && float.TryParse(parts[1], out float t))
       { d.StartOffset = t; }
       if (parts.Count > 2 && float.TryParse(parts[2], out t))
       { d.EndOffset = t; }
@@ -1917,9 +1932,11 @@ namespace OMapScratch
           {
             if (d != null)
             { throw new InvalidOperationException(); }
-            Pnt p = new Pnt();
-            p.X = float.Parse(parts[i + 1]);
-            p.Y = float.Parse(parts[i + 2]);
+            Pnt p = new Pnt
+            {
+              X = float.Parse(parts[i + 1]),
+              Y = float.Parse(parts[i + 2])
+            };
             i += 3;
             d = p;
           }
@@ -1927,10 +1944,12 @@ namespace OMapScratch
           {
             if (d != null)
             { throw new InvalidOperationException(); }
-            DirectedPnt p = new DirectedPnt();
-            p.X = float.Parse(parts[i + 1]);
-            p.Y = float.Parse(parts[i + 2]);
-            p.Azimuth = (float)(float.Parse(parts[i + 3]) * Math.PI / 180);
+            DirectedPnt p = new DirectedPnt
+            {
+              X = float.Parse(parts[i + 1]),
+              Y = float.Parse(parts[i + 2]),
+              Azimuth = (float)(float.Parse(parts[i + 3]) * Math.PI / 180)
+            };
             i += 4;
             d = p;
           }
@@ -2306,7 +2325,7 @@ namespace OMapScratch
       if (Azimuth == null || Angle == null)
       { sb.Append($" {DrawableUtils.Circle} {Center.X:f1} {Center.Y:f1} {Radius:f1}"); }
       else
-      { sb.Append($" {DrawableUtils.Arc} {Center.X:f1} {Center.Y:f1} {Radius:f1} {Azimuth * 180 / Math.PI :f1} {Angle * 180 / Math.PI:f1}"); }
+      { sb.Append($" {DrawableUtils.Arc} {Center.X:f1} {Center.Y:f1} {Radius:f1} {Azimuth * 180 / Math.PI:f1} {Angle * 180 / Math.PI:f1}"); }
     }
   }
 

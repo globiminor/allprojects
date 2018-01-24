@@ -13,10 +13,11 @@
     <DockPanel>
         <Menu x:Name="menu" DockPanel.Dock="Top">
             <MenuItem Header="_File">
-                <MenuItem Header="_Load" Click="mniLoad_Click"/>
+                <MenuItem Header="_Load" Click="MniLoad_Click"/>
                 <!--<MenuItem Header="_LoadTest" Click="mniLoadTest_Click"/>-->
-                <MenuItem Header="_Init..." Click="mniInit_Click"/>
-                <MenuItem x:Name="mniSave" Header="_Save..." Click="mniSave_Click"/>
+                <MenuItem Header="_Init..." Click="MniInit_Click"/>
+                <MenuItem x:Name="mniSave" Header="_Save" Click="MniSave_Click"/>
+                <MenuItem x:Name="mniSaveAs" Header="Save as..." Click="MniSaveAs_Click"/>
             </MenuItem>
         </Menu>
         <Grid>
@@ -24,12 +25,12 @@
             <TabControl x:Name="tabData" Margin="10,38,10,10">
                 <TabItem Header="Data">
                     <Grid>
-                        <Button x:Name="btnSymbols" Content="Button" HorizontalAlignment="Left" Margin="54,118,0,0" Visibility="Collapsed" VerticalAlignment="Top" Width="75" Click="btnSymbols_Click" RenderTransformOrigin="-0.417,4.245"/>
-                        <Button x:Name="btnMoveToOcad" Content="Move To" HorizontalAlignment="Left" Margin="10,53,0,0" VerticalAlignment="Top" Width="75" Click="btnMoveToOcad_Click"/>
+                        <Button x:Name="btnSymbols" Content="Button" HorizontalAlignment="Left" Margin="54,118,0,0" Visibility="Collapsed" VerticalAlignment="Top" Width="75" Click="BtnSymbols_Click" RenderTransformOrigin="-0.417,4.245"/>
+                        <Button x:Name="btnMoveToOcad" Content="Move To" HorizontalAlignment="Left" Margin="10,53,0,0" VerticalAlignment="Top" Width="75" Click="BtnMoveToOcad_Click"/>
                         <local:CntWorkElem x:Name="cntWorkElem" HorizontalAlignment="Left" Margin="90,40,0,0" VerticalAlignment="Top" Width="362" Height="107" RenderTransformOrigin="1.318,0.576"/>
-                        <DataGrid x:Name="grdElems" ItemsSource="{Binding Elems}"  Margin="10,147,10,10" SelectionChanged="grdElems_SelectionChanged" AutoGenerateColumns="False" />
-                        <Button x:Name="btnNext" Content="Move To Next" HorizontalAlignment="Left" Margin="10,78,0,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="0.054,0.233" Click="btnNext_Click"/>
-                        <Button x:Name="btnTransfer" Content="Transfer" HorizontalAlignment="Left" Margin="10,122,0,0" VerticalAlignment="Top" Width="75" Click="btnTransfer_Click"/>
+                        <DataGrid x:Name="grdElems" ItemsSource="{Binding Elems}"  Margin="10,147,10,10" SelectionChanged="GrdElems_SelectionChanged" AutoGenerateColumns="False" />
+                        <Button x:Name="btnNext" Content="Move To Next" HorizontalAlignment="Left" Margin="10,78,0,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="0.054,0.233" Click="BtnNext_Click"/>
+                        <Button x:Name="btnTransfer" Content="Transfer" HorizontalAlignment="Left" Margin="10,122,0,0" VerticalAlignment="Top" Width="75" Click="BtnTransfer_Click"/>
                     </Grid>
                 </TabItem>
                 <TabItem x:Name="tpgGeorefence" Header="Georeference">

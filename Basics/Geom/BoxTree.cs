@@ -260,9 +260,7 @@ namespace Basics.Geom
     protected virtual IEnumerator<TileEntry> GetTileEnumerator(
       TileEntryEnumerator enumerator, IEnumerable<TileEntry> list)
     {
-      return list == null
-               ? null
-               : list.GetEnumerator();
+      return list?.GetEnumerator();
     }
 
     private bool VerifyTile(BoxTile tile)
@@ -911,81 +909,6 @@ namespace Basics.Geom
           }
         }
         return true;
-      }
-    }
-
-    protected class xTileHandler
-    {
-      private BoxTile _tile;
-      private Box _box;
-
-      public static xTileHandler CreateMain([NotNull] BoxTree tree)
-      {
-        xTileHandler created = new xTileHandler
-        {
-          _tile = tree._mainTile,
-          _box = tree._mainBox.Clone()
-        };
-        return created;
-      }
-
-      internal BoxTile Tile
-      {
-        get { return _tile; }
-      }
-
-      public Box Box
-      {
-        get { return _box; }
-      }
-
-      public int SplitDimension
-      {
-        get { return _tile.SplitDimension; }
-      }
-
-      internal IEnumerable<TileEntry> ElemList
-      {
-        get { return _tile.EnumElems(); }
-      }
-
-      public int ElemsCount
-      {
-        get { return _tile.ElemsCount; }
-      }
-
-      public xTileHandler GetChild0()
-      {
-        BoxTile child = _tile.Child0;
-        if (child == null)
-        {
-          return null;
-        }
-
-        int splitDim = _tile.SplitDimension;
-
-        Box childBox = _box.Clone();
-        childBox.Max[splitDim] = child.MaxInParentSplitDim;
-        xTileHandler childTile = new xTileHandler { _tile = child, _box = childBox };
-        return childTile;
-      }
-
-      public xTileHandler GetChild1()
-      {
-        BoxTile child = _tile.Child1;
-        if (child == null)
-        {
-          return null;
-        }
-
-        int splitDim = _tile.SplitDimension;
-
-        Box childBox = _box.Clone();
-        childBox.Min[splitDim] = child.MinInParentSplitDim;
-        childBox.Max[splitDim] = child.MaxInParentSplitDim;
-
-        xTileHandler childTile = new xTileHandler { _tile = child, _box = childBox };
-        return childTile;
       }
     }
   }

@@ -25,7 +25,20 @@
     </style>
 </head>
 <body style="font-family: Arial, Helvetica, sans-serif">
-    <h2>Installing O-Scratch on Android Device</h2>
+    <h2>Quick start</h2>
+    <p>1. In OCAD, make sure that your OCAD-Map is georeferenced ('Landeskoordinaten' and 'Koordinatensystem' set).</p>
+    <p>2. In OCAD, export small raster images as jpg Files with world files(map, relief, orthophoto, ...). Small images means not more than 2'000 x 2'000 pixels, i.e 1 km x 1 km with a resolution of 0.5 m </p>
+    <p>3. Start the Windows-Application 'OcadScratch.exe', chose File->Init... and select your OCAD-File.<br />
+         In the images tab, add the exported jpg-images.<br />
+         Save the settings by File-&gt;Save as..: Create a file in a new folder: ...&lt;/yourfolder&gt;/&lt;yourconfigfile&gt;
+    </p>
+    <p>4. On your android device, <a href="#install">install</a> OMapScratch.OMapScratch-Signed.apk your android device</p>
+    <p>5. On your android device, create a folder called '_oscratch' in the top folder</p>
+    <p>6. Copy the windows folder &lt;yourfolder&gt; created in 3. into the android folder '_oscratch'</p>
+    <p>7. On your android device, <a href="#openProject">start</a> the O-Scratch app. Browse to _oscratch/&lt;yourfolder&gt;/&lt;yourconfigfile&gt; and open it.</p>
+    <p>8. Start capturing data.</p>
+
+    <h2 id="install">Installing O-Scratch on Android Device</h2>
     <p>1. Copy OMapScratch.OMapScratch-Signed.apk to your android device</p>
     <p>2. On your android-device, click OMapScratch.OMapScratch-Signed.apk to install it.</p>
     <p>3. Follow instructions</p>
@@ -68,16 +81,16 @@
 					 and that the loading of the image is more performant.
 			         Use some overlap for the files of the same theme, because only 1 image file per time is displayed in o-scratch 
     </pre>
-    <img src="Constr.png" style="width:105px;height:96px" />
-     &nbsp;&nbsp
-    <img src="TextElem.png" style="width:105px;height:96px" />
+    <img src="Constr.png" style="width: 105px; height: 96px" />
+    &nbsp;&nbsp
+    <img src="TextElem.png" style="width: 105px; height: 96px" />
     <p>Figures: Construction example with color, linewidth and textsize; Elementtextsize;</p>
     <p>
         2. Copy &lt;project&gt;.config, &lt;symbols.xml&gt; and all referenced image files (.jpg) and image world files (.jgw) to one folder on your android device.<br />
         <b>Remark:</b> In o-scratch, all used files for one project must lie in one single folder!
     </p>
     <h1>Run O-Scratch on Android</h1>
-    <h3>Open Project</h3>
+    <h3 id="openProject">Open Project</h3>
     <p>
         1. a) O-Scratch is not open on your device: Start O-Scratch on the android device. A File navigation is displayed<br />
         &nbsp;&nbsp;&nbsp; b) O-Scratch is already running: Choose (Navigation bar) -> Load<br />
@@ -90,48 +103,63 @@
     <p>1. Click LOAD IMAGE. A list of all images is displayed (corresponding to images in &lt;project&gt;.config images). Remark: Use Images with a size of less than 5000 x 5000 pixel</p>
     <p>2. Click on any image on the list. The corresponding image will be displayed according to the current spatial extent.</p>
     <h3>Chose Edit-Tool</h3>
-    <p>1. Click on "Edit tool" (like <img src="Point.png" style="width:20px;height:20px" />). A list of all available colors and symbols is displayed.</p>
-    <img src="Symbols.png" style="width:236px;height:125px"/>
+    <p>1. Click on "Edit tool" (like
+        <img src="Point.png" style="width: 20px; height: 20px" />). A list of all available colors and symbols is displayed.</p>
+    <img src="Symbols.png" style="width: 236px; height: 125px" />
     <p>2. (Optionally) choose color. The colors of all symbols in the list are adapted accordingly.</p>
-    <p>3. Choose symbol (<img src="Point.png" style="width:20px;height:20px" />,<img src="Line.png" style="width:20px;height:20px" />,...) or "Arrow Tool"<img src="Arrow.png" style="width:20px;height:20px" />. The list is closed and the edit tool is set accordingly.</p>
+    <p>3. Choose symbol (<img src="Point.png" style="width: 20px; height: 20px" />,<img src="Line.png" style="width: 20px; height: 20px" />,...) or "Arrow Tool"<img src="Arrow.png" style="width: 20px; height: 20px" />. The list is closed and the edit tool is set accordingly.</p>
 
     <h3>Navigate</h3>
     <p>Swipe over display to change the displayed area. See also <a href="#swipeFixExtent">Swipe/Fix extent</a> and <a href="#precisionDrawingMode">precision drawing mode</a>.</p>
     <p>Use 2 fingers extending / narrowing to zoom in / zoom out.</p>
-    <p>Use <img src="ZoomIn.png" style="width:20px;height:20px" /> to zoom in.</p>
-    <p>Use <img src="ZoomOut.png" style="width:20px;height:20px" /> to zoom out.</p>
+    <p>Use
+        <img src="ZoomIn.png" style="width: 20px; height: 20px" />
+        to zoom in.</p>
+    <p>Use
+        <img src="ZoomOut.png" style="width: 20px; height: 20px" />
+        to zoom out.</p>
 
     <h3>Capture Point</h3>
-    <p>1. Choose Edit-Tool with a point symbol, i.e. <img src="Point.png" style="width:20px;height:20px" /></p>
+    <p>1. Choose Edit-Tool with a point symbol, i.e.
+        <img src="Point.png" style="width: 20px; height: 20px" /></p>
     <p>2. Click on Map (repeatedly). The point symbol is displayed a the clicked point(s).</p>
     <p>See also <a href="#precisionDrawingMode">precision drawing mode</a>.</p>
 
     <h3>Capture Line</h3>
-    <p>1. Choose Edit-Tool with a line symbol, i.e. <img src="Line.png" style="width:20px;height:20px" /></p>
+    <p>1. Choose Edit-Tool with a line symbol, i.e.
+        <img src="Line.png" style="width: 20px; height: 20px" /></p>
     <p>2. Click on Map to start the line. A small horizontal line is displayed at the clicked point.</p>
-    <img src="LineStart.png" style="width:58px;height:58px" />
+    <img src="LineStart.png" style="width: 58px; height: 58px" />
     <p>3. Click the next point(s) on the map. The captured line is displayed.</p>
-    <img src="LineCont.png" style="width:58px;height:58px" />
-    <p>4. (double) click on the Edit-Tool-Button <img src="Line.png" style="width:20px;height:20px" /> to finish the current line.</p>
+    <img src="LineCont.png" style="width: 58px; height: 58px" />
+    <p>4. (double) click on the Edit-Tool-Button
+        <img src="Line.png" style="width: 20px; height: 20px" />
+        to finish the current line.</p>
     <p>See also <a href="#precisionDrawingMode">precision drawing mode</a>.</p>
 
     <h3>Special Actions</h3>
-    <p>1. Choose Edit-Tool "Arrow Tool" <img src="Arrow.png" style="width:20px;height:20px" /></p>
+    <p>1. Choose Edit-Tool "Arrow Tool"
+        <img src="Arrow.png" style="width: 20px; height: 20px" /></p>
     <p>
         2. Click on Map. A context menu is displayed near the clicked point 
    and a small rectangle is displayed on the map at the position for which the context menu shall be applied.
     </p>
-<p>    <img src="ContextMenu1.png" style="width:80px;height:148px" />&nbsp&nbsp
-    <img src="ContextMenu2.png" style="width:80px;height:148px" /><br />
-    For each found geometry (element, vertex of line element, clicked point), an UPPERCASE entry is displayed in the context menu. <br />
-    Clicking on an UPPERCASE entry toggles the details of the corresponding element or vertex and the context menu is resituated at the chosen geometry. <br />
-    (In the figures above, VERTEX #1 was clicked, and the new context menu for the vertex appears)<br />
-    Clicking another entry in the context menu executes the corresponding action. In some cases, a description is displayed in the lower part of the display with an instruction / help.<br />
-    <img src="Instr.png" style="height:30px" />
-</p>
-<p>
+    <p>
+        <img src="ContextMenu1.png" style="width: 80px; height: 148px" />&nbsp&nbsp
+    <img src="ContextMenu2.png" style="width: 80px; height: 148px" /><br />
+        For each found geometry (element, vertex of line element, clicked point), an UPPERCASE entry is displayed in the context menu.
+        <br />
+        Clicking on an UPPERCASE entry toggles the details of the corresponding element or vertex and the context menu is resituated at the chosen geometry.
+        <br />
+        (In the figures above, VERTEX #1 was clicked, and the new context menu for the vertex appears)<br />
+        Clicking another entry in the context menu executes the corresponding action. In some cases, a description is displayed in the lower part of the display with an instruction / help.<br />
+        <img src="Instr.png" style="height: 30px" />
+    </p>
+    <p>
         3. a) Choose the appropriate menu item<br />
-        &nbsp;&nbsp;&nbsp; b) or click on map or "Edit tool" <img src="Arrow.png" style="width:20px;height:20px" /> for no action
+        &nbsp;&nbsp;&nbsp; b) or click on map or "Edit tool"
+        <img src="Arrow.png" style="width: 20px; height: 20px" />
+        for no action
     </p>
 
     <h3>Set Location</h3>
@@ -140,7 +168,8 @@
         If the wgs84 transformation is defined in the config-file, the current position of the is derived from the device location and displayed on the map as a red circle.<br />
         If the wgs84 is not defined or incorrect, the location can be synchronised:
     </p>
-    <p>1. Chose Edit-Tool "Arrow Tool" <img src="Arrow.png" style="width:20px;height:20px" /></p>
+    <p>1. Chose Edit-Tool "Arrow Tool"
+        <img src="Arrow.png" style="width: 20px; height: 20px" /></p>
     <p>2. Click the map at your current position</p>
     <p>
         3. Chose "Set location" in the context menu (submenu of "Constr" or "Elem"-&gt;"Constr...").
@@ -156,7 +185,8 @@
         If the declination is defined in the config-file, the current orientation of the map is derived from the device orientation.<br />
         If the declination is not defined or incorrect, the declination can be synchronised:
     </p>
-    <p>1. Chose Edit-Tool "Arrow Tool" <img src="Arrow.png" style="width:20px;height:20px" />.</p>
+    <p>1. Chose Edit-Tool "Arrow Tool"
+        <img src="Arrow.png" style="width: 20px; height: 20px" />.</p>
     <p>2. Click the map at any point.</p>
     <p>3. Chose "Set orientation" in the context menu (submenu of "Constr" or "Elem"->"Constr...").</p>
     <p>4. Orientate your the device according to the environment.</p>
@@ -167,36 +197,60 @@
     </p>
 
     <h3>Location</h3>
-    <p>1. Click Location button <img src="Location.png" style="width:20px;height:20px" /> in the toolbar. The behavior is the same as on clicking on the map, but the click occurs at the current location (displayed by red circle).</p>
+    <p>1. Click Location button
+        <img src="Location.png" style="width: 20px; height: 20px" />
+        in the toolbar. The behavior is the same as on clicking on the map, but the click occurs at the current location (displayed by red circle).</p>
 
     <h3>Undo</h3>
-    <p>1. Click Undo button <img src="Undo.png" style="width:20px;height:20px" />. The last action (add symbol, add line point, ...) is undone.</p>
+    <p>1. Click Undo button
+        <img src="Undo.png" style="width: 20px; height: 20px" />. The last action (add symbol, add line point, ...) is undone.</p>
 
     <h3>Redo</h3>
     <p>
-        1. Click Redo button <img src="Redo.png" style="width:20px;height:20px" />. The last undo action ist re-done.
+        1. Click Redo button
+        <img src="Redo.png" style="width: 20px; height: 20px" />. The last undo action ist re-done.
         <br />
         <b>Remark:</b> The redo stack is emptied with each "normal" action.
     </p>
 
     <h3 id="swipeFixExtent">Swipe / Fix extent</h3>
     <p>
-        When <img src="ExtentMove.png" style="width:20px;height:20px" /> or <img src="ExtentFix.png" style="width:20px;height:20px" /> is displayed in the toolbar, touch events can be handled in different ways. When neither symbol is displayed, touch events are handled as <img src="ExtentMove.png" style="width:20px;height:20px" />:<br />
-        When <img src="ExtentMove.png" style="width:20px;height:20px" /> is active, swiping and zooming of the the map extent is enabled. <a href="#precisionDrawingMode">Precision drawing mode</a> is activated about 1 sec after pressing on the display without moving.
+        When
+        <img src="ExtentMove.png" style="width: 20px; height: 20px" />
+        or
+        <img src="ExtentFix.png" style="width: 20px; height: 20px" />
+        is displayed in the toolbar, touch events can be handled in different ways. When neither symbol is displayed, touch events are handled as
+        <img src="ExtentMove.png" style="width: 20px; height: 20px" />:<br />
+        When
+        <img src="ExtentMove.png" style="width: 20px; height: 20px" />
+        is active, swiping and zooming of the the map extent is enabled. <a href="#precisionDrawingMode">Precision drawing mode</a> is activated about 1 sec after pressing on the display without moving.
         Moving on the display before leads to change of the displayed extent.<br />
-        When <img src="ExtentFix.png" style="width:20px;height:20px" /> is active, swiping and zooming of the the map extent is disabled. <a href="#precisionDrawingMode">Precision drawing mode</a> is activated immediately when pressing the display.
+        When
+        <img src="ExtentFix.png" style="width: 20px; height: 20px" />
+        is active, swiping and zooming of the the map extent is disabled. <a href="#precisionDrawingMode">Precision drawing mode</a> is activated immediately when pressing the display.
         The displayed extent remains constant.<br />
-        Clicking the button toggles between <img src="ExtentMove.png" style="width:20px;height:20px" /> and <img src="ExtentFix.png" style="width:20px;height:20px" />.
+        Clicking the button toggles between
+        <img src="ExtentMove.png" style="width: 20px; height: 20px" />
+        and
+        <img src="ExtentFix.png" style="width: 20px; height: 20px" />.
     </p>
 
     <h3 id="precisionDrawingMode">Precision drawing mode</h3>
     <p>
         When a point is clicked for capturing a geometry, the position cannot be controlled very well. Further more, the area around the pressed point is not visible due to the finger or pen used to capture the point. To overcome this problem, precision drawing mode was introduced.
         <br />
-        Precision drawing mode is activated when pressing the display for capturing a geometry and remaining about 1 sec on the same spot (see also <a href="#swipeFixExtent">swipe/fix extent</a>) . <br />
-        When precision drawing mode is activated, the area around the pressed point is mirrored in the upper right <img src="DetailUr.png" style="width:20px;height:20px" /> or lower left edge <img src="DetailLl.png" style="width:20px;height:20px" /> and when moving around on the display, the newly captured geometry is adapted accordingly.
+        Precision drawing mode is activated when pressing the display for capturing a geometry and remaining about 1 sec on the same spot (see also <a href="#swipeFixExtent">swipe/fix extent</a>) .
         <br />
-        Clicking the button toggles between <img src="DetailUr.png" style="width:20px;height:20px" /> and <img src="DetailLl.png" style="width:20px;height:20px" />.
+        When precision drawing mode is activated, the area around the pressed point is mirrored in the upper right
+        <img src="DetailUr.png" style="width: 20px; height: 20px" />
+        or lower left edge
+        <img src="DetailLl.png" style="width: 20px; height: 20px" />
+        and when moving around on the display, the newly captured geometry is adapted accordingly.
+        <br />
+        Clicking the button toggles between
+        <img src="DetailUr.png" style="width: 20px; height: 20px" />
+        and
+        <img src="DetailLl.png" style="width: 20px; height: 20px" />.
         <br />
     </p>
 
@@ -219,7 +273,7 @@
     <h2>Symbols Definition</h2>
 
     <p>Example of &lt;symbol.xml&gt; file</p>
-<pre class="xml">
+    <pre class="xml">
         &lt;?xml version="1.0" encoding="utf-16" ?&gt;
         &lt;XmlSymbols&gt;
             &lt;Color Id="Bl" R="0" G="0" B="0" /&gt;
@@ -279,5 +333,5 @@
             --&gt;</span>
         &lt;/XmlSymbols&gt;
 </pre>
-    </body>
+</body>
 </html>

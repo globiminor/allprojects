@@ -50,6 +50,7 @@ namespace OcadScratch
     {
       InitializeComponent();
       mniSave.SetBinding(MenuItem.IsEnabledProperty, new Binding(nameof(DataContext.CanSave)));
+      mniSaveAs.SetBinding(MenuItem.IsEnabledProperty, new Binding(nameof(DataContext.CanSaveAs)));
 
       WorkElemVm workElemVm;
       {
@@ -96,7 +97,7 @@ namespace OcadScratch
       set { base.DataContext = value; }
     }
 
-    private void btnSymbols_Click(object sender, RoutedEventArgs e)
+    private void BtnSymbols_Click(object sender, RoutedEventArgs e)
     {
       Map map = new Map();
       StringBuilder sb = new StringBuilder();
@@ -128,7 +129,7 @@ namespace OcadScratch
       { throw new InvalidDataException(""); }
     }
 
-    private void mniLoadTest_Click(object sender, RoutedEventArgs e)
+    private void MniLoadTest_Click(object sender, RoutedEventArgs e)
     {
       string fullPath;
       {
@@ -144,11 +145,13 @@ namespace OcadScratch
       LoadConfig(fullPath);
     }
 
-    private void mniLoad_Click(object sender, RoutedEventArgs e)
+    private void MniLoad_Click(object sender, RoutedEventArgs e)
     {
-      Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
-      dlg.Title = "Load Scratch file";
-      dlg.Filter = "*.config | *.config";
+      Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog
+      {
+        Title = "Load Scratch file",
+        Filter = "*.config | *.config"
+      };
 
       string fullPath = null;
       dlg.FileOk += (s, arg) =>
@@ -177,20 +180,21 @@ namespace OcadScratch
       vm.Init(configFile);
       DataContext = vm;
 
-      XmlConfig config;
-      PortableDeviceUtils.Deserialize(configFile, out config);
+      PortableDeviceUtils.Deserialize(configFile, out XmlConfig config);
       ConfigVm configVm = new ConfigVm(configFile, config);
 
       SetConfigVm(configVm, loadSymbols: true);
     }
 
-    private void mniInit_Click(object sender, RoutedEventArgs e)
+    private void MniInit_Click(object sender, RoutedEventArgs e)
     {
       string ocdFile;
       {
-        Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
-        dlg.Title = "OCAD file";
-        dlg.Filter = "*.ocd | *.ocd";
+        Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog
+        {
+          Title = "OCAD file",
+          Filter = "*.ocd | *.ocd"
+        };
         if (!(dlg.ShowDialog() ?? false))
         { return; }
 
@@ -213,7 +217,7 @@ namespace OcadScratch
       using (Stream stream = assembly.GetManifestResourceStream(resourceName))
       using (StreamReader reader = new StreamReader(stream))
       {
-        XmlSymbols defaultSyms; Basics.Serializer.Deserialize(out defaultSyms, reader);
+        Basics.Serializer.Deserialize(out XmlSymbols defaultSyms, reader);
         configVm.LoadSymbols(defaultSyms);
       }
 
@@ -222,7 +226,14 @@ namespace OcadScratch
       tabData.SelectedValue = tpgGeorefence;
     }
 
-    private void mniSave_Click(object sender, RoutedEventArgs e)
+    private void MniSave_Click(object sender, RoutedEventArgs e)
+    {
+      using (CmdConfigSave cmd = new CmdConfigSave(cntGeoref?.DataContext, DataContext.ConfigPath))
+      {
+        cmd.Execute();
+      }
+    }
+    private void MniSaveAs_Click(object sender, RoutedEventArgs e)
     {
       ConfigVm dataContext = cntGeoref?.DataContext;
       if (dataContext == null)
@@ -230,9 +241,11 @@ namespace OcadScratch
 
       string configFile;
       {
-        Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
-        dlg.Title = "O-Scratch Config";
-        dlg.Filter = "*.config | *.config";
+        Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog
+        {
+          Title = "O-Scratch Config",
+          Filter = "*.config | *.config"
+        };
         dlg.FileOk += (s, ca) =>
         {
           string dir = Path.GetDirectoryName(dlg.FileName);
@@ -258,7 +271,11 @@ namespace OcadScratch
 
         configFile = dlg.FileName;
       }
-      dataContext.Save(configFile);
+
+      using (CmdConfigSave cmd = new CmdConfigSave(dataContext, configFile))
+      {
+        cmd.Execute();
+      }
       DataContext.ConfigPath = configFile;
     }
 
@@ -277,13 +294,15 @@ namespace OcadScratch
       DataContext.ConfigVm = configVm;
     }
 
-    private void btnTransfer_Click(object sender, RoutedEventArgs e)
+    private void BtnTransfer_Click(object sender, RoutedEventArgs e)
     {
       string scratchFile;
       {
-        Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
-        dlg.Title = "Transfer to OCAD";
-        dlg.Filter = "*.ocd | *.ocd";
+        Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog
+        {
+          Title = "Transfer to OCAD",
+          Filter = "*.ocd | *.ocd"
+        };
         if (!(dlg.ShowDialog() ?? false))
         { return; }
 
@@ -293,8 +312,7 @@ namespace OcadScratch
       List<WorkElemVm> elems = new List<WorkElemVm>();
       foreach (object item in grdElems.Items)
       {
-        WorkElemVm elem = item as WorkElemVm;
-        if (elem != null)
+        if (item is WorkElemVm elem)
         { elems.Add(elem); }
       }
 
@@ -303,7 +321,7 @@ namespace OcadScratch
     }
 
 
-    private void btnMoveToOcad_Click(object sender, RoutedEventArgs e)
+    private void BtnMoveToOcad_Click(object sender, RoutedEventArgs e)
     {
       MoveTo();
     }
@@ -326,16 +344,15 @@ namespace OcadScratch
       }
     }
 
-    private void grdElems_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void GrdElems_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-      WorkElemVm currentElem = grdElems.CurrentItem as WorkElemVm;
-      if (currentElem != null && currentElem != cntWorkElem.DataContext)
+      if (grdElems.CurrentItem is WorkElemVm currentElem && currentElem != cntWorkElem.DataContext)
       {
         cntWorkElem.DataContext = currentElem;
       }
     }
 
-    private void btnNext_Click(object sender, RoutedEventArgs e)
+    private void BtnNext_Click(object sender, RoutedEventArgs e)
     {
       using (CmdNextElem cmd = new CmdNextElem(DataContext, cntWorkElem.DataContext))
       {

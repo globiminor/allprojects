@@ -33,18 +33,18 @@ namespace Dhm
     {
       InitializeComponent();
 
-      _ocadSymbols = new Dictionary<int, ContourType>();
-      _ocadSymbols.Add(101000, new ContourType(2, 0));
-      _ocadSymbols.Add(102000, new ContourType(10, 0));
-      _ocadSymbols.Add(103000, new ContourType(2, 1));
+      _ocadSymbols = new Dictionary<int, ContourType>
+      {
+        { 101000, new ContourType(2, 0) },
+        { 102000, new ContourType(10, 0) },
+        { 103000, new ContourType(2, 1) },
 
-      _ocadSymbols.Add(1010, new ContourType(2, 0));
-      _ocadSymbols.Add(1020, new ContourType(10, 0));
-      _ocadSymbols.Add(1030, new ContourType(2, 1));
+        { 1010, new ContourType(2, 0) },
+        { 1020, new ContourType(10, 0) },
+        { 1030, new ContourType(2, 1) }
+      };
 
-      _ocadFallDirSymbols = new List<int>();
-      _ocadFallDirSymbols.Add(104000);
-      _ocadFallDirSymbols.Add(1040);
+      _ocadFallDirSymbols = new List<int> { 104000, 1040 };
     }
 
     public TMap.IContext TMapContext
@@ -245,7 +245,7 @@ Continue?",
     private void DrawMesh()
     {
       DrawMesh(chkLines.Checked, chkTris.Checked);
-      btnPause_Click(this, null);
+      BtnPause_Click(this, null);
     }
     private void Adapt(ContourSorter.ProgressEventArgs args)
     {
@@ -258,18 +258,17 @@ Continue?",
       if (_context != null && chkShow.Checked)
       {
         WdgAdapt wdg = new WdgAdapt(txtOcad.Text, args, _context);
-        wdg.Disposed += wdg_Closed;
+        wdg.Disposed += Wdg_Closed;
         Enabled = false;
 
         wdg.Show(this);
       }
     }
 
-    void wdg_Closed(object sender, EventArgs e)
+    void Wdg_Closed(object sender, EventArgs e)
     {
       Enabled = true;
-      WdgAdapt wdg = sender as WdgAdapt;
-      if (wdg != null && wdg.DialogResult != DialogResult.OK)
+      if (sender is WdgAdapt wdg && wdg.DialogResult != DialogResult.OK)
       {
         EndThread();
         UpdateAppearance();
@@ -363,7 +362,7 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
       if (args == null)
       {
         DrawMesh(chkLines.Checked, chkTris.Checked);
-        btnPause_Click(this, null);
+        BtnPause_Click(this, null);
         return;
       }
 
@@ -427,8 +426,10 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
       draw.BeginDraw();
       if (drawTris)
       {
-        TMap.SymbolPart areaSymbol = new TMap.SymbolPartArea(null);
-        areaSymbol.LineColor = Color.FromArgb(192, 192, 192);
+        TMap.SymbolPart areaSymbol = new TMap.SymbolPartArea(null)
+        {
+          LineColor = Color.FromArgb(192, 192, 192)
+        };
 
         foreach (Mesh.Tri tri in _calc.Mesh.Tris(draw.Extent))
         {
@@ -446,18 +447,17 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
 
       if (drawLines)
       {
-        TMap.SymbolPart lineSymbol = new TMap.SymbolPartLine(null);
-        lineSymbol.LineColor = Color.FromArgb(128, 128, 128);
-        TMap.SymbolPart tagSymbol = new TMap.SymbolPartLine(null);
-        tagSymbol.LineColor = Color.FromArgb(255, 128, 128);
+        TMap.SymbolPart lineSymbol = new TMap.SymbolPartLine(null)
+        { LineColor = Color.FromArgb(128, 128, 128) };
+        TMap.SymbolPart tagSymbol = new TMap.SymbolPartLine(null)
+        { LineColor = Color.FromArgb(255, 128, 128) };
 
         foreach (Mesh.MeshLine line in _calc.Mesh.Lines(draw.Extent))
         {
           Polyline poly = Polyline.Create(new[] { line.Start, line.End });
 
           TMap.SymbolPart drawSymbol;
-          bool isReverse;
-          if (line.GetTag(out isReverse) != null)
+          if (line.GetTag(out bool isReverse) != null)
           { drawSymbol = tagSymbol; }
           else
           { drawSymbol = lineSymbol; }
@@ -520,7 +520,7 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
       return running;
     }
 
-    private void btnDlgOpen_Click(object sender, EventArgs e)
+    private void BtnDlgOpen_Click(object sender, EventArgs e)
     {
       dlgOpen.Filter = "*.ocd | *.ocd";
       dlgOpen.Title = "Open OCAD File";
@@ -532,7 +532,7 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
     }
 
     private AutoResetEvent _waitHandle;
-    private void btnOK_Click(object sender, EventArgs e)
+    private void BtnOK_Click(object sender, EventArgs e)
     {
       string ocdFile = txtOcad.Text;
       if (string.IsNullOrEmpty(ocdFile))
@@ -579,7 +579,7 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
     }
 
 
-    private void btnCancel_Click(object sender, EventArgs e)
+    private void BtnCancel_Click(object sender, EventArgs e)
     {
       bool running = IsRunning();
       if (!running == false)
@@ -623,7 +623,7 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
     private TMap.TableMapData _mapMesh;
     private TMap.TableMapData _mapContours;
 
-    private void btnPause_Click(object sender, EventArgs e)
+    private void BtnPause_Click(object sender, EventArgs e)
     {
       _pause = !_pause;
       if (_pause && sender != null && _context != null && _calc != null)
@@ -694,38 +694,42 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
         _mapContours = new TMap.TableMapData("Contours", tbl);
         _mapContours.Symbolisation.SymbolList.Table.Clear();
         {
-          TMap.SymbolPartLine main = new TMap.SymbolPartLine(templateRow);
-          main.LineColor = Color.Red;
-          TMap.SymbolPartLinePoint dir = new TMap.SymbolPartLinePoint(TMap.SymbolPartLinePoint.LinePointType.DashPoint, templateRow);
-          dir.LineColor = Color.Red;
-          dir.Point = new TMap.SymbolPartPoint(templateRow);
+          TMap.SymbolPartLine main = new TMap.SymbolPartLine(templateRow)
+          { LineColor = Color.Red };
+          TMap.SymbolPartLinePoint dir = new TMap.SymbolPartLinePoint(TMap.SymbolPartLinePoint.LinePointType.DashPoint, templateRow)
+          {
+            LineColor = Color.Red,
+            Point = new TMap.SymbolPartPoint(templateRow)
+          };
           dir.Point.DirectPoints = true;
           dir.Point.LineColor = Color.Red;
           dir.Point.Scale = true;
           dir.Point.SymbolLine = Polyline.Create(new[] { new Point2D(0, 0), new Point2D(0, -2) });
 
-          TMap.Symbol sym = new TMap.Symbol(main);
-          sym.Add(dir);
+          TMap.Symbol sym = new TMap.Symbol(main) { dir };
           _mapContours.Symbolisation.Add(sym, "Orientation = 1");
         }
         {
-          TMap.SymbolPartLine main = new TMap.SymbolPartLine(templateRow);
-          main.LineColor = Color.Blue;
-          TMap.SymbolPartLinePoint dir = new TMap.SymbolPartLinePoint(TMap.SymbolPartLinePoint.LinePointType.DashPoint, templateRow);
-          dir.LineColor = Color.Blue;
-          dir.Point = new TMap.SymbolPartPoint(templateRow);
-          dir.Point.DirectPoints = true;
-          dir.Point.LineColor = Color.Blue;
-          dir.Point.Scale = true;
-          dir.Point.SymbolLine = Polyline.Create(new[] { new Point2D(0, 0), new Point2D(0, 2) });
+          TMap.SymbolPartLine main = new TMap.SymbolPartLine(templateRow)
+          { LineColor = Color.Blue };
+          TMap.SymbolPartLinePoint dir = new TMap.SymbolPartLinePoint(TMap.SymbolPartLinePoint.LinePointType.DashPoint, templateRow)
+          {
+            LineColor = Color.Blue,
+            Point = new TMap.SymbolPartPoint(templateRow)
+            {
+              DirectPoints = true,
+              LineColor = Color.Blue,
+              Scale = true,
+              SymbolLine = Polyline.Create(new[] { new Point2D(0, 0), new Point2D(0, 2) })
+            }
+          };
 
-          TMap.Symbol sym = new TMap.Symbol(main);
-          sym.Add(dir);
+          TMap.Symbol sym = new TMap.Symbol(main) { dir };
           _mapContours.Symbolisation.Add(sym, "Orientation = 2");
         }
         {
-          TMap.SymbolPartLine main = new TMap.SymbolPartLine(templateRow);
-          main.LineColor = Color.Violet;
+          TMap.SymbolPartLine main = new TMap.SymbolPartLine(templateRow)
+          { LineColor = Color.Violet };
           _mapContours.Symbolisation.Add(new TMap.Symbol(main), "true");
         }
         _mapGrp.Subparts.Add(_mapContours);
@@ -737,7 +741,7 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
       }
     }
 
-    private void btnSettings_Click(object sender, EventArgs e)
+    private void BtnSettings_Click(object sender, EventArgs e)
     {
       dlgOpen.Filter = "*.xml | *.xml";
       dlgOpen.Title = "Open Settings";
@@ -749,7 +753,7 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
 
     }
 
-    private void btnDrawMesh_Click(object sender, EventArgs e)
+    private void BtnDrawMesh_Click(object sender, EventArgs e)
     {
       DrawMesh(chkLines.Checked, chkTris.Checked);
     }
@@ -769,7 +773,7 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
       EndThread();
     }
 
-    private void chkToplevel_CheckedChanged(object sender, EventArgs e)
+    private void ChkToplevel_CheckedChanged(object sender, EventArgs e)
     {
       TopMost = chkToplevel.Checked;
     }
@@ -828,7 +832,7 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
       }
 
       _calc = new ContourSorter();
-      _calc.ProgressChanged += calc_ProgressChanged;
+      _calc.ProgressChanged += Calc_ProgressChanged;
       try
       {
         ContourSorter.Progress progress = _calc.Execute(contours, fallDirs);
@@ -847,7 +851,7 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
       }
       finally
       {
-        _calc.ProgressChanged -= calc_ProgressChanged;
+        _calc.ProgressChanged -= Calc_ProgressChanged;
         //_calc = null;
       }
     }
@@ -886,8 +890,7 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
       fallDirs = new List<FallDir>();
       foreach (Ocad.Element elem in reader.Elements(true, idxList))
       {
-        ContourType type;
-        if (_ocadSymbols.TryGetValue(elem.Symbol, out type))
+        if (_ocadSymbols.TryGetValue(elem.Symbol, out ContourType type))
         {
           Polyline line = (Polyline)elem.Geometry;
           contours.Add(new Contour(elem.Index, line.Linearize(tolerance), type));
@@ -917,10 +920,12 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
           Polyline line = contour.Polyline;
           if (contour.Orientation == Orientation.RightSideDown)
           { line = line.Invert(); }
-          Ocad.Element element = new Ocad.ElementV9(true);
-          element.Geometry = line;
-          element.Type = Ocad.GeomType.line;
-          element.Symbol = Symbol(contour.Type);
+          Ocad.Element element = new Ocad.ElementV9(true)
+          {
+            Geometry = line,
+            Type = Ocad.GeomType.line,
+            Symbol = Symbol(contour.Type)
+          };
           writer.Append(element);
         }
       }
@@ -1014,7 +1019,7 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
       return -1;
     }
 
-    void calc_ProgressChanged(object sender, ContourSorter.ProgressEventArgs args)
+    void Calc_ProgressChanged(object sender, ContourSorter.ProgressEventArgs args)
     {
       Delegate dlg = _wdg.GetAction(args);
       if (dlg != null)

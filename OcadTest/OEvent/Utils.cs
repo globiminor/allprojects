@@ -59,37 +59,32 @@ public class DeviceTest
 
       dev.Open(devices[i], devVals);
 
-      PortableDeviceApiLib.IPortableDeviceContent content;
-      dev.Content(out content);
+      dev.Content(out PortableDeviceApiLib.IPortableDeviceContent content);
 
       EnumRecursive(content, "DEVICE");
     }
 
-    System.Runtime.InteropServices.Marshal.ReleaseComObject(devMgr);
+    Marshal.ReleaseComObject(devMgr);
   }
 
   private void EnumRecursive(PortableDeviceApiLib.IPortableDeviceContent content, string parentId)
   {
-    PortableDeviceApiLib.IEnumPortableDeviceObjectIDs enumObjIds;
-    content.EnumObjects(0, parentId, null, out enumObjIds);
+    content.EnumObjects(0, parentId, null, out PortableDeviceApiLib.IEnumPortableDeviceObjectIDs enumObjIds);
 
     List<string> ids = new List<string>();
-    string objId;
     uint fetched = 1;
     while (fetched > 0)
     {
-      enumObjIds.Next(1, out objId, ref fetched);
+      enumObjIds.Next(1, out string objId, ref fetched);
       if (fetched > 0)
       { ids.Add(objId); }
     }
 
     foreach (string id in ids)
     {
-      PortableDeviceApiLib.IPortableDeviceProperties props;
-      content.Properties(out props);
+      content.Properties(out PortableDeviceApiLib.IPortableDeviceProperties props);
 
-      PortableDeviceApiLib.IPortableDeviceValues values;
-      props.GetValues(id, null, out values);
+      props.GetValues(id, null, out PortableDeviceApiLib.IPortableDeviceValues values);
 
       uint nValues = 0;
       values.GetCount(ref nValues);

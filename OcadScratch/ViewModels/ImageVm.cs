@@ -15,6 +15,8 @@ namespace OcadScratch.ViewModels
       Validate();
     }
 
+    public XmlImage BaseImage { get { return _baseImg; } }
+    public string CopyFromPath { get; set; }
     protected override void Disposing(bool disposing)
     { }
 

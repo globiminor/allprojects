@@ -47,7 +47,7 @@ namespace Dhm
       this.btnDlgOpen.TabIndex = 0;
       this.btnDlgOpen.Text = "...";
       this.btnDlgOpen.UseVisualStyleBackColor = true;
-      this.btnDlgOpen.Click += new System.EventHandler(this.btnDlgOpen_Click);
+      this.btnDlgOpen.Click += new System.EventHandler(this.BtnDlgOpen_Click);
       // 
       // txtOcad
       // 
@@ -71,7 +71,7 @@ namespace Dhm
       this.btnOK.TabIndex = 2;
       this.btnOK.Text = "Create DHM";
       this.btnOK.UseVisualStyleBackColor = true;
-      this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
+      this.btnOK.Click += new System.EventHandler(this.BtnOK_Click);
       // 
       // txtTolerance
       // 
@@ -113,7 +113,7 @@ namespace Dhm
       this.btnCancel.TabIndex = 6;
       this.btnCancel.Text = "Cancel";
       this.btnCancel.UseVisualStyleBackColor = true;
-      this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+      this.btnCancel.Click += new System.EventHandler(this.BtnCancel_Click);
       // 
       // btnPause
       // 
@@ -124,7 +124,7 @@ namespace Dhm
       this.btnPause.TabIndex = 7;
       this.btnPause.Text = "Pause";
       this.btnPause.UseVisualStyleBackColor = true;
-      this.btnPause.Click += new System.EventHandler(this.btnPause_Click);
+      this.btnPause.Click += new System.EventHandler(this.BtnPause_Click);
       // 
       // chkAddToMap
       // 
@@ -146,7 +146,7 @@ namespace Dhm
       this.btnSettings.TabIndex = 9;
       this.btnSettings.Text = "Load Settings";
       this.btnSettings.UseVisualStyleBackColor = true;
-      this.btnSettings.Click += new System.EventHandler(this.btnSettings_Click);
+      this.btnSettings.Click += new System.EventHandler(this.BtnSettings_Click);
       // 
       // grpMap
       // 
@@ -217,7 +217,7 @@ namespace Dhm
       this.btnDrawMesh.TabIndex = 11;
       this.btnDrawMesh.Text = "Draw Mesh";
       this.btnDrawMesh.UseVisualStyleBackColor = true;
-      this.btnDrawMesh.Click += new System.EventHandler(this.btnDrawMesh_Click);
+      this.btnDrawMesh.Click += new System.EventHandler(this.BtnDrawMesh_Click);
       // 
       // chkToplevel
       // 
@@ -230,7 +230,7 @@ namespace Dhm
       this.chkToplevel.TabIndex = 14;
       this.chkToplevel.Text = "Allways on top";
       this.chkToplevel.UseVisualStyleBackColor = true;
-      this.chkToplevel.CheckedChanged += new System.EventHandler(this.chkToplevel_CheckedChanged);
+      this.chkToplevel.CheckedChanged += new System.EventHandler(this.ChkToplevel_CheckedChanged);
       // 
       // chkOCAD
       // 

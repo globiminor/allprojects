@@ -43,6 +43,7 @@ namespace OcadScratch.ViewModels
         _configPath = value;
         Changed();
         Changed(nameof(CanSave));
+        Changed(nameof(CanSaveAs));
       }
     }
     
@@ -54,13 +55,20 @@ namespace OcadScratch.ViewModels
         _configVm = value;
         Changed();
         Changed(nameof(CanSave));
+        Changed(nameof(CanSaveAs));
       }
     }
 
     public bool CanSave
     {
+      get { return _configVm != null && !string.IsNullOrEmpty(ConfigPath); }
+    }
+
+    public bool CanSaveAs
+    {
       get { return _configVm != null; }
     }
+
 
     public Basics.Geom.IProjection GlobalPrj
     {

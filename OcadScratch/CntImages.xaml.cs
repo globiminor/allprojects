@@ -1,5 +1,8 @@
-﻿using OcadScratch.ViewModels;
+﻿using Microsoft.Win32;
+using OcadScratch.ViewModels;
 using OMapScratch;
+using System.IO;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 
@@ -28,7 +31,7 @@ namespace OcadScratch
     private void StyleImages(DataGrid grd)
     {
       grd.AutoGenerateColumns = false;
-      XmlImage img;
+      ImageVm img;
       {
         DataGridTextColumn col = new DataGridTextColumn { Header = "Image Name", Binding = new Binding(nameof(img.Name)) };
         Basics.Window.FilterPanel.CreateHeader(col);
@@ -38,7 +41,7 @@ namespace OcadScratch
       {
         DataGridTextColumn col = new DataGridTextColumn
         {
-          Header = "Image Name",
+          Header = "Image Path",
         };
         Basics.Window.Utils.SetErrorBinding(col, nameof(img.Path));
         Basics.Window.FilterPanel.CreateHeader(col);
@@ -47,5 +50,29 @@ namespace OcadScratch
       }
     }
 
+    private void btnAddClick(object sender, RoutedEventArgs e)
+    {
+      OpenFileDialog dlg = new OpenFileDialog();
+      dlg.Filter = "*.jpg | *.jpg";
+      dlg.FileOk += (s, ca) =>
+      {
+        string fileName = dlg.FileName;
+        string jgw = Path.ChangeExtension(fileName, ".jgw");
+        if (!File.Exists(jgw))
+        {
+          MessageBox.Show($"World-file '{jgw}' is missing!.", "Missing world file", MessageBoxButton.OK, MessageBoxImage.Error);
+          ca.Cancel = true;
+        }
+      };
+      if (dlg.ShowDialog() != true)
+      { return; }
+
+      string jpg = dlg.FileName;
+
+      XmlImage add = new XmlImage { Name = Path.GetFileNameWithoutExtension(jpg), Path = Path.GetFileName(jpg) };
+      ImageVm vm = new ImageVm(add) { CopyFromPath = jpg };
+
+      DataContext.AddImage(vm);
+    }
   }
 }
