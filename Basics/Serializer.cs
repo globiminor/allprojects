@@ -14,8 +14,8 @@ namespace Basics
       ns.Add(string.Empty, string.Empty);
       XmlSerializer ser = new XmlSerializer(typeof(T));
 
-      XmlWriterSettings settings = new XmlWriterSettings();
-      settings.Indent = true;
+      XmlWriterSettings settings = new XmlWriterSettings
+      { Indent = true };
       if (indent.HasValue)
       { settings.Indent = indent.Value; }
       if (omitXmlDeclaration.HasValue)
@@ -37,6 +37,7 @@ namespace Basics
       catch (System.Exception e)
       {
         obj = default(T);
+        System.Diagnostics.Trace.Write(e);
         return false;
       }
     }

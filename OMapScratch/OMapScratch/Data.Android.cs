@@ -48,8 +48,7 @@ namespace OMapScratch
 
     public System.Collections.Generic.IList<string> GetRecents()
     {
-      string path;
-      XmlRecents recents = GetRecents(out path, create: false);
+      XmlRecents recents = GetRecents(out string path, create: false);
       return recents?.Recents;
     }
 
@@ -81,10 +80,14 @@ namespace OMapScratch
       return recentList;
     }
 
+    internal void SaveImg(Bitmap currentScratch)
+    {
+      _map.SaveImg(currentScratch);
+    }
+
     public void SetRecent(string configPath)
     {
-      string recentPath;
-      XmlRecents recentList = GetRecents(out recentPath, create: true)
+      XmlRecents recentList = GetRecents(out string recentPath, create: true)
         ?? new XmlRecents { Recents = new System.Collections.Generic.List<string>() }; ;
 
       recentList.Recents.Insert(0, configPath);
@@ -174,8 +177,8 @@ namespace OMapScratch
       //{
       //}
 
-      BitmapFactory.Options opts = new BitmapFactory.Options();
-      opts.InPreferredConfig = Bitmap.Config.Argb8888;
+      BitmapFactory.Options opts = new BitmapFactory.Options
+      { InPreferredConfig = Bitmap.Config.Argb8888 };
       //if (resample > 1)
       //{ opts.InSampleSize = resample; }
 
@@ -188,6 +191,25 @@ namespace OMapScratch
       _currentImage?.Dispose();
       _currentImage = img;
       _currentImagePath = path;
+    }
+
+    public void SaveImg(Bitmap currentScratch)
+    {
+      if (currentScratch == null)
+      { return; }
+
+      string imgPath = GetLocalPath(_config?.Data?.ScratchImg ?? DefaultScratchImg);
+      if (imgPath == null)
+      { return; }
+
+      using (var stream = new System.IO.FileStream(imgPath, System.IO.FileMode.Create))
+      {
+        currentScratch.Compress(Bitmap.CompressFormat.Jpeg, 95, stream);
+        stream.Close();
+      }
+
+      string worldPath = GetWorldPath(imgPath);
+      System.IO.File.Copy(GetWorldPath(_currentImagePath), worldPath, overwrite: true);
     }
 
     public static bool Deserialize<T>(string path, out T obj)

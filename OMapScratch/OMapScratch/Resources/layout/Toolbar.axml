@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu android:id="@+id/mnuOptions" xmlns:android="http://schemas.android.com/apk/res/android">
-    <!--<item
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/mnuOptions">
+<!--<item
         android:id="@+id/shareMenuItem"
         android:showAsAction="always"
         android:title="share menu"
@@ -11,10 +12,13 @@
     <item
         android:id="@+id/mniSave"
         android:title="Save" />
-  <item
-      android:id="@+id/mniLocation"
-      android:title="Toggle Location" />
-  <item
-      android:id="@+id/mniOrientation"
-      android:title="Toggle Orientation" />
+    <item
+        android:id="@+id/mniExportImg"
+        android:title="Export Scratch Image" />
+    <item
+        android:id="@+id/mniLocation"
+        android:title="Toggle Location" />
+    <item
+        android:id="@+id/mniOrientation"
+        android:title="Toggle Orientation" />
 </menu>

@@ -1098,6 +1098,8 @@ namespace OMapScratch
       get { return _config?.Images; }
     }
 
+    public const string DefaultScratchImg = "ScratchImg.jpg";
+
     public const float DefaultSymbolScale = 1;
     public float SymbolScale
     {
@@ -1274,19 +1276,25 @@ namespace OMapScratch
       _declination = declination;
     }
 
-    public float[] GetCurrentWorldMatrix()
+    public static string GetWorldPath(string imagePath)
     {
-      if (string.IsNullOrEmpty(_currentImagePath))
+      if (string.IsNullOrEmpty(imagePath))
       { return null; }
 
-      string ext = Path.GetExtension(_currentImagePath);
+      string ext = Path.GetExtension(imagePath);
       if (string.IsNullOrEmpty(ext) || ext.Length < 3)
       { return null; }
 
       string worldExt = $"{ext.Substring(0, 2)}{ext[ext.Length - 1]}w";
-      string worldFile = Path.ChangeExtension(_currentImagePath, worldExt);
+      string worldFile = Path.ChangeExtension(imagePath, worldExt);
+      return worldFile;
+    }
 
-      if (!File.Exists(worldFile))
+    public float[] GetCurrentWorldMatrix()
+    {
+      string worldFile = GetWorldPath(_currentImagePath);
+
+      if ( worldFile == null || !File.Exists(worldFile))
       { return null; }
 
       using (TextReader r = new StreamReader(worldFile))
@@ -1595,6 +1603,8 @@ namespace OMapScratch
   {
     [XmlAttribute("scratch")]
     public string Scratch { get; set; }
+    [XmlAttribute("scratchimg")]
+    public string ScratchImg { get; set; }
     [XmlAttribute("symbol")]
     public string Symbol { get; set; }
     [XmlAttribute("symbolscale")]
@@ -2045,6 +2055,10 @@ namespace OMapScratch
     public Pnt Min { get; }
     public Pnt Max { get; }
 
+    public override string ToString()
+    {
+      return $"{Min};{Max}";
+    }
     public void Include(Pnt pnt)
     {
       Min.X = Math.Min(Min.X, pnt.X);
@@ -2098,6 +2112,11 @@ namespace OMapScratch
     {
       X = x;
       Y = y;
+    }
+
+    public override string ToString()
+    {
+      return $"{X},{Y}";
     }
 
     IBox IDrawable.Extent { get { return this; } }

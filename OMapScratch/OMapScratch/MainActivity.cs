@@ -34,10 +34,36 @@ namespace OMapScratch
       }
       bool IMenuItemOnMenuItemClickListener.OnMenuItemClick(IMenuItem item)
       {
-        Utils.Try(() => { _activity.MapVm.Save(); });
+        Utils.Try(() =>
+        {
+          _activity.MapVm.Save();
+
+          using (Bitmap currentScratch = _activity._mapView.GetScratchImg())
+          {
+            _activity.MapVm.SaveImg(currentScratch);
+          }
+        });
         return true;
       }
     }
+    private class ExportImgListener : Java.Lang.Object, IMenuItemOnMenuItemClickListener
+    {
+      private MainActivity _activity;
+      public ExportImgListener(MainActivity activity)
+      {
+        _activity = activity;
+      }
+      bool IMenuItemOnMenuItemClickListener.OnMenuItemClick(IMenuItem item)
+      {
+        Utils.Try(() =>
+        {
+          using (Bitmap currentScratch = _activity._mapView.GetScratchImg())
+          { _activity.MapVm.SaveImg(currentScratch); }
+        });
+        return true;
+      }
+    }
+
     private class LocationListener : Java.Lang.Object,
       IMenuItemOnMenuItemClickListener
     {
@@ -115,7 +141,7 @@ namespace OMapScratch
     private RecentFileBrowser _browser;
     private LinearLayout _imageList;
 
-    private CheckBox chkDrawOnly;
+    private CheckBox chkDrawOnly = null;
     private CheckBox chkDetailPosition;
 
     private System.Action<MapButton> _setModeFct;
@@ -187,6 +213,9 @@ namespace OMapScratch
       var saveMenu = menu.FindItem(Resource.Id.mniSave);
       saveMenu.SetOnMenuItemClickListener(new SaveListener(this));
 
+      var exportImgMenu = menu.FindItem(Resource.Id.mniExportImg);
+      exportImgMenu.SetOnMenuItemClickListener(new ExportImgListener(this));
+
       var locationMenu = menu.FindItem(Resource.Id.mniLocation);
       locationMenu.SetOnMenuItemClickListener(new LocationListener(this));
 
@@ -241,9 +270,11 @@ namespace OMapScratch
       _parentLayout.AddView(constrView);
 
       {
-        LinearLayout mapCtxMenu = new LinearLayout(this);
-        mapCtxMenu.Orientation = Orientation.Vertical;
-        mapCtxMenu.Visibility = ViewStates.Invisible;
+        LinearLayout mapCtxMenu = new LinearLayout(this)
+        {
+          Orientation = Orientation.Vertical,
+          Visibility = ViewStates.Invisible
+        };
 
         RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
         lprams.AddRule(LayoutRules.Below, Resource.Id.lloTools);
@@ -286,8 +317,8 @@ namespace OMapScratch
         {
           foreach (XmlImage img in MapVm.Images)
           {
-            Button btn = new Button(this);
-            btn.Text = img.Name;
+            Button btn = new Button(this)
+            { Text = img.Name };
             RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
             btn.LayoutParameters = lprams;
             btn.Click += (bs, be) => Utils.Try(() =>
@@ -513,8 +544,8 @@ namespace OMapScratch
       _parentLayout.AddView(browser);
       _browser = browser;
 
-      LinearLayout imageList = new LinearLayout(this);
-      imageList.Orientation = Orientation.Vertical;
+      LinearLayout imageList = new LinearLayout(this)
+      { Orientation = Orientation.Vertical };
       {
         RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
         imageList.LayoutParameters = lprams;

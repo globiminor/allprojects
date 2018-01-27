@@ -175,11 +175,9 @@ namespace OMapScratch.Views
 
       _context.ShowSymbols((mode) =>
       {
-        SymbolButton btn = mode as SymbolButton;
-        if (btn != null)
+        if (mode is SymbolButton btn)
         {
-          string message;
-          bool success = symbolAction.Action(btn.Symbol, btn.Color, out message);
+          bool success = symbolAction.Action(btn.Symbol, btn.Color, out string message);
           ShowText(message, success);
           if (success)
           { PostInvalidate(); }
@@ -236,16 +234,16 @@ namespace OMapScratch.Views
         {
           float[] p00 = { 0, 0 };
           float[] p11 = { Width, Height };
-          _maxExtent = GetMaxExtent(p00, p11);
+          _maxExtent = GetMaxExtent(p00, p11, InversElemMatrix);
         }
         return _maxExtent;
       }
     }
 
-    private Box GetMaxExtent(float[] p00, float[] p11)
+    private Box GetMaxExtent(float[] p00, float[] p11, Matrix inversElemMatrix)
     {
-      InversElemMatrix.MapPoints(p00);
-      InversElemMatrix.MapPoints(p11);
+      inversElemMatrix.MapPoints(p00);
+      inversElemMatrix.MapPoints(p11);
 
       float maxSymbolSize = MapVm.MaxSymbolSize;
       Pnt min = new Pnt(System.Math.Min(p00[0], p11[0]) - maxSymbolSize, System.Math.Min(p00[1], p11[1]) - maxSymbolSize);
@@ -254,6 +252,7 @@ namespace OMapScratch.Views
       Box maxExtent = new Box(min, max);
       return maxExtent;
     }
+
     private Matrix ElemMatrix
     {
       get
@@ -263,37 +262,43 @@ namespace OMapScratch.Views
           _preImgMatrix?.Dispose();
           _preImgMatrix = new Matrix(ImageMatrix);
 
-          Matrix elemMatrix = new Matrix(ImageMatrix);
-
-          float[] imgMat = CurrentWorldMatrix;
-          float[] mapOffset = null;
-          if (imgMat.Length > 5)
-          {
-            mapOffset = MapOffset;
-          }
-          if (mapOffset?.Length > 1)
-          {
-            float[] last = new float[] { 0, 0 };
-            elemMatrix.MapPoints(last);
-
-            float[] current = new float[] {
-              (mapOffset[0] - imgMat[4]) / imgMat[0],
-              -(mapOffset[1] - imgMat[5]) / imgMat[0]
-            };
-            elemMatrix.MapPoints(current);
-
-
-            float scale = 1.0f / imgMat[0];
-            float dx = current[0] - last[0];
-            float dy = current[1] - last[1];
-            elemMatrix.PostTranslate(dx, dy);
-            if (scale != 1)
-            { Scale(elemMatrix, scale, current[0], current[1]); }
-          }
-          _elemMatrix = elemMatrix;
+          _elemMatrix = GetElementMatrix(ImageMatrix, CurrentWorldMatrix, MapOffset);
         }
         return _elemMatrix;
       }
+    }
+    private static Matrix GetElementMatrix(Matrix imageMatrix, 
+      float[] currentWorldMatrix, float[] configMapOffset)
+    {
+      Matrix elemMatrix = new Matrix(imageMatrix);
+
+      float[] imgMat = currentWorldMatrix;
+      float[] mapOffset = null;
+      if (imgMat.Length > 5)
+      {
+        mapOffset = configMapOffset;
+      }
+      if (mapOffset?.Length > 1)
+      {
+        float[] last = new float[] { 0, 0 };
+        elemMatrix.MapPoints(last);
+
+        float[] current = new float[] {
+              (mapOffset[0] - imgMat[4]) / imgMat[0],
+              -(mapOffset[1] - imgMat[5]) / imgMat[0]
+            };
+        elemMatrix.MapPoints(current);
+
+
+        float scale = 1.0f / imgMat[0];
+        float dx = current[0] - last[0];
+        float dy = current[1] - last[1];
+        elemMatrix.PostTranslate(dx, dy);
+        if (scale != 1)
+        { Scale(elemMatrix, scale, current[0], current[1]); }
+      }
+
+      return elemMatrix;
     }
 
     public float[] ElemMatrixValues
@@ -534,8 +539,8 @@ namespace OMapScratch.Views
     {
       foreach (ContextAction action in actions)
       {
-        ActionButton actionButton = new ActionButton(_context, action);
-        actionButton.Text = action.Name;
+        ActionButton actionButton = new ActionButton(_context, action)
+        { Text = action.Name };
         actionButton.Click += (s, e) => Utils.Try(() =>
         {
           action.Execute();
@@ -548,8 +553,8 @@ namespace OMapScratch.Views
     }
     private LinearLayout AddMenues(ContextActions objActions, bool first)
     {
-      LinearLayout objMenus = new LinearLayout(_context);
-      objMenus.Orientation = Orientation.Vertical;
+      LinearLayout objMenus = new LinearLayout(_context)
+      { Orientation = Orientation.Vertical };
 
       ElemButton actionsButton = new ElemButton(_context, objActions.Elem);
       actionsButton.SetAllCaps(false);
@@ -575,8 +580,8 @@ namespace OMapScratch.Views
         float mm = Utils.GetMmPixel(actionsButton);
 
         RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(
-          Android.Views.ViewGroup.LayoutParams.MatchParent, Android.Views.ViewGroup.LayoutParams.WrapContent);
-        lprams.Height = (int)(6 * mm);
+          Android.Views.ViewGroup.LayoutParams.MatchParent, Android.Views.ViewGroup.LayoutParams.WrapContent)
+        { Height = (int)(6 * mm) };
         actionsButton.LayoutParameters = lprams;
         actionsButton.SetPadding((int)mm, 0, (int)mm, 0);
       }
@@ -641,6 +646,42 @@ namespace OMapScratch.Views
       ConstrView.PostInvalidate();
     }
 
+    public Bitmap GetScratchImg()
+    {
+      Bitmap current = _context?.MapVm?.CurrentImage;
+      if (current == null)
+      { return null; }
+
+      int w = current.Width;
+      int h = current.Height;
+
+      Bitmap bitmap = Bitmap.CreateBitmap(w, h, current.GetConfig());
+
+      Canvas canvas = new Canvas(bitmap);
+      canvas.DrawColor(Color.White);
+      float x0 = CurrentWorldMatrix[4] - MapOffset[0];
+      float y0 = CurrentWorldMatrix[5] - MapOffset[1];
+      float dx = CurrentWorldMatrix[0];
+
+      Box maxExtent = new Box(
+        new Pnt(x0, y0 - h * dx),
+        new Pnt(x0 + w * dx, y0));
+
+      maxExtent = MaxExtent;
+
+      Matrix imageMatrix = new Matrix();
+      Matrix elemMatrix = GetElementMatrix(imageMatrix, CurrentWorldMatrix, MapOffset);
+      float[] elemMatrixValues = new float[9];
+      elemMatrix.GetValues(elemMatrixValues);
+      Matrix inverseElemMatrix = new Matrix();
+      elemMatrix.Invert(inverseElemMatrix);
+      float[] p00 = { 0, 0 };
+      float[] p11 = { bitmap.Width, bitmap.Height };
+      maxExtent = GetMaxExtent(p00, p11, inverseElemMatrix);
+
+      DrawElems(canvas, _context.MapVm.Elems, maxExtent, elemMatrixValues, null);
+      return bitmap;
+    }
     private void DrawRegion(Canvas canvas)
     {
       base.OnDraw(canvas);
@@ -648,57 +689,14 @@ namespace OMapScratch.Views
       if (!_keepTextOnDraw)
       { ShowText(null); }
 
-      DrawElems(canvas, _context.MapVm.Elems, MaxExtent, null);
+      DrawElems(canvas, _context.MapVm.Elems, MaxExtent, ElemMatrixValues, null);
+      DrawConstr(canvas);
 
-      Bitmap current = _context?.MapVm?.CurrentImage;
-      if (current != null && ShowDetail != null)
-      {
-        float[] vals = new float[9]; ImageMatrix.GetValues(vals);
-
-        int det = 300;
-        int det_2 = det / 2;
-        int x0 = (int)((-vals[2] + ShowDetail.X - det_2) / vals[0]);
-        int y0 = (int)((-vals[5] + ShowDetail.Y - det_2) / vals[0]);
-
-        using (Rect source = new Rect(x0, y0, x0 + (int)(det / vals[0]), y0 + (int)(det / vals[0])))
-        {
-          int rx, ry;
-          if (_context?.DetailUpperRight ?? true)
-          {
-            int w = Width;
-            rx = w - det;
-            ry = 0;
-          }
-          else
-          {
-            int h = Height;
-            rx = 0;
-            ry = h - det;
-          }
-          using (Rect dest = new Rect(rx, ry, rx + det, ry + det))
-          {
-            try
-            {
-              canvas.Save();
-              canvas.ClipRect(dest);
-              canvas.DrawBitmap(_context.MapVm.CurrentImage, source, dest, null);
-
-              float[] p0 = { ShowDetail.X - det_2, ShowDetail.Y - det_2 };
-              float[] p1 = { ShowDetail.X + det_2, ShowDetail.Y + det_2 };
-              Box maxExtent = GetMaxExtent(p0, p1);
-              float f = 1; // vals[0];
-              float[] dd = { (ShowDetail.X - (rx + det_2)) * f, (ShowDetail.Y - (ry + det_2)) * f };
-              DrawElems(canvas, _context.MapVm.Elems, maxExtent, dd);
-
-            }
-            finally
-            { canvas.Restore(); }
-          }
-        }
-      }
+      DrawDetail(canvas);
     }
 
-    private void DrawElems(Canvas canvas, IEnumerable<Elem> elems, Box maxExtent, float[] dd)
+    private void DrawElems(Canvas canvas, IEnumerable<Elem> elems, Box maxExtent, 
+      float[] elemMatrixValues, float[] dd)
     {
       if (elems == null)
       { return; }
@@ -709,7 +707,7 @@ namespace OMapScratch.Views
         canvas.Save();
         try
         {
-          float[] matrix = ElemMatrixValues;
+          float[] matrix = elemMatrixValues;
 
           if (dd != null)
           {
@@ -731,43 +729,101 @@ namespace OMapScratch.Views
         }
         finally
         { canvas.Restore(); }
+      }
+    }
 
-        if (ContextMenu.Visibility == Android.Views.ViewStates.Visible &&
-          _editPnt != null)
+    private void DrawConstr(Canvas canvas)
+    {
+      if (ContextMenu.Visibility != Android.Views.ViewStates.Visible ||
+        _editPnt == null)
+      { return; }
+
+      using (Paint wp = new Paint())
+      using (Paint bp = new Paint())
+      {
+        wp.Color = Color.White;
+        wp.StrokeWidth = 3 * ConstrView.ConstrLineWidth;
+        wp.SetStyle(Paint.Style.Stroke);
+
+        bp.Color = ConstrView.ConstrColor;
+        bp.StrokeWidth = ConstrView.ConstrLineWidth;
+        bp.SetStyle(Paint.Style.Stroke);
+
+        Matrix mat = ElemMatrix;
+
+        Pnt pnt = _editPnt;
+        float[] draw = new float[] { pnt.X, pnt.Y };
+        mat.MapPoints(draw);
+
+        int x0 = (int)draw[0];
+        int y0 = (int)draw[1];
+
+        float size = 10;
+        using (Path path = new Path())
         {
-          using (Paint wp = new Paint())
-          using (Paint bp = new Paint())
+          path.MoveTo(draw[0] - size, draw[1] - size);
+          path.LineTo(draw[0] - size, draw[1] + size);
+          path.LineTo(draw[0] + size, draw[1] + size);
+          path.LineTo(draw[0] + size, draw[1] - size);
+          path.LineTo(draw[0] - size, draw[1] - size);
+
+          canvas.DrawPath(path, wp);
+          canvas.DrawPath(path, bp);
+        }
+      }
+    }
+
+    private void DrawDetail(Canvas canvas)
+    {
+      if (ShowDetail == null)
+      { return; }
+
+      Bitmap current = _context?.MapVm?.CurrentImage;
+      if (current == null)
+      { return; }
+
+      float[] vals = new float[9]; ImageMatrix.GetValues(vals);
+
+      int det = 300;
+      int det_2 = det / 2;
+      int x0 = (int)((-vals[2] + ShowDetail.X - det_2) / vals[0]);
+      int y0 = (int)((-vals[5] + ShowDetail.Y - det_2) / vals[0]);
+
+      using (Rect source = new Rect(x0, y0, x0 + (int)(det / vals[0]), y0 + (int)(det / vals[0])))
+      {
+        int rx, ry;
+        if (_context?.DetailUpperRight ?? true)
+        {
+          int w = Width;
+          rx = w - det;
+          ry = 0;
+        }
+        else
+        {
+          int h = Height;
+          rx = 0;
+          ry = h - det;
+        }
+        using (Rect dest = new Rect(rx, ry, rx + det, ry + det))
+        {
+          try
           {
-            wp.Color = Color.White;
-            wp.StrokeWidth = 3 * ConstrView.ConstrLineWidth;
-            wp.SetStyle(Paint.Style.Stroke);
+            canvas.Save();
+            canvas.ClipRect(dest);
+            canvas.DrawBitmap(_context.MapVm.CurrentImage, source, dest, null);
 
-            bp.Color = ConstrView.ConstrColor;
-            bp.StrokeWidth = ConstrView.ConstrLineWidth;
-            bp.SetStyle(Paint.Style.Stroke);
+            float[] p0 = { ShowDetail.X - det_2, ShowDetail.Y - det_2 };
+            float[] p1 = { ShowDetail.X + det_2, ShowDetail.Y + det_2 };
+            Box maxExtent = GetMaxExtent(p0, p1, InversElemMatrix);
+            float f = 1; // vals[0];
+            float[] dd = { (ShowDetail.X - (rx + det_2)) * f, (ShowDetail.Y - (ry + det_2)) * f };
 
-            Matrix mat = ElemMatrix;
+            DrawElems(canvas, _context.MapVm.Elems, maxExtent, ElemMatrixValues, dd);
+            DrawConstr(canvas);
 
-            Pnt pnt = _editPnt;
-            float[] draw = new float[] { pnt.X, pnt.Y };
-            mat.MapPoints(draw);
-
-            int x0 = (int)draw[0];
-            int y0 = (int)draw[1];
-
-            float size = 10;
-            using (Path path = new Path())
-            {
-              path.MoveTo(draw[0] - size, draw[1] - size);
-              path.LineTo(draw[0] - size, draw[1] + size);
-              path.LineTo(draw[0] + size, draw[1] + size);
-              path.LineTo(draw[0] + size, draw[1] - size);
-              path.LineTo(draw[0] - size, draw[1] - size);
-
-              canvas.DrawPath(path, wp);
-              canvas.DrawPath(path, bp);
-            }
           }
+          finally
+          { canvas.Restore(); }
         }
       }
     }
