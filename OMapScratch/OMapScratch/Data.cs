@@ -1294,7 +1294,7 @@ namespace OMapScratch
     {
       string worldFile = GetWorldPath(_currentImagePath);
 
-      if ( worldFile == null || !File.Exists(worldFile))
+      if (worldFile == null || !File.Exists(worldFile))
       { return null; }
 
       using (TextReader r = new StreamReader(worldFile))
@@ -1607,23 +1607,65 @@ namespace OMapScratch
     public string ScratchImg { get; set; }
     [XmlAttribute("symbol")]
     public string Symbol { get; set; }
+
+    private static string Format(float? value)
+    {
+      if (value == null)
+      { return null; }
+      return string.Format(CultureInfo.InvariantCulture, "{0}", value);
+    }
+    private static float? Parse(string value)
+    {
+      if (float.TryParse(value, out float v)) return v;
+      return null;
+    }
+
+
+    [XmlIgnore]
+    public float? SymbolScale { get; set; }
     [XmlAttribute("symbolscale")]
-    public float SymbolScale { get; set; }
+    public string SSymbolScale
+    {
+      get { return Format(SymbolScale); }
+      set { SymbolScale = Parse(value); }
+    }
+
+    [XmlIgnore]
+    public float? ConstrTextSize { get; set; }
     [XmlAttribute("constrtextsize_mm")]
-    public float ConstrTextSize { get; set; }
+    public string SConstrTextSize
+    {
+      get { return Format(ConstrTextSize); }
+      set { ConstrTextSize = Parse(value); }
+    }
+
+    [XmlIgnore]
+    public float? ConstrLineWidth { get; set; }
     [XmlAttribute("constrlinewidth_mm")]
-    public float ConstrLineWidth { get; set; }
+    public string SConstrLineWidth
+    {
+      get { return Format(ConstrLineWidth); }
+      set { ConstrLineWidth = Parse(value); }
+    }
+
     [XmlIgnore]
     public float? ElemTextSize { get; set; }
     [XmlAttribute("elemtextsize_pt")]
     public string SElemTextSize
     {
-      get { return string.Format(CultureInfo.InvariantCulture, "{0}", ElemTextSize); }
-      set { if (float.TryParse(value, out float v)) ElemTextSize = v; }
+      get { return Format(ElemTextSize); }
+      set { ElemTextSize = Parse(value); }
     }
 
+    [XmlIgnore]
+    public float? Search { get; set; }
     [XmlAttribute("search")]
-    public float Search { get; set; }
+    public string SSearch
+    {
+      get { return Format(Search); }
+      set { Search = Parse(value); }
+    }
+
     [XmlAttribute("numberformat")]
     public string NumberFormat { get; set; }
     [XmlElement("constrcolor")]

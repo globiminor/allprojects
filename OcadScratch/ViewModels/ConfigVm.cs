@@ -132,6 +132,20 @@ namespace OcadScratch.ViewModels
       }
     }
 
+    public string ScratchImg
+    {
+      get { return _config.Data.ScratchImg; }
+      set
+      {
+        if (_config.Data.ScratchImg != value)
+        {
+          _config.Data.ScratchImg = value;
+          Validate();
+          Changed();
+        }
+      }
+    }
+
     public string SymbolPath
     {
       get { return _config.Data.Symbol; }
@@ -248,7 +262,7 @@ namespace OcadScratch.ViewModels
     {
       get
       {
-        float current = _config.Data.SymbolScale;
+        float current = _config.Data.SymbolScale ?? 0;
         return current != 0 ? current : Map.DefaultSymbolScale;
       }
       set
@@ -263,7 +277,7 @@ namespace OcadScratch.ViewModels
     {
       get
       {
-        float current = _config.Data.Search;
+        float current = _config.Data.Search ?? 0;
         return current > 0 ? current : Map.DefaultMinSearchDist;
       }
       set
@@ -293,7 +307,7 @@ namespace OcadScratch.ViewModels
     {
       get
       {
-        float current = _config.Data.ConstrTextSize;
+        float current = _config.Data.ConstrTextSize ?? 0;
         return current > 0 ? current : Map.DefaultConstrTextSize;
       }
       set
@@ -308,7 +322,7 @@ namespace OcadScratch.ViewModels
     {
       get
       {
-        float current = _config.Data.ConstrLineWidth;
+        float current = _config.Data.ConstrLineWidth ?? 0;
         return current > 0 ? current : Map.DefaultConstrLineWidth;
       }
       set
