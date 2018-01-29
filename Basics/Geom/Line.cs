@@ -205,8 +205,7 @@ namespace Basics.Geom
 
     public override IList<ParamGeometryRelation> CreateRelations(IParamGeometry other, TrackOperatorProgress trackProgress)
     {
-      Curve o = other as Curve;
-      if (o != null)
+      if (other is Curve o)
       {
         return CreateRelations(o, trackProgress);
       }
@@ -218,8 +217,7 @@ namespace Basics.Geom
     protected override IList<ParamGeometryRelation> CreateRelations(Curve other, TrackOperatorProgress trackProgress)
     {
       IList<ParamGeometryRelation> result;
-      Line line = other as Line;
-      if (line != null)
+      if (other is Line line)
       {
         ParamGeometryRelation rel = CutLine(line);
         if (rel.Intersection != null)
@@ -232,8 +230,7 @@ namespace Basics.Geom
           return result;
         }
       }
-      Arc arc = other as Arc;
-      if (arc != null)
+      if (other is Arc arc)
       {
         IList<ParamGeometryRelation> list = arc.CutLine(this);
         result = AddRelations(list, trackProgress);

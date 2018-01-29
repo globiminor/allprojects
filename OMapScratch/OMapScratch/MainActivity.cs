@@ -35,14 +35,7 @@ namespace OMapScratch
       bool IMenuItemOnMenuItemClickListener.OnMenuItemClick(IMenuItem item)
       {
         Utils.Try(() =>
-        {
-          _activity.MapVm.Save();
-
-          using (Bitmap currentScratch = _activity._mapView.GetScratchImg())
-          {
-            _activity.MapVm.SaveImg(currentScratch);
-          }
-        });
+        { _activity.MapVm.Save(); });
         return true;
       }
     }
@@ -57,8 +50,9 @@ namespace OMapScratch
       {
         Utils.Try(() =>
         {
-          using (Bitmap currentScratch = _activity._mapView.GetScratchImg())
-          { _activity.MapVm.SaveImg(currentScratch); }
+          string imgPath = _activity._mapView.ProcessScratchImg((b, m) => _activity.MapVm.SaveImg(b, m));
+          if (!string.IsNullOrEmpty(imgPath))
+          { _activity._mapView.ShowText($"Image saved to {imgPath}"); }
         });
         return true;
       }

@@ -268,12 +268,12 @@ namespace OMapScratch.Views
       }
     }
     private static Matrix GetElementMatrix(Matrix imageMatrix, 
-      float[] currentWorldMatrix, float[] configMapOffset)
+      double[] currentWorldMatrix, double[] configMapOffset)
     {
       Matrix elemMatrix = new Matrix(imageMatrix);
 
-      float[] imgMat = currentWorldMatrix;
-      float[] mapOffset = null;
+      double[] imgMat = currentWorldMatrix;
+      double[] mapOffset = null;
       if (imgMat.Length > 5)
       {
         mapOffset = configMapOffset;
@@ -284,13 +284,13 @@ namespace OMapScratch.Views
         elemMatrix.MapPoints(last);
 
         float[] current = new float[] {
-              (mapOffset[0] - imgMat[4]) / imgMat[0],
-              -(mapOffset[1] - imgMat[5]) / imgMat[0]
+              (float)((mapOffset[0] - imgMat[4]) / imgMat[0]),
+              (float)(-(mapOffset[1] - imgMat[5]) / imgMat[0])
             };
         elemMatrix.MapPoints(current);
 
 
-        float scale = 1.0f / imgMat[0];
+        float scale = (float)(1.0 / imgMat[0]);
         float dx = current[0] - last[0];
         float dy = current[1] - last[1];
         elemMatrix.PostTranslate(dx, dy);
@@ -329,17 +329,17 @@ namespace OMapScratch.Views
       }
     }
 
-    private float[] MapOffset
+    private double[] MapOffset
     {
-      get { return _mapOffset ?? (_mapOffset = _context.MapVm.GetOffset() ?? new float[] { }); }
+      get { return _mapOffset ?? (_mapOffset = _context.MapVm.GetOffset() ?? new double[] { }); }
     }
-    private float[] _currentWorldMatrix;
-    private float[] CurrentWorldMatrix
+    private double[] _currentWorldMatrix;
+    private double[] CurrentWorldMatrix
     {
-      get { return _currentWorldMatrix ?? (_currentWorldMatrix = _context.MapVm.GetCurrentWorldMatrix() ?? new float[] { }); }
+      get { return _currentWorldMatrix ?? (_currentWorldMatrix = _context.MapVm.GetCurrentWorldMatrix() ?? new double[] { }); }
     }
-    private float[] _lastWorldMatrix;
-    private float[] _mapOffset;
+    private double[] _lastWorldMatrix;
+    private double[] _mapOffset;
 
     public void PrepareUpdateMapImage()
     {
@@ -356,7 +356,7 @@ namespace OMapScratch.Views
 
       if (_lastWorldMatrix != null && _lastWorldMatrix.Length > 0)
       {
-        float[] newMat = CurrentWorldMatrix;
+        double[] newMat = CurrentWorldMatrix;
         if (newMat.Length <= 5 ||
           newMat[0] != _lastWorldMatrix[0] ||
           newMat[4] != _lastWorldMatrix[4] ||
@@ -366,12 +366,12 @@ namespace OMapScratch.Views
           ImageMatrix.MapPoints(last);
 
           float[] current = new float[] {
-            (newMat[4] - _lastWorldMatrix[4]) / _lastWorldMatrix[0],
-            (newMat[5] - _lastWorldMatrix[5]) / _lastWorldMatrix[0]
+            (float)((newMat[4] - _lastWorldMatrix[4]) / _lastWorldMatrix[0]),
+            (float)((newMat[5] - _lastWorldMatrix[5]) / _lastWorldMatrix[0])
           };
           ImageMatrix.MapPoints(current);
 
-          float scale = newMat[0] / _lastWorldMatrix[0];
+          float scale = (float)(newMat[0] / _lastWorldMatrix[0]);
           float dx = current[0] - last[0];
           float dy = current[1] - last[1];
           ImageMatrix.PostTranslate(dx, -dy);
@@ -646,41 +646,58 @@ namespace OMapScratch.Views
       ConstrView.PostInvalidate();
     }
 
-    public Bitmap GetScratchImg()
+    public string ProcessScratchImg(System.Func<Bitmap, double[], string> handleBitmap)
     {
       Bitmap current = _context?.MapVm?.CurrentImage;
       if (current == null)
       { return null; }
 
-      int w = current.Width;
-      int h = current.Height;
+      float symScale = _context.MapVm.SymbolScale;
+      float imgResol = (float)CurrentWorldMatrix[0];
+      float f = imgResol > symScale ? imgResol / symScale : 1;
 
-      Bitmap bitmap = Bitmap.CreateBitmap(w, h, current.GetConfig());
+      int w = (int)(current.Width * f);
+      int h = (int)(current.Height * f);
 
-      Canvas canvas = new Canvas(bitmap);
-      canvas.DrawColor(Color.White);
-      float x0 = CurrentWorldMatrix[4] - MapOffset[0];
-      float y0 = CurrentWorldMatrix[5] - MapOffset[1];
-      float dx = CurrentWorldMatrix[0];
+      double[] worldMatrix = new double[6];
+      worldMatrix[0] = CurrentWorldMatrix[0] / f;
+      worldMatrix[1] = CurrentWorldMatrix[1] / f;
+      worldMatrix[2] = CurrentWorldMatrix[1] / f;
+      worldMatrix[3] = CurrentWorldMatrix[3] / f;
+      worldMatrix[4] = CurrentWorldMatrix[4];
+      worldMatrix[5] = CurrentWorldMatrix[5];
 
-      Box maxExtent = new Box(
-        new Pnt(x0, y0 - h * dx),
-        new Pnt(x0 + w * dx, y0));
+      using (Bitmap bitmap = Bitmap.CreateBitmap(w, h, current.GetConfig()))
+      {
+        using (Canvas canvas = new Canvas(bitmap))
+        {
+          canvas.DrawColor(Color.White);
+          float x0 = (float)(CurrentWorldMatrix[4] - MapOffset[0]);
+          float y0 = (float)(CurrentWorldMatrix[5] - MapOffset[1]);
+          float dx = (float)CurrentWorldMatrix[0];
 
-      maxExtent = MaxExtent;
+          Box maxExtent = new Box(
+            new Pnt(x0, y0 - h * dx),
+            new Pnt(x0 + w * dx, y0));
 
-      Matrix imageMatrix = new Matrix();
-      Matrix elemMatrix = GetElementMatrix(imageMatrix, CurrentWorldMatrix, MapOffset);
-      float[] elemMatrixValues = new float[9];
-      elemMatrix.GetValues(elemMatrixValues);
-      Matrix inverseElemMatrix = new Matrix();
-      elemMatrix.Invert(inverseElemMatrix);
-      float[] p00 = { 0, 0 };
-      float[] p11 = { bitmap.Width, bitmap.Height };
-      maxExtent = GetMaxExtent(p00, p11, inverseElemMatrix);
+          maxExtent = MaxExtent;
 
-      DrawElems(canvas, _context.MapVm.Elems, maxExtent, elemMatrixValues, null);
-      return bitmap;
+          Matrix imageMatrix = new Matrix();
+          Matrix elemMatrix = GetElementMatrix(imageMatrix, worldMatrix, MapOffset);
+          float[] elemMatrixValues = new float[9];
+          elemMatrix.GetValues(elemMatrixValues);
+          Matrix inverseElemMatrix = new Matrix();
+          elemMatrix.Invert(inverseElemMatrix);
+          float[] p00 = { 0, 0 };
+          float[] p11 = { bitmap.Width, bitmap.Height };
+          maxExtent = GetMaxExtent(p00, p11, inverseElemMatrix);
+
+          DrawElems(canvas, _context.MapVm.Elems, maxExtent, elemMatrixValues, null);
+        }
+
+        string savePath = handleBitmap(bitmap, worldMatrix);
+        return savePath;
+      }
     }
     private void DrawRegion(Canvas canvas)
     {

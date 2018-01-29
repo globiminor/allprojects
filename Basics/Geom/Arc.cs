@@ -155,9 +155,8 @@ namespace Basics.Geom
     public override IList<ParamGeometryRelation> CreateRelations(IParamGeometry other,
       TrackOperatorProgress trackProgress)
     {
-      Curve o = other as Curve;
       IList<ParamGeometryRelation> list;
-      if (o != null)
+      if (other is Curve o)
       { list = CreateRelations(o, trackProgress); }
       else
       { list = base.CreateRelations(other, trackProgress); }
@@ -167,16 +166,14 @@ namespace Basics.Geom
       TrackOperatorProgress trackProgress)
     {
       IList<ParamGeometryRelation> result;
-      Line line = other as Line;
-      if (line != null)
+      if (other is Line line)
       {
         IList<ParamGeometryRelation> list = CutLine(line);
         result = AddRelations(list, trackProgress);
         return result;
 
       }
-      Arc arc = other as Arc;
-      if (arc != null)
+      if (other is Arc arc)
       {
         IList<ParamGeometryRelation> list = CutArc(arc);
         result = AddRelations(list, trackProgress);
@@ -554,8 +551,8 @@ namespace Basics.Geom
       {
         _arc = arc;
 
-        _quadrant = new Arc(_arc._center, _arc._radius, 0, 0);
-        _quadrant._isQuadrant = true;
+        _quadrant = new Arc(_arc._center, _arc._radius, 0, 0)
+        { _isQuadrant = true };
         Reset();
       }
       #region IEnumerator Members

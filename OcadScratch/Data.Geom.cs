@@ -43,7 +43,7 @@ namespace OMapScratch
 
     public Basics.Geom.IProjection GetGlobalPrj()
     {
-      float[] offset = GetOffset();
+      double[] offset = GetOffset();
       return new MyPrjGlobal(offset[0], offset[1]);
     }
 

@@ -67,8 +67,8 @@ namespace Basics.Window.Browse
     private readonly PdEntry _entry;
     public DevEntryContentVm(IList<string> directory, PdEntry entry)
     {
-      _path = new List<string>(directory);
-      _path.Add(entry.Name);
+      _path = new List<string>(directory)
+      { entry.Name };
       _entry = entry;
 
       string full = string.Empty;

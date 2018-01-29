@@ -100,11 +100,8 @@ namespace Asvz.Sola
 
       try
       {
-        Polyline partEnd, partStart;
-        IPoint centerEnd, centerStart;
-
-        Polyline border = GetBorder(_uebergabe, out partEnd, out partStart,
-          out centerEnd, out centerStart);
+        Polyline border = GetBorder(_uebergabe, out Polyline partEnd, out Polyline partStart,
+          out IPoint centerEnd, out IPoint centerStart);
 
         WriteStartEnd(writer, partStart, partEnd, centerStart, centerEnd);
 
@@ -212,30 +209,33 @@ namespace Asvz.Sola
 
       if (centerEnd != null)
       {
-        elem = new ElementV9(true);
-
-        elem.Geometry = centerEnd;
-        elem.Symbol = SymD.UeCircle;
-        elem.Type = GeomType.point;
+        elem = new ElementV9(true)
+        {
+          Geometry = centerEnd,
+          Symbol = SymD.UeCircle,
+          Type = GeomType.point
+        };
         writer.Append(elem);
       }
       if (partEnd != null)
       {
-        elem = new ElementV9(true);
-
-        elem.Geometry = partEnd;
-        elem.Symbol = SymD.UeVorherNachher;
-        elem.Type = GeomType.line;
+        elem = new ElementV9(true)
+        {
+          Geometry = partEnd,
+          Symbol = SymD.UeVorherNachher,
+          Type = GeomType.line
+        };
         writer.Append(elem);
       }
 
       if (centerStart != null && centerStart != centerEnd)
       {
-        elem = new ElementV9(true);
-
-        elem.Geometry = centerStart;
-        elem.Symbol = SymD.UeNeustart;
-        elem.Type = GeomType.point;
+        elem = new ElementV9(true)
+        {
+          Geometry = centerStart,
+          Symbol = SymD.UeNeustart,
+          Type = GeomType.point
+        };
 
         IPoint p1 = partStart.Points.First.Value.Project(_templateSetup.Prj2Map);
         IPoint p0 = centerStart.Project(_templateSetup.Prj2Map);
@@ -246,11 +246,12 @@ namespace Asvz.Sola
       }
       if (partStart != null)
       {
-        elem = new ElementV9(true);
-
-        elem.Geometry = partStart;
-        elem.Symbol = SymD.UeVorherNachher;
-        elem.Type = GeomType.line;
+        elem = new ElementV9(true)
+        {
+          Geometry = partStart,
+          Symbol = SymD.UeVorherNachher,
+          Type = GeomType.line
+        };
         writer.Append(elem);
       }
     }
@@ -538,23 +539,29 @@ namespace Asvz.Sola
         pos1.Y = pos0.Y;
       }
 
-      Element elem = new ElementV9(true);
-      elem.Geometry = pos0.Project(_templateSetup.Map2Prj);
-      elem.Symbol = SymD.UeLegendeBox;
-      elem.Type = GeomType.point;
+      Element elem = new ElementV9(true)
+      {
+        Geometry = pos0.Project(_templateSetup.Map2Prj),
+        Symbol = SymD.UeLegendeBox,
+        Type = GeomType.point
+      };
       writer.Append(elem);
 
-      elem = new ElementV9(true);
-      elem.Geometry = pos1.Project(_templateSetup.Map2Prj);
-      elem.Symbol = SymD.UeLegendeBox;
-      elem.Type = GeomType.point;
+      elem = new ElementV9(true)
+      {
+        Geometry = pos1.Project(_templateSetup.Map2Prj),
+        Symbol = SymD.UeLegendeBox,
+        Type = GeomType.point
+      };
       writer.Append(elem);
 
-      elem = new ElementV9(true);
-      elem.Geometry = pos0.Project(_templateSetup.Map2Prj);
-      elem.Angle = _templateSetup.PrjRotation;
-      elem.Symbol = SymD.UeNordpfeil;
-      elem.Type = GeomType.point;
+      elem = new ElementV9(true)
+      {
+        Geometry = pos0.Project(_templateSetup.Map2Prj),
+        Angle = _templateSetup.PrjRotation,
+        Symbol = SymD.UeNordpfeil,
+        Type = GeomType.point
+      };
       writer.Append(elem);
 
       Point p = pos1.Project(_templateSetup.Map2Prj);
@@ -571,10 +578,12 @@ namespace Asvz.Sola
       pScale.Add(new Point2D(pos1.X + dx, pos1.Y - dy / 5.0));
       pScale.Add(new Point2D(pos1.X + dx, pos1.Y - dy / 10.0));
 
-      elem = new ElementV9(true);
-      elem.Geometry = pScale.Project(_templateSetup.Map2Prj);
-      elem.Symbol = SymD.UeMassstab;
-      elem.Type = GeomType.line;
+      elem = new ElementV9(true)
+      {
+        Geometry = pScale.Project(_templateSetup.Map2Prj),
+        Symbol = SymD.UeMassstab,
+        Type = GeomType.line
+      };
       writer.Append(elem);
     }
   }

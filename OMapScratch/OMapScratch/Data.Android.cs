@@ -80,9 +80,9 @@ namespace OMapScratch
       return recentList;
     }
 
-    internal void SaveImg(Bitmap currentScratch)
+    internal string SaveImg(Bitmap currentScratch, double[] worldMatrix)
     {
-      _map.SaveImg(currentScratch);
+      return _map.SaveImg(currentScratch, worldMatrix);
     }
 
     public void SetRecent(string configPath)
@@ -193,14 +193,14 @@ namespace OMapScratch
       _currentImagePath = path;
     }
 
-    public void SaveImg(Bitmap currentScratch)
+    public string SaveImg(Bitmap currentScratch, double[] worldMatrix)
     {
       if (currentScratch == null)
-      { return; }
+      { return null; }
 
       string imgPath = GetLocalPath(_config?.Data?.ScratchImg ?? DefaultScratchImg);
       if (imgPath == null)
-      { return; }
+      { return null; }
 
       using (var stream = new System.IO.FileStream(imgPath, System.IO.FileMode.Create))
       {
@@ -209,7 +209,12 @@ namespace OMapScratch
       }
 
       string worldPath = GetWorldPath(imgPath);
-      System.IO.File.Copy(GetWorldPath(_currentImagePath), worldPath, overwrite: true);
+      using (System.IO.TextWriter w = new System.IO.StreamWriter(worldPath))
+      {
+        for (int i = 0; i < 6; i++)
+        { w.WriteLine(worldMatrix[i]); }
+      }
+      return imgPath;
     }
 
     public static bool Deserialize<T>(string path, out T obj)

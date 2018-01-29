@@ -539,11 +539,11 @@ namespace OMapScratch
     internal void Redo()
     { _map.Redo(); }
 
-    public float[] GetOffset()
+    public double[] GetOffset()
     { return _map.GetOffset(); }
     public float? GetDeclination()
     { return _map.GetDeclination(); }
-    public float[] GetCurrentWorldMatrix()
+    public double[] GetCurrentWorldMatrix()
     { return _map.GetCurrentWorldMatrix(); }
     public List<Symbol> GetSymbols()
     { return _map.GetSymbols(); }
@@ -1260,12 +1260,12 @@ namespace OMapScratch
     internal XmlConfig Config
     { get { return _config; } }
 
-    public float[] GetOffset()
+    public double[] GetOffset()
     {
       XmlOffset offset = _config?.Offset;
       if (offset == null)
       { return null; }
-      return new float[] { (float)offset.X, (float)offset.Y };
+      return new double[] { offset.X, offset.Y };
     }
     public float? GetDeclination()
     {
@@ -1290,7 +1290,7 @@ namespace OMapScratch
       return worldFile;
     }
 
-    public float[] GetCurrentWorldMatrix()
+    public double[] GetCurrentWorldMatrix()
     {
       string worldFile = GetWorldPath(_currentImagePath);
 
@@ -1299,14 +1299,14 @@ namespace OMapScratch
 
       using (TextReader r = new StreamReader(worldFile))
       {
-        if (!float.TryParse(r.ReadLine(), out float x00)) return null;
-        if (!float.TryParse(r.ReadLine(), out float x01)) return null;
-        if (!float.TryParse(r.ReadLine(), out float x10)) return null;
-        if (!float.TryParse(r.ReadLine(), out float x11)) return null;
-        if (!float.TryParse(r.ReadLine(), out float dx)) return null;
-        if (!float.TryParse(r.ReadLine(), out float dy)) return null;
+        if (!double.TryParse(r.ReadLine(), out double x00)) return null;
+        if (!double.TryParse(r.ReadLine(), out double x01)) return null;
+        if (!double.TryParse(r.ReadLine(), out double x10)) return null;
+        if (!double.TryParse(r.ReadLine(), out double x11)) return null;
+        if (!double.TryParse(r.ReadLine(), out double dx)) return null;
+        if (!double.TryParse(r.ReadLine(), out double dy)) return null;
 
-        return new float[] { x00, x01, x10, x11, dx, dy };
+        return new double[] { x00, x01, x10, x11, dx, dy };
       }
     }
 

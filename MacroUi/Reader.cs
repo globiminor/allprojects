@@ -53,7 +53,7 @@ namespace MacroUi
       Processor macro = new Processor();
       try
       {
-        macro.Progress += macro_Progress;
+        macro.Progress += Macro_Progress;
 
         Process[] processes = Process.GetProcesses();
 
@@ -64,7 +64,7 @@ namespace MacroUi
       }
       finally
       {
-        macro.Progress -= macro_Progress;
+        macro.Progress -= Macro_Progress;
       }
     }
 
@@ -221,20 +221,17 @@ namespace MacroUi
 
     protected virtual void OnExecuting(EventArgs args)
     {
-      if (Executing != null)
-      { Executing(this, args); }
+      Executing?.Invoke(this, args);
     }
     protected virtual void OnExecuted(EventArgs args)
     {
-      if (Executed != null)
-      { Executed(this, args); }
+      Executed?.Invoke(this, args);
     }
     protected virtual void OnProgress(ProgressEventArgs args)
     {
-      if (Progress != null)
-      { Progress(this, args); }
+      Progress?.Invoke(this, args);
     }
-    private void macro_Progress(object sender, ProgressEventArgs e)
+    private void Macro_Progress(object sender, ProgressEventArgs e)
     {
       OnProgress(e);
     }

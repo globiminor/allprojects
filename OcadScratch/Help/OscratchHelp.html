@@ -51,7 +51,7 @@
   &lt;offset x="2685000" y="1256000" declination="2.27"&gt;
     &lt;world lat="47.4492980" lon="8.5656916" geoMat00="75412.37" geoMat01="1084.84" geoMat10="-1596.29" geoMat11="111174.40" /&gt;
   &lt;/offset&gt;
-  &lt;data scratch=&quot;Hardwald.xml&quot; symbol=&quot;Symbols.xml&quot; symbolscale=&quot;0.3&quot; constrtextsize_mm=&quot;2.3&quot; constrlinewidth_mm=&quot;0.1&quot; elemtextsize_pt=&quot;18&quot; search=&quot;5&quot;&gt;
+  &lt;data scratch=&quot;Hardwald.xml&quot; scratchimg=&quot;scratchImg.jpg&quot; symbol=&quot;Symbols.xml&quot; symbolscale=&quot;0.3&quot; constrtextsize_mm=&quot;2.3&quot; constrlinewidth_mm=&quot;0.1&quot; elemtextsize_pt=&quot;18&quot; search=&quot;5&quot;&gt;
     &lt;constrcolor R=&quot;255&quot; G=&quot;0&quot; B=&quot;0&quot;/&gt;
   &lt;/data&gt;
   &lt;image name="LAS" path="B3_Hardwald 2017_DSM_LasIntensity.jpg" /&gt;
@@ -65,6 +65,7 @@
 &lt;offset declination&gt; (optional): declination of the magnetic north to the map north (degrees)
 &lt;offset&gt;&lt;world&gt; (optional): Wgs84 co-ordinates (degrees) of offset, together with a local transformation matrix
 &lt;data scratch&gt;: name of the file, where the captured data will be stored (will be created by o-scratch)
+&lt;data scratchImg&gt;: name of the file, where scratch images will be exported to (will be created by "Export scratch image"). If not defined, the exported files will be <b>scratchImg.jpg</b> and <b>scratchImg.jgw</b>
 &lt;data symbol&gt;: name of the file, where the symbols are stored. See description below. 
                Remark: The units in the symbol-files are in meters
 &lt;data symbolscale&gt; (optional): Scale factor of the symbols use for display. Default is 1.
@@ -256,6 +257,9 @@
 
     <h3>Save</h3>
     <p>1. Choose (Navigation bar) -> Save. The captured objects are written to &lt;scratch.xml&gt; in the same folder as the &lt;project&gt;.config file.</p>
+
+    <h3>Export Scratch Image</h3>
+    <p>1. Choose (Navigation bar) -> Export Scratch Image. The captured objects are drawn to the jpg-File &lt;scratchimg&gt; - with additional world file .jgw - in the same folder as the &lt;project&gt;.config file. <b>Remark</b>: only objects (partly) within the extent of the currently chosen image will be drawn!</p>
 
     <h3>Load a different project</h3>
     <p>
