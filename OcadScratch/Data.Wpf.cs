@@ -229,7 +229,7 @@ namespace OMapScratch
       PathGeometry geom = new PathGeometry();
       PathFigure path = new PathFigure();
       curve[0].Init(path, matrix);
-      foreach (ISegment segment in curve)
+      foreach (ISegment segment in curve.Segments)
       { segment.AppendTo(path, matrix); }
 
       p.Thickness = lineWidth;

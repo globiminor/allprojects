@@ -54,6 +54,7 @@ namespace OMapScratch
     Pnt To { get; set; }
 
     ISegment Project(IProjection prj);
+    ISegment Flip();
     Box GetExtent();
     float GetAlong(Pnt p);
     Pnt At(float t);
@@ -165,21 +166,93 @@ namespace OMapScratch
       { _map.Split(_elem, _position); }
     }
 
-    private class InsertVertexAction : IAction
+    private class ReshapeAction : IAction, IPointAction, IEditAction
     {
+      private readonly IMapView _view;
+      private readonly Map _map;
+      private readonly Elem _elem;
+
+      private bool _first = true;
+      private Curve _reshapeGeometry;
+      private Curve _baseGeometry;
+
+      public ReshapeAction(IMapView view, Map map, Elem elem, float position)
+      {
+        _view = view;
+        _map = map;
+        _elem = elem;
+      }
+
+      public string Description { get { return "Click the position of the next vertex"; } }
+
+      private Curve BaseGeometry
+      {
+        get
+        {
+          if (_baseGeometry == null)
+          {
+            _baseGeometry = (Curve)_elem.Geometry;
+            _elem.Geometry = _baseGeometry.Clone();
+          }
+          return _baseGeometry;
+        }
+      }
+
+      private Curve ReshapeGeometry
+      {
+        get { return _reshapeGeometry ?? (_reshapeGeometry = new Curve()); }
+      }
+
+      void IAction.Action()
+      { _view.SetNextPointAction(this); }
+
+      void IPointAction.Action(Pnt pnt)
+      { ReshapeLine(pnt); }
+      public void ReshapeLine(Pnt next)
+      {
+        _map.Reshape(_elem, BaseGeometry, ReshapeGeometry, next, _first);
+        _first = false;
+        _view.SetNextPointAction(this);
+      }
+
+      public bool ShowDetail { get { return true; } }
+    }
+
+    private class InsertVertexAction : IAction, IPointAction, IEditAction
+    {
+      private readonly IMapView _view;
       private readonly Map _map;
       private readonly Elem _elem;
       private readonly float _position;
-      public InsertVertexAction(Map map, Elem elem, float position)
+
+      public InsertVertexAction(IMapView view, Map map, Elem elem, float position)
       {
+        _view = view;
         _map = map;
         _elem = elem;
         _position = position;
       }
+
+      public string Description { get { return "Click the new position of the vertex"; } }
+
       void IAction.Action()
-      { InsertVertex(); }
-      public void InsertVertex()
-      { _map.InsertVertex(_elem, _position); }
+      {
+        if (InsertVertex())
+        { _view.SetNextPointAction(this); }
+      }
+      public bool InsertVertex()
+      {
+        return _map.InsertVertex(_elem, _position);
+      }
+
+      void IPointAction.Action(Pnt pnt)
+      { MoveVertex(pnt); }
+      public void MoveVertex(Pnt next)
+      {
+        _map.MoveVertex(_elem, (int)_position + 1, next);
+      }
+
+      public bool ShowDetail { get { return true; } }
     }
 
     private class MoveVertexAction : IAction, IPointAction, IEditAction
@@ -444,8 +517,9 @@ namespace OMapScratch
             float limit = 0.01f;
             if (at > limit && at < 1 - limit)
             {
-              elemActions.Add(new ContextAction(elemPnt, new InsertVertexAction(_map, elem, split.Value)) { Name = "Insert Vertex" });
+              elemActions.Add(new ContextAction(elemPnt, new InsertVertexAction(view, _map, elem, split.Value)) { Name = "Insert Vertex" });
             }
+            elemActions.Add(new ContextAction(elemPnt, new ReshapeAction(view, _map, elem, split.Value)) { Name = "Reshape" });
             elemActions.Add(new ContextAction(elemPnt, new SplitAction(_map, elem, split.Value)) { Name = "Split" });
           }
           if (curve == null)
@@ -607,6 +681,9 @@ namespace OMapScratch
 
   public partial class Map
   {
+    private interface IPointOperation
+    { }
+
     private abstract class Operation
     {
       public abstract void Undo();
@@ -770,6 +847,7 @@ namespace OMapScratch
       }
       protected override void Redo(Stack<Operation> ops)
       {
+        LastSuccess = false;
         int pos = (int)_position;
         Curve curve = (Curve)_elem.Geometry;
         _orig = curve[pos];
@@ -781,6 +859,7 @@ namespace OMapScratch
         for (int i = _nSplit - 1; i >= 0; i--)
         { curve.Insert(pos, segs[i]); }
         ops.Push(this);
+        LastSuccess = true;
       }
     }
 
@@ -816,7 +895,8 @@ namespace OMapScratch
 
           newCurve.RemoveAt(0);
         }
-        curve.AddRange(newCurve);
+        foreach (ISegment seg in newCurve.Segments)
+        { curve.Add(seg); }
       }
       protected override void Redo(Stack<Operation> ops)
       {
@@ -988,7 +1068,135 @@ namespace OMapScratch
       }
     }
 
-    private class AddPointOperation : Operation
+    private class ReshapeOperation : Operation, IPointOperation
+    {
+      private readonly Elem _elem;
+      private readonly Curve _baseGeometry;
+      private readonly Curve _reshapeGeometry;
+      private readonly Pnt _add;
+      private readonly bool _first;
+
+      public ReshapeOperation(Elem elem, Curve baseGeometry, Curve reshapeGeometry, Pnt add, bool first)
+      {
+        _elem = elem;
+        _baseGeometry = baseGeometry;
+        _reshapeGeometry = reshapeGeometry;
+        _add = add;
+        _first = first;
+      }
+
+      protected override void Redo(Stack<Operation> ops)
+      {
+        if (_first)
+        { _reshapeGeometry.MoveTo(_add.X, _add.Y); }
+        else
+        { _reshapeGeometry.LineTo(_add.X, _add.Y); }
+        _elem.Geometry = GetReshaped(_baseGeometry, _reshapeGeometry);
+        ops.Push(this);
+      }
+
+      public override void Undo()
+      {
+        if (_first)
+        { _elem.Geometry = _baseGeometry; }
+        else
+        {
+          _reshapeGeometry.RemoveLast();
+          _elem.Geometry = GetReshaped(_baseGeometry, _reshapeGeometry);
+        }
+      }
+
+      private Curve GetReshaped(Curve baseGeometry, Curve reshapeGeometry)
+      {
+        Pnt s = reshapeGeometry.From;
+
+        float alongStart = GetAlong(baseGeometry, s);
+        float alongEnd = alongStart;
+        if (reshapeGeometry.Count > 0)
+        {
+          Pnt e = reshapeGeometry[reshapeGeometry.Count - 1].To;
+          alongEnd = GetAlong(baseGeometry, e);
+          if (alongEnd < alongStart)
+          {
+            reshapeGeometry = reshapeGeometry.Flip();
+            float t = alongStart;
+            alongStart = alongEnd;
+            alongEnd = t;
+          }
+        }
+
+        Curve reshaped = new Curve();
+        for (int iSeg = 0; iSeg < (int)alongStart; iSeg++)
+        {
+          reshaped.Add(baseGeometry[iSeg].Clone());
+        }
+        if (alongStart <= 0)
+        { }
+        else
+        {
+          if (alongStart <= 1)
+          {
+            Pnt p = baseGeometry.From;
+            reshaped.MoveTo(p.X, p.Y);
+          }
+          {
+            Pnt p = reshapeGeometry.From;
+            reshaped.LineTo(p.X, p.Y);
+          }
+        }
+        foreach (ISegment seg in reshapeGeometry.Segments)
+        { reshaped.Add(seg.Clone()); }
+
+        if (alongEnd >= baseGeometry.Count)
+        { }
+        else
+        {
+          Pnt p = baseGeometry[(int)alongEnd].To;
+          reshaped.LineTo(p.X, p.Y);
+          for (int iSeg = (int)alongEnd + 1; iSeg < baseGeometry.Count; iSeg++)
+          {
+            reshaped.Add(baseGeometry[iSeg].Clone());
+          }
+        }
+
+        return reshaped;
+      }
+
+      private float GetAlong(Curve curve, Pnt p)
+      {
+        float alongMin = 0;
+        float minDist = p.Dist2(curve.From);
+        int iSeg = 0;
+        foreach (ISegment seg in curve.Segments)
+        {
+          float along = seg.GetAlong(p);
+          if (along >= 0 && along <= 1)
+          {
+            Pnt at = seg.At(along);
+            float distAt = p.Dist2(at);
+            if (distAt < minDist)
+            {
+              alongMin = iSeg + along;
+              minDist = distAt;
+            }
+          }
+          else
+          {
+            float distAt = p.Dist2(seg.To);
+            if (distAt < minDist)
+            {
+              alongMin = iSeg + 1;
+              minDist = distAt;
+            }
+          }
+          iSeg++;
+        }
+
+        return alongMin;
+      }
+    }
+
+    private class AddPointOperation : Operation, IPointOperation
     {
       private float _x;
       private float _y;
@@ -1058,7 +1266,7 @@ namespace OMapScratch
       }
       protected override void Redo(Stack<Operation> ops)
       {
-        while (ops.Count > 0 && ops.Peek() is AddPointOperation)
+        while (ops.Count > 0 && ops.Peek() is IPointOperation)
         { ops.Pop(); }
         if (_currentCurve != null)
         {
@@ -1334,6 +1542,12 @@ namespace OMapScratch
         AddElementOperation op = new AddElementOperation(new Elem { Geometry = p, Symbol = sym, Color = color }, _elems, _currentCurve);
         op.Redo(this, true);
       }
+    }
+
+    public void Reshape(Elem element, Curve baseGeometry, Curve reshapeGeometry, Pnt add, bool first)
+    {
+      ReshapeOperation op = new ReshapeOperation(element, baseGeometry, reshapeGeometry, add, first);
+      op.Redo(this, true);
     }
 
     public void CommitCurrentCurve()
@@ -2101,6 +2315,11 @@ namespace OMapScratch
     {
       return $"{Min};{Max}";
     }
+    public void Include(IBox box)
+    {
+      Include(box.Min);
+      Include(box.Max);
+    }
     public void Include(Pnt pnt)
     {
       Min.X = Math.Min(Min.X, pnt.X);
@@ -2235,6 +2454,12 @@ namespace OMapScratch
     {
       return new Lin { From = From.Clone(), To = To.Clone() };
     }
+    ISegment ISegment.Flip()
+    { return Flip(); }
+    public Lin Flip()
+    {
+      return new Lin { From = To.Clone(), To = From.Clone() };
+    }
 
     IList<ISegment> ISegment.Split(float t)
     { return Split(t); }
@@ -2359,6 +2584,13 @@ namespace OMapScratch
     {
       return new Circle { Center = Center.Clone(), Radius = Radius, Azimuth = Azimuth, Angle = Angle };
     }
+    ISegment ISegment.Flip()
+    { return Flip(); }
+    public Circle Flip()
+    {
+      return new Circle { Center = Center.Clone(), Radius = Radius, Azimuth = Azimuth + Angle, Angle = -Angle };
+    }
+
 
     public Circle Project(IProjection prj)
     {
@@ -2411,6 +2643,12 @@ namespace OMapScratch
     public Bezier Clone()
     {
       return new Bezier(From.Clone(), I0.Clone(), I1.Clone(), To.Clone());
+    }
+    ISegment ISegment.Flip()
+    { return Flip(); }
+    public Bezier Flip()
+    {
+      return new Bezier(To.Clone(), I1.Clone(), I0.Clone(), From.Clone());
     }
 
     public Bezier Project(IProjection prj)
@@ -2513,38 +2751,73 @@ namespace OMapScratch
     { sb.Append($" {DrawableUtils.CubicTo} {I0.X:f1} {I0.Y:f1} {I1.X:f1} {I1.Y:f1} {To.X:f1} {To.Y:f1}"); }
   }
 
-  public partial class Curve : List<ISegment>, IDrawable
+  public partial class Curve : IDrawable
   {
     private Box _extent;
+    private readonly List<ISegment> _segments = new List<ISegment>();
 
     private float _tx, _ty;
+
     public Curve MoveTo(float x, float y)
     {
       _tx = x;
       _ty = y;
+      _extent = null;
       return this;
     }
 
+    public IReadOnlyList<ISegment> Segments
+    { get { return _segments; } }
+
+    public ISegment this[int i]
+    {
+      get { return _segments[i]; }
+      set
+      {
+        _segments[i] = value;
+        _extent = null;
+      }
+    }
+    public void Add(ISegment seg)
+    {
+      _segments.Add(seg);
+      _extent?.Include(seg.GetExtent());
+      SetTo(seg.To);
+    }
+
+    public void Insert(int i, ISegment seg)
+    {
+      if (i >= _segments.Count)
+      {
+        Add(seg);
+        return;
+      }
+      _segments.Insert(i, seg);
+      _extent?.Include(seg.GetExtent());
+    }
+    public void RemoveAt(int i)
+    {
+      _segments.RemoveAt(i);
+    }
     public IBox Extent
     {
       get
       {
-        if (_extent == null)
+        _extent = _extent ?? GetExtent();
+        return (IBox)_extent ?? From;
+
+        Box GetExtent()
         {
-          if (Count == 0)
-          { return From; }
-          Box extent = this[0].GetExtent();
-          foreach (ISegment seg in this)
-          {
-            Box segExtent = seg.GetExtent();
-            extent.Include(segExtent.Min);
-            extent.Include(segExtent.Max);
-          }
-          _extent = extent;
+          if (_segments.Count == 0)
+          { return null; }
+          Box extent = _segments[0].GetExtent();
+          foreach (ISegment seg in _segments)
+          { extent.Include(seg.GetExtent()); }
+          return extent;
         }
-        return _extent;
       }
     }
+    public int Count { get { return _segments.Count; } }
     public Pnt From
     {
       get
@@ -2566,13 +2839,13 @@ namespace OMapScratch
 
     public Curve LineTo(float x, float y)
     {
-      AddSegment(new Lin { From = new Pnt { X = _tx, Y = _ty }, To = new Pnt { X = x, Y = y } });
+      Add(new Lin { From = new Pnt { X = _tx, Y = _ty }, To = new Pnt { X = x, Y = y } });
       return this;
     }
 
     public Curve CubicTo(float tx0, float ty0, float tx1, float ty1, float x, float y)
     {
-      AddSegment(new Bezier
+      Add(new Bezier
       {
         From = new Pnt { X = _tx, Y = _ty },
         I0 = new Pnt { X = tx0, Y = ty0 },
@@ -2585,21 +2858,16 @@ namespace OMapScratch
     public Curve Circle(float centerX, float centerY, float radius, float? azimuth = null, float? angle = null)
     {
       Circle circle = new Circle { Center = new Pnt { X = centerX, Y = centerY }, Radius = radius, Azimuth = azimuth, Angle = angle };
-      AddSegment(circle);
+      Add(circle);
       return this;
-    }
-    private void AddSegment(ISegment seg)
-    {
-      Add(seg);
-      SetTo(seg.To);
     }
 
     public Curve Project(IProjection prj)
     {
       Curve projected = new Curve();
-      foreach (ISegment seg in this)
+      foreach (ISegment seg in Segments)
       {
-        projected.AddSegment(seg.Project(prj));
+        projected.Add(seg.Project(prj));
       }
       return projected;
     }
@@ -2612,7 +2880,7 @@ namespace OMapScratch
 
       StringBuilder sb = new StringBuilder();
       this[0].InitToText(sb);
-      foreach (ISegment seg in this)
+      foreach (ISegment seg in Segments)
       { seg.AppendToText(sb); }
 
       return sb.ToString();
@@ -2622,7 +2890,7 @@ namespace OMapScratch
       if (Count <= 0)
       { yield break; }
       yield return this[0].From;
-      foreach (ISegment seg in this)
+      foreach (ISegment seg in Segments)
       { yield return seg.To; }
     }
 
@@ -2642,6 +2910,26 @@ namespace OMapScratch
       RemoveAt(Count - 1);
 
       _extent = null;
+    }
+
+    public Curve Clone()
+    {
+      Curve clone = new Curve();
+      foreach (ISegment seg in Segments)
+      { clone.Add(seg.Clone()); }
+      clone._tx = _tx;
+      clone._ty = _ty;
+      return clone;
+    }
+
+    public Curve Flip()
+    {
+      Curve flip = new Curve();
+      List<ISegment> reverse = new List<ISegment>(Segments);
+      reverse.Reverse();
+      foreach (ISegment seg in reverse)
+      { flip.Add(seg.Flip()); }
+      return flip;
     }
   }
 

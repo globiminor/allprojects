@@ -484,7 +484,7 @@ namespace OMapScratch
     {
       Path path = new Path();
       curve[0].Init(path, matrix);
-      foreach (ISegment segment in curve)
+      foreach (ISegment segment in curve.Segments)
       { segment.AppendTo(path, matrix); }
       return path;
     }

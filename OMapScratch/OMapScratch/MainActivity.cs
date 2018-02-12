@@ -52,7 +52,13 @@ namespace OMapScratch
         {
           string imgPath = _activity._mapView.ProcessScratchImg((b, m) => _activity.MapVm.SaveImg(b, m));
           if (!string.IsNullOrEmpty(imgPath))
-          { _activity._mapView.ShowText($"Image saved to {imgPath}"); }
+          {
+            string defaultPath = Environment.ExternalStorageDirectory.AbsolutePath;
+            string displayPath = imgPath;
+            if (displayPath.StartsWith(defaultPath, System.StringComparison.InvariantCultureIgnoreCase))
+            { displayPath = displayPath.Substring(defaultPath.Length).TrimStart('/'); }
+            _activity._mapView.ShowText($"Image saved to {displayPath}");
+          }
         });
         return true;
       }
