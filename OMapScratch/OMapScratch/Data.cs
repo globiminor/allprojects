@@ -681,19 +681,33 @@ namespace OMapScratch
 
   public partial class Map
   {
-    private interface IPointOperation
-    { }
+    private interface IMultiOperation
+    {
+      Operation GetPackedOperation();
+    }
 
     private abstract class Operation
     {
       public abstract void Undo();
       public void Redo(Map map, bool isFirst)
       {
-        Redo(map._undoOps);
+        if (!(this is IMultiOperation) )
+        {
+          Operation packedOperation = null;
+          while (map._undoOps?.Count > 0 && map._undoOps.Peek() is IMultiOperation multiOp)
+          {
+            packedOperation = packedOperation ?? multiOp.GetPackedOperation();
+            map._undoOps.Pop();
+          }
+          if (packedOperation != null)
+          { map._undoOps.Push(packedOperation); }
+        }
+        if (Redo())
+        { map.UndoOps.Push(this); }
         if (isFirst)
-        { map._redoOps.Clear(); }
+        { map._redoOps?.Clear(); }
       }
-      protected abstract void Redo(Stack<Operation> ops);
+      protected abstract bool Redo();
     }
 
     private class MoveVertexOperation : Operation
@@ -729,7 +743,7 @@ namespace OMapScratch
           curve[_vertexIndex] = _seg1;
         }
       }
-      protected override void Redo(Stack<Operation> ops)
+      protected override bool Redo()
       {
         Curve curve = (Curve)_elem.Geometry;
         if (_vertexIndex == 0)
@@ -760,7 +774,8 @@ namespace OMapScratch
           curve[_vertexIndex - 1] = clone0;
           curve[_vertexIndex] = clone1;
         }
-        ops.Push(this);
+
+        return true;
       }
     }
 
@@ -796,7 +811,7 @@ namespace OMapScratch
           curve.Insert(_vertexIndex - 1, _seg0);
         }
       }
-      protected override void Redo(Stack<Operation> ops)
+      protected override bool Redo()
       {
         Curve curve = (Curve)_elem.Geometry;
         if (_vertexIndex == 0)
@@ -818,7 +833,7 @@ namespace OMapScratch
           curve.RemoveAt(_vertexIndex - 1);
           curve.Insert(_vertexIndex - 1, add);
         }
-        ops.Push(this);
+        return true;
       }
     }
 
@@ -845,7 +860,7 @@ namespace OMapScratch
         { curve.RemoveAt(pos); }
         curve.Insert(pos, _orig);
       }
-      protected override void Redo(Stack<Operation> ops)
+      protected override bool Redo()
       {
         LastSuccess = false;
         int pos = (int)_position;
@@ -858,8 +873,8 @@ namespace OMapScratch
         curve.RemoveAt(pos);
         for (int i = _nSplit - 1; i >= 0; i--)
         { curve.Insert(pos, segs[i]); }
-        ops.Push(this);
         LastSuccess = true;
+        return true;
       }
     }
 
@@ -898,11 +913,11 @@ namespace OMapScratch
         foreach (ISegment seg in newCurve.Segments)
         { curve.Add(seg); }
       }
-      protected override void Redo(Stack<Operation> ops)
+      protected override bool Redo()
       {
         Curve curve = (Curve)_elem.Geometry;
         if (_position <= InsertLimit || _position >= curve.Count - InsertLimit)
-        { return; }
+        { return false; }
 
         int pos = (int)_position;
         float d = _position - pos;
@@ -936,8 +951,7 @@ namespace OMapScratch
         { curve.Add(preSplit); }
 
         _elems.Add(new Elem(_elem.Symbol, _elem.Color, newCurve));
-
-        ops.Push(this);
+        return true;
       }
     }
 
@@ -958,12 +972,12 @@ namespace OMapScratch
       {
         _elem.Geometry = _origGeom;
       }
-      protected override void Redo(Stack<Operation> ops)
+      protected override bool Redo()
       {
         _origGeom = _elem.Geometry;
         Translation translate = new Translation(_offset);
         _elem.Geometry = _elem.Geometry.Project(translate);
-        ops.Push(this);
+        return true;
       }
     }
 
@@ -984,14 +998,14 @@ namespace OMapScratch
       {
         _elem.Geometry = _preGeom;
       }
-      protected override void Redo(Stack<Operation> ops)
+      protected override bool Redo()
       {
         _preGeom = _elem.Geometry as Pnt;
         if (_preGeom == null)
-        { return; }
+        { return false; }
 
         _elem.Geometry = DirectedPnt.Create(_preGeom, _newAzimuth);
-        ops.Push(this);
+        return true;
       }
     }
 
@@ -1021,16 +1035,16 @@ namespace OMapScratch
         { return; }
         _elems.Insert(_idx, _remove);
       }
-      protected override void Redo(Stack<Operation> ops)
+      protected override bool Redo()
       {
         _idx = _elems.IndexOf(_remove);
         LastSuccess = (_idx >= 0);
 
         if (_idx < 0)
-        { return; }
+        { return false; }
 
         _elems.RemoveAt(_idx);
-        ops.Push(this);
+        return true;
       }
     }
 
@@ -1055,7 +1069,7 @@ namespace OMapScratch
         _elem.Symbol = _oldSymbol;
         _elem.Color = _oldColor;
       }
-      protected override void Redo(Stack<Operation> ops)
+      protected override bool Redo()
       {
         LastSuccess = false;
         _oldSymbol = _elem.Symbol;
@@ -1063,12 +1077,42 @@ namespace OMapScratch
 
         _elem.Symbol = _newSymbol;
         _elem.Color = _newColor;
-        ops.Push(this);
         LastSuccess = true;
+        return true;
       }
     }
 
-    private class ReshapeOperation : Operation, IPointOperation
+    private class ReshapePackedOperation : Operation
+    {
+      private readonly Elem _elem;
+      private readonly Curve _origGeometry;
+      private readonly Curve _reshaped;
+
+      public ReshapePackedOperation(Elem elem, Curve origGeometry, Curve reshaped)
+      {
+        _elem = elem;
+        _origGeometry = origGeometry;
+        _reshaped = reshaped;
+      }
+      protected override bool Redo()
+      {
+        _elem.Geometry = _reshaped;
+        return true;
+      }
+
+      public override void Undo()
+      { _elem.Geometry = _origGeometry; }
+    }
+
+    private class CommitOperation : Operation
+    {
+      protected override bool Redo()
+      { return false; }
+      public override void Undo()
+      { }
+    }
+
+    private class ReshapeOperation : Operation, IMultiOperation
     {
       private readonly Elem _elem;
       private readonly Curve _baseGeometry;
@@ -1085,14 +1129,14 @@ namespace OMapScratch
         _first = first;
       }
 
-      protected override void Redo(Stack<Operation> ops)
+      protected override bool Redo()
       {
         if (_first)
         { _reshapeGeometry.MoveTo(_add.X, _add.Y); }
         else
         { _reshapeGeometry.LineTo(_add.X, _add.Y); }
         _elem.Geometry = GetReshaped(_baseGeometry, _reshapeGeometry);
-        ops.Push(this);
+        return true;
       }
 
       public override void Undo()
@@ -1104,6 +1148,13 @@ namespace OMapScratch
           _reshapeGeometry.RemoveLast();
           _elem.Geometry = GetReshaped(_baseGeometry, _reshapeGeometry);
         }
+      }
+
+      Operation IMultiOperation.GetPackedOperation()
+      { return GetPackedOperation(); }
+      public ReshapePackedOperation GetPackedOperation()
+      {
+        return new ReshapePackedOperation(_elem, _baseGeometry, GetReshaped(_baseGeometry, _reshapeGeometry));
       }
 
       private Curve GetReshaped(Curve baseGeometry, Curve reshapeGeometry)
@@ -1196,7 +1247,7 @@ namespace OMapScratch
       }
     }
 
-    private class AddPointOperation : Operation, IPointOperation
+    private class AddPointOperation : Operation, IMultiOperation
     {
       private float _x;
       private float _y;
@@ -1212,7 +1263,7 @@ namespace OMapScratch
         _currentCurve = _map._currentCurve;
         _first = (_map._elems.Count == 0 || _map._elems[_map._elems.Count - 1] != _currentCurve);
       }
-      protected override void Redo(Stack<Operation> ops)
+      protected override bool Redo()
       {
         if (_first)
         {
@@ -1221,7 +1272,7 @@ namespace OMapScratch
         }
         else
         { ((Curve)_currentCurve.Geometry).LineTo(_x, _y); }
-        ops.Push(this);
+        return true;
       }
       public override void Undo()
       {
@@ -1239,6 +1290,13 @@ namespace OMapScratch
         }
         else
         { ((Curve)_currentCurve.Geometry).RemoveLast(); }
+      }
+
+      Operation IMultiOperation.GetPackedOperation()
+      { return GetPackedOperation(); }
+      public AddElementOperation GetPackedOperation()
+      {
+        return new AddElementOperation(_currentCurve, _map._elems, null);
       }
     }
     private class AddElementOperation : Operation
@@ -1264,23 +1322,14 @@ namespace OMapScratch
           // ERROR!!!
         }
       }
-      protected override void Redo(Stack<Operation> ops)
+      protected override bool Redo()
       {
-        while (ops.Count > 0 && ops.Peek() is IPointOperation)
-        { ops.Pop(); }
-        if (_currentCurve != null)
-        {
-          AddElementOperation addCurve = new AddElementOperation(_currentCurve, _elems, null);
-          addCurve.Redo(ops);
-          _currentCurve = null;
-        }
-
         if (_elem == null)
-        { return; }
+        { return false; }
 
         if (_elems.Count == 0 || _elem != _elems[_elems.Count - 1])
         { _elems.Add(_elem); }
-        ops.Push(this);
+        return true;
       }
     }
 
@@ -1301,6 +1350,7 @@ namespace OMapScratch
     private Stack<Operation> _undoOps = new Stack<Operation>();
     private Stack<Operation> _redoOps = new Stack<Operation>();
 
+    private Stack<Operation> UndoOps => _undoOps ?? (_undoOps = new Stack<Operation>());
     internal IList<XmlImage> Images
     {
       get { return _config?.Images; }
@@ -1552,7 +1602,7 @@ namespace OMapScratch
 
     public void CommitCurrentCurve()
     {
-      AddElementOperation op = new AddElementOperation(_currentCurve, _elems, null);
+      CommitOperation op = new CommitOperation();
       op.Redo(this, true);
       _currentCurve = null;
     }

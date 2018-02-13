@@ -49,7 +49,8 @@ namespace OMapScratch.Views
     private Touch _t2Up;
 
     private long _downTime;
-    private bool _longTimeAction = false;
+    private bool _longTimeMotion = false;
+    private IEditAction _longTimeAction = null;
 
     private void TouchReset()
     {
@@ -58,7 +59,8 @@ namespace OMapScratch.Views
       _t1Up = null;
       _t2Up = null;
 
-      _longTimeAction = false;
+      _longTimeMotion = false;
+      _longTimeAction = null;
       _parent.MapView.ShowDetail = null;
     }
 
@@ -94,11 +96,10 @@ namespace OMapScratch.Views
         return false;
       }
 
-      if (_longTimeAction)
+      if (_longTimeMotion)
       {
         TouchReset();
         IMapView mv = _parent.MapView;
-        mv.SetNextPointAction(null);
         return false;
       }
 
@@ -207,14 +208,14 @@ namespace OMapScratch.Views
       if (_t2Down != null)
       { return false; }
 
-      IEditAction editAction = _parent.MapView.NextPointAction as IEditAction;
+      IEditAction editAction = _parent.MapView.NextPointAction as IEditAction ?? _longTimeAction;
 
       if (editAction == null && !(_parent.BtnCurrentMode.CurrentMode is SymbolButton))
       { return false; }
 
       float x;
       float y;
-      if (_longTimeAction)
+      if (_longTimeMotion)
       {
         _parent.MapVm.Undo();
         x = move.X;
@@ -246,12 +247,14 @@ namespace OMapScratch.Views
         _parent.MapView.InversElemMatrix.MapPoints(inverted);
         Pnt pnt = new Pnt(inverted[0], inverted[1]);
 
+        _parent.MapView.ResetContextMenu();
         editAction.Action(pnt);
       }
       else
       { _parent.BtnCurrentMode.MapClicked(x, y); }
 
-      _longTimeAction = true;
+      _longTimeMotion = true;
+      _longTimeAction = editAction;
 
       if (editAction?.ShowDetail ?? true)
       { _parent.MapView.ShowDetail = new Pnt(x, y); }
