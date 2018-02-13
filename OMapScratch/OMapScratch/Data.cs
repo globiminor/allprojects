@@ -166,6 +166,21 @@ namespace OMapScratch
       { _map.Split(_elem, _position); }
     }
 
+    private class FlipAction : IAction
+    {
+      private readonly Map _map;
+      private readonly Elem _elem;
+      public FlipAction(Map map, Elem elem)
+      {
+        _map = map;
+        _elem = elem;
+      }
+      void IAction.Action()
+      { Flip(); }
+      public void Flip()
+      { _map.Flip(_elem); }
+    }
+
     private class ReshapeAction : IAction, IPointAction, IEditAction
     {
       private readonly IMapView _view;
@@ -520,6 +535,7 @@ namespace OMapScratch
               elemActions.Add(new ContextAction(elemPnt, new InsertVertexAction(view, _map, elem, split.Value)) { Name = "Insert Vertex" });
             }
             elemActions.Add(new ContextAction(elemPnt, new ReshapeAction(view, _map, elem, split.Value)) { Name = "Reshape" });
+            elemActions.Add(new ContextAction(elemPnt, new FlipAction(_map, elem)) { Name = "Flip" });
             elemActions.Add(new ContextAction(elemPnt, new SplitAction(_map, elem, split.Value)) { Name = "Split" });
           }
           if (curve == null)
@@ -606,8 +622,8 @@ namespace OMapScratch
 
     internal void AddPoint(float x, float y, Symbol symbol, ColorRef color)
     { _map.AddPoint(x, y, symbol, color); }
-    internal void CommitCurrentCurve()
-    { _map.CommitCurrentCurve(); }
+    internal void CommitCurrentOperation()
+    { _map.CommitCurrentOperation(); }
     internal void Undo()
     { _map.Undo(); }
     internal void Redo()
@@ -874,6 +890,28 @@ namespace OMapScratch
         for (int i = _nSplit - 1; i >= 0; i--)
         { curve.Insert(pos, segs[i]); }
         LastSuccess = true;
+        return true;
+      }
+    }
+
+    private class FlipOperation : Operation
+    {
+      private readonly Elem _elem;
+      private readonly Curve _orig;
+
+      public FlipOperation(Elem elem)
+      {
+        _elem = elem;
+        _orig = (Curve)elem.Geometry;
+      }
+      public bool LastSuccess { get; private set; }
+      public override void Undo()
+      {
+        _elem.Geometry = _orig;
+      }
+      protected override bool Redo()
+      {
+        _elem.Geometry = _orig.Flip();
         return true;
       }
     }
@@ -1441,6 +1479,13 @@ namespace OMapScratch
       return op.LastSuccess;
     }
 
+    public bool Flip(Elem elem)
+    {
+      FlipOperation op = new FlipOperation(elem);
+      op.Redo(this, true);
+      return op.LastSuccess;
+    }
+
     public bool Split(Elem elem, float position)
     {
       SplitOperation op = new SplitOperation(_elems, elem, position);
@@ -1600,7 +1645,7 @@ namespace OMapScratch
       op.Redo(this, true);
     }
 
-    public void CommitCurrentCurve()
+    public void CommitCurrentOperation()
     {
       CommitOperation op = new CommitOperation();
       op.Redo(this, true);

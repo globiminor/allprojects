@@ -349,7 +349,7 @@ namespace OMapScratch
         {
           _setModeFct = null;
           MapView.ResetContextMenu(clearMenu: true);
-          MapVm.CommitCurrentCurve();
+          MapVm.CommitCurrentOperation();
           if (_symbolGrid.Visibility == ViewStates.Visible)
           {
             _symbolGrid.Visibility = ViewStates.Invisible;

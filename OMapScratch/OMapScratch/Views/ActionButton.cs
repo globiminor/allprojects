@@ -19,6 +19,7 @@ namespace OMapScratch.Views
       }
       SetPadding(0, 0, 0, 0);
       SetTextSize(Android.Util.ComplexUnitType.Mm, 2);
+      SetTextColor(Android.Graphics.Color.AntiqueWhite);
     }
 
     protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
