@@ -58,10 +58,13 @@ namespace OcadScratch.Commands
         if (string.IsNullOrEmpty(img.CopyFromPath))
         { continue; }
 
-        File.Copy(img.CopyFromPath, Path.Combine(dir, img.Path));
-        File.Copy(Path.ChangeExtension(img.CopyFromPath, ".jgw"),
-          Path.ChangeExtension(Path.Combine(dir, img.Path), ".jgw"));
-
+        string target = Path.Combine(dir, img.Path);
+        if (!img.CopyFromPath.Equals(target, StringComparison.InvariantCultureIgnoreCase))
+        {
+          File.Copy(img.CopyFromPath, target);
+          File.Copy(Path.ChangeExtension(img.CopyFromPath, ".jgw"),
+            Path.ChangeExtension(Path.Combine(dir, img.Path), ".jgw"));
+        }
         img.CopyFromPath = null;
       }
 

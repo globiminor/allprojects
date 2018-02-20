@@ -96,16 +96,7 @@ namespace OMapScratch.Views
         bp.SetStyle(Paint.Style.Stroke);
 
         IProjection prj = null;
-        foreach (Curve geom in ViewModel.GetGeometries())
-        {
-          if (!_parent.MaxExtent.Intersects(geom.Extent))
-          { continue; }
-
-          prj = prj ?? new Translation(_parent.ElemMatrixValues);
-          Curve displayGeom = geom.Project(prj);
-
-          DrawCurve(canvas, displayGeom, wp, bp);
-        }
+        DrawGeometries(canvas, wp, bp, ref prj);
 
         double? declination = ViewModel.GetDeclination();
         if (declination != null)
@@ -136,6 +127,66 @@ namespace OMapScratch.Views
           canvas.DrawRect(t.X - 0.6f * width, t.Y - 1.0f * bp.TextSize, t.X + 0.6f * width, t.Y + 0.2f * bp.TextSize, wp);
           canvas.DrawText(textElem.Symbol.Text, t.X, t.Y, bp);
         }
+      }
+    }
+
+    private void DrawGeometries(Canvas canvas, Paint wp, Paint bp, ref IProjection prj)
+    {
+      Rect detail = null;
+      try
+      {
+        canvas.Save();
+        if (_parent.ShowDetail != null)
+        {
+          detail = _parent.GetDetailRect();
+          canvas.ClipRect(detail, Region.Op.Difference);
+        }
+
+        foreach (Curve geom in ViewModel.GetGeometries())
+        {
+          if (!_parent.MaxExtent.Intersects(geom.Extent))
+          { continue; }
+
+          prj = prj ?? new Translation(_parent.ElemMatrixValues);
+          Curve displayGeom = geom.Project(prj);
+
+          DrawCurve(canvas, displayGeom, wp, bp);
+        }
+
+        if (_parent.ShowDetail != null)
+        {
+          canvas.Restore();
+          canvas.Save();
+          canvas.ClipRect(detail);
+
+          Box detailExtent = null;
+          Translation detPrj = null;
+          foreach (Curve geom in ViewModel.GetGeometries())
+          {
+            detailExtent = detailExtent ?? _parent.GetDetailExtent();
+            if (!detailExtent.Intersects(geom.Extent))
+            { continue; }
+
+            if (detPrj == null)
+            {
+              float[] dd = _parent.GetDetailOffset(detail);
+              float[] matrix = (float[])_parent.ElemMatrixValues.Clone();
+              float f = 1;
+              matrix[2] -= dd[0] * f;
+              matrix[5] -= dd[1] * f;
+              detPrj = new Translation(matrix);
+            }
+            Curve displayGeom = geom.Project(detPrj);
+
+            DrawCurve(canvas, displayGeom, wp, bp);
+          }
+
+        }
+      }
+      finally
+      {
+        canvas.Restore();
+        detail?.Dispose();
       }
     }
 

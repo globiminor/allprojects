@@ -378,6 +378,7 @@ namespace OMapScratch
     public static void DrawLine(Canvas canvas, Symbol symbol, float[] matrix, float symbolScale, Curve line, Paint p)
     {
       float lineScale = matrix?[0] * symbolScale ?? 1;
+      bool drawn = false;
       foreach (SymbolCurve sym in symbol.Curves)
       {
         if (sym.Curve == null)
@@ -386,6 +387,7 @@ namespace OMapScratch
           {
             DrawCurve(canvas, line, matrix, sym.LineWidth * lineScale, sym.Fill, sym.Stroke, p);
           }
+          drawn = true;
         }
         else if (sym.Dash != null && line.Count > 0)
         {
@@ -410,9 +412,15 @@ namespace OMapScratch
                 DirectedPnt pnt = new DirectedPnt { X = pos[0], Y = pos[1], Azimuth = (float)(System.Math.Atan2(tan[0], tan[1]) + System.Math.PI / 2) };
                 DrawPoint(canvas, pntSym, matrix, symbolScale, pnt, p);
               }
+              drawn = true;
             }
           }
         }
+      }
+
+      if (!drawn) // empty line with only symbols along line (i.e dotted line)
+      {
+        DrawCurve(canvas, line, matrix, lineScale, fill: false, stroke: true, p: p);
       }
     }
 

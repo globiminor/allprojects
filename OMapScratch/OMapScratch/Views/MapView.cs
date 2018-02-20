@@ -790,6 +790,46 @@ namespace OMapScratch.Views
       }
     }
 
+    private int _detailSize = 300;
+
+    public Rect GetDetailRect()
+    {
+      int det = _detailSize;
+      int rx, ry;
+      if (_context?.DetailUpperRight ?? true)
+      {
+        int w = Width;
+        rx = w - det;
+        ry = 0;
+      }
+      else
+      {
+        int h = Height;
+        rx = 0;
+        ry = h - det;
+      }
+      return new Rect(rx, ry, rx + det, ry + det);
+    }
+
+    public float[] GetDetailOffset(Rect rect)
+    {
+      int det_2 = _detailSize / 2;
+      float f = 1; // vals[0];
+      float[] dd = { (ShowDetail.X - (rect.Left + det_2)) * f, (ShowDetail.Y - (rect.Top + det_2)) * f };
+      return dd;
+    }
+
+    public Box GetDetailExtent()
+    {
+      int det_2 = _detailSize / 2;
+
+      float[] p0 = { ShowDetail.X - det_2, ShowDetail.Y - det_2 };
+      float[] p1 = { ShowDetail.X + det_2, ShowDetail.Y + det_2 };
+      Box maxExtent = GetMaxExtent(p0, p1, InversElemMatrix);
+
+      return maxExtent;
+    }
+
     private void DrawDetail(Canvas canvas)
     {
       if (ShowDetail == null)
@@ -801,47 +841,29 @@ namespace OMapScratch.Views
 
       float[] vals = new float[9]; ImageMatrix.GetValues(vals);
 
-      int det = 300;
+      int det = _detailSize;
       int det_2 = det / 2;
       int x0 = (int)((-vals[2] + ShowDetail.X - det_2) / vals[0]);
       int y0 = (int)((-vals[5] + ShowDetail.Y - det_2) / vals[0]);
 
       using (Rect source = new Rect(x0, y0, x0 + (int)(det / vals[0]), y0 + (int)(det / vals[0])))
+      using (Rect dest = GetDetailRect())
       {
-        int rx, ry;
-        if (_context?.DetailUpperRight ?? true)
+        try
         {
-          int w = Width;
-          rx = w - det;
-          ry = 0;
-        }
-        else
-        {
-          int h = Height;
-          rx = 0;
-          ry = h - det;
-        }
-        using (Rect dest = new Rect(rx, ry, rx + det, ry + det))
-        {
-          try
-          {
-            canvas.Save();
-            canvas.ClipRect(dest);
-            canvas.DrawBitmap(_context.MapVm.CurrentImage, source, dest, null);
+          canvas.Save();
+          canvas.ClipRect(dest);
 
-            float[] p0 = { ShowDetail.X - det_2, ShowDetail.Y - det_2 };
-            float[] p1 = { ShowDetail.X + det_2, ShowDetail.Y + det_2 };
-            Box maxExtent = GetMaxExtent(p0, p1, InversElemMatrix);
-            float f = 1; // vals[0];
-            float[] dd = { (ShowDetail.X - (rx + det_2)) * f, (ShowDetail.Y - (ry + det_2)) * f };
+          canvas.DrawBitmap(_context.MapVm.CurrentImage, source, dest, null);
 
-            DrawElems(canvas, _context.MapVm.Elems, maxExtent, ElemMatrixValues, dd);
-            DrawConstr(canvas);
+          Box maxExtent = GetDetailExtent();
+          float[] dd = GetDetailOffset(dest);
 
-          }
-          finally
-          { canvas.Restore(); }
+          DrawElems(canvas, _context.MapVm.Elems, maxExtent, ElemMatrixValues, dd);
+          DrawConstr(canvas);
         }
+        finally
+        { canvas.Restore(); }
       }
     }
   }
