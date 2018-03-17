@@ -2,6 +2,9 @@
 using Cards.Vm;
 using GuiUtils;
 using Basics;
+using System;
+using System.Drawing;
+using System.Drawing.Imaging;
 
 namespace Cards.Gui
 {
@@ -167,6 +170,34 @@ namespace Cards.Gui
 
       Invalidate();
       cntCards.Invalidate();
+    }
+
+    private void mniCapture_Click(object sender, System.EventArgs e)
+    {
+      if (Vm == null)
+      { return; }
+
+      Macro.Processor proc = new Macro.Processor();
+      foreach (Macro.WindowPtr window in Macro.Processor.GetChildWindows(IntPtr.Zero))
+      {
+        if (window.GetWindowText() == "Microsoft Solitaire Collection")
+        {
+          Rectangle rect = Macro.Processor.GetWindowRect(window.HWnd);
+
+          Bitmap bmpScreen = new Bitmap(rect.Width, rect.Height, PixelFormat.Format32bppPArgb);
+          Graphics gfxScreen = Graphics.FromImage(bmpScreen);
+
+          gfxScreen.CopyFromScreen(rect.Left, rect.Top, 0, 0, 
+            new Size(rect.Width, rect.Height), CopyPixelOperation.SourceCopy);
+
+          GetCards(bmpScreen);
+          //bmpScreen.Save("C:\\temp\\msc.png", ImageFormat.Png);
+        }
+      }
+    }
+    private void GetCards(Bitmap bitmap)
+    {
+
     }
   }
 }

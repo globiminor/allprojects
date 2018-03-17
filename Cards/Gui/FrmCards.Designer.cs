@@ -46,10 +46,11 @@
       this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
       this.mniSave = new System.Windows.Forms.ToolStripMenuItem();
       this.mniLoad = new System.Windows.Forms.ToolStripMenuItem();
+      this.mniNew = new System.Windows.Forms.ToolStripMenuItem();
       this.txtPoints = new System.Windows.Forms.TextBox();
       this.lblPoints = new System.Windows.Forms.Label();
       this.cntCards = new Cards.Gui.CntCards();
-      this.mniNew = new System.Windows.Forms.ToolStripMenuItem();
+      this.mniCapture = new System.Windows.Forms.ToolStripMenuItem();
       this.mnuCards.SuspendLayout();
       this.SuspendLayout();
       // 
@@ -162,7 +163,8 @@
             this.toolStripSeparator1,
             this.mniSave,
             this.mniLoad,
-            this.mniNew});
+            this.mniNew,
+            this.mniCapture});
       this.mniSettings.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.mniSettings.Name = "mniSettings";
       this.mniSettings.Size = new System.Drawing.Size(61, 20);
@@ -209,6 +211,13 @@
       this.mniLoad.Text = "Load";
       this.mniLoad.Click += new System.EventHandler(this.mniLoad_Click);
       // 
+      // mniNew
+      // 
+      this.mniNew.Name = "mniNew";
+      this.mniNew.Size = new System.Drawing.Size(152, 22);
+      this.mniNew.Text = "New";
+      this.mniNew.Click += new System.EventHandler(this.mniNew_Click);
+      // 
       // txtPoints
       // 
       this.txtPoints.Location = new System.Drawing.Point(213, 33);
@@ -241,12 +250,12 @@
       this.cntCards.Size = new System.Drawing.Size(796, 334);
       this.cntCards.TabIndex = 0;
       // 
-      // mniNew
+      // mniCapture
       // 
-      this.mniNew.Name = "mniNew";
-      this.mniNew.Size = new System.Drawing.Size(152, 22);
-      this.mniNew.Text = "New";
-      this.mniNew.Click += new System.EventHandler(this.mniNew_Click);
+      this.mniCapture.Name = "mniCapture";
+      this.mniCapture.Size = new System.Drawing.Size(152, 22);
+      this.mniCapture.Text = "Capture";
+      this.mniCapture.Click += new System.EventHandler(this.mniCapture_Click);
       // 
       // FrmCards
       // 
@@ -302,6 +311,7 @@
     private System.Windows.Forms.ToolStripMenuItem mniSave;
     private System.Windows.Forms.ToolStripMenuItem mniLoad;
     private System.Windows.Forms.ToolStripMenuItem mniNew;
+    private System.Windows.Forms.ToolStripMenuItem mniCapture;
   }
 }
 

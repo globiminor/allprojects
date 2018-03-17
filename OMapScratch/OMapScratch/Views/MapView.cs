@@ -394,13 +394,23 @@ namespace OMapScratch.Views
         }
         else
         {
+          //Bitmap bm = _context.MapVm.CurrentImage;
+          //Matrix n = new Matrix();
+          //double[] cw = CurrentWorldMatrix;
+          //n.SetValues(new float[] { (float)cw[0], (float)cw[1], 0, (float)cw[2], (float)cw[3], 0, 0, 0, 1 });
+          //float[] pts = new float[] { 0, 0, 0, bm.Height, bm.Width, 0, bm.Width, bm.Height };
+          //n.MapPoints(pts);
+
           Matrix m = new Matrix();
+
           m.PostTranslate(10, 10);
           _initMatrix = m;
         }
       }
       ImageMatrix = _initMatrix;
     }
+
+    //private int ImageMatrix;
 
     public void AddPoint(Symbol symbol, ColorRef color, float x, float y)
     {

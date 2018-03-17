@@ -12,7 +12,11 @@ namespace OMapScratch.Views
       public Translation(float[] matrix)
       { _matrix = matrix; }
       public Pnt Project(Pnt p)
-      { return new Pnt(_matrix[0] * p.X + _matrix[2], _matrix[4] * p.Y + _matrix[5]); }
+      {
+        return new Pnt(
+        _matrix[0] * p.X + _matrix[1] * p.Y + _matrix[2],
+        _matrix[3] * p.X + _matrix[4] * p.Y + _matrix[5]);
+      }
     }
 
     private readonly MapView _parent;

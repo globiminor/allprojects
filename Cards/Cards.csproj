@@ -117,6 +117,10 @@
       <Project>{200e9400-2771-4ace-a172-78ebd405b67e}</Project>
       <Name>Basics</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Macro\Macro.csproj">
+      <Project>{bb7de197-d752-4378-8f2d-af7f1ab343c0}</Project>
+      <Name>Macro</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
