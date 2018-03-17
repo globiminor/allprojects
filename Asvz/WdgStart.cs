@@ -162,7 +162,7 @@ namespace Asvz
       this._btnGetClipboard.Size = new System.Drawing.Size(75, 24);
       this._btnGetClipboard.TabIndex = 0;
       this._btnGetClipboard.Text = "Make hole";
-      this._btnGetClipboard.Click += new System.EventHandler(this.btnGetClipboard_Click);
+      this._btnGetClipboard.Click += new System.EventHandler(this.BtnGetClipboard_Click);
       // 
       // _lblFormat
       // 
@@ -179,7 +179,7 @@ namespace Asvz
       this._toSymbol.Size = new System.Drawing.Size(75, 40);
       this._toSymbol.TabIndex = 2;
       this._toSymbol.Text = "Object To Symbol";
-      this._toSymbol.Click += new System.EventHandler(this.toSymbol_Click);
+      this._toSymbol.Click += new System.EventHandler(this.ToSymbol_Click);
       // 
       // _btnClip
       // 
@@ -188,7 +188,7 @@ namespace Asvz
       this._btnClip.Size = new System.Drawing.Size(75, 24);
       this._btnClip.TabIndex = 3;
       this._btnClip.Text = "Clip";
-      this._btnClip.Click += new System.EventHandler(this.btnClip_Click);
+      this._btnClip.Click += new System.EventHandler(this.BtnClip_Click);
       // 
       // _btnCreate
       // 
@@ -197,7 +197,7 @@ namespace Asvz
       this._btnCreate.Size = new System.Drawing.Size(72, 23);
       this._btnCreate.TabIndex = 4;
       this._btnCreate.Text = "Profil";
-      this._btnCreate.Click += new System.EventHandler(this.btnCreate_Click);
+      this._btnCreate.Click += new System.EventHandler(this.BtnCreate_Click);
       // 
       // _txtCreate
       // 
@@ -221,7 +221,7 @@ namespace Asvz
       this._btnOpen.Size = new System.Drawing.Size(24, 24);
       this._btnOpen.TabIndex = 6;
       this._btnOpen.Text = "...";
-      this._btnOpen.Click += new System.EventHandler(this.btnOpen_Click);
+      this._btnOpen.Click += new System.EventHandler(this.BtnOpen_Click);
       // 
       // _btnTest
       // 
@@ -230,7 +230,7 @@ namespace Asvz
       this._btnTest.Size = new System.Drawing.Size(75, 24);
       this._btnTest.TabIndex = 7;
       this._btnTest.Text = "Test";
-      this._btnTest.Click += new System.EventHandler(this.btnTest_Click);
+      this._btnTest.Click += new System.EventHandler(this.BtnTest_Click);
       // 
       // _btnUebergabe
       // 
@@ -239,7 +239,7 @@ namespace Asvz
       this._btnUebergabe.Size = new System.Drawing.Size(72, 24);
       this._btnUebergabe.TabIndex = 8;
       this._btnUebergabe.Text = "Übergabe";
-      this._btnUebergabe.Click += new System.EventHandler(this.btnUebergabe_Click);
+      this._btnUebergabe.Click += new System.EventHandler(this.BtnUebergabe_Click);
       // 
       // _txtStrecke
       // 
@@ -249,7 +249,7 @@ namespace Asvz
       this._txtStrecke.TabIndex = 9;
       this._txtStrecke.Text = "1";
       this._txtStrecke.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-      this._txtStrecke.TextChanged += new System.EventHandler(this.txtStrecke_TextChanged);
+      this._txtStrecke.TextChanged += new System.EventHandler(this.TxtStrecke_TextChanged);
       // 
       // _label1
       // 
@@ -266,7 +266,7 @@ namespace Asvz
       this._btnDetail.Size = new System.Drawing.Size(72, 24);
       this._btnDetail.TabIndex = 11;
       this._btnDetail.Text = "Detail";
-      this._btnDetail.Click += new System.EventHandler(this.btnDetail_Click);
+      this._btnDetail.Click += new System.EventHandler(this.BtnDetail_Click);
       // 
       // _txtUebergabe
       // 
@@ -321,7 +321,7 @@ namespace Asvz
       this._btnFull.Size = new System.Drawing.Size(72, 23);
       this._btnFull.TabIndex = 17;
       this._btnFull.Text = "Gesamtplan";
-      this._btnFull.Click += new System.EventHandler(this.btnFull_Click);
+      this._btnFull.Click += new System.EventHandler(this.BtnFull_Click);
       // 
       // _btnStrecke
       // 
@@ -331,7 +331,7 @@ namespace Asvz
       this._btnStrecke.TabIndex = 18;
       this._btnStrecke.Text = "Strecke aufdatieren";
       this.ttp.SetToolTip(this._btnStrecke, "Strecke aus Gesamtplan übernehmen");
-      this._btnStrecke.Click += new System.EventHandler(this.btnStrecke_Click);
+      this._btnStrecke.Click += new System.EventHandler(this.BtnStrecke_Click);
       // 
       // _btnStreckeExp
       // 
@@ -340,7 +340,7 @@ namespace Asvz
       this._btnStreckeExp.Size = new System.Drawing.Size(115, 24);
       this._btnStreckeExp.TabIndex = 19;
       this._btnStreckeExp.Text = "Strecke exportieren";
-      this._btnStreckeExp.Click += new System.EventHandler(this.btnStreckeExp_Click);
+      this._btnStreckeExp.Click += new System.EventHandler(this.BtnStreckeExp_Click);
       // 
       // _txtExpStrecke
       // 
@@ -378,7 +378,7 @@ namespace Asvz
       this._btnTransport.Size = new System.Drawing.Size(72, 24);
       this._btnTransport.TabIndex = 22;
       this._btnTransport.Text = "Transport";
-      this._btnTransport.Click += new System.EventHandler(this.btnTransport_Click);
+      this._btnTransport.Click += new System.EventHandler(this.BtnTransport_Click);
       // 
       // _btnEinsatz
       // 
@@ -387,7 +387,7 @@ namespace Asvz
       this._btnEinsatz.Size = new System.Drawing.Size(72, 23);
       this._btnEinsatz.TabIndex = 24;
       this._btnEinsatz.Text = "Einsatzplan";
-      this._btnEinsatz.Click += new System.EventHandler(this.btnEinsatz_Click);
+      this._btnEinsatz.Click += new System.EventHandler(this.BtnEinsatz_Click);
       // 
       // _txtBewilligung
       // 
@@ -414,7 +414,7 @@ namespace Asvz
       this._btnKml.Size = new System.Drawing.Size(81, 23);
       this._btnKml.TabIndex = 27;
       this._btnKml.Text = "Kml";
-      this._btnKml.Click += new System.EventHandler(this.btnKml_Click);
+      this._btnKml.Click += new System.EventHandler(this.BtnKml_Click);
       // 
       // _grpUebergabe
       // 
@@ -471,7 +471,7 @@ namespace Asvz
       this._btnBegleit.Size = new System.Drawing.Size(115, 24);
       this._btnBegleit.TabIndex = 22;
       this._btnBegleit.Text = "Begleit exportieren";
-      this._btnBegleit.Click += new System.EventHandler(this.btnBegleit_Click);
+      this._btnBegleit.Click += new System.EventHandler(this.BtnBegleit_Click);
       // 
       // _txtBegleit
       // 
@@ -506,7 +506,7 @@ namespace Asvz
       this._btnTransportGesamt.Size = new System.Drawing.Size(72, 24);
       this._btnTransportGesamt.TabIndex = 27;
       this._btnTransportGesamt.Text = "Transport";
-      this._btnTransportGesamt.Click += new System.EventHandler(this.btnTransportGesamt_Click);
+      this._btnTransportGesamt.Click += new System.EventHandler(this.BtnTransportGesamt_Click);
       // 
       // _btnTestForch
       // 
@@ -515,7 +515,7 @@ namespace Asvz
       this._btnTestForch.Size = new System.Drawing.Size(75, 24);
       this._btnTestForch.TabIndex = 31;
       this._btnTestForch.Text = "Test Forch";
-      this._btnTestForch.Click += new System.EventHandler(this.btnTestForch_Click);
+      this._btnTestForch.Click += new System.EventHandler(this.BtnTestForch_Click);
       // 
       // _btnTestDuo
       // 
@@ -524,7 +524,7 @@ namespace Asvz
       this._btnTestDuo.Size = new System.Drawing.Size(75, 24);
       this._btnTestDuo.TabIndex = 32;
       this._btnTestDuo.Text = "Test DUO";
-      this._btnTestDuo.Click += new System.EventHandler(this.btnTestDuo_Click);
+      this._btnTestDuo.Click += new System.EventHandler(this.BtnTestDuo_Click);
       // 
       // _btnGpx
       // 
@@ -533,7 +533,7 @@ namespace Asvz
       this._btnGpx.Size = new System.Drawing.Size(81, 23);
       this._btnGpx.TabIndex = 33;
       this._btnGpx.Text = "Gpx";
-      this._btnGpx.Click += new System.EventHandler(this.btnGpx_Click);
+      this._btnGpx.Click += new System.EventHandler(this.BtnGpx_Click);
       // 
       // WdgStart
       // 
@@ -588,7 +588,7 @@ namespace Asvz
 
 
     #region events
-    private void btnGetClipboard_Click(object sender, EventArgs e)
+    private void BtnGetClipboard_Click(object sender, EventArgs e)
     {
       try
       {
@@ -658,7 +658,7 @@ namespace Asvz
 
     }
 
-    private void toSymbol_Click(object sender, EventArgs e)
+    private void ToSymbol_Click(object sender, EventArgs e)
     {
       try
       {
@@ -705,7 +705,7 @@ namespace Asvz
       { Debug.WriteLine(exp.Message); }
     }
 
-    private void btnClip_Click(object sender, EventArgs e)
+    private void BtnClip_Click(object sender, EventArgs e)
     {
       try
       {
@@ -811,7 +811,7 @@ namespace Asvz
 
     }
 
-    private void btnOpen_Click(object sender, EventArgs e)
+    private void BtnOpen_Click(object sender, EventArgs e)
     {
       try
       {
@@ -823,7 +823,7 @@ namespace Asvz
       { Debug.WriteLine(exp.Message); }
     }
 
-    private void btnCreate_Click(object sender, EventArgs e)
+    private void BtnCreate_Click(object sender, EventArgs e)
     {
       Cursor = Cursors.WaitCursor;
 
@@ -834,8 +834,7 @@ namespace Asvz
         SolaProfile pProfile = new SolaProfile(data);
         int iVon = Convert.ToInt32(_txtStrecke.Text) - 1;
 
-        int iBis;
-        if (int.TryParse(_txtBis.Text, out iBis) == false)
+        if (int.TryParse(_txtBis.Text, out int iBis) == false)
         { iBis = iVon + 1; }
 
         List<string> outFiles = new List<string>();
@@ -888,7 +887,7 @@ namespace Asvz
       return sResult;
     }
 
-    private void btnUebergabe_Click(object sender, EventArgs e)
+    private void BtnUebergabe_Click(object sender, EventArgs e)
     {
       Cursor = Cursors.WaitCursor;
       try
@@ -920,7 +919,7 @@ namespace Asvz
       { Cursor = Cursors.Default; }
     }
 
-    private void btnDetail_Click(object sender, EventArgs e)
+    private void BtnDetail_Click(object sender, EventArgs e)
     {
       Cursor = Cursors.WaitCursor;
       try
@@ -961,7 +960,7 @@ namespace Asvz
       { Cursor = Cursors.Default; }
     }
 
-    private void btnTransport_Click(object sender, EventArgs e)
+    private void BtnTransport_Click(object sender, EventArgs e)
     {
       Cursor = Cursors.WaitCursor;
       try
@@ -1016,7 +1015,7 @@ namespace Asvz
       { Cursor = Cursors.Default; }
     }
 
-    private void btnFull_Click(object sender, EventArgs e)
+    private void BtnFull_Click(object sender, EventArgs e)
     {
       Cursor = Cursors.WaitCursor;
       try
@@ -1036,7 +1035,7 @@ namespace Asvz
       return bew;
     }
 
-    private void btnEinsatz_Click(object sender, EventArgs e)
+    private void BtnEinsatz_Click(object sender, EventArgs e)
     {
       Cursor = Cursors.WaitCursor;
       try
@@ -1051,7 +1050,7 @@ namespace Asvz
       { Cursor = Cursors.Default; }
     }
 
-    private void btnTransportGesamt_Click(object sender, EventArgs e)
+    private void BtnTransportGesamt_Click(object sender, EventArgs e)
     {
       Cursor = Cursors.WaitCursor;
       try
@@ -1066,7 +1065,7 @@ namespace Asvz
       { Cursor = Cursors.Default; }
     }
 
-    private void btnKml_Click(object sender, EventArgs e)
+    private void BtnKml_Click(object sender, EventArgs e)
     {
       Cursor = Cursors.WaitCursor;
       try
@@ -1088,7 +1087,7 @@ namespace Asvz
       { Cursor = Cursors.Default; }
     }
 
-    private void btnStrecke_Click(object sender, EventArgs e)
+    private void BtnStrecke_Click(object sender, EventArgs e)
     {
       Cursor = Cursors.WaitCursor;
       try
@@ -1111,7 +1110,7 @@ namespace Asvz
       { Cursor = Cursors.Default; }
     }
 
-    private void btnBegleit_Click(object sender, EventArgs e)
+    private void BtnBegleit_Click(object sender, EventArgs e)
     {
       Cursor = Cursors.WaitCursor;
       try
@@ -1122,7 +1121,7 @@ namespace Asvz
       { Cursor = Cursors.Default; }
     }
 
-    private void btnStreckeExp_Click(object sender, EventArgs e)
+    private void BtnStreckeExp_Click(object sender, EventArgs e)
     {
       Cursor = Cursors.WaitCursor;
       try
@@ -1163,7 +1162,7 @@ namespace Asvz
       Ocad.Scripting.Utils.CreatePdf(Path.Combine(exportDir, "CreatePdf.xml"), outFiles);
     }
 
-    private void btnTest_Click(object sender, EventArgs e)
+    private void BtnTest_Click(object sender, EventArgs e)
     {
       string ocdFile = Path.Combine(Path.GetDirectoryName(Ddx.Uebergabe[0].Vorlage), "Uebergabe_overview.ocd");
       using (OcadReader reader = OcadReader.Open(ocdFile))
@@ -1181,46 +1180,31 @@ namespace Asvz
           p.WriteWorldFile(setup);
         }
       }
-      return;
-      //foreach (string file in Directory.GetFiles(Environment.CurrentDirectory, "*", SearchOption.AllDirectories))
-      {
-        string file = @"C:\daten\ASVZ\SOLA\2015\Exp_Profile\profile_1_7.pdf";
-        FileSecurity sec = File.GetAccessControl(file);
-        var rules = sec.GetAccessRules(true, true, typeof(System.Security.Principal.NTAccount));
-        foreach (FileSystemAccessRule rule in rules)
-        {
-          if (!rule.IsInherited)
-          {
-            sec.RemoveAccessRule(rule);
-          }
-        }
-        File.SetAccessControl(file, sec);
-      }
     }
-    private void txtStrecke_TextChanged(object sender, EventArgs e)
+    private void TxtStrecke_TextChanged(object sender, EventArgs e)
     {
       _txtBis.Text = _txtStrecke.Text;
     }
 
-    private void btnTestForch_Click(object sender, EventArgs e)
+    private void BtnTestForch_Click(object sender, EventArgs e)
     {
       string dir = @"C:\daten\ASVZ\Forchlauf\2016\Vorlagen\";
       string ocd = Path.Combine(dir, "Forchlauf10k.ocd");
       string dhm = Ddx.DhmPfad;
-      Asvz.Forchlauf.ForchData data = new Asvz.Forchlauf.ForchData(ocd, dhm);
+      Forchlauf.ForchData data = new Forchlauf.ForchData(ocd, dhm);
 
       data.ExportKml(@"C:\daten\temp\forchlauf.kml");
 
       string template = Path.GetDirectoryName(_txtCreate.Text) + Path.DirectorySeparatorChar +
         "profile9.ocd";
 
-      Asvz.Forchlauf.ForchProfile p = new Asvz.Forchlauf.ForchProfile(data);
-      p.WriteProfile(template, @"C:\daten\temp\profil_kurz.ocd", Asvz.Forchlauf.Kategorie.Kurz);
-      p.WriteProfile(template, @"C:\daten\temp\profil_mittel.ocd", Asvz.Forchlauf.Kategorie.Mittel);
-      p.WriteProfile(template, @"C:\daten\temp\profil_lang.ocd", Asvz.Forchlauf.Kategorie.Lang);
+      Forchlauf.ForchProfile p = new Forchlauf.ForchProfile(data);
+      p.WriteProfile(template, @"C:\daten\temp\profil_kurz.ocd", Forchlauf.Kategorie.Kurz);
+      p.WriteProfile(template, @"C:\daten\temp\profil_mittel.ocd", Forchlauf.Kategorie.Mittel);
+      p.WriteProfile(template, @"C:\daten\temp\profil_lang.ocd", Forchlauf.Kategorie.Lang);
 
-      Asvz.Forchlauf.ForchCategorie cat;
-      Asvz.Forchlauf.ForchLayout layout;
+      Forchlauf.ForchCategorie cat;
+      Forchlauf.ForchLayout layout;
 
       string original = Path.Combine(dir, "Layout.ocd");
       string copy;
@@ -1231,7 +1215,7 @@ namespace Asvz
         layouts.Add(copy);
         cat = data.GetKategorie(Asvz.Forchlauf.Kategorie.Lang);
         File.Copy(original, copy, true);
-        layout = new Asvz.Forchlauf.ForchLayout(copy);
+        layout = new Forchlauf.ForchLayout(copy);
         layout.Update(cat);
       }
 
@@ -1240,7 +1224,7 @@ namespace Asvz
         layouts.Add(copy);
         cat = data.GetKategorie(Asvz.Forchlauf.Kategorie.Mittel);
         File.Copy(original, copy, true);
-        layout = new Asvz.Forchlauf.ForchLayout(copy);
+        layout = new Forchlauf.ForchLayout(copy);
         layout.Update(cat);
       }
 
@@ -1249,7 +1233,7 @@ namespace Asvz
         layouts.Add(copy);
         File.Copy(original, copy, true);
         cat = data.GetKategorie(Asvz.Forchlauf.Kategorie.Kurz);
-        layout = new Asvz.Forchlauf.ForchLayout(copy);
+        layout = new Forchlauf.ForchLayout(copy);
         layout.Update(cat);
       }
 
@@ -1257,7 +1241,7 @@ namespace Asvz
         copy = Path.Combine(dir, "LayoutAll.ocd");
         layouts.Add(copy);
         File.Copy(original, copy, true);
-        layout = new Asvz.Forchlauf.ForchLayout(copy);
+        layout = new Forchlauf.ForchLayout(copy);
         layout.Update(data);
 
       }
@@ -1265,14 +1249,14 @@ namespace Asvz
       Ocad.Scripting.Utils.Optimize(layouts, Path.Combine(Path.GetDirectoryName(layouts[0]), "Optimize.xml"));
     }
 
-    private void btnTestDuo_Click(object sender, EventArgs e)
+    private void BtnTestDuo_Click(object sender, EventArgs e)
     {
       //Asvz.SolaDuo.DuoData.CreateDtm();
 
       string ocd = @"C:\daten\ASVZ\SOLA_Duo\2013\Vorlagen\Strecke.ocd";
       string dhm = "C:\\Daten\\ASVZ\\Daten\\Dhm\\solaDuoDhm.grd";
 
-      Asvz.SolaDuo.DuoData data = new Asvz.SolaDuo.DuoData(ocd, dhm);
+      SolaDuo.DuoData data = new SolaDuo.DuoData(ocd, dhm);
 
       data.ExportKml(@"C:\daten\ASVZ\SOLA_Duo\2013\Export\Sola_duo.kml");
 
@@ -1329,7 +1313,7 @@ namespace Asvz
 
     #endregion
 
-    private void btnGpx_Click(object sender, EventArgs e)
+    private void BtnGpx_Click(object sender, EventArgs e)
     {
       Cursor = Cursors.WaitCursor;
       try
@@ -1338,16 +1322,24 @@ namespace Asvz
 
         int iVon = Convert.ToInt32(_txtStrecke.Text);
         int iBis = Convert.ToInt32(_txtBis.Text);
+        List<Categorie> allCats = new List<Categorie>();
         for (int iStrecke = iVon; iStrecke <= iBis; iStrecke++)
         {
           Strecke s = data.Strecken[iStrecke - 1];
-          data.ExportGpx(string.Format("Strecke {0}.gpx", iStrecke), s.Categories[0]);
+          data.ExportGpx(string.Format("Strecke {0}.gpx", iStrecke), new[] { s.Categories[0] });
           data.ExportKmGpx(string.Format("Strecke {0}.km.gpx", iStrecke), s.Categories[0]);
+          allCats.Add(s.Categories[0]);
+
           for (int iCat = 1; iCat < s.Categories.Count; iCat++)
           {
-            data.ExportGpx(string.Format("Strecke {0}_{1}.gpx", iStrecke, iCat), s.Categories[iCat]);
+            data.ExportGpx(string.Format("Strecke {0}_{1}.gpx", iStrecke, iCat), new[] { s.Categories[iCat] });
             data.ExportKmGpx(string.Format("Strecke {0}_{1}.km.gpx", iStrecke, iCat), s.Categories[iCat]);
           }
+        }
+
+        if (allCats.Count > 1)
+        {
+          data.ExportGpx($"Strecken {iVon}_{iBis}.gpx", allCats);
         }
       }
       finally
