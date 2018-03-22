@@ -123,7 +123,7 @@ namespace Asvz
       ExportGpxDoc(path, new[] { _strecken[iStrecke - 1] });
     }
 
-    public void ExportGpx(string path, IList<Categorie> cats)
+    public void ExportGpx(string path, IList<Categorie> cats, bool joined = false)
     {
       TransferProjection prj = GpxUtils.GetTransferProjection(new Ch1903());
 
@@ -132,9 +132,13 @@ namespace Asvz
       foreach (Categorie cat in cats)
       {
         TrkSeg catSeg = GpxUtils.GetStreckeGpx(cat.Strecke, prj);
-        seg.Points.AddRange(catSeg.Points);
+        if (joined)
+        { seg.Points.AddRange(catSeg.Points); }
+        else
+        { trk.Segments.Add(catSeg); }
       }
-      trk.Segments.Add(seg);
+      if (joined)
+      { trk.Segments.Add(seg); }
 
       Gpx gpx = new Gpx { Trk = trk };
       GpxUtils.Write(path, gpx);

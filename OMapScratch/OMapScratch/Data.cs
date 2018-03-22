@@ -2494,8 +2494,8 @@ namespace OMapScratch
       if (matrix == null)
       { return trans; }
 
-      trans.X = matrix[0] * X + matrix[2];
-      trans.Y = matrix[4] * Y + matrix[5];
+      trans.X = matrix[0] * X + matrix[1] * Y + matrix[2];
+      trans.Y = matrix[3] * X + matrix[4] * Y + matrix[5];
       return trans;
     }
 

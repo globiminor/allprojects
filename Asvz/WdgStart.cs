@@ -1339,7 +1339,8 @@ namespace Asvz
 
         if (allCats.Count > 1)
         {
-          data.ExportGpx($"Strecken {iVon}_{iBis}.gpx", allCats);
+          data.ExportGpx($"Strecken {iVon}_{iBis}_joined.gpx", allCats, joined: true);
+          data.ExportGpx($"Strecken {iVon}_{iBis}.gpx", allCats, joined: false);
         }
       }
       finally

@@ -39,7 +39,6 @@ namespace OMapScratch.Views
     private Matrix _elemMatrix;
     private float[] _elemMatrixValues;
     private Matrix _inversElemMatrix;
-    private Matrix _initMatrix;
     private Box _maxExtent;
 
     private Pnt _editPnt;
@@ -49,7 +48,7 @@ namespace OMapScratch.Views
     private bool _keepTextOnDraw;
     private float? _elemTextSize;
 
-    private static Matrix _preImgMatrix;
+    private static Matrix _staticElemMatrix;
 
     public MapView(MainActivity context)
       : base(context)
@@ -206,11 +205,23 @@ namespace OMapScratch.Views
 
     public void ResetMap()
     {
-      _currentWorldMatrix = null;
+      ResetImage();
+      ResetElemMatrix();
+    }
+
+    private void ResetImage()
+    {
+      _imageWorldMatrix = null;
       _lastWorldMatrix = null;
       _mapOffset = null;
+
+      _imgMapMat?.Dispose();
+      _imgMapMat = null;
+
+      _invImgMapMat?.Dispose();
+      _invImgMapMat = null;
+
       _elemTextSize = null;
-      ResetElemMatrix();
     }
 
     private void ResetElemMatrix()
@@ -232,22 +243,35 @@ namespace OMapScratch.Views
       {
         if (_maxExtent == null)
         {
-          float[] p00 = { 0, 0 };
-          float[] p11 = { Width, Height };
-          _maxExtent = GetMaxExtent(p00, p11, InversElemMatrix);
+          float[] p00 = { 0, 0,
+            Width, 0,
+            0,Height,
+            Width, Height };
+          _maxExtent = GetMaxExtent(p00, InversElemMatrix);
         }
         return _maxExtent;
       }
     }
 
-    private Box GetMaxExtent(float[] p00, float[] p11, Matrix inversElemMatrix)
+    private Box GetMaxExtent(float[] pts, Matrix inversElemMatrix)
     {
-      inversElemMatrix.MapPoints(p00);
-      inversElemMatrix.MapPoints(p11);
+      inversElemMatrix.MapPoints(pts);
+      float minX = float.MaxValue;
+      float minY = float.MaxValue;
+      float maxX = float.MinValue;
+      float maxY = float.MinValue;
+      for (int i = 0; i < pts.Length; i += 2)
+      {
+        minX = System.Math.Min(pts[i], minX);
+        maxX = System.Math.Max(pts[i], maxX);
+
+        minY = System.Math.Min(pts[i + 1], minY);
+        maxY = System.Math.Max(pts[i + 1], maxY);
+      }
 
       float maxSymbolSize = MapVm.MaxSymbolSize;
-      Pnt min = new Pnt(System.Math.Min(p00[0], p11[0]) - maxSymbolSize, System.Math.Min(p00[1], p11[1]) - maxSymbolSize);
-      Pnt max = new Pnt(System.Math.Max(p00[0], p11[0]) + maxSymbolSize, System.Math.Max(p00[1], p11[1]) + maxSymbolSize);
+      Pnt min = new Pnt(minX - maxSymbolSize, minY - maxSymbolSize);
+      Pnt max = new Pnt(maxX + maxSymbolSize, maxY + maxSymbolSize);
 
       Box maxExtent = new Box(min, max);
       return maxExtent;
@@ -259,46 +283,74 @@ namespace OMapScratch.Views
       {
         if (_elemMatrix == null)
         {
-          _preImgMatrix?.Dispose();
-          _preImgMatrix = new Matrix(ImageMatrix);
-
-          _elemMatrix = GetElementMatrix(ImageMatrix, CurrentWorldMatrix, MapOffset);
+          _elemMatrix = GetElementMatrix(ImageMatrix, ImageMapMatrix);
+          _staticElemMatrix?.Dispose();
+          _staticElemMatrix = new Matrix(_elemMatrix);
         }
         return _elemMatrix;
       }
     }
-    private static Matrix GetElementMatrix(Matrix imageMatrix, 
-      double[] currentWorldMatrix, double[] configMapOffset)
+
+    private Matrix GetImageMatrix(Matrix elemMatrix)
     {
-      Matrix elemMatrix = new Matrix(imageMatrix);
-
-      double[] imgMat = currentWorldMatrix;
-      double[] mapOffset = null;
-      if (imgMat.Length > 5)
+      float d = 1000;
+      float[] pts = new float[]
       {
-        mapOffset = configMapOffset;
-      }
-      if (mapOffset?.Length > 1)
+        0,0,
+        d, 0,
+        0, d
+      };
+//      invCwMat.MapPoints(pts);
+
+      Matrix invElemMat = new Matrix();
+      elemMatrix.Invert(invElemMat);
+      invElemMat.MapPoints(pts);
+
+      InverseImageMapMatrix.MapPoints(pts);
+      //      elemMatrix.MapPoints(pts);
+
+      float xx = (pts[2] - pts[0]) / d;
+      float yx = (pts[3] - pts[1]) / d;
+      float xy = (pts[4] - pts[0]) / d;
+      float yy = (pts[5] - pts[1]) / d;
+
+      Matrix invImgMat = new Matrix();
+      invImgMat.SetValues(new float[] { xx, xy, pts[0], yx, yy, pts[1], 0, 0, 1 });
+
+      Matrix imgMat = new Matrix();
+      invImgMat.Invert(imgMat);
+
+      return imgMat;
+    }
+
+    private static Matrix GetElementMatrix(Matrix imageMatrix, Matrix imageMapMatrix)
+    {
+      Matrix invImgMat = new Matrix();
+      imageMatrix.Invert(invImgMat);
+
+      float d = 1000;
+      float[] pts = new float[]
       {
-        float[] last = new float[] { 0, 0 };
-        elemMatrix.MapPoints(last);
+        0, 0,
+        d, 0,
+        0, d
+      };
+      invImgMat.MapPoints(pts);
 
-        float[] current = new float[] {
-              (float)((mapOffset[0] - imgMat[4]) / imgMat[0]),
-              (float)(-(mapOffset[1] - imgMat[5]) / imgMat[0])
-            };
-        elemMatrix.MapPoints(current);
+      imageMapMatrix.MapPoints(pts);
 
+      float xx = (pts[2] - pts[0]) / d;
+      float yx = (pts[3] - pts[1]) / d;
+      float xy = (pts[4] - pts[0]) / d;
+      float yy = (pts[5] - pts[1]) / d;
 
-        float scale = (float)(1.0 / imgMat[0]);
-        float dx = current[0] - last[0];
-        float dy = current[1] - last[1];
-        elemMatrix.PostTranslate(dx, dy);
-        if (scale != 1)
-        { Scale(elemMatrix, scale, current[0], current[1]); }
-      }
+      Matrix invElemMat = new Matrix();
+      invElemMat.SetValues(new float[] { xx, xy, pts[0], yx, yy, pts[1], 0, 0, 1 });
 
-      return elemMatrix;
+      Matrix elemMat = new Matrix();
+      invElemMat.Invert(elemMat);
+
+      return elemMat;
     }
 
     public float[] ElemMatrixValues
@@ -333,81 +385,81 @@ namespace OMapScratch.Views
     {
       get { return _mapOffset ?? (_mapOffset = _context.MapVm.GetOffset() ?? new double[] { }); }
     }
-    private double[] _currentWorldMatrix;
-    private double[] CurrentWorldMatrix
+    private double[] _imageWorldMatrix;
+    private double[] ImageWorldMatrix
     {
-      get { return _currentWorldMatrix ?? (_currentWorldMatrix = _context.MapVm.GetCurrentWorldMatrix() ?? new double[] { }); }
+      get { return _imageWorldMatrix ?? (_imageWorldMatrix = _context.MapVm.GetCurrentWorldMatrix() ?? new double[] { }); }
     }
     private double[] _lastWorldMatrix;
     private double[] _mapOffset;
 
+    private Matrix _imgMapMat;
+    public Matrix ImageMapMatrix
+    {
+      get { return _imgMapMat ?? (_imgMapMat = GetImageMapMatrix(ImageWorldMatrix, MapOffset)); }
+    }
+
+    private static Matrix GetImageMapMatrix(double[] imageWorldMatrix, double[] mapOffset)
+    {
+      if (!(imageWorldMatrix?.Length > 5))
+      { return new Matrix(); }
+
+      double[] c = imageWorldMatrix;
+      double[] o = mapOffset;
+
+      float[] vals = new float[]
+      {
+        (float)c[0], (float)c[1], (float)(c[4] - o[0]),
+        -(float)c[2], -(float)c[3], -(float)(c[5] - o[1]),
+        0, 0, 1
+      };
+      Matrix imgMapMat = new Matrix();
+      imgMapMat.SetValues(vals);
+      return imgMapMat;
+    }
+
+    private Matrix _invImgMapMat;
+    public Matrix InverseImageMapMatrix
+    {
+      get
+      {
+        if (_invImgMapMat == null)
+        {
+          Matrix inverse = new Matrix();
+          ImageMapMatrix.Invert(inverse);
+          _invImgMapMat = inverse;
+        }
+        return _invImgMapMat;
+      }
+    }
+
+
     public void PrepareUpdateMapImage()
     {
-      _lastWorldMatrix = CurrentWorldMatrix;
-      _currentWorldMatrix = null;
+      _lastWorldMatrix = ImageWorldMatrix;
+      _imageWorldMatrix = null;
     }
 
     public void UpdateMapImage()
     {
-      ResetElemMatrix();
+      ResetImage();
 
       SetScaleType(ScaleType.Matrix);
       SetImageBitmap(_context.MapVm.CurrentImage);
 
-      if (_lastWorldMatrix != null && _lastWorldMatrix.Length > 0)
+      Matrix imgMat;
+      if (_elemMatrix != null)
       {
-        double[] newMat = CurrentWorldMatrix;
-        if (newMat.Length <= 5 ||
-          newMat[0] != _lastWorldMatrix[0] ||
-          newMat[4] != _lastWorldMatrix[4] ||
-          newMat[5] != _lastWorldMatrix[5])
-        {
-          float[] last = new float[] { 0, 0 };
-          ImageMatrix.MapPoints(last);
-
-          float[] current = new float[] {
-            (float)((newMat[4] - _lastWorldMatrix[4]) / _lastWorldMatrix[0]),
-            (float)((newMat[5] - _lastWorldMatrix[5]) / _lastWorldMatrix[0])
-          };
-          ImageMatrix.MapPoints(current);
-
-          float scale = (float)(newMat[0] / _lastWorldMatrix[0]);
-          float dx = current[0] - last[0];
-          float dy = current[1] - last[1];
-          ImageMatrix.PostTranslate(dx, -dy);
-
-          if (scale != 1)
-          {
-            ImageMatrix.PreScale(scale, scale);
-          }
-          return;
-        }
-        if (_initMatrix != null)
-        { return; }
+        imgMat = GetImageMatrix(_elemMatrix);
       }
-
-      if (_initMatrix == null)
+      else
       {
-        if (_preImgMatrix != null && !_preImgMatrix.IsIdentity)
-        {
-          _initMatrix = new Matrix(_preImgMatrix);
-        }
-        else
-        {
-          //Bitmap bm = _context.MapVm.CurrentImage;
-          //Matrix n = new Matrix();
-          //double[] cw = CurrentWorldMatrix;
-          //n.SetValues(new float[] { (float)cw[0], (float)cw[1], 0, (float)cw[2], (float)cw[3], 0, 0, 0, 1 });
-          //float[] pts = new float[] { 0, 0, 0, bm.Height, bm.Width, 0, bm.Width, bm.Height };
-          //n.MapPoints(pts);
+        Matrix m = new Matrix();
 
-          Matrix m = new Matrix();
-
-          m.PostTranslate(10, 10);
-          _initMatrix = m;
-        }
+        m.PostTranslate(10, 10);
+        imgMat = m;
       }
-      ImageMatrix = _initMatrix;
+      ImageMatrix = imgMat;
     }
 
     //private int ImageMatrix;
@@ -663,28 +715,28 @@ namespace OMapScratch.Views
       { return null; }
 
       float symScale = _context.MapVm.SymbolScale;
-      float imgResol = (float)CurrentWorldMatrix[0];
+      float imgResol = (float)ImageWorldMatrix[0];
       float f = imgResol > symScale ? imgResol / symScale : 1;
 
       int w = (int)(current.Width * f);
       int h = (int)(current.Height * f);
 
       double[] worldMatrix = new double[6];
-      worldMatrix[0] = CurrentWorldMatrix[0] / f;
-      worldMatrix[1] = CurrentWorldMatrix[1] / f;
-      worldMatrix[2] = CurrentWorldMatrix[1] / f;
-      worldMatrix[3] = CurrentWorldMatrix[3] / f;
-      worldMatrix[4] = CurrentWorldMatrix[4];
-      worldMatrix[5] = CurrentWorldMatrix[5];
+      worldMatrix[0] = ImageWorldMatrix[0] / f;
+      worldMatrix[1] = ImageWorldMatrix[1] / f;
+      worldMatrix[2] = ImageWorldMatrix[1] / f;
+      worldMatrix[3] = ImageWorldMatrix[3] / f;
+      worldMatrix[4] = ImageWorldMatrix[4];
+      worldMatrix[5] = ImageWorldMatrix[5];
 
       using (Bitmap bitmap = Bitmap.CreateBitmap(w, h, current.GetConfig()))
       {
         using (Canvas canvas = new Canvas(bitmap))
         {
           canvas.DrawColor(Color.White);
-          float x0 = (float)(CurrentWorldMatrix[4] - MapOffset[0]);
-          float y0 = (float)(CurrentWorldMatrix[5] - MapOffset[1]);
-          float dx = (float)CurrentWorldMatrix[0];
+          float x0 = (float)(ImageWorldMatrix[4] - MapOffset[0]);
+          float y0 = (float)(ImageWorldMatrix[5] - MapOffset[1]);
+          float dx = (float)ImageWorldMatrix[0];
 
           Box maxExtent = new Box(
             new Pnt(x0, y0 - h * dx),
@@ -693,14 +745,16 @@ namespace OMapScratch.Views
           maxExtent = MaxExtent;
 
           Matrix imageMatrix = new Matrix();
-          Matrix elemMatrix = GetElementMatrix(imageMatrix, worldMatrix, MapOffset);
+          Matrix elemMatrix = GetElementMatrix(imageMatrix, GetImageMapMatrix(worldMatrix, MapOffset));
           float[] elemMatrixValues = new float[9];
           elemMatrix.GetValues(elemMatrixValues);
           Matrix inverseElemMatrix = new Matrix();
           elemMatrix.Invert(inverseElemMatrix);
-          float[] p00 = { 0, 0 };
-          float[] p11 = { bitmap.Width, bitmap.Height };
-          maxExtent = GetMaxExtent(p00, p11, inverseElemMatrix);
+          float[] pts = { 0, 0,
+            bitmap.Width, 0,
+            0, bitmap.Height,
+            bitmap.Width, bitmap.Height };
+          maxExtent = GetMaxExtent(pts, inverseElemMatrix);
 
           DrawElems(canvas, _context.MapVm.Elems, maxExtent, elemMatrixValues, null);
         }
@@ -833,9 +887,15 @@ namespace OMapScratch.Views
     {
       int det_2 = _detailSize / 2;
 
-      float[] p0 = { ShowDetail.X - det_2, ShowDetail.Y - det_2 };
-      float[] p1 = { ShowDetail.X + det_2, ShowDetail.Y + det_2 };
-      Box maxExtent = GetMaxExtent(p0, p1, InversElemMatrix);
+      float[] pts =
+      {
+        ShowDetail.X - det_2, ShowDetail.Y - det_2,
+        ShowDetail.X - det_2, ShowDetail.Y + det_2,
+        ShowDetail.X + det_2, ShowDetail.Y - det_2,
+        ShowDetail.X + det_2, ShowDetail.Y + det_2
+      };
+
+      Box maxExtent = GetMaxExtent(pts, InversElemMatrix);
 
       return maxExtent;
     }
