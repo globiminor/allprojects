@@ -300,11 +300,13 @@ namespace OMapScratch.Views
         d, 0,
         0, d
       };
-//      invCwMat.MapPoints(pts);
+      //      invCwMat.MapPoints(pts);
 
-      Matrix invElemMat = new Matrix();
-      elemMatrix.Invert(invElemMat);
-      invElemMat.MapPoints(pts);
+      using (Matrix invElemMat = new Matrix())
+      {
+        elemMatrix.Invert(invElemMat);
+        invElemMat.MapPoints(pts);
+      }
 
       InverseImageMapMatrix.MapPoints(pts);
       //      elemMatrix.MapPoints(pts);
@@ -314,20 +316,19 @@ namespace OMapScratch.Views
       float xy = (pts[4] - pts[0]) / d;
       float yy = (pts[5] - pts[1]) / d;
 
-      Matrix invImgMat = new Matrix();
-      invImgMat.SetValues(new float[] { xx, xy, pts[0], yx, yy, pts[1], 0, 0, 1 });
+      using (Matrix invImgMat = new Matrix())
+      {
+        invImgMat.SetValues(new float[] { xx, xy, pts[0], yx, yy, pts[1], 0, 0, 1 });
 
-      Matrix imgMat = new Matrix();
-      invImgMat.Invert(imgMat);
+        Matrix imgMat = new Matrix();
+        invImgMat.Invert(imgMat);
 
-      return imgMat;
+        return imgMat;
+      }
     }
 
     private static Matrix GetElementMatrix(Matrix imageMatrix, Matrix imageMapMatrix)
     {
-      Matrix invImgMat = new Matrix();
-      imageMatrix.Invert(invImgMat);
-
       float d = 1000;
       float[] pts = new float[]
       {
@@ -335,8 +336,11 @@ namespace OMapScratch.Views
         d, 0,
         0, d
       };
-      invImgMat.MapPoints(pts);
-
+      using (Matrix invImgMat = new Matrix())
+      {
+        imageMatrix.Invert(invImgMat);
+        invImgMat.MapPoints(pts);
+      }
       imageMapMatrix.MapPoints(pts);
 
       float xx = (pts[2] - pts[0]) / d;
@@ -344,13 +348,15 @@ namespace OMapScratch.Views
       float xy = (pts[4] - pts[0]) / d;
       float yy = (pts[5] - pts[1]) / d;
 
-      Matrix invElemMat = new Matrix();
-      invElemMat.SetValues(new float[] { xx, xy, pts[0], yx, yy, pts[1], 0, 0, 1 });
+      using (Matrix invElemMat = new Matrix())
+      {
+        invElemMat.SetValues(new float[] { xx, xy, pts[0], yx, yy, pts[1], 0, 0, 1 });
 
-      Matrix elemMat = new Matrix();
-      invElemMat.Invert(elemMat);
+        Matrix elemMat = new Matrix();
+        invElemMat.Invert(elemMat);
 
-      return elemMat;
+        return elemMat;
+      }
     }
 
     public float[] ElemMatrixValues
@@ -688,9 +694,12 @@ namespace OMapScratch.Views
     private static Matrix Scale(Matrix matrix, float scale, float centerX, float centerY)
     {
       float[] pre = new float[] { centerX, centerY };
-      Matrix inverted = new Matrix();
-      matrix.Invert(inverted);
-      inverted.MapPoints(pre);
+
+      using (Matrix inverted = new Matrix())
+      {
+        matrix.Invert(inverted);
+        inverted.MapPoints(pre);
+      }
 
       matrix.PostScale(scale, scale);
       float[] post = new float[] { pre[0], pre[1] };
@@ -699,6 +708,35 @@ namespace OMapScratch.Views
       matrix.PostTranslate(centerX - post[0], centerY - post[1]);
       return matrix;
     }
+
+    public void Rotate(float angle, float centerX, float centerY)
+    {
+      ResetElemMatrix();
+
+      ImageMatrix = Rotate(new Matrix(ImageMatrix), angle, centerX, centerY);
+
+      PostInvalidate();
+    }
+
+
+    private static Matrix Rotate(Matrix matrix, float angle, float centerX, float centerY)
+    {
+      float[] pre = new float[] { centerX, centerY };
+
+      using (Matrix inverted = new Matrix())
+      {
+        matrix.Invert(inverted);
+        inverted.MapPoints(pre);
+      }
+
+      matrix.PostRotate((float)(angle * 180 / System.Math.PI));
+      float[] post = new float[] { pre[0], pre[1] };
+      matrix.MapPoints(post);
+
+      matrix.PostTranslate(centerX - post[0], centerY - post[1]);
+      return matrix;
+    }
+
 
     public static Color DefaultColor { get { return Color.Red; } }
 
@@ -798,6 +836,7 @@ namespace OMapScratch.Views
           }
 
           float symbolScale = _context.MapVm.SymbolScale;
+          MatrixProps matrixProps = new MatrixProps(matrix);
 
           foreach (Elem elem in elems)
           {
@@ -805,7 +844,7 @@ namespace OMapScratch.Views
             { continue; }
 
             p.Color = elem.Color?.Color ?? DefaultColor;
-            elem.Geometry.Draw(canvas, elem.Symbol, matrix, symbolScale, p);
+            elem.Geometry.Draw(canvas, elem.Symbol, matrixProps, symbolScale, p);
           }
         }
         finally
@@ -909,14 +948,6 @@ namespace OMapScratch.Views
       if (current == null)
       { return; }
 
-      float[] vals = new float[9]; ImageMatrix.GetValues(vals);
-
-      int det = _detailSize;
-      int det_2 = det / 2;
-      int x0 = (int)((-vals[2] + ShowDetail.X - det_2) / vals[0]);
-      int y0 = (int)((-vals[5] + ShowDetail.Y - det_2) / vals[0]);
-
-      using (Rect source = new Rect(x0, y0, x0 + (int)(det / vals[0]), y0 + (int)(det / vals[0])))
       using (Rect dest = GetDetailRect())
       {
         try
@@ -924,11 +955,15 @@ namespace OMapScratch.Views
           canvas.Save();
           canvas.ClipRect(dest);
 
-          canvas.DrawBitmap(_context.MapVm.CurrentImage, source, dest, null);
-
           Box maxExtent = GetDetailExtent();
-          float[] dd = GetDetailOffset(dest);
 
+          using (Matrix local = new Matrix(ImageMatrix))
+          {
+            local.PostTranslate(dest.ExactCenterX() - ShowDetail.X, dest.ExactCenterY() - ShowDetail.Y);
+            canvas.DrawBitmap(_context.MapVm.CurrentImage, local, null);
+          }
+
+          float[] dd = GetDetailOffset(dest);
           DrawElems(canvas, _context.MapVm.Elems, maxExtent, ElemMatrixValues, dd);
           DrawConstr(canvas);
         }

@@ -141,7 +141,24 @@ namespace OMapScratch.Views
           float centerX = (_t1Down.X + _t1Up.X + _t2Down.X + _t2Up.X) / 4 - rect.Left;
           float centerY = (_t1Down.Y + _t1Up.Y + _t2Down.Y + _t2Up.Y) / 4 - rect.Top;
 
-          mapView.Scale(scale, centerX, centerY);
+          float rotLimit = 0.8f;
+          float angle = 0;
+          if (scale > rotLimit && scale < 1 / rotLimit)
+          {
+            float sinA = (dxDown * dyUp - dyDown * dxUp) / (lUp * lDown);
+            if (System.Math.Abs(sinA) > 0.2)
+            {
+              angle = (float)System.Math.Asin(sinA);
+            }
+          }
+          if (angle == 0)
+          {
+            mapView.Scale(scale, centerX, centerY);
+          }
+          else
+          {
+            mapView.Rotate(angle, centerX, centerY);
+          }
         }
       }
 
