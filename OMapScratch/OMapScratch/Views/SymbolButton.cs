@@ -54,6 +54,9 @@ namespace OMapScratch.Views
       CurrentMode.OnDrawCore(thisButton, canvas);
     }
   }
+  /// <summary>
+  /// Button for edit operations
+  /// </summary>
   public class EditButton : MapButton
   {
     private MainActivity _context;
