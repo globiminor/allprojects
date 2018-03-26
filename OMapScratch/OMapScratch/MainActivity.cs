@@ -138,11 +138,12 @@ namespace OMapScratch
     private MapVm _map;
     private ModeButton _btnCurrentMode;
     private SymbolGrid _symbolGrid;
+    private RotateModeGrid _rotateGrid;
+
     private RecentFileBrowser _browser;
     private LinearLayout _imageList;
 
     private CheckBox chkDrawOnly = null;
-    private CheckBox chkDetailPosition;
 
     private System.Action<MapButton> _setModeFct;
 
@@ -376,6 +377,7 @@ namespace OMapScratch
           btnZoomIn.SetBackgroundResource(Resource.Drawable.ZoomIn);
           {
             RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+            lprams.MarginStart = (int)(0.2 * Utils.GetMmPixel(btnZoomIn));
             btnZoomIn.LayoutParameters = lprams;
           }
           btnZoomIn.Id = View.GenerateViewId();
@@ -391,6 +393,7 @@ namespace OMapScratch
           btnZoomOut.SetBackgroundResource(Resource.Drawable.ZoomOut);
           {
             RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+            lprams.MarginStart = (int)(0.2 * Utils.GetMmPixel(btnZoomOut));
             btnZoomOut.LayoutParameters = lprams;
           }
           btnZoomOut.Id = View.GenerateViewId();
@@ -406,6 +409,7 @@ namespace OMapScratch
           btnUndo.SetBackgroundResource(Resource.Drawable.Undo);
           {
             RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+            lprams.MarginStart = (int)(0.2 * Utils.GetMmPixel(btnUndo));
             btnUndo.LayoutParameters = lprams;
           }
           btnUndo.Id = View.GenerateViewId();
@@ -422,6 +426,7 @@ namespace OMapScratch
           btnRedo.SetBackgroundResource(Resource.Drawable.Redo);
           {
             RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+            lprams.MarginStart = (int)(0.2 * Utils.GetMmPixel(btnRedo));
             btnRedo.LayoutParameters = lprams;
           }
           btnRedo.Id = View.GenerateViewId();
@@ -458,27 +463,61 @@ namespace OMapScratch
         //}
 
         {
-          chkDetailPosition = new CheckBox(this);
-          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-          chkDetailPosition.LayoutParameters = lprams;
-          chkDetailPosition.Text = " ";
-          chkDetailPosition.SetButtonDrawable(Resource.Drawable.DetailUr);
-          chkDetailPosition.Click += (s, e) =>
+          ImageButton btnRotation = new ImageButton(this);
           {
-            chkDetailPosition.Text = " ";
-            if (chkDetailPosition.Checked)
+            RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+            lprams.MarginStart = (int)(0.2 * Utils.GetMmPixel(btnRotation));
+            btnRotation.LayoutParameters = lprams;
+          }
+          btnRotation.SetBackgroundResource(ImageLoader.GetResource(Settings.DrawOption));
+          btnRotation.Click += (s, e) =>
+          {
+            if (_rotateGrid.Visibility == ViewStates.Visible)
             {
-              chkDetailPosition.SetButtonDrawable(Resource.Drawable.DetailLl);
+              _rotateGrid.Visibility = ViewStates.Invisible;
+              return;
+            }
+
+            if (Settings.DrawOption == DrawOptions.DetailUR)
+            {
+              Settings.DrawOption = DrawOptions.DetailLL;
+              Settings.DetailUR = false;
+              btnRotation.SetBackgroundResource(ImageLoader.GetResource(Settings.DrawOption));
+            }
+            else if (Settings.DrawOption == DrawOptions.DetailLL)
+            {
+              Settings.DrawOption = DrawOptions.DetailUR;
+              Settings.DetailUR = true;
+              btnRotation.SetBackgroundResource(ImageLoader.GetResource(Settings.DrawOption));
             }
             else
             {
-              chkDetailPosition.SetButtonDrawable(Resource.Drawable.DetailUr);
+              _rotateGrid.Apply(Settings.DrawOption);
             }
           };
+          btnRotation.LongClick += (s, e) =>
+          {
+            _rotateGrid.ShowAll(btnRotation);
+            _rotateGrid.Visibility = ViewStates.Visible;
+            _rotateGrid.PostInvalidate();
+          };
 
-          chkDetailPosition.Id = View.GenerateViewId();
+          btnRotation.Id = View.GenerateViewId();
 
-          lloTools.AddView(chkDetailPosition);
+          lloTools.AddView(btnRotation);
+
+          {
+            _rotateGrid = new RotateModeGrid(this);
+            {
+              RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+              lprams.AddRule(LayoutRules.Below, Resource.Id.lloTools);
+              _rotateGrid.LayoutParameters = lprams;
+            }
+            _rotateGrid.Init();
+            _rotateGrid.Visibility = ViewStates.Invisible;
+            _parentLayout.AddView(_rotateGrid);
+          }
+
         }
 
         {
@@ -606,7 +645,7 @@ namespace OMapScratch
 
     public bool DetailUpperRight
     {
-      get { return !(chkDetailPosition?.Checked ?? false); }
+      get { return Settings.DetailUR; }
     }
 
     private LocationVm _locationVm;

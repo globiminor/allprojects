@@ -142,13 +142,13 @@ namespace OMapScratch.Views
           float centerY = (_t1Down.Y + _t1Up.Y + _t2Down.Y + _t2Up.Y) / 4 - rect.Top;
 
           float rotLimit = 0.8f;
-          float angle = 0;
+          double angle = 0;
           if (scale > rotLimit && scale < 1 / rotLimit)
           {
             float sinA = (dxDown * dyUp - dyDown * dxUp) / (lUp * lDown);
             if (System.Math.Abs(sinA) > 0.2)
             {
-              angle = (float)System.Math.Asin(sinA);
+              angle = System.Math.Asin(sinA);
             }
           }
           if (angle == 0)

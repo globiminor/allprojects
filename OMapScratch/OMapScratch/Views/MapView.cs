@@ -277,7 +277,7 @@ namespace OMapScratch.Views
       return maxExtent;
     }
 
-    private Matrix ElemMatrix
+    public Matrix ElemMatrix
     {
       get
       {
@@ -289,6 +289,16 @@ namespace OMapScratch.Views
         }
         return _elemMatrix;
       }
+    }
+    public void SetElemMatrix(Matrix elem, bool postInvalidate = true)
+    {
+      ResetElemMatrix();
+      _elemMatrix?.Dispose();
+      _elemMatrix = elem;
+      ImageMatrix = GetImageMatrix(elem);
+
+      if (postInvalidate)
+      { PostInvalidate(); }
     }
 
     private Matrix GetImageMatrix(Matrix elemMatrix)
@@ -709,7 +719,7 @@ namespace OMapScratch.Views
       return matrix;
     }
 
-    public void Rotate(float angle, float centerX, float centerY)
+    public void Rotate(double angle, float centerX, float centerY)
     {
       ResetElemMatrix();
 
@@ -719,7 +729,7 @@ namespace OMapScratch.Views
     }
 
 
-    private static Matrix Rotate(Matrix matrix, float angle, float centerX, float centerY)
+    private static Matrix Rotate(Matrix matrix, double angle, float centerX, float centerY)
     {
       float[] pre = new float[] { centerX, centerY };
 
