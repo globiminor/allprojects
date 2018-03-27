@@ -3,7 +3,7 @@ namespace OMapScratch
 {
   public enum DrawOptions
   {
-    DetailUR, DetailLL, RotL90, RotNorth
+    DetailUR, DetailLL, RotL90, RotNorth, RotCompass
   }
   public static class Settings
   {

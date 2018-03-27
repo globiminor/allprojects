@@ -21,6 +21,10 @@ namespace OMapScratch
       {
         return Resource.Drawable.RotNorth;
       }
+      else if (drawOption == DrawOptions.RotCompass)
+      {
+        return Resource.Drawable.RotCompass;
+      }
 
       return Resource.Drawable.DetailUr;
     }

@@ -37,6 +37,30 @@ namespace OMapScratch.ViewModels
       return sensorMgr;
     }
 
+    private System.Action<float> _compassAction;
+    public void GetCompass(System.Action<float> onCompass)
+    {
+      if (Settings.UseCompass)
+      {
+        _compassAction = (a) => 
+        {
+          _compassAction = null;
+          onCompass(a);
+        };
+      }
+      else
+      {
+        StartCompass();
+        _compassAction = (a) =>
+        {
+          _compassAction = null;
+          StopCompass();
+          Settings.UseCompass = false;
+          onCompass(a);
+        };
+      }
+    }
+
     public void StartCompass()
     {
       StopCompass();
@@ -61,7 +85,10 @@ namespace OMapScratch.ViewModels
       IList<float> values = e.Values;
       float? angle = null;
       if (values?.Count > 0)
-      { angle = values[0]; }
+      {
+        angle = values[0];
+        _compassAction?.Invoke(values[0]);
+      }
       _lastAngle = angle;
 
       View?.SetAngle(angle);

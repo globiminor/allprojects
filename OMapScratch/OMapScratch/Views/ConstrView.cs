@@ -262,7 +262,10 @@ namespace OMapScratch.Views
       { declination = _parent.MapVm.GetDeclination(); }
       if (declination != null)
       {
-        double decl = declination.Value / 180 * System.Math.PI;
+        float[] elemMat = _parent.ElemMatrixValues;
+        MatrixProps mat = new MatrixProps(elemMat);
+
+        double decl = declination.Value / 180 * System.Math.PI - mat.Rotate;
         double sin = System.Math.Sin(decl);
         double cos = System.Math.Cos(decl);
 

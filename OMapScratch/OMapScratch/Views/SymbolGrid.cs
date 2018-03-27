@@ -79,6 +79,16 @@ namespace OMapScratch
           };
           Add(btn);
         }
+        {
+          ImageButton btn = new ImageButton(_activity);
+          btn.SetBackgroundResource(Resource.Drawable.RotCompass);
+          btn.Click += (s, e) =>
+          {
+            Apply(DrawOptions.RotCompass, setAsDefault: true);
+            Visibility = ViewStates.Invisible;
+          };
+          Add(btn);
+        }
       }
 
       public void Apply(DrawOptions option, bool setAsDefault = false)
@@ -112,6 +122,18 @@ namespace OMapScratch
             _activity.MapView.SetElemMatrix(north, postInvalidate: false);
             _activity.MapView.Translate(_activity.MapView.Width / 2f - pts[0], _activity.MapView.Height / 2f - pts[1]);
           }
+        }
+        else if (option == DrawOptions.RotCompass && _activity.MapVm.GetDeclination() != null)
+        {
+          _activity.CompassVm.GetCompass((orient) =>
+          {
+            float? decl = _activity.MapVm.GetDeclination();
+            if (decl == null)
+            { return; }
+            MatrixProps mat = new MatrixProps(_activity.MapView.ElemMatrixValues);
+            float rotate = (float)(mat.Rotate - (orient + decl) / 180 * System.Math.PI);
+            _activity.MapView.Rotate(rotate, _activity.MapView.Width / 2, _activity.MapView.Height / 2);
+          });
         }
       }
 
