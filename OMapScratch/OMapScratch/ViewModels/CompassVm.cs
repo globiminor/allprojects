@@ -28,7 +28,6 @@ namespace OMapScratch.ViewModels
     }
 
     public ICompassView View { get; set; }
-    public float? LastAngle { get { return _lastAngle; } }
 
     private SensorManager InitSensorManager(out Sensor compass)
     {
@@ -87,11 +86,14 @@ namespace OMapScratch.ViewModels
       if (values?.Count > 0)
       {
         angle = values[0];
-        _compassAction?.Invoke(values[0]);
       }
       _lastAngle = angle;
 
-      View?.SetAngle(angle);
+      if (values?.Count > 0)
+      {
+        _compassAction?.Invoke(values[0]);
+      }
+      View?.SetAngle(_lastAngle);
     }
   }
 }
