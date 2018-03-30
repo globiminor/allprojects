@@ -340,8 +340,7 @@ namespace OMapScratch
 
       {
         _btnCurrentMode = new ModeButton(this, new SymbolButton(MapVm.GetSymbols()[0], this));
-        _btnCurrentMode.SetMinimumWidth(5);
-        //        _btnCurrentMode.SetWidth(SymbolFullWidth / 8);
+        _btnCurrentMode.SetMinimumWidth(50);
         RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
         _btnCurrentMode.LayoutParameters = lprams;
         _btnCurrentMode.Id = View.GenerateViewId();

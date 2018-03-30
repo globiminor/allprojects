@@ -52,6 +52,9 @@ namespace OMapScratch.Views
     internal override void OnDrawCore(MapButton thisButton, Canvas canvas)
     {
       CurrentMode.OnDrawCore(thisButton, canvas);
+
+      if (Right - Left > Bottom - Top)
+      { SetWidth(Bottom - Top); }
     }
   }
   /// <summary>
