@@ -30,14 +30,16 @@ namespace LeastCostPathUI
     {
       InitializeComponent();
 
-      DataGridViewColumn col = new DataGridViewTextBoxColumn();
-      col.HeaderText = "Member";
-      col.DataPropertyName = "Name";
-      col.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+      DataGridViewColumn col = new DataGridViewTextBoxColumn
+      {
+        HeaderText = "Member",
+        DataPropertyName = "Name",
+        AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
+      };
       dgCustom.Columns.Add(col);
       dgCustom.AutoGenerateColumns = false;
 
-      Type t = typeof(StepCostHandler<double>);
+      Type t = typeof(StepCostHandler);
       MethodInfo miBase = t.GetMethods()[0];
 
       StringBuilder sbLbl = new StringBuilder();
@@ -64,7 +66,7 @@ namespace LeastCostPathUI
       SetLayout();
     }
 
-    private void btnOpen_Click(object sender, EventArgs e)
+    private void BtnOpen_Click(object sender, EventArgs e)
     {
       dlgOpenAssembly.Filter = "Assembly (*.dll,*.exe) | *.dll;*.exe";
       if (string.IsNullOrEmpty(dlgOpenAssembly.InitialDirectory))
@@ -133,7 +135,7 @@ namespace LeastCostPathUI
       private set { _costProviderType = value; }
     }
 
-    private void dgCustom_MouseDown(object sender, MouseEventArgs e)
+    private void DgCustom_MouseDown(object sender, MouseEventArgs e)
     {
       // Get the index of the item the mouse is below.
       int iDown = dgCustom.HitTest(e.X, e.Y).RowIndex;
@@ -157,7 +159,7 @@ namespace LeastCostPathUI
       }
     }
 
-    private void dgCustom_MouseMove(object sender, MouseEventArgs e)
+    private void DgCustom_MouseMove(object sender, MouseEventArgs e)
     {
       if ((e.Button & MouseButtons.Left) != MouseButtons.Left)
       { return; }
@@ -177,17 +179,17 @@ namespace LeastCostPathUI
       }
     }
 
-    private void dgCustom_MouseUp(object sender, MouseEventArgs e)
+    private void DgCustom_MouseUp(object sender, MouseEventArgs e)
     {
       dragBoxFromMouseDown = Rectangle.Empty;
     }
 
-    private void dgCustom_SelectionChanged(object sender, EventArgs e)
+    private void DgCustom_SelectionChanged(object sender, EventArgs e)
     {
       SetLayout();
     }
 
-    private void btnOk_Click(object sender, EventArgs e)
+    private void BtnOk_Click(object sender, EventArgs e)
     {
       if (optExisting.Checked)
       {
@@ -258,18 +260,18 @@ namespace LeastCostPathUI
       return results.CompiledAssembly;
     }
 
-    private void btnCancel_Click(object sender, EventArgs e)
+    private void BtnCancel_Click(object sender, EventArgs e)
     {
       DialogResult = DialogResult.Cancel;
       Close();
     }
 
-    private void opt_CheckedChanged(object sender, EventArgs e)
+    private void Opt_CheckedChanged(object sender, EventArgs e)
     {
       SetLayout();
     }
 
-    private void dgCustom_CellContentDoubleClick(object sender, DataGridViewCellEventArgs e)
+    private void DgCustom_CellContentDoubleClick(object sender, DataGridViewCellEventArgs e)
     {
       if (e.RowIndex < 0 || e.RowIndex >= dgCustom.Rows.Count)
       { return; }

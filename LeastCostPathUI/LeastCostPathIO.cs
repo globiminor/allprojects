@@ -316,8 +316,8 @@ namespace LeastCostPathUI
           MethodInfo method =
             type.GetMethod(methodName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
 
-          costPath.StepCost = (StepCostHandler<double>)
-            Delegate.CreateDelegate(typeof(StepCostHandler<double>), method);
+          costPath.StepCost = (StepCostHandler)
+            Delegate.CreateDelegate(typeof(StepCostHandler), method);
         }
         else
         {
@@ -554,9 +554,11 @@ namespace LeastCostPathUI
         foreach (IPoint grdPt in grdRoute.Points)
         {
           IPoint cell = sum.Extent.CellLL((int)grdPt.X, (int)grdPt.Y);
-          Vector prjPt = new Vector(4);
-          prjPt.X = cell.X;
-          prjPt.Y = cell.Y;
+          Vector prjPt = new Vector(4)
+          {
+            X = cell.X,
+            Y = cell.Y
+          };
           if (heightGrd != null)
           {
             prjPt.Z = heightGrd.Value(cell.X, cell.Y, EGridInterpolation.bilinear);

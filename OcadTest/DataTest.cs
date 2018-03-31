@@ -101,7 +101,7 @@ namespace OcadTest
     [TestMethod]
     public void TestStructScript()
     {
-      double resolution = 1;
+      //double resolution = 1;
       // string dir = @"C:\daten\felix\kapreolo\karten\blauen\2018\lidar";
       string dir = @"C:\daten\felix\kapreolo\karten\hardwald\2017\lidar";
 
@@ -199,11 +199,13 @@ namespace OcadTest
         if (!File.Exists(lazName))
         { return; }
 
-        Process p = new Process();
-        p.StartInfo = new ProcessStartInfo
+        Process p = new Process
         {
-          FileName = @"C:\daten\felix\src\temp\LAStools\bin\las2txt.exe",
-          Arguments = $"-i {lazName} -parse xyzi"
+          StartInfo = new ProcessStartInfo
+          {
+            FileName = @"C:\daten\felix\src\temp\LAStools\bin\las2txt.exe",
+            Arguments = $"-i {lazName} -parse xyzi"
+          }
         };
         p.Start();
         p.WaitForExit();
@@ -224,23 +226,27 @@ namespace OcadTest
       using (OcadWriter w = Ocad9Writer.AppendTo(@"C:\daten\felix\kapreolo\scool\regensdorf_ruggenacher\test.ocd"))
       {
         {
-          ElementV9 elem = new ElementV9(true);
-          elem.Type = GeomType.unformattedText;
-          elem.Color = Color.ColorToCmyk(System.Drawing.Color.Blue).ToNumber();
-          elem.Geometry = new Point2D(677000, 254000);
-          elem.Text = "A";
-          elem.Symbol = -3;
+          ElementV9 elem = new ElementV9(true)
+          {
+            Type = GeomType.unformattedText,
+            Color = Color.ColorToCmyk(System.Drawing.Color.Blue).ToNumber(),
+            Geometry = new Point2D(677000, 254000),
+            Text = "A",
+            Symbol = -3
+          };
 
           w.Append(elem);
         }
 
         {
-          ElementV9 elem = new ElementV9(true);
-          elem.Type = GeomType.line;
-          elem.Color = Color.ColorToCmyk(System.Drawing.Color.Green).ToNumber();
-          elem.LineWidth = 30;
-          elem.Geometry = Polyline.Create(new[] { new Point2D(677010, 254000), new Point2D(677020, 254010) });
-          elem.Symbol = -3;
+          ElementV9 elem = new ElementV9(true)
+          {
+            Type = GeomType.line,
+            Color = Color.ColorToCmyk(System.Drawing.Color.Green).ToNumber(),
+            LineWidth = 30,
+            Geometry = Polyline.Create(new[] { new Point2D(677010, 254000), new Point2D(677020, 254010) }),
+            Symbol = -3
+          };
 
           w.Append(elem);
         }

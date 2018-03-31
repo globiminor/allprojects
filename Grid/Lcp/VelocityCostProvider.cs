@@ -28,14 +28,14 @@ namespace Grid.Lcp
       return lcp;
     }
 
-    public static double CostPath_StepCost(double h0, double v0, double slope0_2,
-                                           double h1, double v1, double slope1_2, double distance)
+    public static double CostPath_StepCost(double dh, double vMean, double slope_2Mean,
+                                           double distance)
     {
-      if (v0 < 0.002 || v1 < 0.002)
+      if (vMean < 0.002)
       { return -distance * 1000; }
 
-      double v = (v0 + v1) / 2.0;
-      double dhPos = h1 - h0;
+      double v = vMean;
+      double dhPos = dh;
       if (dhPos < 0)
       { dhPos = 0; }
 
@@ -44,7 +44,7 @@ namespace Grid.Lcp
 
       if (v < 0.99)
       { // not road Road
-        double slope2 = (slope0_2 + slope1_2) / 2;
+        double slope2 = slope_2Mean;
         cost += slope2 * 7.5 * distance;
       }
       if (double.IsNaN(cost))

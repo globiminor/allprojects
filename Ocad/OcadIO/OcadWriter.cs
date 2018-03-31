@@ -14,7 +14,7 @@ namespace Ocad
   {
     public delegate T ElementIndexDlg<T>(ElementIndex element);
 
-    protected EndianWriter Writer { get; set; }
+    public EndianWriter Writer { get; protected set; }
     protected FileParam Param { get; set; }
     protected OcadReader OcdReader { get; set; }
     protected EndianReader _reader;
@@ -197,37 +197,35 @@ namespace Ocad
     protected abstract void WriteElementHeader(Element element);
     protected abstract void WriteElementSymbol(int symbol);
 
-    protected void Write(IGeometry geometry)
+    public static void Write(EndianWriter writer, IGeometry geometry)
     {
       Coord pCoord;
 
-      if (geometry is Point)
+      if (geometry is Point pt)
       {
-        Point p = (Point)geometry;
-        pCoord = Coord.Create(p, Coord.Flags.none);
-        Writer.Write((int)pCoord.Ox);
-        Writer.Write((int)pCoord.Oy);
+        pCoord = Coord.Create(pt, Coord.Flags.none);
+        writer.Write((int)pCoord.Ox);
+        writer.Write((int)pCoord.Oy);
       }
       else if (geometry is PointCollection)
       {
         foreach (Point p in ((PointCollection)geometry))
         {
           pCoord = Coord.Create(p, Coord.Flags.none);
-          Writer.Write((int)pCoord.Ox);
-          Writer.Write((int)pCoord.Oy);
+          writer.Write((int)pCoord.Ox);
+          writer.Write((int)pCoord.Oy);
         }
       }
       else if (geometry is Polyline)
       {
-        Write((Polyline)geometry, false);
+        Write(writer, (Polyline)geometry, false);
       }
-      else if (geometry is Area)
+      else if (geometry is Area area)
       {
-        Area area = (Area)geometry;
         bool bIsInnerRing = false;
         foreach (Polyline pLine in area.Border)
         {
-          Write(pLine, bIsInnerRing);
+          Write(writer, pLine, bIsInnerRing);
           bIsInnerRing = true;
         }
       }
@@ -254,10 +252,10 @@ namespace Ocad
       Writer.Write((short)0); // reserved
       Writer.Write((short)0); // reserved
 
-      Write(graphics.Geometry);
+      Write(Writer, graphics.Geometry);
     }
 
-    private void Write(Polyline polyline, bool isInnerRing)
+    private static void Write(EndianWriter Writer, Polyline polyline, bool isInnerRing)
     {
       Coord pCoord;
 
@@ -537,7 +535,7 @@ namespace Ocad
       base.Write(index);
 
       Writer.Write((int)index.Position);
-      Writer.Write((short) index.Length);
+      Writer.Write((short)index.Length);
       Writer.Write((short)index.Symbol);
     }
 
@@ -545,18 +543,7 @@ namespace Ocad
     {
       WriteElementHeader(element);
 
-      Write(element.Geometry);
-
-      if (element.Text != "")
-      {
-        if (element.UnicodeText)
-        { Writer.WriteUnicodeString(element.Text); }
-        else
-        {
-          Writer.Write(element.Text);
-          Writer.Write((char)0);
-        }
-      }
+      OcdReader.WriteElementContent(Writer, element);
     }
 
     protected override void WriteElementHeader(Element element)
@@ -589,9 +576,11 @@ namespace Ocad
     }
     public static Ocad9Writer AppendTo(Stream ocadStream)
     {
-      Ocad9Writer ocd = new Ocad9Writer();
-      ocd.Writer = new EndianWriter(ocadStream);
-      ocd.Param = new FileParamV9();
+      Ocad9Writer ocd = new Ocad9Writer
+      {
+        Writer = new EndianWriter(ocadStream),
+        Param = new FileParamV9()
+      };
       return ocd;
     }
 
@@ -686,10 +675,12 @@ namespace Ocad
       _reader.BaseStream.Seek(0, SeekOrigin.End);
       int iPos = (int)_reader.BaseStream.Position;
 
-      StringParamIndex overwriteIndex = new StringParamIndex();
-      overwriteIndex.Type = type;
-      overwriteIndex.ElemNummer = elemNummer;
-      overwriteIndex.Size = stringParam.Length / 64 * 64 + 64; // for some funny reason
+      StringParamIndex overwriteIndex = new StringParamIndex
+      {
+        Type = type,
+        ElemNummer = elemNummer,
+        Size = stringParam.Length / 64 * 64 + 64 // for some funny reason
+      };
       Append(overwriteIndex);
 
       Overwrite(overwriteIndex, stringParam);
@@ -723,10 +714,12 @@ namespace Ocad
 
       if (_overwriteIndex == null)
       {
-        _overwriteIndex = new StringParamIndex();
-        _overwriteIndex.Type = type;
-        _overwriteIndex.ElemNummer = elemNummer;
-        _overwriteIndex.Size = stringParam.Length;
+        _overwriteIndex = new StringParamIndex
+        {
+          Type = type,
+          ElemNummer = elemNummer,
+          Size = stringParam.Length
+        };
         Append(_overwriteIndex);
       }
       else
@@ -772,8 +765,7 @@ namespace Ocad
       {
         p = p0 + 4;
         _reader.BaseStream.Seek(p, SeekOrigin.Begin); /* index->pos */
-        StringParamIndex pIndex = new StringParamIndex();
-        pIndex.FilePosition = 1;
+        StringParamIndex pIndex = new StringParamIndex { FilePosition = 1 };
         i = 0;
         while (pIndex.FilePosition > 0 && i < FileParam.N_IN_STRINGPARAM_BLOCK)
         {
@@ -853,15 +845,7 @@ namespace Ocad
     {
       WriteElementHeader(element);
 
-      Write(element.Geometry);
-
-      if (element.Text != "")
-      {
-        Writer.WriteUnicodeString(element.Text);
-        int n = ElementV9.TextCount(element.Text);
-        for (int i = element.Text.Length * 2; i < n; i++)
-        { Writer.BaseStream.WriteByte(0); }
-      }
+      OcdReader.WriteElementContent(Writer, element);
     }
 
     protected override void WriteElementHeader(Element element)

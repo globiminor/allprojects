@@ -5,7 +5,7 @@ using Grid.Lcp;
 
 namespace OCourse.Route
 {
-  public class SymLeastCostPath : LeastCostPathBase<IList<int>>
+  public class SymLeastCostPath : LeastCostPathBase_T //<IList<int>>
   {
     public SymLeastCostPath(IBox box, double dx)
       : base(box, dx)

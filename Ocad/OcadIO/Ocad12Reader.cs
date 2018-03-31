@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using Ocad.StringParams;
 
 namespace Ocad
 {
@@ -7,8 +9,7 @@ namespace Ocad
   {
     public override Element ReadElement()
     {
-      ElementV9 elem = new ElementV9(false);
-      elem.Symbol = BaseReader.ReadInt32();
+      ElementV9 elem = new ElementV9(false) { Symbol = BaseReader.ReadInt32() };
       if (elem.Symbol < -4 || elem.Symbol == 0)
       { return null; }
 
@@ -36,26 +37,35 @@ namespace Ocad
       int nDatabaseString = BaseReader.ReadInt16();
       byte objectStringType = BaseReader.ReadByte();
 
+      elem.ObjectStringType = (ObjectStringType)objectStringType;
+
       BaseReader.ReadByte();
 
       elem.Geometry = ReadGeometry(elem.Type, nPoint);
       if (nText > 0)
       { elem.Text = BaseReader.ReadUnicodeString(); }
+      if (nObjectString > 0)
+      {
+        byte[] objectText = BaseReader.ReadBytes(nObjectString);
+        System.Text.UnicodeEncoding unicode = new System.Text.UnicodeEncoding();
+        elem.ObjectString = unicode.GetString(objectText);
+      }
 
       return elem;
     }
 
     protected override FileParam Init(int sectionMark, int version)
     {
-      FileParamV12 fileParam = new FileParamV12();
-
-      fileParam.SectionMark = sectionMark;
-      fileParam.Version = version;
-      fileParam.SubVersion = BaseReader.ReadInt16();
-      fileParam.FirstSymbolBlock = BaseReader.ReadInt32();
-      fileParam.FirstIndexBlock = BaseReader.ReadInt32();
-      fileParam.OfflineSyncSerial = BaseReader.ReadInt32();
-      fileParam.CurrentFileVersion = BaseReader.ReadInt32();
+      FileParamV12 fileParam = new FileParamV12
+      {
+        SectionMark = sectionMark,
+        Version = version,
+        SubVersion = BaseReader.ReadInt16(),
+        FirstSymbolBlock = BaseReader.ReadInt32(),
+        FirstIndexBlock = BaseReader.ReadInt32(),
+        OfflineSyncSerial = BaseReader.ReadInt32(),
+        CurrentFileVersion = BaseReader.ReadInt32()
+      };
       BaseReader.ReadInt32(); // reserved
       BaseReader.ReadInt32(); // reserved
       fileParam.FirstStrIdxBlock = BaseReader.ReadInt32();
@@ -132,16 +142,62 @@ namespace Ocad
       { nText = ElementV9.TextCount(element.Text) / 8; }
       writer.Write((short)nText); // nText
 
-      writer.Write((short)0); // nObjectString
+      writer.Write(element.ObjectStringCount()); // nObjectString
       writer.Write((short)0); // nDatabaseString
-      writer.Write((byte)0); // ObjectStringType
+      writer.Write((byte)elem9.ObjectStringType); // ObjectStringType
       writer.Write((byte)0); // reserved
     }
 
+    public override void WriteElementContent(EndianWriter writer, Element element)
+    {
+      base.WriteElementContent(writer, element);
+
+      if (element.ObjectString?.Length > 0)
+      {
+        System.Text.UnicodeEncoding unicode = new System.Text.UnicodeEncoding();
+        byte[] bytes = unicode.GetBytes(element.ObjectString);
+        writer.Write(bytes);
+      }
+    }
     public override int CalcElementLength(Element element)
     {
-      int length = 56 + 8 * element.PointCount() + element.TextCount();
+      int length = 56 + 8 * element.PointCount() + element.TextCount() + element.ObjectStringCount();
       return length;
+    }
+
+    private IList<Element> _controlElements;
+    public override Element ReadControlGeometry(Control control, IList<StringParamIndex> settingIndexList)
+    {
+      if (_controlElements == null)
+      {
+        List<Element> controlElements = new List<Element>();
+        foreach (Element elem in Elements(false, null))
+        {
+          if (elem.ObjectStringType == ObjectStringType.None)
+          { continue; }
+
+          controlElements.Add(elem);
+        }
+        _controlElements = controlElements;
+      }
+
+      Element match = null;
+      foreach (Element e in _controlElements)
+      {
+        if (e.ObjectStringType != ObjectStringType.CsObject)
+        { continue; }
+
+        if (e.ObjectString == $"10{control.Name}"         // Control
+         || e.ObjectString == $"00{control.Name}"        // Start
+         || e.ObjectString == $"30{control.Name}")        // Finish
+        {
+          match = e;
+          break;
+        }
+      }
+
+      control.Element = match;
+      return match;
     }
   }
 }

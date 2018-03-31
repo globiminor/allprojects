@@ -11,9 +11,7 @@ namespace Ocad
     public Ocad8Reader(Stream ocadStream)
       : base(ocadStream)
     {
-      int iSectionMark;
-      int iVersion;
-      Version(BaseReader, out iSectionMark, out iVersion);
+      Version(BaseReader, out int iSectionMark, out int iVersion);
       if (iVersion != 6 && iVersion != 7 && iVersion != 8)
       { throw (new Exception(string.Format("Invalid Version {0}", iVersion))); }
 
@@ -22,18 +20,19 @@ namespace Ocad
 
     protected sealed override FileParam Init(int sectionMark, int version)
     {
-      _fileParam = new FileParamV8();
-
-      _fileParam.SectionMark = sectionMark;
-      _fileParam.Version = version;
-      _fileParam.SubVersion = BaseReader.ReadInt16();
-      _fileParam.FirstSymbolBlock = BaseReader.ReadInt32();
-      _fileParam.FirstIndexBlock = BaseReader.ReadInt32();
-      _fileParam.SetupPosition = BaseReader.ReadInt32();
-      _fileParam.SetupSize = BaseReader.ReadInt32();
-      _fileParam.InfoPosition = BaseReader.ReadInt32();
-      _fileParam.InfoSize = BaseReader.ReadInt32();
-      _fileParam.FirstStrIdxBlock = BaseReader.ReadInt32();
+      _fileParam = new FileParamV8
+      {
+        SectionMark = sectionMark,
+        Version = version,
+        SubVersion = BaseReader.ReadInt16(),
+        FirstSymbolBlock = BaseReader.ReadInt32(),
+        FirstIndexBlock = BaseReader.ReadInt32(),
+        SetupPosition = BaseReader.ReadInt32(),
+        SetupSize = BaseReader.ReadInt32(),
+        InfoPosition = BaseReader.ReadInt32(),
+        InfoSize = BaseReader.ReadInt32(),
+        FirstStrIdxBlock = BaseReader.ReadInt32()
+      };
       BaseReader.ReadInt32(); // reserved 2
       BaseReader.ReadInt32(); // reserved 3
       BaseReader.ReadInt32(); // reserved 4
@@ -146,11 +145,12 @@ namespace Ocad
     {
       int nPoint;
       int nText;
-      ElementV8 elem = new ElementV8(false);
-
-      elem.Symbol = BaseReader.ReadInt16();
-      elem.Type = (GeomType)BaseReader.ReadByte();
-      elem.UnicodeText = BaseReader.ReadByte() != 0;
+      ElementV8 elem = new ElementV8(false)
+      {
+        Symbol = BaseReader.ReadInt16(),
+        Type = (GeomType)BaseReader.ReadByte(),
+        UnicodeText = BaseReader.ReadByte() != 0
+      };
       nPoint = BaseReader.ReadInt16();
       nText = BaseReader.ReadInt16();
       elem.Angle = BaseReader.ReadInt16() * Math.PI / 1800.0;
@@ -177,7 +177,6 @@ namespace Ocad
 
     public override void WriteElementHeader(EndianWriter writer, Element element)
     {
-      ElementV8 elem8 = element as ElementV8;
       WriteElementSymbol(writer, element.Symbol);
       writer.Write((byte)element.Type);
       writer.Write((byte)(element.UnicodeText ? 1 : 0));
@@ -185,12 +184,29 @@ namespace Ocad
       writer.Write((short)element.TextCount());
       writer.Write((short)(element.Angle * 180 / Math.PI)); // 1 Degrees
       writer.Write((short)0);
-      if (elem8 != null)
+      if (element is ElementV8 elem8)
       { writer.Write((int)elem8.ReservedHeight); }
       else
       { writer.Write((int)0); }
       for (int i = 0; i < 16; i++)
       { writer.Write(' '); }
+    }
+
+    public override void WriteElementContent(EndianWriter writer, Element element)
+    {
+      OcadWriter.Write(writer, element.Geometry);
+
+      if (element.Text != "")
+      {
+        if (element.UnicodeText)
+        { writer.WriteUnicodeString(element.Text); }
+        else
+        {
+          writer.Write(element.Text);
+          writer.Write((char)0);
+        }
+      }
+
     }
 
     public override void WriteElementSymbol(EndianWriter writer, int symbol)

@@ -37,7 +37,7 @@ namespace OCourse.Gui
 
       _selectedRoute = new List<ICost>();
 
-      _cntSection.PartChanged += cntSection_PartChanged;
+      _cntSection.PartChanged += CntSection_PartChanged;
     }
 
     private OCourseVm _vm;
@@ -55,6 +55,9 @@ namespace OCourse.Gui
         _bindingSource.DataSource = _vm;
         if (notBound)
         {
+          this.Bind(x => x.Text, _bindingSource, nameof(_vm.Title),
+            true, DataSourceUpdateMode.Never);
+
           _txtCourse.Bind(x => x.Text, _bindingSource, nameof(_vm.CourseFile),
             true, DataSourceUpdateMode.OnValidation);
 
@@ -157,19 +160,23 @@ namespace OCourse.Gui
 
           DataTable permutTbl = _permutations.Table;
           {
-            DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn();
-            col.DataPropertyName = OCourseVm.StartNrName;
-            col.HeaderText = "StartNr";
+            DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn
+            {
+              DataPropertyName = OCourseVm.StartNrName,
+              HeaderText = "StartNr"
+            };
             col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             col.Width = 50;
             dgvPermut.Columns.Add(col);
           }
           {
-            DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn();
-            col.DataPropertyName = OCourseVm.IndexName;
-            col.HeaderText = "Index";
+            DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn
+            {
+              DataPropertyName = OCourseVm.IndexName,
+              HeaderText = "Index",
+              Width = 50
+            };
             col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            col.Width = 50;
             dgvPermut.Columns.Add(col);
           }
 
@@ -180,10 +187,11 @@ namespace OCourse.Gui
             {
               continue;
             }
-            DataGridViewColumn col = new DataGridViewTextBoxColumn();
-            col.DataPropertyName = column.ColumnName;
-
-            col.HeaderText = string.Format("{0} {1}", "Part", column.ColumnName.Substring(nPartName));
+            DataGridViewColumn col = new DataGridViewTextBoxColumn
+            {
+              DataPropertyName = column.ColumnName,
+              HeaderText = string.Format("{0} {1}", "Part", column.ColumnName.Substring(nPartName))
+            };
             dgvPermut.Columns.Add(col);
           }
         }
@@ -205,7 +213,7 @@ namespace OCourse.Gui
       btnCancel.Visible = calculating;
     }
 
-    private void btnCourse_Click(object sender, EventArgs e)
+    private void BtnCourse_Click(object sender, EventArgs e)
     {
       if (_vm == null)
       { return; }
@@ -218,7 +226,7 @@ namespace OCourse.Gui
       _vm.CourseFile = dlgOpen.FileName;
     }
 
-    private void btnBackCalc_Click(object sender, EventArgs e)
+    private void BtnBackCalc_Click(object sender, EventArgs e)
     {
       if (_vm == null)
       { return; }
@@ -239,89 +247,98 @@ namespace OCourse.Gui
         ICost c = null;
 
         {
-          DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn();
-          col.DataPropertyName = nameof(c.Name);
-          col.HeaderText = "Name";
-          col.ReadOnly = true;
-          col.Width = 60;
+          DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn
+          {
+            DataPropertyName = nameof(c.Name),
+            HeaderText = "Name",
+            ReadOnly = true,
+            Width = 60
+          };
 
           dgvInfo.Columns.Add(col);
         }
         {
-          DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn();
-          col.DataPropertyName = nameof(c.DirectLKm);
+          DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn
+          {
+            DataPropertyName = nameof(c.DirectLKm),
+            HeaderText = "DirectLKm",
+            ReadOnly = true,
+            Width = 50
+          };
           col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
           col.DefaultCellStyle.Format = "N2";
-          col.HeaderText = "DirectLKm";
-          col.ReadOnly = true;
-          col.Width = 50;
 
           dgvInfo.Columns.Add(col);
         }
         {
-          DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn();
-
-          col.DataPropertyName = nameof(c.DirectKm);
+          DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn
+          {
+            DataPropertyName = nameof(c.DirectKm),
+            HeaderText = "DirectKm",
+            ReadOnly = true,
+            Width = 50
+          };
           col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
           col.DefaultCellStyle.Format = "N2";
-          col.HeaderText = "DirectKm";
-          col.ReadOnly = true;
-          col.Width = 50;
 
           dgvInfo.Columns.Add(col);
         }
         {
-          DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn();
-
-          col.DataPropertyName = nameof(c.Climb);
+          DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn
+          {
+            DataPropertyName = nameof(c.Climb),
+            HeaderText = "Climb",
+            ReadOnly = true,
+            Width = 40
+          };
           col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
           col.DefaultCellStyle.Format = "N0";
-          col.HeaderText = "Climb";
-          col.ReadOnly = true;
-          col.Width = 40;
 
           dgvInfo.Columns.Add(col);
         }
         {
-          DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn();
-
-          col.DataPropertyName = nameof(c.OptimalLKm);
+          DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn
+          {
+            DataPropertyName = nameof(c.OptimalLKm),
+            HeaderText = "OptimalLKm",
+            ReadOnly = true,
+            Width = 50
+          };
           col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
           col.DefaultCellStyle.Format = "N2";
-          col.HeaderText = "OptimalLKm";
-          col.ReadOnly = true;
-          col.Width = 50;
 
           dgvInfo.Columns.Add(col);
         }
         {
-          DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn();
-
-          col.DataPropertyName = nameof(c.OptimalKm);
+          DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn
+          {
+            DataPropertyName = nameof(c.OptimalKm),
+            HeaderText = "OptimalKm",
+            ReadOnly = true,
+            Width = 50
+          };
           col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
           col.DefaultCellStyle.Format = "N2";
-          col.HeaderText = "OptimalKm";
-          col.ReadOnly = true;
-          col.Width = 50;
 
           dgvInfo.Columns.Add(col);
         }
         {
-          DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn();
-
-          col.DataPropertyName = nameof(c.OptimalCost);
+          DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn
+          {
+            DataPropertyName = nameof(c.OptimalCost),
+            HeaderText = "OptimalCost",
+            ReadOnly = true,
+            Width = 50
+          };
           col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
           col.DefaultCellStyle.Format = "N0";
-          col.HeaderText = "OptimalCost";
-          col.ReadOnly = true;
-          col.Width = 50;
 
           dgvInfo.Columns.Add(col);
         }
 
-        dgvInfo.CellToolTipTextNeeded += dgvInfo_CellToolTipTextNeeded;
+        dgvInfo.CellToolTipTextNeeded += DgvInfo_CellToolTipTextNeeded;
 
-        dgvPermut.CellToolTipTextNeeded += dgvPermut_CellToolTipTextNeeded;
+        dgvPermut.CellToolTipTextNeeded += DgvPermut_CellToolTipTextNeeded;
 
       }
       finally
@@ -332,7 +349,7 @@ namespace OCourse.Gui
 
     }
 
-    void dgvInfo_CellToolTipTextNeeded(object sender, DataGridViewCellToolTipTextNeededEventArgs e)
+    void DgvInfo_CellToolTipTextNeeded(object sender, DataGridViewCellToolTipTextNeededEventArgs e)
     {
       if (!string.IsNullOrEmpty(e.ToolTipText))
       { return; }
@@ -359,7 +376,7 @@ namespace OCourse.Gui
       return;
     }
 
-    private void cntSection_PartChanged(object sender, IList<SectionList> list)
+    private void CntSection_PartChanged(object sender, IList<SectionList> list)
     {
       List<CostSectionlist> info;
       if (list != null)
@@ -391,12 +408,12 @@ namespace OCourse.Gui
       }
     }
 
-    private void chkOnTop_CheckedChanged(object sender, EventArgs e)
+    private void ChkOnTop_CheckedChanged(object sender, EventArgs e)
     {
       TopMost = chkOnTop.Checked;
     }
 
-    private void btnExport_Click(object sender, EventArgs e)
+    private void BtnExport_Click(object sender, EventArgs e)
     {
       dlgSave.Filter = "*.shp | *.shp";
       if (dlgSave.ShowDialog(this) != DialogResult.OK)
@@ -406,7 +423,7 @@ namespace OCourse.Gui
       { cmd.Export(dlgSave.FileName); }
     }
 
-    private void btnImport_Click(object sender, EventArgs e)
+    private void BtnImport_Click(object sender, EventArgs e)
     {
       if (_vm == null)
       { return; }
@@ -418,7 +435,7 @@ namespace OCourse.Gui
       _vm.ImportRoutes(dlgOpen.FileName);
     }
 
-    private void dgvInfo_CurrentCellChanged(object sender, EventArgs e)
+    private void DgvInfo_CurrentCellChanged(object sender, EventArgs e)
     {
       if (_vm == null)
       { return; }
@@ -431,7 +448,7 @@ namespace OCourse.Gui
       _vm.SetSelectionedComb(selected);
     }
 
-    private void dgvVars_SelectionChanged(object sender, EventArgs e)
+    private void DgvVars_SelectionChanged(object sender, EventArgs e)
     {
       if (_suspend)
       { return; }
@@ -473,7 +490,7 @@ namespace OCourse.Gui
       return part;
     }
 
-    void dgvPermut_CellToolTipTextNeeded(object sender, DataGridViewCellToolTipTextNeededEventArgs e)
+    void DgvPermut_CellToolTipTextNeeded(object sender, DataGridViewCellToolTipTextNeededEventArgs e)
     {
       if (e.ColumnIndex < 0 || e.ColumnIndex >= dgvPermut.Columns.Count)
       { return; }
@@ -513,7 +530,7 @@ namespace OCourse.Gui
       return false;
     }
 
-    private void btnCalcSelection_Click(object sender, EventArgs e)
+    private void BtnCalcSelection_Click(object sender, EventArgs e)
     {
       WdgOutput wdg = new WdgOutput();
       Ocad.Control cStart = _cntSection.StartControl;
@@ -545,7 +562,7 @@ namespace OCourse.Gui
       wdg.ShowDialog(this);
     }
 
-    private void btnRelay_Click(object sender, EventArgs e)
+    private void BtnRelay_Click(object sender, EventArgs e)
     {
       WdgRelay wdg = new WdgRelay();
       List<CostFromTo> infos = null;
@@ -565,7 +582,7 @@ namespace OCourse.Gui
         return _wdgVariations;
       }
     }
-    private void btnPermutations_Click(object sender, EventArgs e)
+    private void BtnPermutations_Click(object sender, EventArgs e)
     {
       WdgPermutations wdg = WdgVariations;
 
@@ -575,7 +592,7 @@ namespace OCourse.Gui
       { wdg.Show(this); }
     }
 
-    private void btnTrack_Click(object sender, EventArgs e)
+    private void BtnTrack_Click(object sender, EventArgs e)
     {
       string error = TryRunTrack();
       if (error != null)
@@ -634,7 +651,7 @@ namespace OCourse.Gui
       return null;
     }
 
-    private void btnCreateScripts_Click(object sender, EventArgs e)
+    private void BtnCreateScripts_Click(object sender, EventArgs e)
     {
       dlgSave.Filter = "*.bat | *.bat";
       if (dlgSave.ShowDialog(this) != DialogResult.OK)
@@ -647,17 +664,16 @@ namespace OCourse.Gui
               _vm.LcpConfig.VeloPath, _vm.LcpConfig.Resolution, dlgSave.FileName);
     }
 
-    private void btnCancel_Click(object sender, EventArgs e)
+    private void BtnCancel_Click(object sender, EventArgs e)
     {
       _vm.CancelCalc();
     }
 
-    private void btnExportCourses_Click(object sender, EventArgs e)
+    private void BtnExportCourses_Click(object sender, EventArgs e)
     {
       IEnumerable<CostSectionlist> selectedCombs = CostSectionlist.GetUniqueCombs(GetSeletedCombs());
 
-      WdgExport wdg = new WdgExport();
-      wdg.TemplateFile = _vm.CourseFile;
+      WdgExport wdg = new WdgExport { TemplateFile = _vm.CourseFile };
       if (wdg.ShowDialog(this) != DialogResult.OK)
       { return; }
 
@@ -670,10 +686,10 @@ namespace OCourse.Gui
       }
     }
 
-    private void btnExportCsv_Click(object sender, EventArgs e)
+    private void BtnExportCsv_Click(object sender, EventArgs e)
     {
-      SaveFileDialog dlg = new SaveFileDialog();
-      dlg.Filter = "*.txt|*.txt";
+      SaveFileDialog dlg = new SaveFileDialog
+      { Filter = "*.txt|*.txt" };
       if (dlg.ShowDialog() != DialogResult.OK)
       { return; }
 
@@ -709,7 +725,7 @@ namespace OCourse.Gui
       }
     }
 
-    private void btnCalcPermut_Click(object sender, EventArgs e)
+    private void BtnCalcPermut_Click(object sender, EventArgs e)
     {
       try
       {
@@ -729,10 +745,25 @@ namespace OCourse.Gui
       if (_vm == null)
       { Vm = new OCourseVm(); }
 
-      if (Init != null)
-      { Init(this); }
-
+      Init?.Invoke(this);
       InitGridLayout();
+    }
+
+    private void MniSettings_Click(object sender, EventArgs e)
+    {
+      mniSave.Enabled = _vm?.CanSave ?? false;
+    }
+
+    private void MniOpen_Click(object sender, EventArgs e)
+    {
+      if (_vm == null)
+      { return; }
+
+      dlgOpen.Filter = "*.xml | *.xml";
+      if (dlgOpen.ShowDialog() != DialogResult.OK)
+      { return; }
+
+      _vm.LoadSettings(dlgOpen.FileName);
     }
   }
 }

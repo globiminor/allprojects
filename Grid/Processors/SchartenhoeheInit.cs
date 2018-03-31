@@ -293,8 +293,7 @@ namespace Grid.Processors
           }
           preNode = lineNode;
 
-          LineDzNodes dhLines;
-          if (!dhPos.TryGetValue(dh, out dhLines))
+          if (!dhPos.TryGetValue(dh, out LineDzNodes dhLines))
           {
             dhLines = new LineDzNodes();
             dhPos.Add(dh, dhLines);
@@ -376,8 +375,7 @@ namespace Grid.Processors
             { changes.Add(lineNode); }
             dh0 = dh;
           }
-          List<LinkedListNode<LineDz>> dhLines;
-          if (!dhPos.TryGetValue(dh, out dhLines))
+          if (!dhPos.TryGetValue(dh, out List<LinkedListNode<LineDz>> dhLines))
           {
             dhLines = new List<LinkedListNode<LineDz>>();
             dhPos.Add(dh, dhLines);
@@ -390,9 +388,8 @@ namespace Grid.Processors
           AddBorderInfo(start, dhPos);
         }
 
-        List<LinkedListNode<LineDz>> line0s;
         LinkedListNode<LineDz> flatBorderNode;
-        if (dhPos.TryGetValue(0, out line0s) && dhPos.Count > 1)
+        if (dhPos.TryGetValue(0, out List<LinkedListNode<LineDz>> line0s) && dhPos.Count > 1)
         { flatBorderNode = GetFlatBorderNode(line0s); }
         else
         { flatBorderNode = null; }
@@ -420,8 +417,7 @@ namespace Grid.Processors
             if (pre.DzSign == LineDz.NullSign)
             { continue; }
 
-            bool complete;
-            Polyline contour = GetContour(pre.Line, out complete);
+            Polyline contour = GetContour(pre.Line, out bool complete);
           }
         }
       }
@@ -550,8 +546,7 @@ namespace Grid.Processors
 
       private List<IMeshLine> GetFlatBorder(IMeshLine start, ITileMesh m, List<IMeshLine> saddleLines, bool clockWise)
       {
-        List<IMeshLine> border = new List<IMeshLine>();
-        border.Add(start);
+        List<IMeshLine> border = new List<IMeshLine> { start };
         IMeshLine x = clockWise ?
           start.Invers().GetPreviousTriLine().Invers() :
           start.GetNextTriLine();
@@ -649,11 +644,10 @@ namespace Grid.Processors
 
       public override string ToString()
       {
-        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        StringBuilder sb = new StringBuilder();
         if (!double.IsNaN(Dz))
         {
-          double angle;
-          char cAngle = MeshUtils.GetChar(Line, out angle);
+          char cAngle = MeshUtils.GetChar(Line, out double angle);
 
           sb.AppendFormat("{0} {1:N2} ,", cAngle, angle);
         }
@@ -704,8 +698,7 @@ namespace Grid.Processors
 
           GagaPoint p = new GagaPoint(_grid, tx, ty);
 
-          GagaPoints equalHeights;
-          if (_dict.TryGetValue(h, out equalHeights))
+          if (_dict.TryGetValue(h, out GagaPoints equalHeights))
           {
             equalHeights = new GagaPoints();
             _dict.Add(h, equalHeights);

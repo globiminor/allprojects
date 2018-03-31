@@ -37,11 +37,13 @@ namespace OcadTest.OEvent
     [TestMethod]
     public void Join2015()
     {
-      FuenferSettings settings = new FuenferSettings();
-      settings.PdfRoot = @"C:\daten\felix\kapreolo\karten\chomberg_bruetten\2015\Bahnen\";
-      settings.FrontBackground = @"C:\daten\felix\kapreolo\karten\chomberg_bruetten\2015\Bahnen\_Staffel.Front.pdf";
-      settings.RueckBackgroud = @"C:\daten\felix\kapreolo\karten\chomberg_bruetten\2015\Bahnen\_Staffel.Rueck.pdf";
-      settings.OutRoot = @"C:\daten\felix\kapreolo\karten\chomberg_bruetten\2015\Druck\Staffel";
+      FuenferSettings settings = new FuenferSettings
+      {
+        PdfRoot = @"C:\daten\felix\kapreolo\karten\chomberg_bruetten\2015\Bahnen\",
+        FrontBackground = @"C:\daten\felix\kapreolo\karten\chomberg_bruetten\2015\Bahnen\_Staffel.Front.pdf",
+        RueckBackgroud = @"C:\daten\felix\kapreolo\karten\chomberg_bruetten\2015\Bahnen\_Staffel.Rueck.pdf",
+        OutRoot = @"C:\daten\felix\kapreolo\karten\chomberg_bruetten\2015\Druck\Staffel"
+      };
 
       int maxPages = 80;
 
@@ -124,11 +126,13 @@ namespace OcadTest.OEvent
     [TestMethod]
     public void Join2017()
     {
-      FuenferSettings settings = new FuenferSettings();
-      settings.PdfRoot = @"C:\daten\felix\kapreolo\karten\stadlerberg\2017\Bahnen\";
-      settings.FrontBackground = @"C:\daten\felix\kapreolo\karten\stadlerberg\2017\Bahnen\_Staffel.Front.pdf";
-      settings.RueckBackgroud = @"C:\daten\felix\kapreolo\karten\stadlerberg\2017\Bahnen\_Staffel.Rueck.pdf";
-      settings.OutRoot = @"C:\daten\felix\kapreolo\karten\stadlerberg\2017\Druck\Staffel";
+      FuenferSettings settings = new FuenferSettings
+      {
+        PdfRoot = @"C:\daten\felix\kapreolo\karten\stadlerberg\2017\Bahnen\",
+        FrontBackground = @"C:\daten\felix\kapreolo\karten\stadlerberg\2017\Bahnen\_Staffel.Front.pdf",
+        RueckBackgroud = @"C:\daten\felix\kapreolo\karten\stadlerberg\2017\Bahnen\_Staffel.Rueck.pdf",
+        OutRoot = @"C:\daten\felix\kapreolo\karten\stadlerberg\2017\Druck\Staffel"
+      };
 
       int maxPages = 80;
 
@@ -294,8 +298,7 @@ namespace OcadTest.OEvent
           if (elem == null)
           { continue; }
 
-          Polyline line = elem.Geometry as Polyline;
-          if (line != null && line.Points.Count == 2)
+          if (elem.Geometry is Polyline line && line.Points.Count == 2)
           {
             line = line.Project(setup.Map2Prj);
             IPoint s = line.Points.First.Value;
@@ -366,12 +369,14 @@ namespace OcadTest.OEvent
           w.DeleteElements(delegate (ElementIndex i)
           { return i.Index == delIndex.Index; });
 
-          PointCollection replace = new PointCollection();
-          replace.Add(new Point2D(2675554.3, 1266229.6));
-          replace.Add(new Point2D(2675554.3, 1266217.6));
-          replace.Add(new Point2D(2675726.4, 1266217.6));
-          replace.Add(new Point2D(2675726.4, 1266287.6));
-          replace.Add(new Point2D(2675554.3, 1266287.6));
+          PointCollection replace = new PointCollection
+          {
+            new Point2D(2675554.3, 1266229.6),
+            new Point2D(2675554.3, 1266217.6),
+            new Point2D(2675726.4, 1266217.6),
+            new Point2D(2675726.4, 1266287.6),
+            new Point2D(2675554.3, 1266287.6)
+          };
           replaceElem.Geometry = replace.Project(setup.Prj2Map);
 
           w.Append(replaceElem);
@@ -394,17 +399,14 @@ namespace OcadTest.OEvent
 
         if (parts.Length < 3)
         { continue; }
-        int nr;
-        if (!int.TryParse(parts[parts.Length - 3], out nr))
+        if (!int.TryParse(parts[parts.Length - 3], out int nr))
         { continue; }
 
-        int leg;
-        if (!int.TryParse(parts[parts.Length - 2], out leg))
+        if (!int.TryParse(parts[parts.Length - 2], out int leg))
         { continue; }
 
         double id = nr + 0.1 * leg;
-        FrontRueck frontRueck;
-        if (!legs.TryGetValue(id, out frontRueck))
+        if (!legs.TryGetValue(id, out FrontRueck frontRueck))
         {
           frontRueck = new FrontRueck();
           legs.Add(id, frontRueck);

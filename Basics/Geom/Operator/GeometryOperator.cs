@@ -52,8 +52,7 @@ namespace Basics.Geom
               Point p = Point.Create(c);
               p[dim] = d;
 
-              List<IPoint> childPoints = new List<IPoint>(_parent._points);
-              childPoints.Add(p);
+              List<IPoint> childPoints = new List<IPoint>(_parent._points) { p };
 
               PartEnumerable childEnum = new PartEnumerable(childPoints, childDims, _parent._range);
               childEnumerables.Add(childEnum);
@@ -125,8 +124,7 @@ namespace Basics.Geom
         for (int i = 0; i < dim; i++)
         { _dimensions[i] = i; }
 
-        _points = new List<IPoint>();
-        _points.Add(_center);
+        _points = new List<IPoint> { _center };
       }
 
       private PartEnumerable(IList<IPoint> points, IList<int> dimensions, IBox range)
@@ -178,12 +176,10 @@ namespace Basics.Geom
       /// <returns></returns>
       public IPoint CachedPointAt(IPoint param)
       {
-        IPoint pointAt;
-
         if (_pointsAt == null)
         { _pointsAt = new SortedList<IPoint, IPoint>(new PointComparer()); }
 
-        if (_pointsAt.TryGetValue(param, out pointAt) == false)
+        if (_pointsAt.TryGetValue(param, out IPoint pointAt) == false)
         {
           IPoint paramAt = GeometryParamAt(param);
           pointAt = _paramGeom.PointAt(paramAt);
@@ -276,12 +272,11 @@ namespace Basics.Geom
         {
           if (_corners == null)
           {
-            CornerInfo cornerInfo;
             _corners = new SortedList<IPoint, CornerInfo>(new PointComparer());
             foreach (ParamPart part in this)
             {
               IPoint corner = part.BoxCorner;
-              if (_corners.TryGetValue(corner, out cornerInfo) == false)
+              if (_corners.TryGetValue(corner, out CornerInfo cornerInfo) == false)
               {
                 cornerInfo = new CornerInfo();
                 _corners.Add(corner, cornerInfo);
@@ -463,8 +458,7 @@ namespace Basics.Geom
             _borders = new List<ParamPart>(n);
             for (int j = n - 1; j >= 0; j--)
             {
-              ParamPart border = new ParamPart();
-              border._axes = new List<IPoint>(n - 1);
+              ParamPart border = new ParamPart { _axes = new List<IPoint>(n - 1) };
               if (j != n - 1)
               {
                 border._origin = Origin;
@@ -583,10 +577,11 @@ namespace Basics.Geom
 
       public static ParamPart CreatePart(ParamPart part, Point center)
       {
-        ParamPart p = new ParamPart();
-
-        p._origin = center;
-        p._axes = new List<IPoint>(part.Axes.Count);
+        ParamPart p = new ParamPart
+        {
+          _origin = center,
+          _axes = new List<IPoint>(part.Axes.Count)
+        };
 
         foreach (IPoint axis in part.Axes)
         {
@@ -662,8 +657,10 @@ namespace Basics.Geom
           _intersection = intersect.Near;
           _paramRelation = new ParamGeometryRelation(
             _x.ParamInfo.BaseGeometry, null, _y.ParamInfo.BaseGeometry, null,
-            Point.Create(_x.ParamInfo.BaseGeometry.Dimension));
-          _paramRelation.Intersection = _intersection;
+            Point.Create(_x.ParamInfo.BaseGeometry.Dimension))
+          {
+            Intersection = _intersection
+          };
           return;
         }
 
@@ -700,8 +697,7 @@ namespace Basics.Geom
           OrthogonalSystem xSys = XSystem(xGeom, xParam, xBox, xAt);
 
           IList<IPoint> yApprox;
-          ITangentGeometry yTan = yGeom as ITangentGeometry;
-          if (yTan != null)
+          if (yGeom is ITangentGeometry yTan)
           {
             yApprox = yTan.TangentAt(yParam);
           }
@@ -766,8 +762,10 @@ namespace Basics.Geom
         _intersection = xAt;
         _paramRelation = new ParamGeometryRelation(
           _x.ParamInfo.BaseGeometry, xParam, _y.ParamInfo.BaseGeometry, yParam,
-          Point.Create(_x.ParamInfo.BaseGeometry.Dimension));
-        _paramRelation.Intersection = _intersection;
+          Point.Create(_x.ParamInfo.BaseGeometry.Dimension))
+        {
+          Intersection = _intersection
+        };
 
       }
 
@@ -794,9 +792,8 @@ namespace Basics.Geom
       private static OrthogonalSystem XSystem(IParamGeometry xGeom, IPoint xParam, IBox xBox, IPoint xAt)
       {
         IList<IPoint> xApprox;
-        ITangentGeometry xTan = xGeom as ITangentGeometry;
         OrthogonalSystem xSys = null;
-        if (xTan != null)
+        if (xGeom is ITangentGeometry xTan)
         {
           xApprox = xTan.TangentAt(xParam);
           xSys = new OrthogonalSystem(xApprox.Count);
@@ -1060,16 +1057,16 @@ namespace Basics.Geom
       TrackOperatorProgress track = new TrackOperatorProgress();
       try
       {
-        track.RelationFound += intersects_RelationFound;
+        track.RelationFound += Intersects_RelationFound;
         IList<ParamGeometryRelation> firstRelation = CreateRelations(x, y, track);
       }
       finally
-      { track.RelationFound -= intersects_RelationFound; }
+      { track.RelationFound -= Intersects_RelationFound; }
 
       return track.Cancel;
     }
 
-    private static void intersects_RelationFound(object sender, ParamRelationCancelArgs args)
+    private static void Intersects_RelationFound(object sender, ParamRelationCancelArgs args)
     {
       args.Cancel = true;
     }
@@ -1267,8 +1264,7 @@ namespace Basics.Geom
       IGeometry p = y;
       while (!(p is IPoint) && p != null)
       {
-        IMultipartGeometry m = p as IMultipartGeometry;
-        if (m != null && m.HasSubparts)
+        if (p is IMultipartGeometry m && m.HasSubparts)
         {
           foreach (IGeometry part in m.Subparts())
           {
@@ -1286,8 +1282,7 @@ namespace Basics.Geom
 
     public static bool IsMultipart(IGeometry geom)
     {
-      IMultipartGeometry multi = geom as IMultipartGeometry;
-      return multi != null && multi.HasSubparts;
+      return geom is IMultipartGeometry multi && multi.HasSubparts;
     }
 
     private class ParamBox : IRelTanParamGeometry
@@ -1382,9 +1377,8 @@ namespace Basics.Geom
       public IList<ParamGeometryRelation> CreateRelations(IParamGeometry other,
         TrackOperatorProgress trackProgress)
       {
-        IRelParamGeometry relOther = other as IRelParamGeometry;
-        if (relOther != null)
-        { return GeometryOperator.CreateRelParamRelations(this, relOther, trackProgress); }
+        if (other is IRelParamGeometry relOther)
+        { return CreateRelParamRelations(this, relOther, trackProgress); }
 
         return GeometryOperator.CreateRelations(this, other, trackProgress);
       }

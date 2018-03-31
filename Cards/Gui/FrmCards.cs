@@ -71,20 +71,20 @@ namespace Cards.Gui
       { Application.DoEvents(); }
     }
 
-    private void FrmCards_Load(object sender, System.EventArgs e)
+    private void FrmCards_Load(object sender, EventArgs e)
     {
       if (Vm != null)
       { Vm.InitView(); }
     }
 
-    private void btnSolve_Click(object sender, System.EventArgs e)
+    private void BtnSolve_Click(object sender, EventArgs e)
     {
       if (Vm == null)
       { return; }
       Vm.ToggleSolve();
     }
 
-    private void btnRevert_Click(object sender, System.EventArgs e)
+    private void BtnRevert_Click(object sender, EventArgs e)
     {
       if (Vm == null)
       { return; }
@@ -93,21 +93,21 @@ namespace Cards.Gui
       cntCards.Invalidate();
     }
 
-    private void btnSlow_Click(object sender, System.EventArgs e)
+    private void BtnSlow_Click(object sender, EventArgs e)
     {
       if (Vm == null)
       { return; }
       Vm.DisplaySecs = Vm.DisplaySecs * 1.2;
     }
 
-    private void button1_Click(object sender, System.EventArgs e)
+    private void Button1_Click(object sender, EventArgs e)
     {
       if (Vm == null)
       { return; }
       Vm.DisplaySecs = Vm.DisplaySecs / 1.2;
     }
 
-    private void mniSpider4_Click(object sender, System.EventArgs e)
+    private void MniSpider4_Click(object sender, EventArgs e)
     {
       if (Vm == null)
       { return; }
@@ -117,7 +117,7 @@ namespace Cards.Gui
       cntCards.Invalidate();
     }
 
-    private void mniTriPeaks_Click(object sender, System.EventArgs e)
+    private void MniTriPeaks_Click(object sender, EventArgs e)
     {
       if (Vm == null)
       { return; }
@@ -128,7 +128,7 @@ namespace Cards.Gui
       cntCards.Invalidate();
     }
 
-    private void mniSave_Click(object sender, System.EventArgs e)
+    private void MniSave_Click(object sender, EventArgs e)
     {
       if (Vm == null)
       { return; }
@@ -139,7 +139,7 @@ namespace Cards.Gui
       Vm.Save(dlg.FileName);
     }
 
-    private void mniLoad_Click(object sender, System.EventArgs e)
+    private void MniLoad_Click(object sender, EventArgs e)
     {
       if (Vm == null)
       { return; }
@@ -154,7 +154,7 @@ namespace Cards.Gui
       Vm.Load(load);
     }
 
-    private void mniNew_Click(object sender, System.EventArgs e)
+    private void MniNew_Click(object sender, EventArgs e)
     {
       if (Vm == null)
       { return; }
@@ -172,7 +172,7 @@ namespace Cards.Gui
       cntCards.Invalidate();
     }
 
-    private void mniCapture_Click(object sender, System.EventArgs e)
+    private void MniCapture_Click(object sender, EventArgs e)
     {
       if (Vm == null)
       { return; }

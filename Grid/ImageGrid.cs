@@ -45,19 +45,22 @@ namespace Grid
     { LockBits(); }
     public BitmapData LockBits()
     {
-      _data = _bitmap.LockBits(new Rectangle(0, 0, _bitmap.Width, _bitmap.Height),
-        ImageLockMode.ReadOnly, _bitmap.PixelFormat);
-      _pixelFormat = _bitmap.PixelFormat;
       if (_bitmap.PixelFormat == PixelFormat.Format8bppIndexed)
       {
+        _data = _bitmap.LockBits(new Rectangle(0, 0, _bitmap.Width, _bitmap.Height),
+        ImageLockMode.ReadOnly, _bitmap.PixelFormat);
+        _pixelFormat = _bitmap.PixelFormat;
         _palette = _bitmap.Palette.Entries;
       }
       return _data;
     }
     public void UnlockBits()
     {
-      _bitmap.UnlockBits(_data);
-      _data = null;
+      if (_data != null)
+      {
+        _bitmap.UnlockBits(_data);
+        _data = null;
+      }
     }
 
     public override Color this[int ix, int iy]

@@ -138,10 +138,8 @@ namespace Ocad
     }
     public static OcadReader Open(Stream stream)
     {
-      int iSectionMark;
-      int iVersion;
       EndianReader reader = new EndianReader(stream, Encoding.UTF7);
-      Version(reader, out iSectionMark, out iVersion);
+      Version(reader, out int iSectionMark, out int iVersion);
       OcadReader ocdReader = Reader(iVersion);
       ocdReader._reader = reader;
       ocdReader.Init(iSectionMark, iVersion);
@@ -154,9 +152,7 @@ namespace Ocad
       EndianReader reader = new EndianReader(
         new FileStream(ocdName, FileMode.Open, FileAccess.Read), Encoding.UTF7);
 
-      int iSectionMark;
-      int iVersion;
-      Version(reader, out iSectionMark, out iVersion);
+      Version(reader, out int iSectionMark, out int iVersion);
       OcadReader ocdReader = Reader(iVersion);
       ocdReader._reader = reader;
       ocdReader.Init(iSectionMark, iVersion);
@@ -211,6 +207,7 @@ namespace Ocad
     public abstract Setup ReadSetup();
 
     public abstract void WriteElementHeader(EndianWriter writer, Element element);
+    public abstract void WriteElementContent(EndianWriter writer, Element element);
     public abstract void WriteElementSymbol(EndianWriter writer, int symbol);
     public abstract int ReadElementLength();
     public abstract int CalcElementLength(Element element);
@@ -309,8 +306,8 @@ namespace Ocad
       { return false; }
       if (_indexBlockStarts == null)
       {
-        _indexBlockStarts = new List<int>();
-        _indexBlockStarts.Add(_fileParam.FirstIndexBlock);
+        _indexBlockStarts = new List<int>
+        {          _fileParam.FirstIndexBlock        };
       }
       int iBlock = 0;
       int p = _indexBlockStarts[iBlock];
@@ -388,8 +385,8 @@ namespace Ocad
         { return pCoord.GetPoint(); }
         else
         {
-          PointCollection pPoints = new PointCollection();
-          pPoints.Add(pCoord.GetPoint());
+          PointCollection pPoints = new PointCollection
+          { pCoord.GetPoint() };
           for (int iPoint = 1; iPoint < nPoint; iPoint++)
           { pPoints.Add(ReadCoord().GetPoint()); }
           return pPoints;
@@ -582,8 +579,7 @@ namespace Ocad
     public string ReadStringParam(StringParamIndex index)
     {
       _reader.BaseStream.Seek(index.FilePosition, SeekOrigin.Begin);
-      char e1;
-      string sResult = ReadTab(255, out e1);
+      string sResult = ReadTab(255, out char e1);
 
       int max = index.Size;
       char e0 = e1;
@@ -624,12 +620,14 @@ namespace Ocad
         StringParamIndex index;
         do
         {
-          index = new StringParamIndex();
-          index.IndexPosition = _reader.BaseStream.Position;
-          index.FilePosition = _reader.ReadInt32();
-          index.Size = _reader.ReadInt32();
-          index.Type = (StringType)_reader.ReadInt32();
-          index.ElemNummer = _reader.ReadInt32();
+          index = new StringParamIndex
+          {
+            IndexPosition = _reader.BaseStream.Position,
+            FilePosition = _reader.ReadInt32(),
+            Size = _reader.ReadInt32(),
+            Type = (StringType)_reader.ReadInt32(),
+            ElemNummer = _reader.ReadInt32()
+          };
 
           indexList.Add(index);
 
@@ -664,11 +662,10 @@ namespace Ocad
       _reader.BaseStream.Seek(_fileParam.FirstStrIdxBlock + 4, SeekOrigin.Begin);
       _reader.BaseStream.Seek(_reader.ReadInt32(), SeekOrigin.Begin);
 
-      char e;
-      return ReadTab(1024, out e);
+      return ReadTab(1024, out char e);
     }
 
-    public Element ReadControlGeometry(Control control,
+    public virtual Element ReadControlGeometry(Control control,
       IList<StringParamIndex> settingIndexList)
     {
       foreach (StringParamIndex strIdx in settingIndexList)
@@ -676,8 +673,7 @@ namespace Ocad
         if (strIdx.Type == StringType.Control)
         {
           _reader.BaseStream.Seek(strIdx.FilePosition, SeekOrigin.Begin);
-          char e;
-          string name = ReadTab(control.Name.Length + 1, out e);
+          string name = ReadTab(control.Name.Length + 1, out char e);
           if (name == control.Name)
           {
             string stringParam = ReadStringParam(strIdx);
@@ -752,8 +748,7 @@ namespace Ocad
       }
 
       _reader.BaseStream.Seek(courseIndex.FilePosition, SeekOrigin.Begin);
-      char e;
-      return ReadTab(256, out e);
+      return ReadTab(256, out char e);
     }
 
     protected static SectionCollection ReadSectionList(IList<string> parts, ref int partIdx)
@@ -816,8 +811,7 @@ namespace Ocad
         }
         else if (part[0] == CoursePar.ForkKey)
         { // forks
-          int nForks;
-          if (Int32.TryParse(part.Substring(1), out nForks) == false)
+          if (Int32.TryParse(part.Substring(1), out int nForks) == false)
           {
             nForks = -1;
             Debug.Assert(false, "Expected Tab r<number of forks>, got " + part);
@@ -898,9 +892,8 @@ namespace Ocad
         {
           ReadControlGeometry((Control)section, indexList);
         }
-        else if (section is SplitSection)
+        else if (section is SplitSection fork)
         {
-          SplitSection fork = (SplitSection)section;
           foreach (SplitSection.Branch branch in fork.Branches)
           { ReadSectionGeometry(branch, indexList); }
         }
@@ -943,8 +936,7 @@ namespace Ocad
         if (idx.Type == StringType.Course)
         {
           _reader.BaseStream.Seek(idx.FilePosition, SeekOrigin.Begin);
-          char e;
-          string sName = ReadTab(courseName.Length + 2, out e);
+          string sName = ReadTab(courseName.Length + 2, out char e);
 
           if (sName == courseName)
           {

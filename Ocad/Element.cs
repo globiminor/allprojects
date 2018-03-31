@@ -47,19 +47,22 @@ namespace Ocad
     }
     public static Coord Create(IPoint point, Flags code)
     {
-      Coord coord = new Coord();
-
-      coord._ix = (((int)point.X) << 8) | ((int)code % 256);
-      coord._iy = (((int)point.Y) << 8) | ((int)code >> 8);
+      Coord coord = new Coord
+      {
+        _ix = (((int)point.X) << 8) | ((int)code % 256),
+        _iy = (((int)point.Y) << 8) | ((int)code >> 8)
+      };
 
       return coord;
     }
 
     public Point2D GetPoint()
     {
-      Point2D p = new Point2D();
-      p.X = GetGeomPart(_ix);
-      p.Y = GetGeomPart(_iy);
+      Point2D p = new Point2D
+      {
+        X = GetGeomPart(_ix),
+        Y = GetGeomPart(_iy)
+      };
       return p;
     }
 
@@ -123,19 +126,18 @@ namespace Ocad
 
   public class ElementV9 : Element
   {
-    private int _color; // color or color index
-    private int _lineWidth; // units = 0.01 mm
-    private int _flags;
-
     public ElementV9(bool isGeometryProjected)
       : base(isGeometryProjected)
     { }
 
+    public int Color { get; set; }       // color or color index
+    public int LineWidth { get; set; }   // units = 0.01 mm
+    public int Flags { get; set; }
+
     public override ElementIndex GetIndex(OcadReader reader)
     {
-      ElementIndex index = new ElementIndex(Geometry.Extent);
-
-      index.Symbol = Symbol;
+      ElementIndex index = new ElementIndex(Geometry.Extent)
+      { Symbol = Symbol };
 
       index.CalcElementLength(reader, this);
 
@@ -160,22 +162,6 @@ namespace Ocad
       }
       return 0;
     }
-
-    public int Color
-    {
-      get { return _color; }
-      set { _color = value; }
-    }
-    public int LineWidth
-    {
-      get { return _lineWidth; }
-      set { _lineWidth = value; }
-    }
-    public int Flags
-    {
-      get { return _flags; }
-      set { _flags = value; }
-    }
   }
   public class ElementV8 : Element
   {
@@ -195,9 +181,8 @@ namespace Ocad
 
     public override ElementIndex GetIndex(OcadReader reader)
     {
-      ElementIndex index = new ElementIndex(Geometry.Extent);
-
-      index.Symbol = Symbol;
+      ElementIndex index = new ElementIndex(Geometry.Extent)
+      { Symbol = Symbol };
       index.CalcElementLength(reader, this);
 
       index.ObjectType = (short)Type;
@@ -209,67 +194,29 @@ namespace Ocad
   }
   public abstract class Element
   {
-    private int _symbol;
-    private int _deleteSymbol;
-    private IGeometry _geometry;
-    private GeomType _type;
-    private string _text;
-    private bool _unicodeText;
-
-    private double _angle;
-    private bool _isProjected;
-
-    private int _index;
-    private double _height;
-
     public Element(bool isGeometryProjected)
     {
-      _isProjected = isGeometryProjected;
+      IsGeometryProjected = isGeometryProjected;
 
-      _text = "";
-      _index = -1;
-    }
-
-    public bool IsGeometryProjected
-    {
-      get { return _isProjected; }
-      set { _isProjected = value; }
-    }
-    public int Symbol
-    {
-      get { return _symbol; }
-      set { _symbol = value; }
+      Text = "";
+      Index = -1;
     }
 
-    public GeomType Type
-    {
-      [System.Diagnostics.DebuggerStepThrough]
-      get
-      { return _type; }
-      [System.Diagnostics.DebuggerStepThrough]
-      set
-      { _type = value; }
-    }
+    public bool IsGeometryProjected { get; set; }
+    public int Symbol { get; set; }
 
-    public bool UnicodeText
-    {
-      get
-      { return _unicodeText; }
-      set
-      { _unicodeText = value; }
-    }
+    public ObjectStringType ObjectStringType { get; set; }
+    public string ObjectString { get; set; }
 
-    public int DeleteSymbol
-    {
-      get
-      { return _deleteSymbol; }
-      set
-      { _deleteSymbol = value; }
-    }
+    public GeomType Type { get; set; }
+
+    public bool UnicodeText { get; set; }
+
+    public int DeleteSymbol { get; set; }
 
     public int PointCount()
     {
-      return PointCount(_geometry);
+      return PointCount(Geometry);
     }
     internal static int PointCount(IGeometry geometry)
     {
@@ -314,48 +261,30 @@ namespace Ocad
 
     public virtual int TextCount()
     {
-      if (_text == null || _text.Length == 0)
+      if (Text == null || Text.Length == 0)
       { return 0; }
 
-      if (_unicodeText)
-      { return _text.Length / 4 + 1; }
+      if (UnicodeText)
+      { return Text.Length / 4 + 1; }
       else
-      { return _text.Length / 8 + 1; }
+      { return Text.Length / 8 + 1; }
+    }
+    public short ObjectStringCount()
+    {
+      if ((ObjectString?.Length ?? 0) == 0)
+      { return 0; }
+      return (short)new System.Text.UnicodeEncoding().GetByteCount(ObjectString);
     }
 
-    public int Index
-    {
-      get { return _index; }
-      set { _index = value; }
-    }
+    public int Index { get; set; }
 
-    public IGeometry Geometry
-    {
-      [System.Diagnostics.DebuggerStepThrough]
-      get
-      { return _geometry; }
-      [System.Diagnostics.DebuggerStepThrough]
-      set
-      { _geometry = value; }
-    }
+    public IGeometry Geometry { get; set; }
 
-    public string Text
-    {
-      get { return _text; }
-      set { _text = value; }
-    }
+    public string Text { get; set; }
 
-    public double Angle
-    {
-      get { return _angle; }
-      set { _angle = value; }
-    }
+    public double Angle { get; set; }
 
-    public double Height
-    {
-      get { return _height; }
-      set { _height = value; }
-    }
+    public double Height { get; set; }
 
     public int ServerObjectId { get; set; }
     private DateTime? _creationDate;
@@ -374,20 +303,26 @@ namespace Ocad
 
     public override string ToString()
     {
-      string s = string.Format(
-        "Symbol      : {0,5}\n" +
-        "Object Type : {1}\n" +
-        "Text        : {2}\n" +
-        "Angle [°]   : {3,5}\n" +
-        "# of Points : {4,5}\n", _symbol, _type, _text,
-        _angle * 180 / Math.PI, PointCount());
-      //      n = element->nPoint;
-      //      for (i = 0; i < n; i++) 
-      //      {
-      //        OCListCoord(fout,element->points + i);
-      //      }
-
-      return s;
+      if (ObjectStringType == ObjectStringType.None)
+      {
+        string s = string.Format(
+          "Symbol      : {0,5}\n" +
+          "Object Type : {1}\n" +
+          "Text        : {2}\n" +
+          "Angle [°]   : {3,5}\n" +
+          "# of Points : {4,5}\n", Symbol, Type, Text,
+          Angle * 180 / Math.PI, PointCount());
+        //      n = element->nPoint;
+        //      for (i = 0; i < n; i++) 
+        //      {
+        //        OCListCoord(fout,element->points + i);
+        //      }
+        return s;
+      }
+      else
+      {
+        return $"Symbol: {Symbol,5}; ObjTyp: {Type}; CsTyp: {ObjectStringType}; CsTxt: {ObjectString}";
+      }
     }
 
     public abstract ElementIndex GetIndex(OcadReader reader);

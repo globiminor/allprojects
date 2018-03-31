@@ -212,9 +212,9 @@ namespace OMapScratch
     {
       Pnt t = point.Trans(matrix);
 
-      FormattedText fTxt = new FormattedText(text, System.Globalization.CultureInfo.CurrentCulture, System.Windows.FlowDirection.LeftToRight,
-        new Typeface("Arial"), _fontSize * matrix[0], brush);
-      fTxt.TextAlignment = System.Windows.TextAlignment.Center;
+      FormattedText fTxt = new FormattedText(text, System.Globalization.CultureInfo.CurrentCulture,
+        System.Windows.FlowDirection.LeftToRight, new Typeface("Arial"), _fontSize * matrix[0], brush)
+      { TextAlignment = System.Windows.TextAlignment.Center };
       canvas.DrawText(fTxt, new System.Windows.Point(t.X, t.Y));
     }
 

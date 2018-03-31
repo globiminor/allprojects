@@ -77,6 +77,11 @@
       this._cntConfig = new LeastCostPathUI.CntConfigView();
       this.btnCancel = new System.Windows.Forms.Button();
       this._lstDisplayType = new System.Windows.Forms.ComboBox();
+      this.mnuAll = new System.Windows.Forms.MenuStrip();
+      this.mniSettings = new System.Windows.Forms.ToolStripMenuItem();
+      this.mniOpen = new System.Windows.Forms.ToolStripMenuItem();
+      this.mniSave = new System.Windows.Forms.ToolStripMenuItem();
+      this.mniSaveAs = new System.Windows.Forms.ToolStripMenuItem();
       this.pnlCourse.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.splCourse)).BeginInit();
       this.splCourse.Panel1.SuspendLayout();
@@ -88,24 +93,25 @@
       this.splVars.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.dgvInfo)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.dgvPermut)).BeginInit();
+      this.mnuAll.SuspendLayout();
       this.SuspendLayout();
       // 
       // btnCourse
       // 
       this.btnCourse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-      this.btnCourse.Location = new System.Drawing.Point(644, 4);
+      this.btnCourse.Location = new System.Drawing.Point(644, 25);
       this.btnCourse.Name = "btnCourse";
       this.btnCourse.Size = new System.Drawing.Size(26, 23);
       this.btnCourse.TabIndex = 8;
       this.btnCourse.Text = "...";
       this.btnCourse.UseVisualStyleBackColor = true;
-      this.btnCourse.Click += new System.EventHandler(this.btnCourse_Click);
+      this.btnCourse.Click += new System.EventHandler(this.BtnCourse_Click);
       // 
       // _txtCourse
       // 
-      this._txtCourse.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+      this._txtCourse.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-      this._txtCourse.Location = new System.Drawing.Point(88, 6);
+      this._txtCourse.Location = new System.Drawing.Point(88, 27);
       this._txtCourse.Name = "_txtCourse";
       this._txtCourse.Size = new System.Drawing.Size(550, 20);
       this._txtCourse.TabIndex = 7;
@@ -113,7 +119,7 @@
       // label3
       // 
       this.label3.AutoSize = true;
-      this.label3.Location = new System.Drawing.Point(12, 9);
+      this.label3.Location = new System.Drawing.Point(12, 30);
       this.label3.Name = "label3";
       this.label3.Size = new System.Drawing.Size(59, 13);
       this.label3.TabIndex = 6;
@@ -131,7 +137,7 @@
       // label4
       // 
       this.label4.AutoSize = true;
-      this.label4.Location = new System.Drawing.Point(12, 138);
+      this.label4.Location = new System.Drawing.Point(12, 160);
       this.label4.Name = "label4";
       this.label4.Size = new System.Drawing.Size(40, 13);
       this.label4.TabIndex = 10;
@@ -141,7 +147,7 @@
       // 
       this._lblProgress.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
       this._lblProgress.AutoSize = true;
-      this._lblProgress.Location = new System.Drawing.Point(85, 412);
+      this._lblProgress.Location = new System.Drawing.Point(85, 427);
       this._lblProgress.Name = "_lblProgress";
       this._lblProgress.Size = new System.Drawing.Size(48, 13);
       this._lblProgress.TabIndex = 15;
@@ -150,30 +156,30 @@
       // btnBackCalc
       // 
       this.btnBackCalc.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-      this.btnBackCalc.Location = new System.Drawing.Point(15, 301);
+      this.btnBackCalc.Location = new System.Drawing.Point(15, 316);
       this.btnBackCalc.Name = "btnBackCalc";
       this.btnBackCalc.Size = new System.Drawing.Size(54, 46);
       this.btnBackCalc.TabIndex = 16;
       this.btnBackCalc.Text = "Back Calc";
       this.btnBackCalc.UseVisualStyleBackColor = true;
-      this.btnBackCalc.Click += new System.EventHandler(this.btnBackCalc_Click);
+      this.btnBackCalc.Click += new System.EventHandler(this.BtnBackCalc_Click);
       // 
       // chkOnTop
       // 
       this.chkOnTop.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
       this.chkOnTop.AutoSize = true;
-      this.chkOnTop.Location = new System.Drawing.Point(12, 411);
+      this.chkOnTop.Location = new System.Drawing.Point(12, 426);
       this.chkOnTop.Name = "chkOnTop";
       this.chkOnTop.Size = new System.Drawing.Size(62, 17);
       this.chkOnTop.TabIndex = 17;
       this.chkOnTop.Text = "On Top";
       this.chkOnTop.UseVisualStyleBackColor = true;
-      this.chkOnTop.CheckedChanged += new System.EventHandler(this.chkOnTop_CheckedChanged);
+      this.chkOnTop.CheckedChanged += new System.EventHandler(this.ChkOnTop_CheckedChanged);
       // 
       // pnlCourse
       // 
-      this.pnlCourse.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+      this.pnlCourse.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
       this.pnlCourse.AutoScroll = true;
       this.pnlCourse.BackColor = System.Drawing.SystemColors.Window;
@@ -181,13 +187,14 @@
       this.pnlCourse.Controls.Add(this._cntSection);
       this.pnlCourse.Location = new System.Drawing.Point(0, 30);
       this.pnlCourse.Name = "pnlCourse";
-      this.pnlCourse.Size = new System.Drawing.Size(172, 243);
+      this.pnlCourse.Size = new System.Drawing.Size(172, 236);
       this.pnlCourse.TabIndex = 19;
       // 
       // _cntSection
       // 
       this._cntSection.BackColor = System.Drawing.SystemColors.Window;
       this._cntSection.BoldCombination = null;
+      this._cntSection.Course = null;
       this._cntSection.Location = new System.Drawing.Point(1, 1);
       this._cntSection.Name = "_cntSection";
       this._cntSection.Size = new System.Drawing.Size(160, 271);
@@ -197,32 +204,32 @@
       // btnExport
       // 
       this.btnExport.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-      this.btnExport.Location = new System.Drawing.Point(15, 353);
+      this.btnExport.Location = new System.Drawing.Point(15, 368);
       this.btnExport.Name = "btnExport";
       this.btnExport.Size = new System.Drawing.Size(54, 23);
       this.btnExport.TabIndex = 20;
       this.btnExport.Text = "Export";
       this.btnExport.UseVisualStyleBackColor = true;
-      this.btnExport.Click += new System.EventHandler(this.btnExport_Click);
+      this.btnExport.Click += new System.EventHandler(this.BtnExport_Click);
       // 
       // btnImport
       // 
       this.btnImport.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-      this.btnImport.Location = new System.Drawing.Point(15, 382);
+      this.btnImport.Location = new System.Drawing.Point(15, 397);
       this.btnImport.Name = "btnImport";
       this.btnImport.Size = new System.Drawing.Size(54, 23);
       this.btnImport.TabIndex = 21;
       this.btnImport.Text = "Import";
       this.btnImport.UseVisualStyleBackColor = true;
-      this.btnImport.Click += new System.EventHandler(this.btnImport_Click);
+      this.btnImport.Click += new System.EventHandler(this.BtnImport_Click);
       // 
       // splCourse
       // 
-      this.splCourse.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+      this.splCourse.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
       this.splCourse.FixedPanel = System.Windows.Forms.FixedPanel.Panel2;
-      this.splCourse.Location = new System.Drawing.Point(88, 132);
+      this.splCourse.Location = new System.Drawing.Point(88, 154);
       this.splCourse.Name = "splCourse";
       // 
       // splCourse.Panel1
@@ -233,7 +240,7 @@
       // splCourse.Panel2
       // 
       this.splCourse.Panel2.Controls.Add(this.splVars);
-      this.splCourse.Size = new System.Drawing.Size(550, 273);
+      this.splCourse.Size = new System.Drawing.Size(550, 266);
       this.splCourse.SplitterDistance = 172;
       this.splCourse.TabIndex = 22;
       // 
@@ -266,8 +273,8 @@
       this.splVars.Panel2.Controls.Add(this.lblPermuts);
       this.splVars.Panel2.Controls.Add(this.btnCalcPermut);
       this.splVars.Panel2.Controls.Add(this.dgvPermut);
-      this.splVars.Size = new System.Drawing.Size(374, 273);
-      this.splVars.SplitterDistance = 157;
+      this.splVars.Size = new System.Drawing.Size(374, 266);
+      this.splVars.SplitterDistance = 152;
       this.splVars.TabIndex = 1;
       // 
       // btnExportCsv
@@ -279,7 +286,7 @@
       this.btnExportCsv.TabIndex = 38;
       this.ttp.SetToolTip(this.btnExportCsv, "Export selected courses");
       this.btnExportCsv.UseVisualStyleBackColor = true;
-      this.btnExportCsv.Click += new System.EventHandler(this.btnExportCsv_Click);
+      this.btnExportCsv.Click += new System.EventHandler(this.BtnExportCsv_Click);
       // 
       // lblVariations
       // 
@@ -308,14 +315,14 @@
       this.btnExportCourses.TabIndex = 35;
       this.ttp.SetToolTip(this.btnExportCourses, "Export selected courses");
       this.btnExportCourses.UseVisualStyleBackColor = true;
-      this.btnExportCourses.Click += new System.EventHandler(this.btnExportCourses_Click);
+      this.btnExportCourses.Click += new System.EventHandler(this.BtnExportCourses_Click);
       // 
       // dgvInfo
       // 
       this.dgvInfo.AllowUserToAddRows = false;
       this.dgvInfo.AllowUserToOrderColumns = true;
-      this.dgvInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+      this.dgvInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
       dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
       dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
@@ -347,9 +354,9 @@
       this.dgvInfo.RowHeadersDefaultCellStyle = dataGridViewCellStyle3;
       this.dgvInfo.RowHeadersVisible = false;
       this.dgvInfo.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-      this.dgvInfo.Size = new System.Drawing.Size(374, 124);
+      this.dgvInfo.Size = new System.Drawing.Size(374, 119);
       this.dgvInfo.TabIndex = 0;
-      this.dgvInfo.CurrentCellChanged += new System.EventHandler(this.dgvInfo_CurrentCellChanged);
+      this.dgvInfo.CurrentCellChanged += new System.EventHandler(this.DgvInfo_CurrentCellChanged);
       // 
       // lblEstime
       // 
@@ -448,49 +455,49 @@
       this.btnCalcPermut.TabIndex = 2;
       this.ttp.SetToolTip(this.btnCalcPermut, "Calculate permutions");
       this.btnCalcPermut.UseVisualStyleBackColor = true;
-      this.btnCalcPermut.Click += new System.EventHandler(this.btnCalcPermut_Click);
+      this.btnCalcPermut.Click += new System.EventHandler(this.BtnCalcPermut_Click);
       // 
       // dgvPermut
       // 
-      this.dgvPermut.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+      this.dgvPermut.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
       this.dgvPermut.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
       this.dgvPermut.Location = new System.Drawing.Point(0, 51);
       this.dgvPermut.Name = "dgvPermut";
-      this.dgvPermut.Size = new System.Drawing.Size(374, 61);
+      this.dgvPermut.Size = new System.Drawing.Size(374, 59);
       this.dgvPermut.TabIndex = 0;
       this.ttp.SetToolTip(this.dgvPermut, "Select combinations to be shown in map");
-      this.dgvPermut.SelectionChanged += new System.EventHandler(this.dgvVars_SelectionChanged);
+      this.dgvPermut.SelectionChanged += new System.EventHandler(this.DgvVars_SelectionChanged);
       // 
       // btnCreateScripts
       // 
       this.btnCreateScripts.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-      this.btnCreateScripts.Location = new System.Drawing.Point(15, 249);
+      this.btnCreateScripts.Location = new System.Drawing.Point(15, 264);
       this.btnCreateScripts.Name = "btnCreateScripts";
       this.btnCreateScripts.Size = new System.Drawing.Size(54, 46);
       this.btnCreateScripts.TabIndex = 32;
       this.btnCreateScripts.Text = "Create\r\nScripts";
       this.ttp.SetToolTip(this.btnCreateScripts, "Create Bat file that can be uses as input for LeastCostPathUI.exe");
       this.btnCreateScripts.UseVisualStyleBackColor = true;
-      this.btnCreateScripts.Click += new System.EventHandler(this.btnCreateScripts_Click);
+      this.btnCreateScripts.Click += new System.EventHandler(this.BtnCreateScripts_Click);
       // 
       // btnCalcSelection
       // 
       this.btnCalcSelection.Enabled = false;
-      this.btnCalcSelection.Location = new System.Drawing.Point(15, 191);
+      this.btnCalcSelection.Location = new System.Drawing.Point(15, 213);
       this.btnCalcSelection.Name = "btnCalcSelection";
       this.btnCalcSelection.Size = new System.Drawing.Size(54, 46);
       this.btnCalcSelection.TabIndex = 26;
       this.btnCalcSelection.Text = "Calc ...-...";
       this.btnCalcSelection.UseVisualStyleBackColor = true;
-      this.btnCalcSelection.Click += new System.EventHandler(this.btnCalcSelection_Click);
+      this.btnCalcSelection.Click += new System.EventHandler(this.BtnCalcSelection_Click);
       // 
       // _lstVelo
       // 
       this._lstVelo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
       this._lstVelo.FormattingEnabled = true;
-      this._lstVelo.Location = new System.Drawing.Point(643, 135);
+      this._lstVelo.Location = new System.Drawing.Point(643, 158);
       this._lstVelo.Name = "_lstVelo";
       this._lstVelo.Size = new System.Drawing.Size(136, 21);
       this._lstVelo.TabIndex = 27;
@@ -499,7 +506,7 @@
       // lblVelo
       // 
       this.lblVelo.AutoSize = true;
-      this.lblVelo.Location = new System.Drawing.Point(422, 116);
+      this.lblVelo.Location = new System.Drawing.Point(422, 133);
       this.lblVelo.Name = "lblVelo";
       this.lblVelo.Size = new System.Drawing.Size(67, 13);
       this.lblVelo.TabIndex = 28;
@@ -507,41 +514,41 @@
       // 
       // btnRelay
       // 
-      this.btnRelay.Location = new System.Drawing.Point(644, 179);
+      this.btnRelay.Location = new System.Drawing.Point(644, 202);
       this.btnRelay.Name = "btnRelay";
       this.btnRelay.Size = new System.Drawing.Size(75, 23);
       this.btnRelay.TabIndex = 29;
       this.btnRelay.Text = "Relay";
       this.btnRelay.UseVisualStyleBackColor = true;
       this.btnRelay.Visible = false;
-      this.btnRelay.Click += new System.EventHandler(this.btnRelay_Click);
+      this.btnRelay.Click += new System.EventHandler(this.BtnRelay_Click);
       // 
       // btnTrack
       // 
-      this.btnTrack.Location = new System.Drawing.Point(644, 237);
+      this.btnTrack.Location = new System.Drawing.Point(644, 260);
       this.btnTrack.Name = "btnTrack";
       this.btnTrack.Size = new System.Drawing.Size(75, 23);
       this.btnTrack.TabIndex = 30;
       this.btnTrack.Text = "Track";
       this.btnTrack.UseVisualStyleBackColor = true;
       this.btnTrack.Visible = false;
-      this.btnTrack.Click += new System.EventHandler(this.btnTrack_Click);
+      this.btnTrack.Click += new System.EventHandler(this.BtnTrack_Click);
       // 
       // btnPermutations
       // 
-      this.btnPermutations.Location = new System.Drawing.Point(644, 208);
+      this.btnPermutations.Location = new System.Drawing.Point(644, 231);
       this.btnPermutations.Name = "btnPermutations";
       this.btnPermutations.Size = new System.Drawing.Size(80, 23);
       this.btnPermutations.TabIndex = 31;
       this.btnPermutations.Text = "Permutations";
       this.btnPermutations.UseVisualStyleBackColor = true;
       this.btnPermutations.Visible = false;
-      this.btnPermutations.Click += new System.EventHandler(this.btnPermutations_Click);
+      this.btnPermutations.Click += new System.EventHandler(this.BtnPermutations_Click);
       // 
       // _cntConfig
       // 
       this._cntConfig.ConfigVm = null;
-      this._cntConfig.Location = new System.Drawing.Point(88, 29);
+      this._cntConfig.Location = new System.Drawing.Point(88, 46);
       this._cntConfig.Name = "_cntConfig";
       this._cntConfig.Size = new System.Drawing.Size(550, 100);
       this._cntConfig.TabIndex = 33;
@@ -549,32 +556,74 @@
       // btnCancel
       // 
       this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-      this.btnCancel.Location = new System.Drawing.Point(525, 407);
+      this.btnCancel.Location = new System.Drawing.Point(525, 422);
       this.btnCancel.Name = "btnCancel";
       this.btnCancel.Size = new System.Drawing.Size(113, 23);
       this.btnCancel.TabIndex = 34;
       this.btnCancel.Text = "Cancel Calculation";
       this.btnCancel.UseVisualStyleBackColor = true;
       this.btnCancel.Visible = false;
-      this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+      this.btnCancel.Click += new System.EventHandler(this.BtnCancel_Click);
       // 
       // _lstDisplayType
       // 
       this._lstDisplayType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
       this._lstDisplayType.FormattingEnabled = true;
-      this._lstDisplayType.Location = new System.Drawing.Point(12, 105);
+      this._lstDisplayType.Location = new System.Drawing.Point(12, 127);
       this._lstDisplayType.Name = "_lstDisplayType";
       this._lstDisplayType.Size = new System.Drawing.Size(62, 21);
       this._lstDisplayType.TabIndex = 35;
+      // 
+      // mnuAll
+      // 
+      this.mnuAll.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.mniSettings});
+      this.mnuAll.Location = new System.Drawing.Point(0, 0);
+      this.mnuAll.Name = "mnuAll";
+      this.mnuAll.Size = new System.Drawing.Size(682, 24);
+      this.mnuAll.TabIndex = 36;
+      this.mnuAll.Text = "menuStrip1";
+      // 
+      // mniSettings
+      // 
+      this.mniSettings.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.mniOpen,
+            this.mniSave,
+            this.mniSaveAs});
+      this.mniSettings.Name = "mniSettings";
+      this.mniSettings.Size = new System.Drawing.Size(61, 20);
+      this.mniSettings.Text = "Settings";
+      this.mniSettings.Click += new System.EventHandler(this.MniSettings_Click);
+      // 
+      // mniOpen
+      // 
+      this.mniOpen.Name = "mniOpen";
+      this.mniOpen.Size = new System.Drawing.Size(180, 22);
+      this.mniOpen.Text = "Open";
+      this.mniOpen.Click += new System.EventHandler(this.MniOpen_Click);
+      // 
+      // mniSave
+      // 
+      this.mniSave.Name = "mniSave";
+      this.mniSave.Size = new System.Drawing.Size(180, 22);
+      this.mniSave.Text = "&Save";
+      // 
+      // mniSaveAs
+      // 
+      this.mniSaveAs.Name = "mniSaveAs";
+      this.mniSaveAs.Size = new System.Drawing.Size(180, 22);
+      this.mniSaveAs.Text = "Save As";
       // 
       // WdgOCourse
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-      this.ClientSize = new System.Drawing.Size(682, 434);
+      this.ClientSize = new System.Drawing.Size(682, 449);
+      this.Controls.Add(this.btnCourse);
+      this.Controls.Add(this._txtCourse);
+      this.Controls.Add(this.label3);
       this.Controls.Add(this._lstDisplayType);
       this.Controls.Add(this.btnCancel);
-      this.Controls.Add(this._cntConfig);
       this.Controls.Add(this.btnCreateScripts);
       this.Controls.Add(this.btnPermutations);
       this.Controls.Add(this.btnTrack);
@@ -589,10 +638,10 @@
       this.Controls.Add(this.btnBackCalc);
       this.Controls.Add(this._lblProgress);
       this.Controls.Add(this.label4);
-      this.Controls.Add(this.btnCourse);
-      this.Controls.Add(this._txtCourse);
-      this.Controls.Add(this.label3);
+      this.Controls.Add(this._cntConfig);
+      this.Controls.Add(this.mnuAll);
       this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+      this.MainMenuStrip = this.mnuAll;
       this.Name = "WdgOCourse";
       this.Text = "OCourse";
       this.Load += new System.EventHandler(this.WdgOCourse_Load);
@@ -609,6 +658,8 @@
       this.splVars.ResumeLayout(false);
       ((System.ComponentModel.ISupportInitialize)(this.dgvInfo)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.dgvPermut)).EndInit();
+      this.mnuAll.ResumeLayout(false);
+      this.mnuAll.PerformLayout();
       this.ResumeLayout(false);
       this.PerformLayout();
 
@@ -660,6 +711,11 @@
     private System.Windows.Forms.Button btnExportCsv;
     private System.Windows.Forms.Label lblEstime;
     private System.Windows.Forms.TextBox txtEstimate;
+    private System.Windows.Forms.MenuStrip mnuAll;
+    private System.Windows.Forms.ToolStripMenuItem mniSettings;
+    private System.Windows.Forms.ToolStripMenuItem mniOpen;
+    private System.Windows.Forms.ToolStripMenuItem mniSave;
+    private System.Windows.Forms.ToolStripMenuItem mniSaveAs;
   }
 }
 

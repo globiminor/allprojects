@@ -41,6 +41,16 @@ namespace Ocad
     lineText = 6,
     rectangle = 7
   }
+
+  public enum ObjectStringType
+  {
+    None = 0,
+    // Cs = CourseSetting
+    CsObject = 1,
+    CsPreview = 2,
+    CsLayout = 3,
+    CsThematic = 4
+  }
   /// <summary>
   /// Summary description for Setup.
   /// </summary>

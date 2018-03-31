@@ -79,9 +79,8 @@ namespace Ocad.StringParams
 
     private void Add(ISection section)
     {
-      if (section is Control)
+      if (section is Control cntr)
       {
-        Control cntr = (Control)section;
         Add(cntr.Code, cntr.Name);
       }
       else

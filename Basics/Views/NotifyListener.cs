@@ -76,9 +76,11 @@ namespace Basics.Views
 
       public void Run()
       {
-        _bgw = new BackgroundWorker();
-        _bgw.WorkerReportsProgress = true;
-        _bgw.WorkerSupportsCancellation = true;
+        _bgw = new BackgroundWorker
+        {
+          WorkerReportsProgress = true,
+          WorkerSupportsCancellation = true
+        };
 
         _bgw.DoWork += Bgw_DoWork;
         _bgw.RunWorkerCompleted += Bgw_RunWorkerCompleted;
@@ -90,7 +92,7 @@ namespace Basics.Views
       public void SetProgress(string progress)
       {
         _progress = progress;
-        _bgw.ReportProgress(10);
+        _bgw?.ReportProgress(10);
       }
 
       private void _bgw_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -116,7 +118,10 @@ namespace Basics.Views
           { _worker.Finish(); }
         }
         finally
-        { _worker.Finally(); }
+        {
+          _bgw = null;
+          _worker.Finally();
+        }
       }
 
       private void Bgw_DoWork(object sender, DoWorkEventArgs e)
@@ -151,7 +156,7 @@ namespace Basics.Views
           if (change == null)
           {
             ChangingHandler pc = _parent._changing;
-            string prop = pc != null ? pc.Property : null;
+            string prop = pc?.Property;
             _parent._changing = null;
             _parent.Changed(prop);
           }

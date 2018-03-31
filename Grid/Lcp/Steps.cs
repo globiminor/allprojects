@@ -18,6 +18,10 @@ namespace Grid.Lcp
       Angle = Math.Atan2(dy, dx);
     }
 
+    public override string ToString()
+    {
+      return $"Step Dx:{Dx}, Dy:{Dy}";
+    }
     public static int CompareDistance(Step x, Step y)
     {
       return x.Distance.CompareTo(y.Distance);
@@ -82,7 +86,7 @@ namespace Grid.Lcp
     {
       return _steps[i];
     }
-    public IEnumerable<Step> GetDistSteps()
+    public IReadOnlyList<Step> GetDistSteps()
     {
       return _distSteps;
     }
@@ -109,6 +113,109 @@ namespace Grid.Lcp
     public int Count
     {
       get { return _count; }
+    }
+
+    public double GetMean<T>(double startValue, int iField, T[] fields, Func<T, double> func)
+    {
+      Calc w = GetCalc(iField);
+      return w.GetMean(startValue, fields, func);
+    }
+    public double GetMaxDiff<T>(double startValue, int iField, T[] fields, Func<T, double> func, bool invers)
+    {
+      Calc w = GetCalc(iField);
+      return w.GetMaxDiff(startValue, fields, func, invers);
+    }
+
+    private abstract class Calc
+    {
+      public abstract double GetMean<T>(double startValue, T[] fields, Func<T, double> func);
+      public abstract double GetMaxDiff<T>(double startValue, T[] fields, Func<T, double> func, bool invers);
+    }
+    private class SimpleCalc : Calc
+    {
+      private readonly int _idx;
+      public SimpleCalc(int idx)
+      { _idx = idx; }
+      public override double GetMean<T>(double startValue, T[] fields, Func<T, double> func)
+      {
+        return (startValue + func(fields[_idx])) / 2.0;
+      }
+      public override double GetMaxDiff<T>(double startValue, T[] fields, Func<T, double> func, bool invers)
+      {
+        double diff = func(fields[_idx]) - startValue;
+        return invers ? -diff : diff;
+      }
+    }
+    private class WeightCalc : Calc
+    {
+      private readonly Dictionary<int, double> _ws;
+      public WeightCalc(Dictionary<int, double> ws)
+      { _ws = ws; }
+      public override double GetMean<T>(double startValue, T[] fields, Func<T, double> func)
+      {
+        double sumW = 0;
+        double sumVal = 0;
+        foreach (var pair in _ws)
+        {
+          T field = fields[pair.Key];
+          if (field == null)
+          { continue; }
+
+          double val = func(field);
+          double w = pair.Value;
+          sumW += w;
+          sumVal += w * val;
+        }
+        return (sumVal + startValue) / (sumW + 1);
+      }
+      public override double GetMaxDiff<T>(double startValue, T[] fields, Func<T, double> func, bool invers)
+      {
+        double diff = 0;
+        foreach (var pair in _ws)
+        {
+          T field = fields[pair.Key];
+          diff = func(field) - startValue;
+          break;
+        }
+        return invers ? -diff : diff;
+      }
+    }
+    private List<Calc> _calcs;
+    private Calc GetCalc(int i)
+    {
+      if (_calcs == null)
+      {
+        List<Calc> weights = new List<Calc>(Count);
+        for (int iStep = 0; iStep < Count; iStep++)
+        {
+          Dictionary<int, double> w = CalcWeights(iStep);
+          if (w.Count == 1)
+          { weights.Add(new SimpleCalc(iStep)); }
+          else
+          { weights.Add(new WeightCalc(w)); }
+        }
+        _calcs = weights;
+      }
+      return _calcs[i];
+    }
+    private Dictionary<int, double> CalcWeights(int i)
+    {
+      Step s = _steps[i];
+      double l = s.Distance;
+      Dictionary<int, double> weights = new Dictionary<int, double> { { i, 1 } };
+      for (int iStep = 0; iStep < Count; iStep++)
+      {
+        Step w = _steps[iStep];
+        if (w.Distance >= s.Distance)
+        { continue; }
+        double p = w.Dx * s.Dx + w.Dy * s.Dy;
+        if (p <= 0)
+        { continue; }
+        double v = (w.Dx * s.Dy - w.Dy * s.Dx) / s.Distance;
+        if (Math.Abs(v) < 0.5)
+        { weights.Add(iStep, 1); }
+      }
+      return weights;
     }
 
     public DoubleGrid this[IntGrid grd]
@@ -461,8 +568,7 @@ namespace Grid.Lcp
         {
           double cost = costGrid[ix, iy];
           int dir = dirGrid[ix, iy];
-          StepInfoBuilder list;
-          if (dirs.TryGetValue(dir, out list) == false)
+          if (dirs.TryGetValue(dir, out StepInfoBuilder list) == false)
           {
             list = new StepInfoBuilder(costGrid);
             dirs.Add(dir, list);
@@ -472,8 +578,7 @@ namespace Grid.Lcp
 
           if (costs.Count < size || cost <= costs.Keys[size - 1])
           {
-            IList<StepInfo> steps;
-            if (costs.TryGetValue(cost, out steps) == false)
+            if (costs.TryGetValue(cost, out IList<StepInfo> steps) == false)
             {
               if (costs.Count == size)
               {

@@ -120,16 +120,14 @@ namespace OCourse.Route
         SortedDictionary<IPoint, List<CostFromTo>> ends = new SortedDictionary<IPoint, List<CostFromTo>>(new PointComparer());
         foreach (CostFromTo info in _calcList.Keys)
         {
-          List<CostFromTo> startList;
-          if (starts.TryGetValue(info.Start, out startList) == false)
+          if (starts.TryGetValue(info.Start, out List<CostFromTo> startList) == false)
           {
             startList = new List<CostFromTo>();
             starts.Add(info.Start, startList);
           }
           startList.Add(info);
 
-          List<CostFromTo> endList;
-          if (ends.TryGetValue(info.End, out endList) == false)
+          if (ends.TryGetValue(info.End, out List<CostFromTo> endList) == false)
           {
             endList = new List<CostFromTo>();
             ends.Add(info.End, endList);
@@ -190,7 +188,7 @@ namespace OCourse.Route
       { return null; }
       int legs = course.LegCount();
       VariationBuilder builder = new VariationBuilder();
-      builder.VariationAdded += builder_VariationAdded;
+      builder.VariationAdded += Builder_VariationAdded;
       List<SectionList> allPermuts = new List<SectionList>();
       if (legs > 1)
       {
@@ -232,10 +230,9 @@ namespace OCourse.Route
       return courseInfos;
     }
 
-    void builder_VariationAdded(object sender, SectionList variation)
+    void Builder_VariationAdded(object sender, SectionList variation)
     {
-      if (VariationAdded != null)
-      { VariationAdded(this, variation); }
+      VariationAdded?.Invoke(this, variation);
     }
 
     public List<CostSectionlist> GetCourseInfo(IList<SectionList> permuts, double resol, Setup setup)
@@ -283,8 +280,8 @@ namespace OCourse.Route
       if (sum == null)
       { return null; }
 
-      CostSectionlist cost = new CostSectionlist(sum, permut);
-      cost.Name = permut.GetName();
+      CostSectionlist cost = new CostSectionlist(sum, permut)
+      { Name = permut.GetName() };
 
       return cost;
     }
@@ -320,8 +317,7 @@ namespace OCourse.Route
         { continue; }
 
         IPoint start = cost.Start;
-        List<CostFromTo> routes;
-        if (!startList.TryGetValue(start, out routes))
+        if (!startList.TryGetValue(start, out List<CostFromTo> routes))
         {
           routes = new List<CostFromTo>();
           startList.Add(start, routes);
@@ -366,8 +362,6 @@ namespace OCourse.Route
         return new List<CostFromTo>();
       }
 
-      DataDoubleGrid costGrid;
-      IntGrid dirGrid;
 
       List<IPoint> endList = new List<IPoint>();
 
@@ -376,16 +370,14 @@ namespace OCourse.Route
       //GridTest.LeastCostPath path = new GridTest.LeastCostPath(new GridTest.Step16(), box, resolution);
       LeastCostPathBase path = _costProvider.Build(box, resolution, _step, _veloGrid);
       path.HeightGrid = _heightGrid;
-      path.Status += routeCalc_Status;
+      path.Status += RouteCalc_Status;
 
-      path.CalcCost(calcList[0].Start, endList, out costGrid, out dirGrid);
+      path.CalcCost(calcList[0].Start, endList, out DataDoubleGrid costGrid, out IntGrid dirGrid);
       List<CostFromTo> result = new List<CostFromTo>();
       foreach (CostFromTo routeCost in calcList)
       {
-        double dh;
-        double optimal;
         double cost = costGrid.Value(routeCost.End.X, routeCost.End.Y);
-        Polyline route = GetRoute(path, dirGrid, costGrid, routeCost.Start, routeCost.End, out dh, out optimal);
+        Polyline route = GetRoute(path, dirGrid, costGrid, routeCost.Start, routeCost.End, out double dh, out double optimal);
 
         CostFromTo add = new CostFromTo(
           routeCost.From, routeCost.To, routeCost.Start, routeCost.End, resolution,
@@ -420,10 +412,9 @@ namespace OCourse.Route
     private CostFromTo CalcSection(Control from, Control to,
       IPoint start, IPoint end, double resol, string section)
     {
-      CostFromTo routeCost;
       CostFromTo existingInfo;
       if (_calcList != null && _calcList.TryGetValue(new CostFromTo(from, to,
-        start, end, resol, 0, 0, null, 0, 0), out routeCost))
+        start, end, resol, 0, 0, null, 0, 0), out CostFromTo routeCost))
       {
         return routeCost;
       }
@@ -441,27 +432,23 @@ namespace OCourse.Route
       OnStatusChanged(section + " : ");
 
       double l = Math.Sqrt(PointOperator.Dist2(start, end)) / 2.0;
-      Box box = GetBox(start, end, l);
+      Box box = GetBox(start, end, l + 200);
 
-      IntGrid dirGrid;
-      DataDoubleGrid costGrid;
 
       //GridTest.LeastCostPath path = new GridTest.LeastCostPath(new GridTest.Step16(), box, resolution);
       LeastCostPathBase path = _costProvider.Build(box, resol, _step, _veloGrid);
       path.HeightGrid = _heightGrid;
-      path.Status += path_Status;
+      path.Status += Path_Status;
 
 
       DateTime t0 = DateTime.Now;
-      path.CalcCost(start, end, out costGrid, out dirGrid);
+      path.CalcCost(start, end, out DataDoubleGrid costGrid, out IntGrid dirGrid);
 
       DateTime t1 = DateTime.Now;
       TimeSpan dt = t1 - t0;
 
-      double dh;
-      double length;
       double cost = costGrid.Value(end.X, end.Y);
-      Polyline route = GetRoute(path, dirGrid, costGrid, start, end, out dh, out length);
+      Polyline route = GetRoute(path, dirGrid, costGrid, start, end, out double dh, out double length);
 
       OnStatusChanged(null);
 
@@ -521,24 +508,22 @@ namespace OCourse.Route
       }
     }
 
-    private void path_Status(object sender, StatusEventArgs args)
+    private void Path_Status(object sender, StatusEventArgs args)
     {
       OnStatusChanged(sender, args);
     }
 
     protected void OnStatusChanged(object sender, StatusEventArgs args)
     {
-      if (StatusChanged != null)
-      { StatusChanged(sender, args); }
+      StatusChanged?.Invoke(sender, args);
     }
 
     private void OnStatusChanged(string msg)
     {
-      if (StatusChanged != null)
-      { StatusChanged(msg, null); }
+      StatusChanged?.Invoke(msg, null);
     }
 
-    private void routeCalc_Status(object sender, StatusEventArgs args)
+    private void RouteCalc_Status(object sender, StatusEventArgs args)
     {
       OnStatusChanged(sender, args);
     }

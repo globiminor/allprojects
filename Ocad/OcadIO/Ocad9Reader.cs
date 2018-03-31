@@ -16,9 +16,7 @@ namespace Ocad
     { }
     private void Init()
     {
-      int iSectionMark;
-      int iVersion;
-      Version(BaseReader, out iSectionMark, out iVersion);
+      Version(BaseReader, out int iSectionMark, out int iVersion);
       if (iVersion != 9 && iVersion != 10)
       { throw (new Exception(string.Format("Invalid Version {0}", iVersion))); }
 
@@ -39,13 +37,14 @@ namespace Ocad
 
     protected override FileParam Init(int sectionMark, int version)
     {
-      _fileParam = new FileParamV9();
-
-      _fileParam.SectionMark = sectionMark;
-      _fileParam.Version = version;
-      _fileParam.SubVersion = BaseReader.ReadInt16();
-      _fileParam.FirstSymbolBlock = BaseReader.ReadInt32();
-      _fileParam.FirstIndexBlock = BaseReader.ReadInt32();
+      _fileParam = new FileParamV9
+      {
+        SectionMark = sectionMark,
+        Version = version,
+        SubVersion = BaseReader.ReadInt16(),
+        FirstSymbolBlock = BaseReader.ReadInt32(),
+        FirstIndexBlock = BaseReader.ReadInt32()
+      };
       BaseReader.ReadInt32(); // reserved
       BaseReader.ReadInt32(); // reserved
       BaseReader.ReadInt32(); // reserved
@@ -88,8 +87,7 @@ namespace Ocad
           if (pIndex.Type == StringType.ScalePar)
           {
             BaseReader.BaseStream.Seek(pIndex.FilePosition, SeekOrigin.Begin);
-            char e1;
-            ReadTab(255, out e1);
+            ReadTab(255, out char e1);
 
             char e0 = e1;
             string name = ReadTab(255, out e1);
@@ -185,8 +183,7 @@ namespace Ocad
     {
       int nPoint;
       int nText;
-      ElementV9 elem = new ElementV9(false);
-      elem.Symbol = BaseReader.ReadInt32();
+      ElementV9 elem = new ElementV9(false) { Symbol = BaseReader.ReadInt32() };
       if (elem.Symbol < -4 || elem.Symbol == 0)
       { return null; }
 
@@ -317,8 +314,7 @@ namespace Ocad
 
       while (iData > 0)
       {
-        int iNData;
-        Symbol.SymbolGraphics pElem = ReadSymbolGraphics(out iNData);
+        Symbol.SymbolGraphics pElem = ReadSymbolGraphics(out int iNData);
         symbol.Graphics.Add(pElem);
         iData -= iNData;
       }
@@ -438,8 +434,8 @@ namespace Ocad
 
     private Symbol.SymbolGraphics ReadSymbolGraphics(out int nData)
     {
-      Symbol.SymbolGraphics elem = new Symbol.SymbolGraphics();
-      elem.Type = (Symbol.SymbolGraphicsType)BaseReader.ReadInt16();
+      Symbol.SymbolGraphics elem = new Symbol.SymbolGraphics
+      { Type = (Symbol.SymbolGraphicsType)BaseReader.ReadInt16() };
       int iFlags = BaseReader.ReadInt16();
       elem.RoundEnds = ((iFlags & 1) == 1);
       elem.Color = BaseReader.ReadInt16();
@@ -484,8 +480,6 @@ namespace Ocad
     }
     public override void WriteElementHeader(EndianWriter writer, Element element)
     {
-      ElementV9 elem9 = element as ElementV9;
-
       WriteElementSymbol(writer, element.Symbol);
       writer.Write((byte)element.Type);
       writer.Write((byte)0);
@@ -499,7 +493,7 @@ namespace Ocad
       writer.Write((short)nText);
       writer.Write((short)0); // reserved
 
-      if (elem9 != null)
+      if (element is ElementV9 elem9)
       {
         writer.Write((int)elem9.Color);
         writer.Write((short)elem9.LineWidth);
@@ -519,6 +513,19 @@ namespace Ocad
       writer.Write((short)0); // reserved;
       int heightMm = (int)(element.Height * 1000);
       writer.Write((int)heightMm); // reserved;
+    }
+
+    public override void WriteElementContent(EndianWriter writer, Element element)
+    {
+      OcadWriter.Write(writer, element.Geometry);
+
+      if (element.Text != "")
+      {
+        writer.WriteUnicodeString(element.Text);
+        int n = ElementV9.TextCount(element.Text);
+        for (int i = element.Text.Length * 2; i < n; i++)
+        { writer.BaseStream.WriteByte(0); }
+      }
     }
 
     public override int CalcElementLength(Element element)

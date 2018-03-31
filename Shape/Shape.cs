@@ -260,10 +260,7 @@ namespace Shape
 
     private Polyline[] ReadNextLine()
     {
-      int nParts;
-      int nPoints;
-
-      ReadNextLineNPartsPnts(out nParts, out nPoints);
+      ReadNextLineNPartsPnts(out int nParts, out int nPoints);
       int[] nPartPoints = new int[nParts];
       Polyline[] l = new Polyline[nParts];
       for (int i = 0; i < nParts; i++)

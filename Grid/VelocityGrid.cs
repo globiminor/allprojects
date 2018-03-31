@@ -93,7 +93,7 @@ namespace Grid
           double velo = 1 - (pCol.R / 255.0);
           if (velo == 0)
           {
-            velo = 0.001;
+            velo = 0.0001;
           }
           return velo;
         }
@@ -106,11 +106,11 @@ namespace Grid
         }
         else if (((double)pCol.G / Byte.MaxValue - gray) / (1.0 - gray) < 0.2)
         {
-          if (pCol.G < Byte.MaxValue / 6 &&
+          if (pCol.G < 70 &&
             pCol.R > Byte.MaxValue / 2)
           {
             /* impassable / forbidden */
-            t = 0.01;
+            t = 0.0001;
           }
           else
           {

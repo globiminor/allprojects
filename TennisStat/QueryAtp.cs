@@ -86,8 +86,7 @@ namespace TennisStat
             string oppKey = tds[1].SelectSingleNode("a").Attributes["href"].Value;
 
             PlayerTable.Row oppPlayer = ((TennisDataset)player.Table.DataSet).GetOrCreatePlayer(oppKey);
-            int oppRanking;
-            int.TryParse(tds[2].InnerText, out oppRanking);
+            int.TryParse(tds[2].InnerText, out int oppRanking);
 
             MatchFullTable.Row match = ((TennisDataset)player.Table.DataSet).GetOrCreateMatch(player, oppPlayer, round);
             string rawScore = tds[3].InnerText;

@@ -66,11 +66,11 @@
       this.dgCustom.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
       this.dgCustom.Size = new System.Drawing.Size(370, 91);
       this.dgCustom.TabIndex = 0;
-      this.dgCustom.MouseDown += new System.Windows.Forms.MouseEventHandler(this.dgCustom_MouseDown);
-      this.dgCustom.MouseMove += new System.Windows.Forms.MouseEventHandler(this.dgCustom_MouseMove);
-      this.dgCustom.CellContentDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgCustom_CellContentDoubleClick);
-      this.dgCustom.MouseUp += new System.Windows.Forms.MouseEventHandler(this.dgCustom_MouseUp);
-      this.dgCustom.SelectionChanged += new System.EventHandler(this.dgCustom_SelectionChanged);
+      this.dgCustom.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DgCustom_MouseDown);
+      this.dgCustom.MouseMove += new System.Windows.Forms.MouseEventHandler(this.DgCustom_MouseMove);
+      this.dgCustom.CellContentDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.DgCustom_CellContentDoubleClick);
+      this.dgCustom.MouseUp += new System.Windows.Forms.MouseEventHandler(this.DgCustom_MouseUp);
+      this.dgCustom.SelectionChanged += new System.EventHandler(this.DgCustom_SelectionChanged);
       // 
       // txtAssembly
       // 
@@ -90,7 +90,7 @@
       this.btnOpen.TabIndex = 2;
       this.btnOpen.Text = "...";
       this.btnOpen.UseVisualStyleBackColor = true;
-      this.btnOpen.Click += new System.EventHandler(this.btnOpen_Click);
+      this.btnOpen.Click += new System.EventHandler(this.BtnOpen_Click);
       // 
       // btnOk
       // 
@@ -101,7 +101,7 @@
       this.btnOk.TabIndex = 3;
       this.btnOk.Text = "OK";
       this.btnOk.UseVisualStyleBackColor = true;
-      this.btnOk.Click += new System.EventHandler(this.btnOk_Click);
+      this.btnOk.Click += new System.EventHandler(this.BtnOk_Click);
       // 
       // lblAssembly
       // 
@@ -130,7 +130,7 @@
       this.btnCancel.TabIndex = 8;
       this.btnCancel.Text = "Cancel";
       this.btnCancel.UseVisualStyleBackColor = true;
-      this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+      this.btnCancel.Click += new System.EventHandler(this.BtnCancel_Click);
       // 
       // grpAssembly
       // 
@@ -158,7 +158,7 @@
       this.optExisting.TabIndex = 10;
       this.optExisting.TabStop = true;
       this.optExisting.UseVisualStyleBackColor = true;
-      this.optExisting.CheckedChanged += new System.EventHandler(this.opt_CheckedChanged);
+      this.optExisting.CheckedChanged += new System.EventHandler(this.Opt_CheckedChanged);
       // 
       // optCustom
       // 
@@ -168,7 +168,7 @@
       this.optCustom.Size = new System.Drawing.Size(14, 13);
       this.optCustom.TabIndex = 11;
       this.optCustom.UseVisualStyleBackColor = true;
-      this.optCustom.CheckedChanged += new System.EventHandler(this.opt_CheckedChanged);
+      this.optCustom.CheckedChanged += new System.EventHandler(this.Opt_CheckedChanged);
       // 
       // grpCustom
       // 

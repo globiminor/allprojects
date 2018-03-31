@@ -62,7 +62,7 @@
       this.btnSolve.TabIndex = 1;
       this.btnSolve.Text = "Solve";
       this.btnSolve.UseVisualStyleBackColor = true;
-      this.btnSolve.Click += new System.EventHandler(this.btnSolve_Click);
+      this.btnSolve.Click += new System.EventHandler(this.BtnSolve_Click);
       // 
       // txtMoves
       // 
@@ -123,7 +123,7 @@
       this.btnRevert.TabIndex = 8;
       this.btnRevert.Text = "-";
       this.btnRevert.UseVisualStyleBackColor = true;
-      this.btnRevert.Click += new System.EventHandler(this.btnRevert_Click);
+      this.btnRevert.Click += new System.EventHandler(this.BtnRevert_Click);
       // 
       // btnSlow
       // 
@@ -133,7 +133,7 @@
       this.btnSlow.TabIndex = 9;
       this.btnSlow.Text = "-";
       this.btnSlow.UseVisualStyleBackColor = true;
-      this.btnSlow.Click += new System.EventHandler(this.btnSlow_Click);
+      this.btnSlow.Click += new System.EventHandler(this.BtnSlow_Click);
       // 
       // button1
       // 
@@ -143,7 +143,7 @@
       this.button1.TabIndex = 10;
       this.button1.Text = "+";
       this.button1.UseVisualStyleBackColor = true;
-      this.button1.Click += new System.EventHandler(this.button1_Click);
+      this.button1.Click += new System.EventHandler(this.Button1_Click);
       // 
       // mnuCards
       // 
@@ -183,14 +183,14 @@
       this.mniSpider4.Name = "mniSpider4";
       this.mniSpider4.Size = new System.Drawing.Size(116, 22);
       this.mniSpider4.Text = "4 Colors";
-      this.mniSpider4.Click += new System.EventHandler(this.mniSpider4_Click);
+      this.mniSpider4.Click += new System.EventHandler(this.MniSpider4_Click);
       // 
       // mniTriPeaks
       // 
       this.mniTriPeaks.Name = "mniTriPeaks";
       this.mniTriPeaks.Size = new System.Drawing.Size(152, 22);
       this.mniTriPeaks.Text = "Tri Peaks";
-      this.mniTriPeaks.Click += new System.EventHandler(this.mniTriPeaks_Click);
+      this.mniTriPeaks.Click += new System.EventHandler(this.MniTriPeaks_Click);
       // 
       // toolStripSeparator1
       // 
@@ -202,21 +202,21 @@
       this.mniSave.Name = "mniSave";
       this.mniSave.Size = new System.Drawing.Size(152, 22);
       this.mniSave.Text = "Save";
-      this.mniSave.Click += new System.EventHandler(this.mniSave_Click);
+      this.mniSave.Click += new System.EventHandler(this.MniSave_Click);
       // 
       // mniLoad
       // 
       this.mniLoad.Name = "mniLoad";
       this.mniLoad.Size = new System.Drawing.Size(152, 22);
       this.mniLoad.Text = "Load";
-      this.mniLoad.Click += new System.EventHandler(this.mniLoad_Click);
+      this.mniLoad.Click += new System.EventHandler(this.MniLoad_Click);
       // 
       // mniNew
       // 
       this.mniNew.Name = "mniNew";
       this.mniNew.Size = new System.Drawing.Size(152, 22);
       this.mniNew.Text = "New";
-      this.mniNew.Click += new System.EventHandler(this.mniNew_Click);
+      this.mniNew.Click += new System.EventHandler(this.MniNew_Click);
       // 
       // txtPoints
       // 
@@ -255,7 +255,7 @@
       this.mniCapture.Name = "mniCapture";
       this.mniCapture.Size = new System.Drawing.Size(152, 22);
       this.mniCapture.Text = "Capture";
-      this.mniCapture.Click += new System.EventHandler(this.mniCapture_Click);
+      this.mniCapture.Click += new System.EventHandler(this.MniCapture_Click);
       // 
       // FrmCards
       // 

@@ -72,22 +72,28 @@ namespace OCourse.ViewModels
       _courseNames = new BindingListView<string>();
       CategoryNames = new BindingListView<string>();
 
-      _veloTypes = new List<EnumText<VelocityType>>();
-      _veloTypes.Add(new EnumText<VelocityType>("Auto", VelocityType.Auto));
-      _veloTypes.Add(new EnumText<VelocityType>("From Gray value", VelocityType.GrayScale));
-      _veloTypes.Add(new EnumText<VelocityType>("From Color", VelocityType.Colors));
+      _veloTypes = new List<EnumText<VelocityType>>
+      {
+        new EnumText<VelocityType>("Auto", VelocityType.Auto),
+        new EnumText<VelocityType>("From Gray value", VelocityType.GrayScale),
+        new EnumText<VelocityType>("From Color", VelocityType.Colors)
+      };
 
       _veloType = VelocityType.Auto;
 
-      _varBuilderTypes = new List<EnumText<VarBuilderType>>();
-      _varBuilderTypes.Add(new EnumText<VarBuilderType>("All", VarBuilderType.All));
-      _varBuilderTypes.Add(new EnumText<VarBuilderType>("Explicits", VarBuilderType.Explicit));
+      _varBuilderTypes = new List<EnumText<VarBuilderType>>
+      {
+        new EnumText<VarBuilderType>("All", VarBuilderType.All),
+        new EnumText<VarBuilderType>("Explicits", VarBuilderType.Explicit)
+      };
 
       _varBuilderType = VarBuilderType.All;
 
-      _displayTypes = new List<EnumText<DisplayType>>();
-      _displayTypes.Add(new EnumText<DisplayType>("Course", DisplayType.Course));
-      _displayTypes.Add(new EnumText<DisplayType>("All", DisplayType.All));
+      _displayTypes = new List<EnumText<DisplayType>>
+      {
+        new EnumText<DisplayType>("Course", DisplayType.Course),
+        new EnumText<DisplayType>("All", DisplayType.All)
+      };
 
       _displayType = DisplayType.Course;
 
@@ -97,6 +103,32 @@ namespace OCourse.ViewModels
 
     protected override void Disposing(bool disposing)
     { }
+
+    private string _settingsName;
+    public string SettingsName
+    {
+      get { return _settingsName; }
+      set
+      {
+        _settingsName = value;
+        Changed();
+      }
+    }
+    public string Title { get { return $"OCourse {SettingsName}"; } }
+    public bool CanSave { get { return _settingsName != null; } }
+
+    public void LoadSettings(string settingsPath)
+    {
+      using (TextReader r = new StreamReader(settingsPath))
+      {
+        Basics.Serializer.Deserialize(out OCourseSettings settings, r);
+        using (Changing())
+        {
+          CourseFile = settings.CourseFile;
+          
+        }
+      }
+    }
 
     public string CourseFile
     {
@@ -319,8 +351,7 @@ namespace OCourse.ViewModels
     }
     public void DrawCourse()
     {
-      if (DrawingCourse != null)
-      { DrawingCourse(); }
+      DrawingCourse?.Invoke();
     }
 
     public List<CostSectionlist> CalcCourse(IList<SectionList> permuts, Setup setup)
@@ -407,11 +438,9 @@ namespace OCourse.ViewModels
         Dictionary<int, List<CostSectionlist>> countList = new Dictionary<int, List<CostSectionlist>>();
         foreach (CostSectionlist sectionsCost in info)
         {
-          int leg;
-          int.TryParse(sectionsCost.Name.Substring(0, 1), out leg);
+          int.TryParse(sectionsCost.Name.Substring(0, 1), out int leg);
 
-          CostSum sum;
-          if (!sumList.TryGetValue(leg, out sum))
+          if (!sumList.TryGetValue(leg, out CostSum sum))
           {
             sum = new CostSum(0, 0, 0, 0);
             sumList.Add(leg, sum);
@@ -426,8 +455,8 @@ namespace OCourse.ViewModels
           int leg = pair.Key;
           CostSum sum = pair.Value;
           sum = (1.0 / countList[leg].Count) * sum;
-          CostMean mean = new CostMean(sum, countList[leg]);
-          mean.Name = string.Format("{0} {1}", MeanPrefix, leg);
+          CostMean mean = new CostMean(sum, countList[leg])
+          { Name = string.Format("{0} {1}", MeanPrefix, leg) };
           routes.Add(mean);
         }
       }
@@ -482,8 +511,7 @@ namespace OCourse.ViewModels
           CostFromTo routeCost = new CostFromTo(ctrl0, ctrl1, start, end,
             resol, direct, climb, route, optimal, cost);
 
-          CostFromTo tVal;
-          if (RouteCalculator.RouteCostDict.TryGetValue(routeCost, out tVal) == false)
+          if (RouteCalculator.RouteCostDict.TryGetValue(routeCost, out CostFromTo tVal) == false)
           { RouteCalculator.RouteCostDict.Add(routeCost, routeCost); }
         }
         reader.Close();
@@ -646,9 +674,8 @@ namespace OCourse.ViewModels
             SetVariations(b, b.Legs, variations);
           }
         }
-        else if (section is Fork)
+        else if (section is Fork fork)
         {
-          Fork fork = (Fork)section;
           foreach (Gaga row in variations)
           { row.Forks[fork] = "-"; }
           char v = 'A';
@@ -700,14 +727,14 @@ namespace OCourse.ViewModels
       {
         if (_routeCalc != null)
         {
-          _routeCalc.StatusChanged -= routeCalc_Status;
-          _routeCalc.VariationAdded -= builder_VariationAdded;
+          _routeCalc.StatusChanged -= RouteCalc_Status;
+          _routeCalc.VariationAdded -= Builder_VariationAdded;
         }
 
         _routeCalc = new RouteCalculator(LcpConfig.CostProvider,
           heightGrid, veloGrid, LcpConfig.StepsMode);
-        _routeCalc.StatusChanged += routeCalc_Status;
-        _routeCalc.VariationAdded += builder_VariationAdded;
+        _routeCalc.StatusChanged += RouteCalc_Status;
+        _routeCalc.VariationAdded += Builder_VariationAdded;
       }
 
       return _routeCalc;
@@ -724,7 +751,7 @@ namespace OCourse.ViewModels
       RunAsync(calcEvent);
     }
 
-    private void routeCalc_Status(object sender, StatusEventArgs args)
+    private void RouteCalc_Status(object sender, StatusEventArgs args)
     {
       if (sender is string)
       {
@@ -739,9 +766,7 @@ namespace OCourse.ViewModels
         SetProgressAsync(prog);
 
         //ShowInContext((GridTest.LeastCostPath)sender, args);
-        if (ShowProgress != null)
-        { ShowProgress((LeastCostPath)sender, args); }
-
+        ShowProgress?.Invoke((LeastCostPath)sender, args);
         if (_cancelCalc)
         {
           args.Cancel = true;
@@ -752,7 +777,7 @@ namespace OCourse.ViewModels
     private string _lastVariation;
     private System.Diagnostics.Stopwatch _watch;
     private long _nextCall;
-    void builder_VariationAdded(object sender, SectionList variation)
+    void Builder_VariationAdded(object sender, SectionList variation)
     {
       if (_watch == null)
       {
@@ -765,11 +790,11 @@ namespace OCourse.ViewModels
       {
         _nextCall = currentCall + 100;
         _lastVariation = variation.ToString();
-        builder_VariationAdded();
+        Builder_VariationAdded();
       }
     }
 
-    void builder_VariationAdded()
+    void Builder_VariationAdded()
     {
       SetProgressAsync(_lastVariation);
     }
@@ -792,7 +817,7 @@ namespace OCourse.ViewModels
       if (min > max) throw new ArgumentException("Min.StartNr > Max.StartNr");
 
       VariationBuilder builder = new VariationBuilder();
-      builder.VariationAdded += builder_VariationAdded;
+      builder.VariationAdded += Builder_VariationAdded;
       PermutationBuilder pb = new PermutationBuilder(this, builder, course, min, max);
 
       RunAsync(pb);
@@ -1021,11 +1046,13 @@ namespace OCourse.ViewModels
           permutTbl.Rows.Add(row);
         }
         permutTbl.AcceptChanges();
-        DataView permutView = new DataView(permutTbl);
-        permutView.AllowDelete = false;
-        permutView.AllowNew = false;
-        permutView.AllowEdit = false;
-        permutView.Sort = StartNrName;
+        DataView permutView = new DataView(permutTbl)
+        {
+          AllowDelete = false,
+          AllowNew = false,
+          AllowEdit = false,
+          Sort = StartNrName
+        };
 
         _parent.Permutations = permutView;
       }

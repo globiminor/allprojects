@@ -32,5 +32,10 @@ namespace Ocad.StringParams
     public StringType Type { get; set; }
     public int ElemNummer { get; set; }
     public long IndexPosition { get; set; }
+
+    public override string ToString()
+    {
+      return $"T:{Type}, Elem#:{ElemNummer}";
+    }
   }
 }

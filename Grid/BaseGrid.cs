@@ -38,6 +38,11 @@ namespace Grid
       Dy = dy;
     }
 
+    public override string ToString()
+    {
+      return $"Dir Dx:{Dx}, Dy:{Dy}";
+    }
+
     public int CompareTo(Dir other)
     {
       int d = Dx.CompareTo(other.Dx);
@@ -77,8 +82,7 @@ namespace Grid
 
     public static Dir GetNextTriDir(Dir dir)
     {
-      LinkedListNode<Dir> node;
-      if (!MeshDirDict.TryGetValue(dir, out node))
+      if (!MeshDirDict.TryGetValue(dir, out LinkedListNode<Dir> node))
       {
         return null;
       }
@@ -87,8 +91,7 @@ namespace Grid
     }
     public static Dir GetPreTriDir(Dir dir)
     {
-      LinkedListNode<Dir> node;
-      if (!MeshDirDict.TryGetValue(dir, out node))
+      if (!MeshDirDict.TryGetValue(dir, out LinkedListNode<Dir> node))
       {
         return null;
       }
@@ -203,8 +206,7 @@ namespace Grid
     }
     public object Value(double x, double y)
     {
-      int ix, iy;
-      _extent.GetNearest(x, y, out ix, out iy);
+      _extent.GetNearest(x, y, out int ix, out int iy);
       return this[ix, iy]; // this[ix, iy];
     }
 
@@ -274,11 +276,13 @@ namespace Grid
           Point q01 = p0 - v;
           Point q10 = p1 + v;
           Point q11 = p1 - v;
-          List<Line> lines = new List<Line>(4);
-          lines.Add(GetLine(q00, q01));
-          lines.Add(GetLine(q01, q11));
-          lines.Add(GetLine(q11, q10));
-          lines.Add(GetLine(q10, q00));
+          List<Line> lines = new List<Line>(4)
+          {
+            GetLine(q00, q01),
+            GetLine(q01, q11),
+            GetLine(q11, q10),
+            GetLine(q10, q00)
+          };
 
           foreach (int[] cell in EnumerateCells(lines))
           {
@@ -356,8 +360,7 @@ namespace Grid
           double yEnd = line.End.Y;
           if (yEnd < y0)
           {
-            List<Line> yLines;
-            if (!current.TryGetValue(yEnd, out yLines))
+            if (!current.TryGetValue(yEnd, out List<Line> yLines))
             {
               yLines = new List<Line>();
               current.Add(yEnd, yLines);
