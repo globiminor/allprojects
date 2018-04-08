@@ -43,9 +43,11 @@ namespace OCourse.Ext
 
       public void Add(Settings.LayoutTable.Row layout, string name)
       {
-        LayoutHelper helper = new LayoutHelper();
-        helper.Id = layout.Id;
-        helper.FileName = name;
+        LayoutHelper helper = new LayoutHelper
+        {
+          Id = layout.Id,
+          FileName = name
+        };
         if (layout.IsDefaultNull() == false && layout.Default)
         {
           if (_default != null)
@@ -436,8 +438,7 @@ namespace OCourse.Ext
         {
           if (element.Symbol == 703000)
           {
-            IList<Element> layouts;
-            if (dict.TryGetValue(element.Text, out layouts) == false)
+            if (dict.TryGetValue(element.Text, out IList<Element> layouts) == false)
             {
               layouts = new List<Element>();
               dict.Add(element.Text, layouts);
@@ -549,9 +550,11 @@ namespace OCourse.Ext
             if (index.Type != StringType.Control)
             { continue; }
 
-            ControlHelper control = new ControlHelper();
-            control.ParIndex = index;
-            control.Par = reader.ReadStringParam(index);
+            ControlHelper control = new ControlHelper
+            {
+              ParIndex = index,
+              Par = reader.ReadStringParam(index)
+            };
 
             controls.Add(control);
           }
@@ -665,8 +668,7 @@ namespace OCourse.Ext
 
         controlIdx++;
 
-        Element element;
-        if (controlNames.TryGetValue(control.Name, out element) == false)
+        if (controlNames.TryGetValue(control.Name, out Element element) == false)
         { continue; }
         if (showNr)
         {
@@ -702,8 +704,7 @@ namespace OCourse.Ext
         if (pre != null)
         {
           string key = pre.Name + "-" + control.Name;
-          IList<Grafics> candidates;
-          if (grafics.TryGetValue(key, out candidates))
+          if (grafics.TryGetValue(key, out IList<Grafics> candidates))
           {
             foreach (Grafics candi in candidates)
             {
@@ -728,10 +729,12 @@ namespace OCourse.Ext
         if (clippedStart != null)
         {
           writer.DeleteElements(new int[] { 701000 });
-          ElementV9 start = new ElementV9(true);
-          start.Symbol = 704000;
-          start.Geometry = clippedStart;
-          start.Type = GeomType.line;
+          ElementV9 start = new ElementV9(true)
+          {
+            Symbol = 704000,
+            Geometry = clippedStart,
+            Type = GeomType.line
+          };
           writer.Append(start);
         }
         foreach (Element element in controlNames.Values)
@@ -818,16 +821,14 @@ namespace OCourse.Ext
         controlDict.Add(control.Name, control);
       }
 
-      Dictionary<int, int> graficSymbols = new Dictionary<int, int>();
-      graficSymbols.Add(704002, 704000);
+      Dictionary<int, int> graficSymbols = new Dictionary<int, int> { { 704002, 704000 } };
 
       IList<Grafics> graficList = Grafics.GetGrafics(reader, graficSymbols, controlDict);
       Dictionary<string, IList<Grafics>> graficDict = new Dictionary<string, IList<Grafics>>();
       foreach (Grafics grafics in graficList)
       {
         string key = grafics.Key;
-        IList<Grafics> lst;
-        if (graficDict.TryGetValue(key, out lst) == false)
+        if (graficDict.TryGetValue(key, out IList<Grafics> lst) == false)
         {
           lst = new List<Grafics>();
           graficDict.Add(key, lst);
@@ -1114,11 +1115,13 @@ namespace OCourse.Ext
             double secs = GetSecs(time);
 
             {
-              SectionTime t = new SectionTime();
-              t.FromName = ctr0;
-              t.ToName = control;
-              t.FromSecs = time0;
-              t.ToSecs = secs;
+              SectionTime t = new SectionTime
+              {
+                FromName = ctr0,
+                ToName = control,
+                FromSecs = time0,
+                ToSecs = secs
+              };
 
               times.Add(t);
             }
@@ -1131,10 +1134,12 @@ namespace OCourse.Ext
 
             if (ctr0 == pre)
             {
-              SectionTime t = new SectionTime();
-              t.FromName = ctr0;
-              t.FromSecs = time0;
-              t.ToName = ((Control)course.First.Value).Name;
+              SectionTime t = new SectionTime
+              {
+                FromName = ctr0,
+                FromSecs = time0,
+                ToName = ((Control)course.First.Value).Name
+              };
               if (secs >= 0)
               {
                 t.ToSecs = secs + 30;
@@ -1174,8 +1179,7 @@ namespace OCourse.Ext
               reduceds.AddLast(last);
             }
 
-            last = new SectionTime();
-            last.FromName = control.Name;
+            last = new SectionTime { FromName = control.Name };
           }
           reduceds.RemoveLast(); // Ziel
 

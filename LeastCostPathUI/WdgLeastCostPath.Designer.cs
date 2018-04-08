@@ -80,7 +80,7 @@
       this.btnOK.Size = new System.Drawing.Size(56, 23);
       this.btnOK.TabIndex = 15;
       this.btnOK.Text = "OK";
-      this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
+      this.btnOK.Click += new System.EventHandler(this.BtnOK_Click);
       // 
       // btnClose
       // 
@@ -90,7 +90,7 @@
       this.btnClose.Size = new System.Drawing.Size(56, 23);
       this.btnClose.TabIndex = 16;
       this.btnClose.Text = "Close";
-      this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
+      this.btnClose.Click += new System.EventHandler(this.BtnClose_Click);
       // 
       // cntConfig
       // 

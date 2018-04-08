@@ -51,55 +51,47 @@ namespace Grid.Lcp
     }
   }
 
-  /// <summary>
-  /// Calculates cost for a step
-  /// </summary>
-  /// <param name="dh">Height difference</param>
-  /// <param name="vMean">mean Velocity</param>
-  /// <param name="slope0_2Mean">mean Square of slope at start point</param>
-  /// <param name="dist">Distance between start and end point of step</param>
-  /// <returns>Cost for the step</returns>
-  public delegate double StepCostHandler(
-    double dh, double vMean, double slope_2Mean,
-    double dist);
-  public delegate void StatusEventHandler(object sender, StatusEventArgs args);
-
-  public class LeastCostPath : LeastCostPathBase_T
+  public interface IStepCostCalculator
   {
-    public LeastCostPath(IBox box, double dx)
-      : base(box, dx, Steps.Step16)
-    { }
-    public LeastCostPath(IBox box, double dx, Steps step)
-      : base(box, dx, step)
-    { }
+    /// <summary>
+    /// Calculates cost for a step
+    /// </summary>
+    /// <param name="dh">Height difference</param>
+    /// <param name="vMean">mean Velocity</param>
+    /// <param name="slope0_2Mean">mean Square of slope at start point</param>
+    /// <param name="dist">Distance between start and end point of step</param>
+    /// <returns>Cost for the step</returns>
+    double Calc(double dh, double vMean, double slope_2Mean, double dist);
   }
 
-  public abstract class LeastCostPathBase
+  public delegate double StepCostHandler<T>(
+  double h0, T v0, double slope0_2,
+  double h1, T v1, double slope1_2,
+  double dist);
+
+  public delegate void StatusEventHandler(object sender, StatusEventArgs args);
+
+  public abstract class LeastCostPath
   {
     public event StatusEventHandler Status;
-    protected Steps _step;
+    private readonly Steps _steps;
 
-    protected int _xMax, _yMax;
-    protected double _x0, _y0, _dx, _dy;
-    private IDoubleGrid _heightGrid;
+    private readonly int _xMax, _yMax;
+    private readonly double _x0, _y0, _dx, _dy;
 
-    public Steps Step
-    { get { return _step; } }
+    public Steps Steps => _steps;
 
-    public IDoubleGrid HeightGrid
+    public double X0 => _x0;
+    public double Y0 => _y0;
+    public double Dx => _dx;
+    public double Dy => _dy;
+
+    public int XMax => _xMax;
+    public int YMax => _yMax;
+
+    public LeastCostPath(IBox box, double dx, Steps steps = null)
     {
-      get { return _heightGrid; }
-      set { _heightGrid = value; }
-    }
-
-    protected IGrid<double> VeloBase { get; set; }
-
-    protected LeastCostPathBase(IBox box, double dx)
-      : this(box, dx, Steps.Step16)
-    { }
-    public LeastCostPathBase(IBox box, double dx, Steps step)
-    {
-      _step = step;
+      _steps = steps ?? Steps.Step16;
       _x0 = box.Min.X;
       _dx = dx;
       _y0 = box.Max.Y;
@@ -158,7 +150,7 @@ namespace Grid.Lcp
       out DataDoubleGrid costGrid, out IntGrid dirGrid)
     {
       CalcCorridor(start, end, nearLine, corridorWidth, out costGrid, out dirGrid);
-      Polyline path = GetPath(dirGrid, Step, costGrid, end);
+      Polyline path = GetPath(dirGrid, Steps, costGrid, end);
       return path;
     }
 
@@ -169,12 +161,12 @@ namespace Grid.Lcp
       out DataDoubleGrid costGrid, out IntGrid dirGrid, bool invers,
       IList<int[]> stop);
 
-    public bool EqualSettings(LeastCostPathBase other)
+    public bool EqualSettings(LeastCostPath other)
     {
       bool equals = EqualSettingsCore(other);
       return equals;
     }
-    protected abstract bool EqualSettingsCore(LeastCostPathBase o);
+    protected abstract bool EqualSettingsCore(LeastCostPath o);
 
     private delegate bool StopMethod(int ix, int iy);
 
@@ -638,182 +630,104 @@ namespace Grid.Lcp
     }
   }
 
-  public class LeastCostPathBase_T : LeastCostPathBase
+  public abstract class LeastCostPath<T> : LeastCostPath
+    where T : class, IField
   {
-    private class CorridorGrid : BaseGrid<double>, ILockable
+    private class CorridorGrid : BaseGrid<int>
     {
-      private readonly IGrid<double> _velo;
       private readonly IntGrid _blockGrid;
-      public CorridorGrid(LeastCostPathBase_T parent, IGrid<double> velocityGrid, Polyline nearLine, double corridorWidth)
-        : this(velocityGrid, nearLine, corridorWidth, parent.GetGridExtent())
+      public CorridorGrid(LeastCostPath<T> parent, Polyline nearLine, double corridorWidth)
+        : this(nearLine, corridorWidth, parent.GetGridExtent())
       { }
-      public CorridorGrid(IGrid<double> velocityGrid, Polyline nearLine, double corridorWidth, GridExtent extent)
+      public CorridorGrid(Polyline nearLine, double corridorWidth, GridExtent extent)
         : base(extent)
       {
-        _velo = velocityGrid;
         _blockGrid = new IntGrid(extent.Nx, extent.Ny, typeof(byte),
           extent.X0, extent.Y0, extent.Dx);
         BlockLine(nearLine, corridorWidth, _blockGrid);
       }
 
-      public override double this[int ix, int iy]
+      public override int this[int ix, int iy]
       {
         get
         {
           if (_blockGrid[ix, iy] == 0)
           { return 0; }
 
-          IPoint center = _blockGrid.Extent.CellCenter(ix, iy);
-          return _velo.Value(center.X, center.Y);
+          return 1;
         }
         set { }
       }
-
-      public void LockBits()
-      {
-        if (_velo is ILockable velo)
-        { velo.LockBits(); }
-      }
-
-      public void UnlockBits()
-      {
-        if (_velo is ILockable velo)
-        { velo.UnlockBits(); }
-      }
     }
 
-    public class Field
-    {
-      public int X, Y;
-      public int IdDir;
-      public double Cost;
-      // performance :
-      public double Height;
-      public double Velocity;
-      public double Slope2 = -1;
-
-      #region IComparable Members
-
-      public int CompareTo(Field field)
-      {
-        return 0;
-      }
-
-      #endregion
-    }
-
-    public class FieldCompare : IComparer<Field>
-    {
-      public int Compare(Field field0, Field field1)
-      { return SCompare(field0, field1); }
-      public static int SCompare(Field field0, Field field1)
-      {
-        if (field0.X < field1.X) return -1;
-        else if (field0.X > field1.X) return 1;
-        else return field0.Y - field1.Y;
-      }
-    }
-
-    public class CostCompare : IComparer<Field>
-    {
-      #region IComparer Members
-
-      public int Compare(Field field0, Field field1)
-      {
-        if (field0.Cost < field1.Cost) { return -1; }
-        else if (field0.Cost > field1.Cost) { return 1; }
-        else return FieldCompare.SCompare(field0, field1);
-      }
-
-      #endregion
-    }
-
-    public StepCostHandler StepCost;
+    public IStepCostCalculator StepCostCalculator { get; set; }
 
     private IntGrid _dirGrid;
-    private SortedList<Field, object> _costList;
-    private SortedList<Field, Field> _fieldList;
+    private SortedList<IField, T> _costList;
+    private SortedList<IField, T> _fieldList;
 
-    public IGrid<double> VelocityGrid
+    private class KeyField : IField
     {
-      get { return VeloBase; }
-      set { VeloBase = value; }
+      public int X { get; set; }
+      public int Y { get; set; }
+      public int IdDir { get; set; }
+      public double Cost { get; set; }
     }
 
-    private int GotoNeighbours(Field startField, bool invers)
-    {
-      double startSlope2;
-      Field newField;
-      double tx, ty;
+    protected abstract T InitField(IField position);
+    protected abstract double CalcCost(T startField, Step step, int iField, T[] neighbors, bool invers);
 
-      tx = _x0 + startField.X * _dx;
-      ty = _y0 + startField.Y * _dy;
-      if (startField.Slope2 < 0) startField.Slope2 = HeightGrid.Slope2(tx, ty);
-      startSlope2 = startField.Slope2;
+    private int GotoNeighbours(T startField, bool invers)
+    {
+      InitField(startField);
 
       bool[] cancelFields = null;
-      newField = new Field();
-      IReadOnlyList<Step> steps = _step.GetDistSteps();
+      IReadOnlyList<Step> steps = Steps.GetDistSteps();
       int iStep = 0;
-      Field[] fields = new Field[steps.Count];
-      foreach (Step s in _step.GetDistSteps())
+      T[] fields = new T[steps.Count];
+      foreach (Step s in Steps.GetDistSteps())
       {
         iStep++;
-        newField.X = startField.X + s.Dx;
-        newField.Y = startField.Y + s.Dy;
+        KeyField key = new KeyField
+        { X = startField.X + s.Dx, Y = startField.Y + s.Dy };
 
         // check range
-        if (newField.X < 0 || newField.X >= _xMax ||
-            newField.Y < 0 || newField.Y >= _yMax)
+        if (key.X < 0 || key.X >= XMax ||
+            key.Y < 0 || key.Y >= YMax)
         {
           continue;
         }
         // check set
-        if (_dirGrid[newField.X, newField.Y] != 0)
+        if (_dirGrid[key.X, key.Y] != 0)
         {
           continue;
         }
 
-        if (_fieldList.TryGetValue(newField, out Field stepField) == false)
+        if (_fieldList.TryGetValue(key, out T stepField) == false)
         {
-          _fieldList.Add(newField, newField);
-          stepField = newField;
-
-          tx = _x0 + stepField.X * _dx;
-          ty = _y0 + stepField.Y * _dy;
-          stepField.Height = HeightGrid.Value(tx, ty, EGridInterpolation.bilinear);
-          stepField.Velocity = VelocityGrid.Value(tx, ty);
-          stepField.Slope2 = HeightGrid.Slope2(tx, ty);
-          stepField.IdDir = -1;
-
-          newField = new Field();
+          stepField = InitField(key);
+          _fieldList.Add(stepField, stepField);
         }
         fields[iStep - 1] = stepField;
       }
-      for (int iField = 0; iField < _step.Count; iField++)
+      for (int iField = 0; iField < Steps.Count; iField++)
       {
-        Step s = steps[iField];
-        Field stepField = fields[iField];
+        Step step = steps[iField];
+        T stepField = fields[iField];
         if (stepField == null)
         { continue; }
 
-        double t;
+        double cost = CalcCost(startField, step, iField, fields, invers);
         {
-          double dh, vMean, s2_Mean;
-          dh = _step.GetMaxDiff(stepField.Height, iField, fields, (f) => f.Height, invers);
-          vMean = 1.0 / _step.GetMean(1.0 / startField.Velocity, iField, fields, (f) => 1.0 / f.Velocity); // stepField.Velocity;
-          s2_Mean = _step.GetMean(startSlope2, iField, fields, (f) => f.Slope2);
-
-          t = StepCost(dh, vMean, s2_Mean, s.Distance * _dx);
-          if (t < 0)
+          if (cost < 0)
           {
-            cancelFields = _step.GetCancelIndexes(s, cancelFields);
-            t = Math.Abs(t);
+            cancelFields = Steps.GetCancelIndexes(step, cancelFields);
+            cost = Math.Abs(cost);
           }
-          if (cancelFields != null && cancelFields[s.Index])
+          if (cancelFields != null && cancelFields[step.Index])
           { continue; }
         }
-        if (stepField.IdDir < 0 || stepField.Cost > startField.Cost + t)
+        if (stepField.IdDir < 0 || stepField.Cost > startField.Cost + cost)
         {
           // new minimum path found
           if (stepField.IdDir >= 0)
@@ -822,8 +736,8 @@ namespace Grid.Lcp
             _costList.Remove(stepField);
           }
           // add at new position
-          stepField.Cost = startField.Cost + t;
-          stepField.IdDir = s.Index;
+          stepField.Cost = startField.Cost + cost;
+          stepField.IdDir = step.Index;
           _costList.Add(stepField, stepField);
         }
       }
@@ -831,66 +745,13 @@ namespace Grid.Lcp
       return 0;
     }
 
-    public LeastCostPathBase_T(IBox box, double dx)
-      : this(box, dx, Steps.Step16)
-    { }
-    public LeastCostPathBase_T(IBox box, double dx, Steps step)
+    public LeastCostPath(IBox box, double dx, Steps step = null)
       : base(box, dx, step)
-    {
-      _step = step;
-      _x0 = box.Min.X;
-      _dx = dx;
-      _y0 = box.Max.Y;
-      _dy = -dx;
+    { }
 
-      _xMax = (int)((box.Max.X - box.Min.X) / dx + 1);
-      _yMax = (int)((box.Max.Y - box.Min.Y) / dx + 1);
-    }
-
-    public void CalcCost(IPoint start,
-      IDoubleGrid heightGrid, IGrid<double> velocityGrid,
-      out DataDoubleGrid costGrid, out IntGrid dirGrid)
-    {
-      CalcCost(start, heightGrid, velocityGrid, out costGrid, out dirGrid, false);
-    }
-
-    public void CalcCost(IPoint start, IPoint end,
-      IDoubleGrid heightGrid, IGrid<double> velocityGrid,
-      out DataDoubleGrid costGrid, out IntGrid dirGrid)
-    {
-      CalcCost(start, new IPoint[] { end }, heightGrid, velocityGrid,
-        out costGrid, out dirGrid);
-    }
-
-    public void CalcCost(IPoint start, IList<IPoint> endList,
-      IDoubleGrid heightGrid, IGrid<double> velocityGrid,
-      out DataDoubleGrid costGrid, out IntGrid dirGrid)
-    {
-      List<int[]> stopList = new List<int[]>(endList.Count);
-      foreach (Point end in endList)
-      {
-
-        int[] stop = new int[] {
-          (int)((end.X - _x0) / _dx),
-          (int)((end.Y - _y0) / _dy)
-        };
-        stopList.Add(stop);
-      }
-
-      HeightGrid = heightGrid;
-      VelocityGrid = velocityGrid;
-      CalcCost(start, out costGrid, out dirGrid, false, stopList);
-    }
-
-    public void CalcCost(IPoint start,
-      IDoubleGrid heightGrid, IGrid<double> velocityGrid,
-      out DataDoubleGrid costGrid, out IntGrid dirGrid, bool invers)
-    {
-      HeightGrid = heightGrid;
-      VelocityGrid = velocityGrid;
-      CalcCost(start, out costGrid, out dirGrid, invers, null);
-    }
-
+    private void Remove()
+    { AssignCost(null, 0, null, null); }
+    [Obsolete("remove")]
     public void AssignCost(Polyline line, int costDim, IDoubleGrid heightGrid, IGrid<double> velocityGrid)
     {
       IPoint p = line.Points.First.Value;
@@ -911,59 +772,79 @@ namespace Grid.Lcp
         v1 = 1.0 / velocityGrid.Value(p.X, p.Y);
         s1 = heightGrid.Slope2(p.X, p.Y);
 
-        double cost = StepCost(h1 - h0,  2.0 / (v0 + v1), (s0 + s1) / 2.0, curve.Length());
+        double cost = StepCostCalculator.Calc(h1 - h0, 2.0 / (v0 + v1), (s0 + s1) / 2.0, curve.Length());
         costTotal += cost;
         p[costDim] = costTotal;
+      }
+    }
+
+    private class CorridorLcp : LeastCostPath<T>
+    {
+      private readonly LeastCostPath<T> _baseLcp;
+      private readonly BaseGrid<int> _corridorGrid;
+      public CorridorLcp(LeastCostPath<T> baseLcp, BaseGrid<int> corridorGrid)
+        : base(new Box(new Point2D(baseLcp.X0, baseLcp.Y0),
+          new Point2D(baseLcp.XMax, baseLcp.YMax)), baseLcp.Dx, baseLcp.Steps)
+      {
+        _baseLcp = baseLcp;
+        _corridorGrid = corridorGrid;
+      }
+
+      protected override double CalcCost(T startField, Step step, int iField, T[] neighbors, bool invers)
+      {
+        T nb = neighbors[iField];
+        if (_corridorGrid[nb.X, nb.Y] == 0) { return 0; }
+
+        return _baseLcp.CalcCost(startField, step, iField, neighbors, invers);
+      }
+
+      protected override T InitField(IField position)
+      {
+        return _baseLcp.InitField(position);
       }
     }
 
     protected override void CalcCorridor(IPoint start, IPoint end,
       Polyline nearLine, double corridorWidth, out DataDoubleGrid costGrid, out IntGrid dirGrid)
     {
-      BaseGrid<double> corridorGrid = new CorridorGrid(this, VelocityGrid, nearLine, corridorWidth);
-      LeastCostPathBase_T corridorLcp = new LeastCostPathBase_T(
-        new Box(new Point2D(_x0, _y0), new Point2D(_xMax, _yMax)), _dx, Step)
-      {
-        VelocityGrid = corridorGrid,
-        HeightGrid = HeightGrid
-      };
+      BaseGrid<int> corridorGrid = new CorridorGrid(this, nearLine, corridorWidth);
+      CorridorLcp corridorLcp = new CorridorLcp(this, corridorGrid);
 
       corridorLcp.CalcCost(start, new IPoint[] { end }, out costGrid, out dirGrid);
     }
-    protected override void CalcCost(IPoint start,
-      out DataDoubleGrid costGrid, out IntGrid dirGrid, bool invers, IList<int[]> stop)
+
+    protected virtual void CalcStarting()
+    { }
+    protected virtual void CalcEnded()
+    { }
+
+    protected sealed override void CalcCost(IPoint start,
+      out DataDoubleGrid costGrid, out IntGrid dirGrid, bool invers = false, IList<int[]> stop = null)
     {
       try
       {
-        if (VeloBase is ILockable)
-        { ((ILockable)VeloBase).LockBits(); }
+        CalcStarting();
 
         int i, n;
         CostCompare costComparer = new CostCompare();
         FieldCompare fieldComparer = new FieldCompare();
 
-        _costList = new SortedList<Field, object>(costComparer);
-        _fieldList = new SortedList<Field, Field>(fieldComparer);
+        _costList = new SortedList<IField, T>(costComparer);
+        _fieldList = new SortedList<IField, T>(fieldComparer);
 
-        costGrid = new DataDoubleGrid(_xMax, _yMax, typeof(float),
-          _x0, _y0, _dx);
-        dirGrid = new IntGrid(_xMax, _yMax, typeof(sbyte), _x0, _y0, _dx);
+        costGrid = new DataDoubleGrid(XMax, YMax, typeof(float),
+          X0, Y0, Dx);
+        dirGrid = new IntGrid(XMax, YMax, typeof(sbyte), X0, Y0, Dx);
 
-        Field startField;
+        T startField;
         _dirGrid = dirGrid;
 
-        startField = new Field
-        {
-          X = (int)((start.X - _x0) / _dx),
-          Y = (int)((start.Y - _y0) / _dy),
-          Height = HeightGrid.Value(start.X, start.Y, EGridInterpolation.bilinear),
-          Velocity = VelocityGrid.Value(start.X, start.Y),
-          IdDir = -2,
-          Cost = 0
-        };
+        startField = InitField(new KeyField { X = (int)((start.X - X0) / Dx), Y = (int)((start.Y - Y0) / Dy) });
+        startField.IdDir = -2;
+        startField.Cost = 0;
 
         i = 0;
-        n = _xMax * _yMax;
+        n = XMax * YMax;
         StatusEventArgs args;
 
         while (startField != null)
@@ -995,7 +876,7 @@ namespace Grid.Lcp
           //}
           if (_costList.Count > 0)
           {
-            startField = _costList.Keys[0];
+            startField = _costList.Values[0];
             _costList.RemoveAt(0);
             _fieldList.Remove(startField);
           }
@@ -1008,12 +889,11 @@ namespace Grid.Lcp
       }
       finally
       {
-        if (VeloBase is ILockable)
-        { ((ILockable)VeloBase).UnlockBits(); }
+        CalcEnded();
       }
     }
 
-    private bool Stop(IList<int[]> stop, Field startField)
+    private bool Stop(IList<int[]> stop, T startField)
     {
       if (stop == null)
       { return false; }
@@ -1030,23 +910,23 @@ namespace Grid.Lcp
       return (stop.Count == 0);
     }
 
-    protected sealed override bool EqualSettingsCore(LeastCostPathBase o)
+    protected sealed override bool EqualSettingsCore(LeastCostPath o)
     {
-      LeastCostPathBase_T other = o as LeastCostPathBase_T;
+      LeastCostPath<T> other = o as LeastCostPath<T>;
       if (other == null)
       { return false; }
 
-      if (Step.Count != other.Step.Count)
+      if (Steps.Count != other.Steps.Count)
       { return false; }
 
-      if (_x0 != other._x0 ||
-        _y0 != other._y0 ||
-        _xMax != other._xMax ||
-        _yMax != other._yMax ||
-        _dx != other._dx)
+      if (X0 != other.X0 ||
+        Y0 != other.Y0 ||
+        XMax != other.XMax ||
+        YMax != other.YMax ||
+        Dx != other.Dx)
       { return false; }
 
-      if (StepCost.Method != other.StepCost.Method)
+      if (StepCostCalculator != other.StepCostCalculator)
       { return false; }
 
       return true;

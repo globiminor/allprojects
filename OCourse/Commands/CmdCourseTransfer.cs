@@ -152,8 +152,7 @@ namespace OCourse.Commands
         {
           if (control.Name == par.Obj)
           {
-            CourseViewPar expPar = new CourseViewPar(course.Name);
-            expPar.Obj = control.Name;
+            CourseViewPar expPar = new CourseViewPar(course.Name) { Obj = control.Name };
             int elemIdx = GetElemIdx(pair.Key);
 
             Writer.Append(StringType.CourseView, elemIdx, expPar.StringPar);
@@ -163,8 +162,7 @@ namespace OCourse.Commands
     }
     private int GetElemIdx(StringParamIndex oldIdx)
     {
-      int newIdx;
-      if (!_oldNewElemDict.TryGetValue(oldIdx.ElemNummer, out newIdx))
+      if (!_oldNewElemDict.TryGetValue(oldIdx.ElemNummer, out int newIdx))
       {
         ElementIndex elemIdx = Reader.ReadIndex(oldIdx.ElemNummer - 1);
         Element elem = Reader.ReadElement(elemIdx);
@@ -192,9 +190,8 @@ namespace OCourse.Commands
       {
         if (index.Type == StringType.Control)
         {
-          ControlHelper control = new ControlHelper();
-          control.ParIndex = index;
-          control.Par = reader.ReadStringParam(index);
+          ControlHelper control = new ControlHelper
+          { ParIndex = index, Par = reader.ReadStringParam(index) };
 
           controls.Add(control);
         }
@@ -240,7 +237,6 @@ namespace OCourse.Commands
       public Element Element;
       public int ElementIndex;
     }
-
   }
 }
 

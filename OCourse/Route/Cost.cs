@@ -74,18 +74,26 @@ namespace OCourse.Route
 
   public class CostSum : CostBase
   {
+    private readonly List<CostBase> _parts = new List<CostBase>();
     public CostSum(double direct, double climb, double optimalLength, double optimalCost)
       : base(direct, climb, optimalLength, optimalCost)
     { }
 
+    public IReadOnlyList<CostBase> Parts { get { return _parts; } }
+
     public CostSum(CostBase cost)
       : base(cost)
-    { }
+    {
+      _parts.Add(cost);
+    }
 
     public static CostSum operator +(CostSum s0, CostBase s1)
     {
       CostSum sum = new CostSum(s0.Direct + s1.Direct, s0.Climb + s1.Climb,
         s0.OptimalLength + s1.OptimalLength, s0.OptimalCost + s1.OptimalCost);
+
+      sum._parts.AddRange(s0._parts);
+      sum._parts.Add(s1);
 
       return sum;
     }
@@ -101,15 +109,20 @@ namespace OCourse.Route
   public class CostSectionlist : CostBase, IInfo, ICostSectionlists
   {
     private readonly SectionList _sectionList;
+    private readonly List<CostBase> _parts;
     public CostSectionlist(CostBase sum, SectionList sectionList)
       : base(sum)
     {
       _sectionList = sectionList;
+      if (sum is CostSum s)
+      { _parts = new List<CostBase>(s.Parts); }
     }
     public SectionList Sections
     {
       get { return _sectionList; }
     }
+    public IReadOnlyList <CostBase> Parts
+    { get { return _parts; } }
 
     public static IEnumerable<CostSectionlist> GetUniqueCombs(IEnumerable<ICost> costs)
     {

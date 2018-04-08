@@ -168,9 +168,7 @@ namespace Basics.Views
       if (expression == null)
       { return; }
 
-      string filterText;
-      string fullOp;
-      GetFilterText(expression.ToString(), out filterText, out fullOp);
+      GetFilterText(expression.ToString(), out string filterText, out string fullOp);
 
       string filter;
       if (propertyType == typeof(string))

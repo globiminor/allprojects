@@ -272,8 +272,7 @@ namespace Basics.Geom
       {
         ParamGeometryRelation r = rel.GetChildRelation(this);
         Curve curve = (Curve)r.CurrentX;
-        List<ParamGeometryRelation> list;
-        if (curveSplits.TryGetValue(curve, out list) == false)
+        if (curveSplits.TryGetValue(curve, out List<ParamGeometryRelation> list) == false)
         {
           list = new List<ParamGeometryRelation>();
           curveSplits.Add(curve, list);
@@ -286,8 +285,7 @@ namespace Basics.Geom
 
       foreach (Curve curve in Segments)
       {
-        List<ParamGeometryRelation> list;
-        if (curveSplits.TryGetValue(curve, out list) == false)
+        if (curveSplits.TryGetValue(curve, out List<ParamGeometryRelation> list) == false)
         {
           if (part == null)
           { part = new Polyline(); }
@@ -600,8 +598,7 @@ namespace Basics.Geom
       }
       else
       {
-        points = new List<IPoint>(2 * Points.Count);
-        points.Add(Points.First.Value);
+        points = new List<IPoint>(2 * Points.Count) { Points.First.Value };
         foreach (Curve curve in Segments)
         {
           points.AddRange(curve.Linearize(d, false));

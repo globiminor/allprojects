@@ -17,7 +17,8 @@ namespace LeastCostPathUI
     {
       private readonly Type _type;
 
-      public TypeHelper(Type type)
+      [Obsolete("remove gaga")]
+      public TypeHelper(Type type, bool gaga)
       {
         _type = type;
       }
@@ -39,13 +40,13 @@ namespace LeastCostPathUI
       dgCustom.Columns.Add(col);
       dgCustom.AutoGenerateColumns = false;
 
-      Type t = typeof(StepCostHandler);
+      Type t = typeof(IStepCostCalculator);
       MethodInfo miBase = t.GetMethods()[0];
 
       StringBuilder sbLbl = new StringBuilder();
       StringBuilder sbTtp = new StringBuilder();
-      sbTtp.AppendFormat("static {0} StepCost(", miBase.ReturnType.Name);
-      sbLbl.AppendFormat("static {0} StepCost(", miBase.ReturnType.Name);
+      sbTtp.Append($"public {miBase.ReturnType.Name} {nameof(IStepCostCalculator.Calc)}(");
+      sbLbl.Append($"public {miBase.ReturnType.Name} {nameof(IStepCostCalculator.Calc)}(");
       bool first = true;
       foreach (ParameterInfo paramInfo in miBase.GetParameters())
       {
@@ -81,33 +82,26 @@ namespace LeastCostPathUI
         txtAssembly.ReadOnly = true;
 
         Assembly assembly = Assembly.LoadFile(assemblyName);
-        List<Type> types = GetCostProviders(assembly);
+        List<Type> types = GetCostProviders<ICostProvider>(assembly);
         List<TypeHelper> m = new List<TypeHelper>(types.Count);
         foreach (Type type in types)
-        { m.Add(new TypeHelper(type)); }
+        { m.Add(new TypeHelper(type, false)); }
 
         dgCustom.DataSource = m;
       }
     }
 
-    private List<Type> GetCostProviders(Assembly assembly)
+    private List<Type> GetCostProviders<T>(Assembly assembly)
     {
       List<Type> types = new List<Type>();
-      Type costProvider = typeof(ICostProvider);
+      Type baseType = typeof(T);
       foreach (Type type in assembly.GetTypes())
       {
-        if (costProvider.IsAssignableFrom(type) &&
+        if (baseType.IsAssignableFrom(type) &&
           type.IsAbstract == false && type.GetConstructor(Type.EmptyTypes) != null)
         {
           types.Add(type);
         }
-        //foreach (MethodInfo meth in type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
-        //{
-        //  if (Delegate.CreateDelegate(typeof(StepCostHandler<double>), meth, false) != null)
-        //  {
-        //    meths.Add(meth);
-        //  }
-        //}
       }
       return types;
     }
@@ -127,13 +121,9 @@ namespace LeastCostPathUI
     }
 
     private Rectangle dragBoxFromMouseDown;
-    private Type _costProviderType;
 
-    public Type CostProviderType
-    {
-      get { return _costProviderType; }
-      private set { _costProviderType = value; }
-    }
+    public ICostProvider<HeightVeloLcp> CostProvider { get; set; }
+    public IStepCostCalculator StepCostCalculator { get; set; }
 
     private void DgCustom_MouseDown(object sender, MouseEventArgs e)
     {
@@ -197,12 +187,12 @@ namespace LeastCostPathUI
         if (meth == null)
         { return; }
 
-        CostProviderType = meth.Type;
+        CostProvider = (ICostProvider<HeightVeloLcp>)Activator.CreateInstance(meth.Type, nonPublic: true);
       }
       else if (optCustom.Checked)
       {
-        CostProviderType = GetCustomCostProvider();
-        if (CostProviderType == null)
+        StepCostCalculator = GetCustomStepCostCalculator();
+        if (StepCostCalculator == null)
         { return; }
       }
 
@@ -210,12 +200,13 @@ namespace LeastCostPathUI
       Close();
     }
 
-    private Type GetCustomCostProvider()
+    private IStepCostCalculator GetCustomStepCostCalculator()
     {
       StringBuilder meth = new StringBuilder();
       meth.AppendLine("using System;");
-      meth.AppendLine("public static class Custom {");
-      meth.AppendFormat("public {0}", ttp.GetToolTip(lblDeclare));
+      meth.AppendLine($"using {typeof(IStepCostCalculator).Namespace};");
+      meth.Append($"public class Custom : {nameof(IStepCostCalculator)}");meth.AppendLine("{");
+      meth.AppendFormat("{0}", ttp.GetToolTip(lblDeclare));
       meth.AppendLine("{");
       meth.AppendLine(txtCode.Text);
       meth.AppendLine("}");
@@ -225,8 +216,8 @@ namespace LeastCostPathUI
       if (assembly == null)
       { return null; }
 
-      IList<Type> types = GetCostProviders(assembly);
-      return types[0];
+      IList<Type> types = GetCostProviders<IStepCostCalculator>(assembly);
+      return (IStepCostCalculator)Activator.CreateInstance(types[0], nonPublic: true);
     }
 
     private static Assembly CreateAssembly(string code)
@@ -238,6 +229,7 @@ namespace LeastCostPathUI
       CompilerParameters parameters = new CompilerParameters();
       // TODO:
       parameters.ReferencedAssemblies.Add(Assembly.GetExecutingAssembly().Location);
+      parameters.ReferencedAssemblies.Add(typeof(IStepCostCalculator).Assembly.Location);
       parameters.GenerateInMemory = true;
       //Make sure we generate an EXE, not a DLL
       //parameters.GenerateExecutable = true;
@@ -282,7 +274,7 @@ namespace LeastCostPathUI
       if (meth == null)
       { return; }
 
-      CostProviderType = meth.Type;
+      CostProvider = (ICostProvider<HeightVeloLcp>)Activator.CreateInstance(meth.Type, nonPublic: true);
 
       DialogResult = DialogResult.OK;
       Close();

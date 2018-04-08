@@ -41,10 +41,12 @@ namespace OCourse.Tracking
       List<TrackPoint> pntList = new List<TrackPoint>();
       foreach (DataRow row in tbl.Rows)
       {
-        TrackPoint pnt = new TrackPoint();
-        pnt.Lat = double.Parse(row[Lat].ToString());
-        pnt.Long = double.Parse(row[Lon].ToString());
-        pnt.H = double.Parse(row[Ele].ToString());
+        TrackPoint pnt = new TrackPoint
+        {
+          Lat = double.Parse(row[Lat].ToString()),
+          Long = double.Parse(row[Lon].ToString()),
+          H = double.Parse(row[Ele].ToString())
+        };
 
         string t = row[Time].ToString();
         string[] dateTime = t.Split('T');
@@ -137,9 +139,11 @@ namespace OCourse.Tracking
       List<TrackPoint> pntList = new List<TrackPoint>();
       foreach (DataRow rowPosition in tblPosition.Rows)
       {
-        TrackPoint pnt = new TrackPoint();
-        pnt.Lat = double.Parse(rowPosition["LatitudeDegrees"].ToString());
-        pnt.Long = double.Parse(rowPosition["LongitudeDegrees"].ToString());
+        TrackPoint pnt = new TrackPoint
+        {
+          Lat = double.Parse(rowPosition["LatitudeDegrees"].ToString()),
+          Long = double.Parse(rowPosition["LongitudeDegrees"].ToString())
+        };
         int trackpointId = int.Parse(rowPosition["Trackpoint_id"].ToString());
 
         DataRow rowTrack = tblTrackpoint.Rows.Find(trackpointId);

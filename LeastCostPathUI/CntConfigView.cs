@@ -79,17 +79,16 @@ namespace LeastCostPathUI
       }
     }
 
-    private void lstStep_DrawItem(object sender, DrawItemEventArgs e)
+    private void LstStep_DrawItem(object sender, DrawItemEventArgs e)
     {
-      IList<StepImage> steps = _lstStep.DataSource as IList<StepImage>;
-      if (steps != null && e.Index >= 0 && e.Index < steps.Count)
+      if (_lstStep.DataSource is IList<StepImage> steps && e.Index >= 0 && e.Index < steps.Count)
       {
         StepImage step = steps[e.Index];
         e.Graphics.DrawImage(step.Image, 4, 2 + e.Bounds.Y);
       }
     }
 
-    private void btnStepCost_Click(object sender, EventArgs e)
+    private void BtnStepCost_Click(object sender, EventArgs e)
     {
       if (_vm == null)
       { return; }
@@ -98,13 +97,12 @@ namespace LeastCostPathUI
       if (wdg.ShowDialog(this) != DialogResult.OK)
       { return; }
 
-      Type type = wdg.CostProviderType;
-      ICostProvider p = (ICostProvider)Activator.CreateInstance(type, true);
+      ICostProvider<HeightVeloLcp> p = wdg.CostProvider;
       //      SetStepCost((StepCostHandler<double>)Delegate.CreateDelegate(typeof(StepCostHandler<double>), type));
-      _vm.SetCostProviderType(p);
+      _vm.SetCostProvider(p);
     }
 
-    private void btnHeight_Click(object sender, EventArgs e)
+    private void BtnHeight_Click(object sender, EventArgs e)
     {
       if (_vm == null)
       { return; }
@@ -118,7 +116,7 @@ namespace LeastCostPathUI
       { MessageBox.Show(exp.Message + "\n" + exp.StackTrace); }
     }
 
-    private void btnVelo_Click(object sender, EventArgs e)
+    private void BtnVelo_Click(object sender, EventArgs e)
     {
       if (_vm == null || _vm.CostProvider == null)
       { return; }

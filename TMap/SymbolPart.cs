@@ -38,47 +38,23 @@ namespace TMap
   {
     private Random _random = new Random();
     // member variables
-    private int _drawLevel;
     protected DataTable _templateTable;
     protected DataRow _templateRow;
-    private Color _lineColor;
-    private Color _fillColor = Color.Black;
     private double[] _dash;
-    private double _dashOffset;
-    private bool _dashAdjust;
-    private bool _directPoints;
-    private double[,] mStartMat;
-    private double[,] mDashMat;
-    private double[,] mEndMat;
-    private double[,] mVertexMat;
-    private object _tag;
 
     [Browsable(false)]
-    public DataRow TemplateRow
-    {
-      get { return _templateRow; }
-    }
+    public DataRow TemplateRow => _templateRow;
 
     public object EditProperties
     {
       get { return this; }
     }
 
-    public double DashOffset
-    {
-      get { return _dashOffset; }
-      set { _dashOffset = value; }
-    }
-    public bool DashAdjust
-    {
-      get { return _dashAdjust; }
-      set { _dashAdjust = value; }
-    }
-    public bool DirectPoints
-    {
-      get { return _directPoints; }
-      set { _directPoints = value; }
-    }
+    public double DashOffset { get; set; }
+
+    public bool DashAdjust { get; set; }
+
+    public bool DirectPoints { get; set; }
 
     protected SymbolPart(DataRow templateRow)
     {
@@ -88,7 +64,7 @@ namespace TMap
         _templateRow = _templateTable.NewRow();
         _templateTable.Rows.Add(_templateRow);
       }
-      _lineColor = Color.FromArgb(
+      LineColor = Color.FromArgb(
         _random.Next(128) + 64,
         _random.Next(128) + 64,
         _random.Next(128) + 64);
@@ -110,11 +86,8 @@ namespace TMap
     public abstract int Topology { get; }
     public abstract void Draw(IGeometry geometry, DataRow properties, IDrawable drawable);
 
-    public int DrawLevel
-    {
-      get { return _drawLevel; }
-      set { _drawLevel = value; }
-    }
+    public int DrawLevel { get; set; }
+
     public int SplitDash(int i, double length)
     {
       int j;
@@ -138,7 +111,7 @@ namespace TMap
       }
       if (i < iNDash && _dash[i] <= length)
       {
-        throw new System.Exception(
+        throw new Exception(
           string.Format("length ({0}) > dashlength {0}", length, _dash[i]));
       }
 
@@ -155,26 +128,12 @@ namespace TMap
       return iNDash + 1;
     }
 
-    public Color LineColor
-    {
-      get
-      { return _lineColor; }
-      set
-      { _lineColor = value; }
-    }
+    public Color LineColor { get; set; }
 
-    public Color FillColor
-    {
-      get
-      { return _fillColor; }
-    }
+    public Color FillColor { get; } = Color.Black;
 
     [Browsable(false)]
-    public object Tag
-    {
-      get { return _tag; }
-      set { _tag = value; }
-    }
+    public object Tag { get; set; }
 
     public abstract double Size();
   }

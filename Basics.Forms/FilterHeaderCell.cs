@@ -59,8 +59,7 @@ namespace Basics.Forms
 
       // Copy this type's properties if the old cell is an auto-filter cell. 
       // This enables the Clone method to reuse this constructor. 
-      FilterHeaderCell filterCell = oldHeaderCell as FilterHeaderCell;
-      if (filterCell != null)
+      if (oldHeaderCell is FilterHeaderCell filterCell)
       {
         FilteringEnabled = filterCell.FilteringEnabled;
         AutomaticSortingEnabled = filterCell.AutomaticSortingEnabled;
@@ -436,8 +435,7 @@ namespace Basics.Forms
         DrawText(graphics, rect, null);
         if (!string.IsNullOrEmpty(_filterText))
         {
-          CheckState state;
-          Extensions.TryParse(_filterText, out state);
+          Extensions.TryParse(_filterText, out CheckState state);
 
           CheckBoxState boxState;
           if (state == CheckState.Checked)
@@ -518,11 +516,9 @@ namespace Basics.Forms
     private IList<object> GetFilterValues(int max = 100)
     {
       List<object> filterValues = new List<object>();
-      if (OwningColumn is DataGridViewComboBoxColumn)
+      if (OwningColumn is DataGridViewComboBoxColumn col)
       {
-        DataGridViewComboBoxColumn col = (DataGridViewComboBoxColumn)OwningColumn;
-        IEnumerable values = col.DataSource as IEnumerable;
-        if (values != null)
+        if (col.DataSource is IEnumerable values)
         {
           Func<object, string> getDisplayValue = null;
 
@@ -550,8 +546,7 @@ namespace Basics.Forms
       }
       if (filterValues.Count == 0)
       {
-        IPartialListView partialList = DataGridView.DataSource as IPartialListView;
-        if (partialList != null)
+        if (DataGridView.DataSource is IPartialListView partialList)
         {
           SortedDictionary<string, object> dict = new SortedDictionary<string, object>();
           foreach (object value in partialList.GetDistinctValues(OwningColumn.DataPropertyName, max))
@@ -567,8 +562,7 @@ namespace Basics.Forms
       }
       if (filterValues.Count == 0)
       {
-        IBindingListView sortList = DataGridView.DataSource as IBindingListView;
-        if (sortList != null)
+        if (DataGridView.DataSource is IBindingListView sortList)
         {
           Func<object, string> getPropertyValue = null;
           SortedDictionary<string, object> dict = new SortedDictionary<string, object>();
@@ -619,10 +613,8 @@ namespace Basics.Forms
           ShowFilterControl(_filterTextBox, rect);
         }
       }
-      else if (OwningColumn is DataGridViewComboBoxColumn)
+      else if (OwningColumn is DataGridViewComboBoxColumn col)
       {
-        DataGridViewComboBoxColumn col = (DataGridViewComboBoxColumn)OwningColumn;
-
         _filterList.Init(col, _filterClearValue);
         _filterList.Text = _filterText;
         _filterList.CaseSensitive = CaseSensitive;
@@ -631,8 +623,7 @@ namespace Basics.Forms
       }
       else if (OwningColumn is DataGridViewCheckBoxColumn)
       {
-        CheckState state;
-        Extensions.TryParse(_filterText, out state);
+        Extensions.TryParse(_filterText, out CheckState state);
         _filterCheckBox.CheckState = state;
 
         ShowFilterControl(_filterCheckBox, rect);
@@ -754,18 +745,18 @@ namespace Basics.Forms
     /// </summary>
     private void WireEvents(Control control)
     {
-      control.LostFocus += filterControl_LostFocus;
-      control.Validated += filterControl_Validated;
-      control.KeyDown += filterControl_KeyDown;
+      control.LostFocus += FilterControl_LostFocus;
+      control.Validated += FilterControl_Validated;
+      control.KeyDown += FilterControl_KeyDown;
     }
     private void UnwireEvents(Control control)
     {
-      control.LostFocus -= filterControl_LostFocus;
-      control.Validated -= filterControl_Validated;
-      control.KeyDown -= filterControl_KeyDown;
+      control.LostFocus -= FilterControl_LostFocus;
+      control.Validated -= FilterControl_Validated;
+      control.KeyDown -= FilterControl_KeyDown;
     }
 
-    void filterControl_Validated(object sender, EventArgs e)
+    void FilterControl_Validated(object sender, EventArgs e)
     {
       Control control = (Control)sender;
       if (_filterEditShowing)
@@ -778,7 +769,7 @@ namespace Basics.Forms
     /// <summary>
     /// Hides the drop-down list when it loses focus. 
     /// </summary>
-    private void filterControl_LostFocus(object sender, EventArgs e)
+    private void FilterControl_LostFocus(object sender, EventArgs e)
     {
       IFilterControl filter = (IFilterControl)sender;
       if (!filter.Focused)
@@ -790,7 +781,7 @@ namespace Basics.Forms
     /// <summary>
     /// Handles the ENTER and ESC keys.
     /// </summary>
-    private void filterControl_KeyDown(object sender, KeyEventArgs e)
+    private void FilterControl_KeyDown(object sender, KeyEventArgs e)
     {
       Control control = (Control)sender;
       switch (e.KeyCode)
@@ -1158,9 +1149,11 @@ namespace Basics.Forms
         BorderStyle = BorderStyle.None;
         TabStop = false;
 
-        _textBox = new DateTextBox();
-        _textBox.BorderStyle = BorderStyle.FixedSingle;
-        _textBox.TabStop = false;
+        _textBox = new DateTextBox
+        {
+          BorderStyle = BorderStyle.FixedSingle,
+          TabStop = false
+        };
         _textBox.LostFocus += _textBox_LostFocus;
         _textBox.PreviewKeyDown += _textBox_PreviewKeyDown;
         _textBox.TextChanged += _textBox_TextChanged;
@@ -1229,15 +1222,12 @@ namespace Basics.Forms
 
       void _textBox_TextChanged(object sender, EventArgs e)
       {
-        string filter;
-        string filterOp;
-        GetFilterText(_textBox.Text, out filter, out filterOp);
+        GetFilterText(_textBox.Text, out string filter, out string filterOp);
         if (filterOp == "\\")
         {
           return;
         }
-        DateTime date;
-        if (DateTime.TryParse(filter, out date))
+        if (DateTime.TryParse(filter, out DateTime date))
         {
           if (_calendar.SelectionStart != date)
           { _calendar.SelectionStart = date; }
@@ -1251,13 +1241,10 @@ namespace Basics.Forms
 
       private void _calendar_DateSelected(object sender, DateRangeEventArgs e)
       {
-        string filter;
-        string filterOp;
-        GetFilterText(_textBox.Text, out filter, out filterOp);
+        GetFilterText(_textBox.Text, out string filter, out string filterOp);
         if (filterOp != "\\")
         {
-          DateTime date;
-          if (DateTime.TryParse(filter, out date))
+          if (DateTime.TryParse(filter, out DateTime date))
           {
             if (_calendar.SelectionStart == date)
             { return; }
@@ -1492,9 +1479,7 @@ namespace Basics.Forms
             Dictionary<string, object> unsorted = new Dictionary<string, object>();
             foreach (object o in _dataSource)
             {
-              string display;
-              object value;
-              GetValues(o, out display, out value);
+              GetValues(o, out string display, out object value);
 
               if (!unsorted.ContainsKey(display))
               {
@@ -1563,8 +1548,7 @@ namespace Basics.Forms
         }
         else
         {
-          string display;
-          GetValues(selectedValue, out display, out selectedValue);
+          GetValues(selectedValue, out string display, out selectedValue);
         }
         if (selectedValue.GetType().IsEnum)
         {
@@ -1592,8 +1576,7 @@ namespace Basics.Forms
         _filterClearValue = null;
 
         object dataSource = col.DataSource;
-        IEnumerable values = dataSource as IEnumerable;
-        if (values != null && filterClearValue != null)
+        if (dataSource is IEnumerable values && filterClearValue != null)
         {
           Type listType = typeof(List<>).MakeGenericType(filterClearValue.GetType());
           object oList = Activator.CreateInstance(listType);

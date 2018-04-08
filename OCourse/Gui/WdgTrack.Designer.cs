@@ -78,7 +78,7 @@
       this.btnPath.TabIndex = 2;
       this.btnPath.Text = "...";
       this.btnPath.UseVisualStyleBackColor = true;
-      this.btnPath.Click += new System.EventHandler(this.btnPath_Click);
+      this.btnPath.Click += new System.EventHandler(this.BtnPath_Click);
       // 
       // dlgOpen
       // 
@@ -130,7 +130,7 @@
       this.btnResult.TabIndex = 20;
       this.btnResult.Text = "...";
       this.btnResult.UseVisualStyleBackColor = true;
-      this.btnResult.Click += new System.EventHandler(this.btnResult_Click);
+      this.btnResult.Click += new System.EventHandler(this.BtnResult_Click);
       // 
       // lblNormalized
       // 
@@ -159,7 +159,7 @@
       this.btnNormalized.TabIndex = 23;
       this.btnNormalized.Text = "...";
       this.btnNormalized.UseVisualStyleBackColor = true;
-      this.btnNormalized.Click += new System.EventHandler(this.btnNormalized_Click);
+      this.btnNormalized.Click += new System.EventHandler(this.BtnNormalized_Click);
       // 
       // btnCreateNormalized
       // 
@@ -170,7 +170,7 @@
       this.btnCreateNormalized.TabIndex = 26;
       this.btnCreateNormalized.Text = "Create Result";
       this.btnCreateNormalized.UseVisualStyleBackColor = true;
-      this.btnCreateNormalized.Click += new System.EventHandler(this.btnCreateNormalized_Click);
+      this.btnCreateNormalized.Click += new System.EventHandler(this.BtnCreateNormalized_Click);
       // 
       // chkGps
       // 
@@ -229,7 +229,7 @@
       this.btnRg.TabIndex = 33;
       this.btnRg.Text = "To RouteGadget";
       this.btnRg.UseVisualStyleBackColor = true;
-      this.btnRg.Click += new System.EventHandler(this.btnRg_Click);
+      this.btnRg.Click += new System.EventHandler(this.BtnRg_Click);
       // 
       // WdgTrack
       // 

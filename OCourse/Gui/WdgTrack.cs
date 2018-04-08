@@ -29,7 +29,7 @@ namespace OCourse.Gui
       //WdgOCourseBck.SetCourseList(courseFile, lstCourse);
     }
 
-    private void btnPath_Click(object sender, EventArgs e)
+    private void BtnPath_Click(object sender, EventArgs e)
     {
       if (dlgOpen.ShowDialog(this) != DialogResult.OK)
       { return; }
@@ -71,25 +71,25 @@ namespace OCourse.Gui
       }
     }
 
-    private void btnResult_Click(object sender, EventArgs e)
+    private void BtnResult_Click(object sender, EventArgs e)
     {
       dlgOpen.Filter = "*.csv|*.csv";
-      if (dlgOpen.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+      if (dlgOpen.ShowDialog() != DialogResult.OK)
       { return; }
 
       txtResult.Text = dlgOpen.FileName;
     }
-    private void btnNormalized_Click(object sender, EventArgs e)
+    private void BtnNormalized_Click(object sender, EventArgs e)
     {
       dlgSave.Filter = "*.csv|*.csv";
-      if (dlgSave.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+      if (dlgSave.ShowDialog() != DialogResult.OK)
       { return; }
 
       txtNormalized.Text = dlgSave.FileName;
     }
 
 
-    private void btnCreateNormalized_Click(object sender, EventArgs e)
+    private void BtnCreateNormalized_Click(object sender, EventArgs e)
     {
       try
       {
@@ -112,7 +112,7 @@ namespace OCourse.Gui
 
     }
 
-    private void btnRg_Click(object sender, EventArgs e)
+    private void BtnRg_Click(object sender, EventArgs e)
     {
       try
       {

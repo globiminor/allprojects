@@ -80,7 +80,7 @@ namespace Grid.Lcp
     private int _count;
     private List<Step> _steps;
     private List<Step> _distSteps;
-    private List<int>[] _cancelSteps;
+    private List<int>[] _cancelIndexes;
 
     public Step GetStep(int i)
     {
@@ -103,11 +103,11 @@ namespace Grid.Lcp
       _distSteps = new List<Step>(_steps);
       _distSteps.Sort(Step.CompareDistance);
 
-      _cancelSteps = new List<int>[_count];
+      _cancelIndexes = new List<int>[_count];
       foreach (Step step in _steps)
       {
-        List<int> cancelSteps = GetCancelIndexes(step);
-        _cancelSteps[step.Index] = cancelSteps;
+        List<int> cancelIndexes = GetCancelIndexes(step);
+        _cancelIndexes[step.Index] = cancelIndexes;
       }
     }
     public int Count
@@ -598,8 +598,8 @@ namespace Grid.Lcp
       if (cancelFields == null)
       { cancelFields = new bool[_count]; }
 
-      List<int> cancelSteps = _cancelSteps[step.Index];
-      foreach (int cancelIndex in cancelSteps)
+      List<int> cancelIndexes = _cancelIndexes[step.Index];
+      foreach (int cancelIndex in cancelIndexes)
       {
         cancelFields[cancelIndex] = true;
       }

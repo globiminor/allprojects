@@ -122,8 +122,7 @@ namespace Ocad.StringParams
       if (string.IsNullOrEmpty(s))
       { return null; }
       s = s.Split('\0')[0];
-      double d;
-      if (double.TryParse(s, out d) == false)
+      if (double.TryParse(s, out double d) == false)
       { return null; }
       return d;
     }

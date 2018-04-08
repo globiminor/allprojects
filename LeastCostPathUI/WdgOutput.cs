@@ -8,7 +8,7 @@ namespace LeastCostPathUI
 {
   public partial class WdgOutput : Form
   {
-    private ICostProvider _costProvider;
+    private ICostProvider<HeightVeloLcp> _costProvider;
     private IDoubleGrid _height;
     private string _velo;
     private double _resol;
@@ -19,7 +19,7 @@ namespace LeastCostPathUI
       InitializeComponent();
     }
 
-    public void Init(ICostProvider costProvider, IDoubleGrid height, string velo,
+    public void Init(ICostProvider<HeightVeloLcp> costProvider, IDoubleGrid height, string velo,
       double resolution, Steps step)
     {
       _costProvider = costProvider;
@@ -52,14 +52,14 @@ namespace LeastCostPathUI
       cntOutput.SetMainPath(mainPath);
     }
 
-    private void btnCancel_Click(object sender, EventArgs e)
+    private void BtnCancel_Click(object sender, EventArgs e)
     {
       Hide();
       Close();
     }
 
     private bool _calc;
-    private void btnOK_Click(object sender, EventArgs e)
+    private void BtnOK_Click(object sender, EventArgs e)
     {
       if (_calc == false)
       {

@@ -55,7 +55,7 @@
       this.btnStepCost.Name = "btnStepCost";
       this.btnStepCost.Size = new System.Drawing.Size(20, 20);
       this.btnStepCost.TabIndex = 19;
-      this.btnStepCost.Click += new System.EventHandler(this.btnStepCost_Click);
+      this.btnStepCost.Click += new System.EventHandler(this.BtnStepCost_Click);
       // 
       // txtCost
       // 
@@ -95,7 +95,7 @@
       this._lstStep.Name = "lstStep";
       this._lstStep.Size = new System.Drawing.Size(47, 24);
       this._lstStep.TabIndex = 15;
-      this._lstStep.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.lstStep_DrawItem);
+      this._lstStep.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.LstStep_DrawItem);
       // 
       // txtResol
       // 
@@ -143,7 +143,7 @@
       this.btnVelo.Name = "btnVelo";
       this.btnVelo.Size = new System.Drawing.Size(20, 20);
       this.btnVelo.TabIndex = 25;
-      this.btnVelo.Click += new System.EventHandler(this.btnVelo_Click);
+      this.btnVelo.Click += new System.EventHandler(this.BtnVelo_Click);
       // 
       // btnHeight
       // 
@@ -153,7 +153,7 @@
       this.btnHeight.Name = "btnHeight";
       this.btnHeight.Size = new System.Drawing.Size(20, 20);
       this.btnHeight.TabIndex = 24;
-      this.btnHeight.Click += new System.EventHandler(this.btnHeight_Click);
+      this.btnHeight.Click += new System.EventHandler(this.BtnHeight_Click);
       // 
       // lblVelo
       // 

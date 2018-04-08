@@ -592,8 +592,7 @@
             this.mniSaveAs});
       this.mniSettings.Name = "mniSettings";
       this.mniSettings.Size = new System.Drawing.Size(61, 20);
-      this.mniSettings.Text = "Settings";
-      this.mniSettings.Click += new System.EventHandler(this.MniSettings_Click);
+      this.mniSettings.Text = "&Settings";
       // 
       // mniOpen
       // 
@@ -607,12 +606,14 @@
       this.mniSave.Name = "mniSave";
       this.mniSave.Size = new System.Drawing.Size(180, 22);
       this.mniSave.Text = "&Save";
+      this.mniSave.Click += new System.EventHandler(this.MniSave_Click);
       // 
       // mniSaveAs
       // 
       this.mniSaveAs.Name = "mniSaveAs";
       this.mniSaveAs.Size = new System.Drawing.Size(180, 22);
       this.mniSaveAs.Text = "Save As";
+      this.mniSaveAs.Click += new System.EventHandler(this.MniSaveAs_Click);
       // 
       // WdgOCourse
       // 

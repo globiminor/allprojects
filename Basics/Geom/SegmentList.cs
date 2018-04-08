@@ -66,6 +66,9 @@ namespace Basics.Geom
     { return GetEnumerator(); }
     public IEnumerator<Curve> GetEnumerator()
     {
+      if (_polyline.Points.Count < 2)
+      { yield break; }
+
       LinkedListNode<InnerCurve> innerNode = null;
       InnerCurve innerCurve = null;
       if (_polyline.InnerCurves != null)

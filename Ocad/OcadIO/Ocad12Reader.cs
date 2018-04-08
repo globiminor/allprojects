@@ -187,9 +187,11 @@ namespace Ocad
         if (e.ObjectStringType != ObjectStringType.CsObject)
         { continue; }
 
-        if (e.ObjectString == $"10{control.Name}"         // Control
-         || e.ObjectString == $"00{control.Name}"        // Start
-         || e.ObjectString == $"30{control.Name}")        // Finish
+        string key = new ControlPar(e.ObjectString).Name;
+
+        if (key == $"10{control.Name}"         // Control
+         || key == $"00{control.Name}"        // Start
+         || key == $"30{control.Name}")        // Finish
         {
           match = e;
           break;

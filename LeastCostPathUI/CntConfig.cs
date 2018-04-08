@@ -40,10 +40,6 @@ namespace LeastCostPathUI
       SetCostProviderType(new VelocityCostProvider());
     }
 
-    public ICostProvider CostProvider
-    {
-      get { return _costProvider; }
-    }
     private void SetCostProviderType(ICostProvider costProvider)
     {
       _costProvider = costProvider;
@@ -90,7 +86,7 @@ namespace LeastCostPathUI
 
     private ICostProvider _costProvider;
 
-    private void txtResol_Validating(object sender, CancelEventArgs e)
+    private void TxtResol_Validating(object sender, CancelEventArgs e)
     {
       try
       {
@@ -102,25 +98,24 @@ namespace LeastCostPathUI
       { e.Cancel = true; }
     }
 
-    private void lstStep_DrawItem(object sender, DrawItemEventArgs e)
+    private void LstStep_DrawItem(object sender, DrawItemEventArgs e)
     {
       StepImage step = (StepImage)lstStep.Items[e.Index];
       e.Graphics.DrawImage(step.Image, 4, 2 + e.Bounds.Y);
     }
 
-    private void btnStepCost_Click(object sender, EventArgs e)
+    private void BtnStepCost_Click(object sender, EventArgs e)
     {
       WdgCustom wdg = new WdgCustom();
       if (wdg.ShowDialog(this) != DialogResult.OK)
       { return; }
 
-      Type type = wdg.CostProviderType;
-      ICostProvider p = (ICostProvider)Activator.CreateInstance(type, true);
+      ICostProvider p = wdg.CostProvider;
       //      SetStepCost((StepCostHandler<double>)Delegate.CreateDelegate(typeof(StepCostHandler<double>), type));
       SetCostProviderType(p);
     }
 
-    private void btnHeight_Click(object sender, EventArgs e)
+    private void BtnHeight_Click(object sender, EventArgs e)
     {
       try
       {
@@ -134,7 +129,7 @@ namespace LeastCostPathUI
       { MessageBox.Show(exp.Message + "\n" + exp.StackTrace); }
     }
 
-    private void btnVelo_Click(object sender, EventArgs e)
+    private void BtnVelo_Click(object sender, EventArgs e)
     {
       try
       {
@@ -157,12 +152,12 @@ namespace LeastCostPathUI
       { MessageBox.Show(exp.Message + "\n" + exp.StackTrace); }
     }
 
-    private void txtHeight_TextChanged(object sender, EventArgs e)
+    private void TxtHeight_TextChanged(object sender, EventArgs e)
     {
       _grdHeight = null;
     }
 
-    private void txtVelo_TextChanged(object sender, EventArgs e)
+    private void TxtVelo_TextChanged(object sender, EventArgs e)
     {
     }
 

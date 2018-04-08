@@ -15,7 +15,7 @@ namespace LeastCostPathUI
 
     public int stepType = -1;
     public string sCostAssembley = null;
-    public string sCostMethod = null;
+    public string sCostType = null;
 
     public string ssCostGrd = null;
     public string ssCostTif = null;
@@ -82,10 +82,10 @@ namespace LeastCostPathUI
           { throw new InvalidOperationException("Invalid step type " + stepType); }
           i += 2;
         }
-        else if (arg[i] == "-m")
+        else if (arg[i] == "-t")
         {
           sCostAssembley = (arg[i + 1]);
-          sCostMethod = (arg[i + 2]);
+          sCostType = (arg[i + 2]);
           i += 3;
         }
         else if (arg[i] == "-s")
@@ -275,7 +275,7 @@ namespace LeastCostPathUI
 
     private static void ProcessParams(LcpParams lcp)
     {
-      LeastCostPath costPath;
+      HeightVeloLcp costPath;
 
       byte[] r = new byte[256];
       byte[] g = new byte[256];
@@ -296,7 +296,7 @@ namespace LeastCostPathUI
       else throw new InvalidOperationException("Unhandled step type " + lcp.stepType);
 
       Box box = new Box(new Point2D(lcp.x0, lcp.y0), new Point2D(lcp.x1, lcp.y1));
-      costPath = new LeastCostPath(box, lcp.dx, step);
+      costPath = new HeightVeloLcp(box, lcp.dx, step);
 
       IDoubleGrid heightGrid = null;
       if (!string.IsNullOrEmpty(lcp.sHeight))
@@ -309,19 +309,15 @@ namespace LeastCostPathUI
         if (lcp.sCostAssembley != null)
         {
           Assembly ass = Assembly.LoadFile(lcp.sCostAssembley);
-          int startMethod = lcp.sCostMethod.LastIndexOf('.');
-          string typeName = lcp.sCostMethod.Substring(0, startMethod);
-          string methodName = lcp.sCostMethod.Substring(startMethod + 1);
+          string typeName = lcp.sCostType;
           Type type = ass.GetType(typeName);
-          MethodInfo method =
-            type.GetMethod(methodName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
 
-          costPath.StepCost = (StepCostHandler)
-            Delegate.CreateDelegate(typeof(StepCostHandler), method);
+          object calc = Activator.CreateInstance(type);
+          costPath.StepCostCalculator = (IStepCostCalculator)calc;
         }
         else
         {
-          costPath.StepCost = VelocityCostProvider.CostPath_StepCost;
+          costPath.StepCostCalculator = VelocityCostProvider.DefaultCalculator;
         }
 
         if (lcp.bStart)
@@ -335,7 +331,7 @@ namespace LeastCostPathUI
           costPath.Status -= CostPath_Status;
           costPath.Status += CostPath_Status;
           Point2D pe = new Point2D(lcp.xe, lcp.ye);
-          costPath.CalcCost(pe, heightGrid, velocityGrid, out endCostGrid, out endDirGrid, true);
+          costPath.CalcCost(pe, heightGrid, velocityGrid, out endCostGrid, out endDirGrid, inverse: true);
         }
       }
       if (lcp.ssCostGrd != null)

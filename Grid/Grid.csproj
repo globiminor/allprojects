@@ -51,6 +51,8 @@
     <Compile Include="IntGrid.cs" />
     <Compile Include="Lcp\Config.cs" />
     <Compile Include="Lcp\ConfigVm.cs" />
+    <Compile Include="Lcp\Field.cs" />
+    <Compile Include="Lcp\HeightVeloLcp.cs" />
     <Compile Include="Lcp\LeastCostPath.cs" />
     <Compile Include="Lcp\RouteTable.cs">
       <SubType>Component</SubType>

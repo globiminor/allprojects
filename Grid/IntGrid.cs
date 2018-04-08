@@ -73,53 +73,51 @@ namespace Grid
 
     public static IntGrid FromBinaryFile(string name)
     {
-      short iLength;
       Type type;
-      int nx, ny;
-      double x0, y0, dx, z0, dz;
-      BinarGrid.EGridType eType;
       BinaryReader pReader;
-      FileStream pFile = File.Open(name, FileMode.Open);
-
-      BinarGrid.GetHeader(pFile, out nx, out ny, out eType, out iLength, out x0, out y0, out dx,
-        out z0, out dz);
-      if (eType != BinarGrid.EGridType.eInt)
+      using (FileStream pFile = File.Open(name, FileMode.Open))
       {
-        throw new Exception("Invalid File Type " + eType);
-      }
-
-      // get type
-      if (iLength == 1)
-      { type = typeof(byte); }
-      else if (iLength == 2)
-      { type = typeof(short); }
-      else if (iLength == 4)
-      { type = typeof(int); }
-      else
-      { throw new ArgumentException("Unhandled Length " + iLength); }
-
-      IntGrid grd = new IntGrid(nx, ny, type, x0, y0, dx);
-      grd._value = Array.CreateInstance(type, new int[] { nx, ny });
-
-      pReader = new BinaryReader(pFile);
-      for (int iy = 0; iy < ny; iy++)
-      {
-        for (int ix = 0; ix < nx; ix++)
+        BinarGrid.GetHeader(pFile,
+          out int nx, out int ny, out BinarGrid.EGridType eType,
+          out short iLength, out double x0, out double y0, out double dx,
+          out double z0, out double dz);
+        if (eType != BinarGrid.EGridType.eInt)
         {
-          if (type == typeof(byte))
-          { grd._value.SetValue(pReader.ReadByte(), ix, iy); }
-          else if (type == typeof(short))
-          { grd._value.SetValue(pReader.ReadInt16(), ix, iy); }
-          else if (type == typeof(int))
-          { grd._value.SetValue(pReader.ReadInt32(), ix, iy); }
-          else
-          { throw new ArgumentException("Unhandled Type " + type); }
+          throw new Exception("Invalid File Type " + eType);
         }
+
+        // get type
+        if (iLength == 1)
+        { type = typeof(byte); }
+        else if (iLength == 2)
+        { type = typeof(short); }
+        else if (iLength == 4)
+        { type = typeof(int); }
+        else
+        { throw new ArgumentException("Unhandled Length " + iLength); }
+
+        IntGrid grd = new IntGrid(nx, ny, type, x0, y0, dx)
+        { _value = Array.CreateInstance(type, new int[] { nx, ny }) };
+
+        pReader = new BinaryReader(pFile);
+        for (int iy = 0; iy < ny; iy++)
+        {
+          for (int ix = 0; ix < nx; ix++)
+          {
+            if (type == typeof(byte))
+            { grd._value.SetValue(pReader.ReadByte(), ix, iy); }
+            else if (type == typeof(short))
+            { grd._value.SetValue(pReader.ReadInt16(), ix, iy); }
+            else if (type == typeof(int))
+            { grd._value.SetValue(pReader.ReadInt32(), ix, iy); }
+            else
+            { throw new ArgumentException("Unhandled Type " + type); }
+          }
+        }
+
+        pFile.Close();
+        return grd;
       }
-
-      pFile.Close();
-
-      return grd;
     }
     #endregion
 

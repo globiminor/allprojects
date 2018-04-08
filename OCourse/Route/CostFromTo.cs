@@ -4,7 +4,7 @@ using Ocad;
 
 namespace OCourse.Route
 {
-  internal class CostFromTo : CostBase
+  internal class CostFromTo : CostBase, ICost
   {
     private readonly Control _from;
     private readonly Control _to;
@@ -28,6 +28,11 @@ namespace OCourse.Route
       Resolution = resolution;
 
       _route = route;
+    }
+
+    string ICost.Name
+    {
+      get { return Name ?? $"{_from.Name} -> {_to.Name}"; }
     }
 
     public Control From

@@ -10,12 +10,6 @@ namespace Ocad
   /// </summary>
   public class Control : ISection
   {
-    private string _name;
-    private char _code;
-    private int _symbol;
-    private Element _element;
-    private string _text;
-
     public Control()
     { }
     public static Control FromStringParam(string param)
@@ -36,13 +30,13 @@ namespace Ocad
 
     public Control(string name)
     {
-      _name = name;
+      Name = name;
     }
 
     public Control(string name, char code)
     {
-      _name = name;
-      _code = code;
+      Name = name;
+      Code = code;
     }
 
     object ICloneable.Clone()
@@ -57,52 +51,32 @@ namespace Ocad
     protected virtual Control CloneCore()
     {
       Control clone = (Control)Activator.CreateInstance(GetType(), true);
-      clone._name = _name;
-      clone._code = _code;
-      clone._symbol = _symbol;
-      clone._element = _element;
-      clone._text = _text;
+      clone.Name = Name;
+      clone.Code = Code;
+      clone.Symbol = Symbol;
+      clone.Element = Element;
+      clone.Text = Text;
       return clone;
     }
 
-    public string Name
-    {
-      get { return _name; }
-      set { _name = value; }
-    }
+    public string Name { get; set; }
     /// <summary>
     /// Start: s
     /// Control: c
     /// Finish: f
     /// Pflicht: m
     /// </summary>
-    public char Code
-    {
-      get { return _code; }
-      set { _code = value; }
-    }
+    public char Code { get; set; }
 
-    public int Symbol
-    {
-      get { return _symbol; }
-      set { _symbol = value; }
-    }
+    public int Symbol { get; set; }
 
-    public Element Element
-    {
-      get { return _element; }
-      set { _element = value; }
-    }
+    public Element Element { get; set; }
 
-    public string Text
-    {
-      get { return _text; }
-      set { _text = value; }
-    }
+    public string Text { get; set; }
 
     public override string ToString()
     {
-      return string.Format("{0,3} {1,4}", _name, _code);
+      return string.Format("{0,3} {1,4}", Name, Code);
     }
 
     public IPoint GetPoint()

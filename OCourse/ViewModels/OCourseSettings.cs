@@ -9,10 +9,16 @@ namespace OCourse.ViewModels
     [XmlAttribute]
     public string CourseFile { get; set; }
     [XmlAttribute]
-    public string DhmFile { get; set; }
+    public string HeightFile { get; set; }
     [XmlAttribute]
     public string VeloFile { get; set; }
-    [XmlAttribute]
-    public double Resolution { get; set; }
+    [XmlIgnore]
+    public double? Resolution { get; set; }
+    [XmlAttribute("Resolution")]
+    public string SResol
+    {
+      get { return Resolution?.ToString(); }
+      set { Resolution = double.TryParse(value, out double r) ? r : (double?)null; }
+    }
   }
 }

@@ -104,7 +104,6 @@ namespace Grid
     private readonly IGrid<double> _grid;
     private readonly int _x0;
     private readonly int _y0;
-    private readonly int _x1;
     private readonly Dir _dir;
 
     private GridPoint _start;
@@ -120,16 +119,17 @@ namespace Grid
 
     public override string ToString()
     {
-      double angle;
-      char cAngle = MeshUtils.GetChar(this, out angle);
+      char cAngle = MeshUtils.GetChar(this, out double angle);
 
-      return string.Format("{0},{1} + {2} ({3:N1}, {4:N1}, {5:N1} + {6:N1}, {7:N1}, {8:N1})", 
-        _x0, _y0, cAngle, 
+      return string.Format("{0},{1} + {2} ({3:N1}, {4:N1}, {5:N1} + {6:N1}, {7:N1}, {8:N1})",
+        _x0, _y0, cAngle,
         Start.X, Start.Y, Start.Z,
         End.X - Start.X, End.Y - Start.Y, End.Z - Start.Z);
     }
 
-    public IGrid<double> BaseGrid { get { return _grid; } }
+    public IGrid<double> BaseGrid => _grid;
+
+    public Dir Dir => _dir;
 
     public IPoint Start
     {
@@ -143,9 +143,11 @@ namespace Grid
 
     IMeshLine IMeshLine.Invers()
     {
-      GridMeshLine invers = new GridMeshLine(_grid, _x0 + _dir.Dx, _y0 + _dir.Dy, new Dir(-_dir.Dx, -_dir.Dy));
-      invers._start = _end;
-      invers._end = _start;
+      GridMeshLine invers = new GridMeshLine(_grid, _x0 + _dir.Dx, _y0 + _dir.Dy, new Dir(-_dir.Dx, -_dir.Dy))
+      {
+        _start = _end,
+        _end = _start
+      };
       return invers;
     }
     IMeshLine IMeshLine.GetNextTriLine()
@@ -160,8 +162,7 @@ namespace Grid
       int y2 = y1 + nextDir.Dy;
       if (y2 < 0 || y2 >= _grid.Extent.Ny)
       { return null; }
-      GridMeshLine next = new GridMeshLine(_grid, x1, y1, nextDir);
-      next._start = _end;
+      GridMeshLine next = new GridMeshLine(_grid, x1, y1, nextDir) { _start = _end };
 
       return next;
     }
@@ -176,8 +177,7 @@ namespace Grid
       int y2 = _y0 - preDir.Dy;
       if (y2 < 0 || y2 >= _grid.Extent.Ny)
       { return null; }
-      GridMeshLine next = new GridMeshLine(_grid, x2, y2, preDir);
-      next._end = _start;
+      GridMeshLine next = new GridMeshLine(_grid, x2, y2, preDir) { _end = _start };
 
       return next;
     }

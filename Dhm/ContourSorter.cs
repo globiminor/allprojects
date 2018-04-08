@@ -89,8 +89,7 @@ namespace Dhm
         int n = 0;
         foreach (Mesh.MeshLine line in mesh.GetLinesAt(pnt))
         {
-          bool reverse;
-          if (line.GetTag(out reverse) != null)
+          if (line.GetTag(out bool reverse) != null)
           {
             n++;
           }
@@ -141,8 +140,7 @@ namespace Dhm
     }
     protected void OnProgressChanged(ProgressEventArgs args)
     {
-      if (ProgressChanged != null)
-      { ProgressChanged(this, args); }
+      ProgressChanged?.Invoke(this, args);
     }
 
     private void AssignHeights(IList<Contour> contours)
@@ -202,8 +200,7 @@ namespace Dhm
         {
           if (pair.Key.HeightIndex.HasValue == false)
           {
-            IList<Nb> neighbors;
-            if (unassigned.TryGetValue(pair.Key, out neighbors) == false)
+            if (unassigned.TryGetValue(pair.Key, out IList<Nb> neighbors) == false)
             {
               neighbors = new List<Nb>();
               unassigned.Add(pair.Key, neighbors);
@@ -246,8 +243,7 @@ namespace Dhm
 
           // remark : "down" not needed if (dh != 0)
           int h = NeighborInfo.NextHeight(cn.HeightIndex.Value, dh, false, cn.Type, ua.Type);
-          double w;
-          if (hList.TryGetValue(h, out w) == false)
+          if (hList.TryGetValue(h, out double w) == false)
           { hList.Add(h, 0); }
           hList[h] += Math.Abs(cn2Ua.Weight);
         }
@@ -323,10 +319,9 @@ namespace Dhm
         foreach (KeyValuePair<Contour, NeighborInfo> pair in contour.Neighbors)
         {
           Contour neighbor = pair.Key;
-          NeighborInfo nb2Ct;
           if (neighbor.HeightIndex == null)
           { incomplete = true; }
-          else if (neighbor.Neighbors.TryGetValue(contour, out nb2Ct))
+          else if (neighbor.Neighbors.TryGetValue(contour, out NeighborInfo nb2Ct))
           {
             NeighborInfo ct2Nb = pair.Value;
             if (contour.Orientation == Orientation.Unknown ||
@@ -514,8 +509,7 @@ namespace Dhm
         if (pair.Value.LeftSide != checkLeft)
         { continue; }
 
-        NeighborInfo info;
-        if (neighbor.Neighbors.TryGetValue(contour, out info) == false)
+        if (neighbor.Neighbors.TryGetValue(contour, out NeighborInfo info) == false)
         { continue; }
         if (((neighbor.Orientation == Orientation.LeftSideDown) == info.LeftSide) != up)
         { continue; }
@@ -539,8 +533,7 @@ namespace Dhm
 
     private void AssignParallel(List<Contour> contours)
     {
-      double length;
-      Contour contour = FindMaxParallel(contours, out length);
+      Contour contour = FindMaxParallel(contours, out double length);
 
       while (contour != null)
       {
@@ -602,8 +595,7 @@ namespace Dhm
 
       foreach (Mesh.MeshLine line in mesh.Lines(null))
       {
-        bool isReverse;
-        Contour contour = line.GetTag(out isReverse) as Contour;
+        Contour contour = line.GetTag(out bool isReverse) as Contour;
         if (contour == null)
         { continue; }
 
@@ -615,22 +607,17 @@ namespace Dhm
         Mesh.MeshLine lLeft = -(line.GetNextTriLine());
         Mesh.MeshLine lRight = -((-line).GetNextTriLine());
 
-        bool t;
-        if (lLeft.GetTag(out t) != null)
+        if (lLeft.GetTag(out bool t) != null)
         { continue; }
         if (lRight.GetTag(out t) != null)
         { continue; }
 
-        Contour cLeft;
-        bool firstReverseLeft;
-        if (GetContour(lLeft, out cLeft, out firstReverseLeft) == false)
+        if (GetContour(lLeft, out Contour cLeft, out bool firstReverseLeft) == false)
         { continue; }
         if (cLeft == contour)
         { continue; }
 
-        Contour cRight;
-        bool firstReverseRight;
-        if (GetContour(lRight, out cRight, out firstReverseRight) == false)
+        if (GetContour(lRight, out Contour cRight, out bool firstReverseRight) == false)
         { continue; }
         if (cRight == contour)
         { continue; }
@@ -647,9 +634,8 @@ namespace Dhm
         double fRight = p0.VectorProduct(PntOp.Sub(lRight.Start, line.Start));
         double fPara = 1 - 2 * Math.Abs(0.5 - (fLeft / (fLeft - fRight)));
         fPara *= fPara;
-        NeighborInfo values;
 
-        if (contour.Neighbors.TryGetValue(cLeft, out values) == false)
+        if (contour.Neighbors.TryGetValue(cLeft, out NeighborInfo values) == false)
         {
           values = new NeighborInfo();
           contour.Neighbors.Add(cLeft, values);
@@ -682,9 +668,7 @@ namespace Dhm
 
       while (l.HasEqualBaseLine(line) == false)
       {
-        bool isReverse;
-        Contour tag = l.GetTag(out isReverse) as Contour;
-        if (tag != null)
+        if (l.GetTag(out bool isReverse) is Contour tag)
         {
           if (contour == null)
           {
@@ -747,34 +731,6 @@ namespace Dhm
       }
       return selList;
     }
-
-    //private void AddElements(Mesh mesh, List<Contour> elemList)
-    //{
-    //  foreach (ContourX elem in elemList)
-    //  {
-    //    Polyline line = elem.Polyline;
-    //    mesh.Add((Point2D)line.Points.First.Value);
-    //  }
-    //  foreach (ContourX elem in elemList)
-    //  {
-    //    Polyline line = elem.Polyline;
-    //    mesh.Add((Point2D)line.Points.Last.Value);
-    //  }
-    //  foreach (ContourX elem in elemList)
-    //  {
-    //    Polyline line = elem.Polyline;
-    //    Mesh.MeshPoint p0 = null;
-    //    foreach (Point2D p1 in line.Points)
-    //    { p0 = mesh.Add(p1, p0); }
-    //  }
-
-    //  foreach (ContourX elem in elemList)
-    //  {
-    //    Polyline line = elem.Polyline;
-    //    mesh.Add(line, elem, new Mesh.InsertHandler(NewPoint));
-    //  }
-    //}
-    private bool _verify;
 
     private List<ContourType> AddElements(Mesh mesh, IList<Contour> contourList)
     {
@@ -960,8 +916,7 @@ namespace Dhm
       Point end = Point.CastOrCreate(cross.End);
       IPoint result = cross.Start + crossFactor * (end - cross.Start);
 
-      bool revers;
-      object crossTag = cross.GetTag(out revers);
+      object crossTag = cross.GetTag(out bool revers);
       if (crossTag != null)
       {
         InfoContour intersect = new InfoContour(
@@ -987,8 +942,7 @@ namespace Dhm
     {
       public int CompareTo(Mesh.MeshLine other)
       {
-        bool reverse;
-        if (other.GetTag(out reverse) != null)
+        if (other.GetTag(out bool reverse) != null)
         { return 0; }
         else
         { return 1; }
@@ -998,8 +952,7 @@ namespace Dhm
     {
       public int Compare(Mesh.MeshLine x, Mesh.MeshLine y)
       {
-        bool reverse;
-        Contour elemX = (Contour)x.GetTag(out reverse);
+        Contour elemX = (Contour)x.GetTag(out bool reverse);
         Contour elemY = (Contour)y.GetTag(out reverse);
 
         return elemX.Type.CompareTo(elemY.Type);
@@ -1016,8 +969,7 @@ namespace Dhm
       int id = 1;
       foreach (LinkedList<Mesh.MeshLine> lineList in mesh.LineStrings(cprTagged, cprSymbol))
       {
-        bool reverse;
-        ContourType symbol = ((Contour)lineList.First.Value.GetTag(out reverse)).Type;
+        ContourType symbol = ((Contour)lineList.First.Value.GetTag(out bool reverse)).Type;
         Polyline line = Polyline(lineList, reverse);
         if (line.Points.Count == 2 && line.Project(Geometry.ToXY).Length() < 4)
         { continue; }

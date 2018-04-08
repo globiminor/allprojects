@@ -10,8 +10,12 @@ namespace Grid.Lcp
 {
   public interface ICostProvider
   {
-    LeastCostPathBase Build(IBox box, double dx, Steps step, string velocityData);
+    LeastCostPath Build(IBox box, double dx, Steps step, string velocityData);
     string FileFilter { get; }
+  }
+  public interface ICostProvider<T> : ICostProvider where T : LeastCostPath
+  {
+    new T Build(IBox box, double dx, Steps step, string velocityData);
   }
 
   public class ConfigVm : NotifyListener
@@ -27,7 +31,7 @@ namespace Grid.Lcp
     private string _veloPath;
     private double _resolution;
     private Steps _steps;
-    private ICostProvider _costProvider;
+    private ICostProvider<HeightVeloLcp> _costProvider;
     private IDoubleGrid _grdHeight;
 
     public ConfigVm()
@@ -37,7 +41,7 @@ namespace Grid.Lcp
       Resolution = _resol;
       StepsMode = _stepsModes[0];
 
-      SetCostProviderType(new VelocityCostProvider());
+      SetCostProvider(new VelocityCostProvider());
     }
 
     protected override void Disposing(bool disposing)
@@ -85,11 +89,8 @@ namespace Grid.Lcp
         { _steps = value; }
       }
     }
-    public string CostProviderName { get { return CostProvider != null ? CostProvider.GetType().Name : null; } }
-    public ICostProvider CostProvider
-    {
-      get { return _costProvider; }
-    }
+    public string CostProviderName { get { return CostProvider?.GetType().Name; } }
+    public ICostProvider<HeightVeloLcp> CostProvider { get { return _costProvider; } }
 
     public IDoubleGrid HeightGrid
     {
@@ -115,7 +116,7 @@ namespace Grid.Lcp
       }
     }
 
-    public void SetCostProviderType(ICostProvider costProvider)
+    public void SetCostProvider(ICostProvider<HeightVeloLcp> costProvider)
     {
       using (Changing(nameof(CostProviderName)))
       { _costProvider = costProvider; }

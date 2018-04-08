@@ -13,6 +13,7 @@ using OCourse.ViewModels;
 using Basics.Views;
 using Basics;
 using GuiUtils;
+using Basics.Forms;
 
 namespace OCourse.Gui
 {
@@ -78,6 +79,9 @@ namespace OCourse.Gui
           this.Bind(x => x.Permutations, _bindingSource, nameof(_vm.Permutations),
             true, DataSourceUpdateMode.Never);
 
+          this.Bind(x => SettingSaveEnabled, _bindingSource, nameof(_vm.CanSave),
+            false, DataSourceUpdateMode.Never);
+
           dgvInfo.Bind(x => x.DataSource, _bindingSource, nameof(_vm.Info),
               true, DataSourceUpdateMode.Never);
 
@@ -123,6 +127,13 @@ namespace OCourse.Gui
           }
         }
       }
+    }
+
+    [System.ComponentModel.Browsable(false)]
+    public bool SettingSaveEnabled
+    {
+      get { return mniSave.Enabled; }
+      set { mniSave.Enabled = value; }
     }
 
     private bool _working;
@@ -228,10 +239,7 @@ namespace OCourse.Gui
 
     private void BtnBackCalc_Click(object sender, EventArgs e)
     {
-      if (_vm == null)
-      { return; }
-
-      _vm.CalcEventInit();
+      _vm?.CalcEventInit();
     }
 
     private void InitGridLayout()
@@ -254,6 +262,7 @@ namespace OCourse.Gui
             ReadOnly = true,
             Width = 60
           };
+          FilterHeaderCell.CreateCore(col);
 
           dgvInfo.Columns.Add(col);
         }
@@ -267,6 +276,7 @@ namespace OCourse.Gui
           };
           col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
           col.DefaultCellStyle.Format = "N2";
+          FilterHeaderCell.CreateCore(col);
 
           dgvInfo.Columns.Add(col);
         }
@@ -280,6 +290,7 @@ namespace OCourse.Gui
           };
           col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
           col.DefaultCellStyle.Format = "N2";
+          FilterHeaderCell.CreateCore(col);
 
           dgvInfo.Columns.Add(col);
         }
@@ -293,6 +304,7 @@ namespace OCourse.Gui
           };
           col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
           col.DefaultCellStyle.Format = "N0";
+          FilterHeaderCell.CreateCore(col);
 
           dgvInfo.Columns.Add(col);
         }
@@ -306,6 +318,7 @@ namespace OCourse.Gui
           };
           col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
           col.DefaultCellStyle.Format = "N2";
+          FilterHeaderCell.CreateCore(col);
 
           dgvInfo.Columns.Add(col);
         }
@@ -319,6 +332,7 @@ namespace OCourse.Gui
           };
           col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
           col.DefaultCellStyle.Format = "N2";
+          FilterHeaderCell.CreateCore(col);
 
           dgvInfo.Columns.Add(col);
         }
@@ -332,6 +346,7 @@ namespace OCourse.Gui
           };
           col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
           col.DefaultCellStyle.Format = "N0";
+          FilterHeaderCell.CreateCore(col);
 
           dgvInfo.Columns.Add(col);
         }
@@ -749,11 +764,6 @@ namespace OCourse.Gui
       InitGridLayout();
     }
 
-    private void MniSettings_Click(object sender, EventArgs e)
-    {
-      mniSave.Enabled = _vm?.CanSave ?? false;
-    }
-
     private void MniOpen_Click(object sender, EventArgs e)
     {
       if (_vm == null)
@@ -764,6 +774,23 @@ namespace OCourse.Gui
       { return; }
 
       _vm.LoadSettings(dlgOpen.FileName);
+    }
+
+    private void MniSave_Click(object sender, EventArgs e)
+    {
+      _vm?.SaveSettings();
+    }
+
+    private void MniSaveAs_Click(object sender, EventArgs e)
+    {
+      if (_vm == null)
+      { return; }
+
+      dlgSave.Filter = "*.xml | *.xml";
+      if (dlgSave.ShowDialog() != DialogResult.OK)
+      { return; }
+
+      _vm.SaveSettings(dlgSave.FileName);
     }
   }
 }

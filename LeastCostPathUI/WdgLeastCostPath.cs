@@ -42,18 +42,18 @@ namespace LeastCostPathUI
     #region events
 
 
-    private void btnClose_Click(object sender, EventArgs e)
+    private void BtnClose_Click(object sender, EventArgs e)
     {
       Close();
     }
 
-    private void btnOK_Click(object sender, EventArgs e)
+    private void BtnOK_Click(object sender, EventArgs e)
     {
       IDoubleGrid grdHeight = _lcpConfigVm.HeightGrid;
       string grdVelo = _lcpConfigVm.VeloPath;
       double resol = _lcpConfigVm.Resolution;
       Steps step = _lcpConfigVm.StepsMode;
-      ICostProvider costProvider = _lcpConfigVm.CostProvider;
+      ICostProvider<HeightVeloLcp> costProvider = _lcpConfigVm.CostProvider;
 
       cntOutput.Calc(costProvider, grdHeight, grdVelo, resol, step, ResetCalc);
     }

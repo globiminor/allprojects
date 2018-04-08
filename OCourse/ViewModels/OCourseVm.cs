@@ -21,7 +21,7 @@ namespace OCourse.ViewModels
 
   public class OCourseVm : NotifyListener
   {
-    public delegate void ShowGridInContext(LeastCostPath path, StatusEventArgs args);
+    public delegate void ShowGridInContext(HeightVeloLcp path, StatusEventArgs args);
     public delegate void DrawCourseHandler();
 
     private const string LegColumn = "Leg";
@@ -125,8 +125,27 @@ namespace OCourse.ViewModels
         using (Changing())
         {
           CourseFile = settings.CourseFile;
-          
+          LcpConfig.HeightPath = settings.HeightFile;
+          LcpConfig.VeloPath = settings.VeloFile;
+          LcpConfig.Resolution = settings.Resolution ?? LcpConfig.Resolution;
         }
+        SettingsName = settingsPath;
+      }
+    }
+    public void SaveSettings(string settingsPath = null)
+    {
+      settingsPath = settingsPath ?? SettingsName;
+      using (TextWriter w = new StreamWriter(settingsPath))
+      {
+        OCourseSettings settings = new OCourseSettings
+        {
+          CourseFile = CourseFile,
+          HeightFile = LcpConfig.HeightPath,
+          VeloFile = LcpConfig.VeloPath,
+          Resolution = LcpConfig.Resolution
+        };
+        Basics.Serializer.Serialize(settings, w);
+        SettingsName = settingsPath;
       }
     }
 
@@ -465,10 +484,28 @@ namespace OCourse.ViewModels
         routes.Add(pair);
       }
 
+      Dictionary<ICost, ICost> singleCosts = new Dictionary<ICost, ICost>();
+      foreach (CostSectionlist costSection in info)
+      {
+        if (costSection.Parts != null)
+        {
+          foreach (var cost in costSection.Parts)
+          { singleCosts[cost] = cost; }
+        }
+      }
+      if (singleCosts.Count > 1)
+      {
+        foreach (var singleCost in singleCosts.Keys)
+        {
+          routes.Add(singleCost);
+        }
+      }
+
+
+      _info.Clear();
       try
       {
         _info.RaiseListChangedEvents = false;
-        _info.Clear();
         foreach (ICost cost in routes)
         {
           _info.Add(cost);
@@ -766,7 +803,7 @@ namespace OCourse.ViewModels
         SetProgressAsync(prog);
 
         //ShowInContext((GridTest.LeastCostPath)sender, args);
-        ShowProgress?.Invoke((LeastCostPath)sender, args);
+        ShowProgress?.Invoke((HeightVeloLcp)sender, args);
         if (_cancelCalc)
         {
           args.Cancel = true;

@@ -27,7 +27,7 @@ namespace Dhm
     private bool _pause = false;
     private bool _break = true;
 
-    private ContourSorter _calc;
+    public ContourSorter Calc { get; set; }
 
     public WdgMain()
     {
@@ -418,7 +418,7 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
 
     private void DrawMesh(bool drawLines, bool drawTris)
     {
-      if (_calc == null || _calc.Mesh == null)
+      if (Calc == null || Calc.Mesh == null)
       { return; }
 
 
@@ -431,7 +431,7 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
           LineColor = Color.FromArgb(192, 192, 192)
         };
 
-        foreach (Mesh.Tri tri in _calc.Mesh.Tris(draw.Extent))
+        foreach (Mesh.Tri tri in Calc.Mesh.Tris(draw.Extent))
         {
           Area poly = new Area(tri.Border);
           draw.DrawArea(poly.Project(draw.Projection),
@@ -452,7 +452,7 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
         TMap.SymbolPart tagSymbol = new TMap.SymbolPartLine(null)
         { LineColor = Color.FromArgb(255, 128, 128) };
 
-        foreach (Mesh.MeshLine line in _calc.Mesh.Lines(draw.Extent))
+        foreach (Mesh.MeshLine line in Calc.Mesh.Lines(draw.Extent))
         {
           Polyline poly = Polyline.Create(new[] { line.Start, line.End });
 
@@ -626,7 +626,7 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
     private void BtnPause_Click(object sender, EventArgs e)
     {
       _pause = !_pause;
-      if (_pause && sender != null && _context != null && _calc != null)
+      if (_pause && sender != null && _context != null && Calc != null)
       {
         UpdateContext();
       }
@@ -671,11 +671,11 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
       {
         SimpleConnection<Mesh.MeshLine> conn = (SimpleConnection<Mesh.MeshLine>)_mapMesh.Data.Connection;
         MeshSimpleData data = (MeshSimpleData)conn.Data;
-        data.Mesh = _calc.Mesh;
+        data.Mesh = Calc.Mesh;
       }
       else
       {
-        SimpleConnection<Mesh.MeshLine> conn = new SimpleConnection<Mesh.MeshLine>(new MeshSimpleData(_calc.Mesh));
+        SimpleConnection<Mesh.MeshLine> conn = new SimpleConnection<Mesh.MeshLine>(new MeshSimpleData(Calc.Mesh));
         _mapMesh = new TMap.TableMapData("Mesh", new TData.TTable("Mesh", conn));
         _mapGrp.Subparts.Add(_mapMesh);
       }
@@ -684,12 +684,12 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
       {
         SimpleConnection<Contour> conn = (SimpleConnection<Contour>)_mapContours.Data.Connection;
         ContourSimpleData data = (ContourSimpleData)conn.Data;
-        data.Contours = _calc.Contours;
+        data.Contours = Calc.Contours;
       }
       else
       {
         // TData.TTable tbl = new TData.TTable("Contours", new ContourConnection(_calc.Contours));
-        TData.TTable tbl = new TData.TTable("Contours", new SimpleConnection<Contour>(new ContourSimpleData(_calc.Contours)));
+        TData.TTable tbl = new TData.TTable("Contours", new SimpleConnection<Contour>(new ContourSimpleData(Calc.Contours)));
         DataRow templateRow = tbl.FullSchema.NewRow();
         _mapContours = new TMap.TableMapData("Contours", tbl);
         _mapContours.Symbolisation.SymbolList.Table.Clear();

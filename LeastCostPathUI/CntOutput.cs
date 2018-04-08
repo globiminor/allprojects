@@ -12,7 +12,7 @@ namespace LeastCostPathUI
 {
   public partial class CntOutput : UserControl
   {
-    private LeastCostPathBase _costPath;
+    private LeastCostPath _costPath;
     private bool _cancelled;
     private bool _disposed;
 
@@ -69,7 +69,7 @@ namespace LeastCostPathUI
     private Point2D _from;
     private Point2D _to;
 
-    public void Calc(ICostProvider provider,
+    public void Calc(ICostProvider<HeightVeloLcp> provider,
       IDoubleGrid grHeight, string grVelo, double resolution, Steps step, ThreadStart resetDlg)
     {
       _cancelled = false;
@@ -102,7 +102,7 @@ namespace LeastCostPathUI
 
       Box box = new Box(new Point2D(dX0, dY0), new Point2D(dX1, dY1));
 
-      LeastCostPathBase costPath = provider.Build(box, dResol, step, grVelo);
+      HeightVeloLcp costPath = provider.Build(box, dResol, step, grVelo);
 
       if (!costPath.EqualSettings(_costPath) ||
         grVelo != _grdVelo || grHeight != _grdHeight)
@@ -121,19 +121,17 @@ namespace LeastCostPathUI
       Point2D from = new Point2D(cntFrom.X, cntFrom.Y);
       Point2D to = new Point2D(cntTo.X, cntTo.Y);
       double lengthFact = 1.2;
-      double lengthPct;
-      if (double.TryParse(txtSlower.Text, out lengthPct))
+      if (double.TryParse(txtSlower.Text, out double lengthPct))
       {
         lengthFact = 1 + lengthPct / 100.0;
       }
       double offset = 0.05;
-      double offsetPct;
-      if (double.TryParse(txtMinOffset.Text, out offsetPct))
+      if (double.TryParse(txtMinOffset.Text, out double offsetPct))
       {
         offset = offsetPct / 100.0;
       }
 
-      CalcCostWorker worker = new CalcCostWorker(this, costPath, grHeight, from, to, _costPath.Step,
+      CalcCostWorker worker = new CalcCostWorker(this, costPath, grHeight, from, to, _costPath.Steps,
         chkRoute.Checked || chkRouteShp.Checked, lengthFact, offset, resetDlg);
 
       Enable(false);
@@ -144,7 +142,7 @@ namespace LeastCostPathUI
     private class CalcCostWorker : IWorker
     {
       private readonly CntOutput _parent;
-      private readonly LeastCostPathBase _costPath;
+      private readonly HeightVeloLcp _costPath;
       private readonly IDoubleGrid _grHeight;
       private readonly Point2D _from;
       private readonly Point2D _to;
@@ -158,7 +156,7 @@ namespace LeastCostPathUI
       private DoubleGrid _route;
       private RouteTable _routes;
 
-      public CalcCostWorker(CntOutput parent, LeastCostPathBase costPath,
+      public CalcCostWorker(CntOutput parent, HeightVeloLcp costPath,
         IDoubleGrid grHeight, Point2D from, Point2D to, Steps step,
         bool calcRoute, double lengthFact, double offset, ThreadStart resetDlg)
       {
@@ -178,8 +176,8 @@ namespace LeastCostPathUI
       {
         _costPath.HeightGrid = _grHeight;
 
-        _costPath.Status -= _parent.costPath_Status;
-        _costPath.Status += _parent.costPath_Status;
+        _costPath.Status -= _parent.CostPath_Status;
+        _costPath.Status += _parent.CostPath_Status;
 
         if (_parent._cancelled)
         {
@@ -192,9 +190,7 @@ namespace LeastCostPathUI
         _parent.SetStepLabel(this, "FROM:");
         if (_parent._from == null || _from.Dist2(_parent._from) != 0 || _parent._fromCost == null)
         {
-          DataDoubleGrid cost;
-          IntGrid dir;
-          _costPath.CalcCost(_from, out cost, out dir, false);
+          _costPath.CalcCost(_from, out DataDoubleGrid cost, out IntGrid dir, false);
           _parent._fromCost = cost;
           _parent._fromDir = dir;
           _parent._from = _from;
@@ -208,9 +204,7 @@ namespace LeastCostPathUI
         _parent.SetStepLabel(this, "TO:");
         if (_parent._to == null || _to.Dist2(_parent._to) != 0 || _parent._toCost == null)
         {
-          DataDoubleGrid cost;
-          IntGrid dir;
-          _costPath.CalcCost(_to, out cost, out dir, true);
+          _costPath.CalcCost(_to, out DataDoubleGrid cost, out IntGrid dir, true);
           _parent._toCost = cost;
           _parent._toDir = dir;
           _parent._to = _to;
@@ -219,7 +213,7 @@ namespace LeastCostPathUI
         Steps.ReverseEngineer(_parent._toDir, _parent._toCost);
 
         _parent.SetStepLabel(this, "SUM:");
-        _parent.costPath_Status(this, new StatusEventArgs(null, null, 0, 0, 0, 0));
+        _parent.CostPath_Status(this, new StatusEventArgs(null, null, 0, 0, 0, 0));
         _sum = DoubleGrid.Sum(_parent._fromCost, _parent._toCost);
         _route = _sum - _sum.Min();
 
@@ -231,11 +225,11 @@ namespace LeastCostPathUI
         if (_calcRoute)
         {
           _parent.SetStepLabel(this, "ROUTES:");
-          _parent.costPath_Status(this, new StatusEventArgs(null, null, 0, 0, 0, 0));
+          _parent.CostPath_Status(this, new StatusEventArgs(null, null, 0, 0, 0, 0));
 
           //CreateRouteImage(sum, cntRoute.FullName(txtRoute.Text));
           _routes = LeastCostPath.CalcBestRoutes(_sum, _parent._fromCost, _parent._fromDir, fromStep,
-            _parent._toCost, _parent._toDir, toStep, _lengthFact, _offset, _parent.costPath_Status);
+            _parent._toCost, _parent._toDir, toStep, _lengthFact, _offset, _parent.CostPath_Status);
         }
         _parent.SetStepLabel(this, "EXPORT:");
 
@@ -256,19 +250,19 @@ namespace LeastCostPathUI
         if (_parent._cancelled) { return; }
 
         _parent.lblStep.Text = "EXPORT:";
-        _parent.costPath_Status(this, new StatusEventArgs(null, null, 0, 0, 0, 0));
+        _parent.CostPath_Status(this, new StatusEventArgs(null, null, 0, 0, 0, 0));
 
-        _parent.cntFrom.Export(_parent._fromCost, _parent._fromDir, _parent._costPath.Step);
-        _parent.cntTo.Export(_parent._toCost, _parent._toDir, _parent._costPath.Step);
+        _parent.cntFrom.Export(_parent._fromCost, _parent._fromDir, _parent._costPath.Steps);
+        _parent.cntTo.Export(_parent._toCost, _parent._toDir, _parent._costPath.Steps);
         _parent.cntRoute.Export(_route, null, null);
 
         _parent.lblStep.Text = "< >";
-        _parent.costPath_Status(this, new StatusEventArgs(null, null, 0, 0, 0, 0));
+        _parent.CostPath_Status(this, new StatusEventArgs(null, null, 0, 0, 0, 0));
       }
 
       public void Finally()
       {
-        _costPath.Status -= _parent.costPath_Status;
+        _costPath.Status -= _parent.CostPath_Status;
         _parent.Enable(true);
         _resetDlg();
       }
@@ -301,11 +295,11 @@ namespace LeastCostPathUI
       }
     }
 
-    void costPath_Status(object sender, StatusEventArgs args)
+    void CostPath_Status(object sender, StatusEventArgs args)
     {
       if (InvokeRequired)
       {
-        EventDlg<StatusEventArgs> dlg = costPath_Status;
+        EventDlg<StatusEventArgs> dlg = CostPath_Status;
         Invoke(dlg, sender, args);
         return;
       }
@@ -339,20 +333,19 @@ namespace LeastCostPathUI
       }
     }
 
-    private void txtDouble_Validating(object sender, CancelEventArgs e)
+    private void TxtDouble_Validating(object sender, CancelEventArgs e)
     {
       try
       {
         TextBox txt = (TextBox)sender;
-        double d;
-        if (double.TryParse(txt.Text, out d) == false)
+        if (double.TryParse(txt.Text, out double d) == false)
         { e.Cancel = true; }
       }
       catch
       { e.Cancel = true; }
     }
 
-    private void btnRoute_Click(object sender, EventArgs e)
+    private void BtnRoute_Click(object sender, EventArgs e)
     {
       cntRoute.dlgSave.Filter = "route image files (*r.tif)|*r.tif";
       if (cntRoute.dlgSave.ShowDialog() == DialogResult.OK)
@@ -362,7 +355,7 @@ namespace LeastCostPathUI
       }
     }
 
-    private void btnRouteShp_Click(object sender, EventArgs e)
+    private void BtnRouteShp_Click(object sender, EventArgs e)
     {
       cntRoute.dlgSave.Filter = "route shape files (*r.shp)|*r.shp";
       if (cntRoute.dlgSave.ShowDialog() == DialogResult.OK)

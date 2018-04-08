@@ -64,14 +64,14 @@ namespace OCourse.Route
     public StatusEventHandler StatusChanged;
     public event VariationBuilder.VariationEventHandler VariationAdded;
 
-    private readonly ICostProvider _costProvider;
+    private readonly ICostProvider<HeightVeloLcp> _costProvider;
     private readonly string _veloGrid;
     private readonly IDoubleGrid _heightGrid;
     private readonly Steps _step;
 
     private readonly Dictionary<CostFromTo, CostFromTo> _calcList;
 
-    public RouteCalculator(ICostProvider costProvider, IDoubleGrid heightGrid, string veloGrid,
+    public RouteCalculator(ICostProvider<HeightVeloLcp> costProvider, IDoubleGrid heightGrid, string veloGrid,
       Steps step)
     {
       _costProvider = costProvider;
@@ -368,7 +368,7 @@ namespace OCourse.Route
       Box box = GetBox(calcList, endList);
 
       //GridTest.LeastCostPath path = new GridTest.LeastCostPath(new GridTest.Step16(), box, resolution);
-      LeastCostPathBase path = _costProvider.Build(box, resolution, _step, _veloGrid);
+      HeightVeloLcp path = _costProvider.Build(box, resolution, _step, _veloGrid);
       path.HeightGrid = _heightGrid;
       path.Status += RouteCalc_Status;
 
@@ -396,7 +396,7 @@ namespace OCourse.Route
       foreach (CostFromTo info in calcList)
       {
         endList.Add(info.End);
-        double l = Math.Sqrt(PointOperator.Dist2(info.Start, info.End)) / 2.0;
+        double l = Math.Sqrt(PointOperator.Dist2(info.Start, info.End)) / 2.0 + 200;
         Box infoBox = new Box(Point.Create(info.Start), Point.Create(info.End), true);
 
         infoBox.Min.X -= l;
@@ -436,7 +436,7 @@ namespace OCourse.Route
 
 
       //GridTest.LeastCostPath path = new GridTest.LeastCostPath(new GridTest.Step16(), box, resolution);
-      LeastCostPathBase path = _costProvider.Build(box, resol, _step, _veloGrid);
+      HeightVeloLcp path = _costProvider.Build(box, resol, _step, _veloGrid);
       path.HeightGrid = _heightGrid;
       path.Status += Path_Status;
 
@@ -461,10 +461,10 @@ namespace OCourse.Route
     }
 
     //private Polyline GetRoute(GridTest.LeastCostPath path, 
-    private Polyline GetRoute(LeastCostPathBase path,
+    private Polyline GetRoute(LeastCostPath path,
       IntGrid dir, IDoubleGrid costGrid, IPoint start, IPoint end, out double climb, out double optimal)
     {
-      Polyline line = LeastCostPath.GetPath(dir, path.Step, costGrid, end);
+      Polyline line = LeastCostPath.GetPath(dir, path.Steps, costGrid, end);
 
       line.Points.First.Value.X = start.X;
       line.Points.First.Value.Y = start.Y;

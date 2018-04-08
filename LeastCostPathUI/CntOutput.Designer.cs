@@ -137,7 +137,7 @@
       this.btnRouteShp.Name = "btnRouteShp";
       this.btnRouteShp.Size = new System.Drawing.Size(20, 20);
       this.btnRouteShp.TabIndex = 15;
-      this.btnRouteShp.Click += new System.EventHandler(this.btnRouteShp_Click);
+      this.btnRouteShp.Click += new System.EventHandler(this.BtnRouteShp_Click);
       // 
       // txtRouteShp
       // 
@@ -166,7 +166,7 @@
       this.btnRoute.Name = "btnRoute";
       this.btnRoute.Size = new System.Drawing.Size(20, 20);
       this.btnRoute.TabIndex = 12;
-      this.btnRoute.Click += new System.EventHandler(this.btnRoute_Click);
+      this.btnRoute.Click += new System.EventHandler(this.BtnRoute_Click);
       // 
       // txtRoute
       // 
@@ -325,7 +325,7 @@
       this.txtYMin.TabIndex = 7;
       this.txtYMin.Text = "0";
       this.txtYMin.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-      this.txtYMin.Validating += new System.ComponentModel.CancelEventHandler(this.txtDouble_Validating);
+      this.txtYMin.Validating += new System.ComponentModel.CancelEventHandler(this.TxtDouble_Validating);
       // 
       // txtXMax
       // 
@@ -335,7 +335,7 @@
       this.txtXMax.TabIndex = 6;
       this.txtXMax.Text = "1";
       this.txtXMax.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-      this.txtXMax.Validating += new System.ComponentModel.CancelEventHandler(this.txtDouble_Validating);
+      this.txtXMax.Validating += new System.ComponentModel.CancelEventHandler(this.TxtDouble_Validating);
       // 
       // txtXMin
       // 
@@ -345,7 +345,7 @@
       this.txtXMin.TabIndex = 5;
       this.txtXMin.Text = "0";
       this.txtXMin.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-      this.txtXMin.Validating += new System.ComponentModel.CancelEventHandler(this.txtDouble_Validating);
+      this.txtXMin.Validating += new System.ComponentModel.CancelEventHandler(this.TxtDouble_Validating);
       // 
       // txtYMax
       // 
@@ -355,7 +355,7 @@
       this.txtYMax.TabIndex = 4;
       this.txtYMax.Text = "1";
       this.txtYMax.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-      this.txtYMax.Validating += new System.ComponentModel.CancelEventHandler(this.txtDouble_Validating);
+      this.txtYMax.Validating += new System.ComponentModel.CancelEventHandler(this.TxtDouble_Validating);
       // 
       // lblProgress
       // 

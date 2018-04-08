@@ -51,8 +51,7 @@ namespace OCourse.Gui
 
       public override void Draw(IDrawable drawable)
       {
-        SymbolPartLine symbol = new SymbolPartLine(null);
-        symbol.LineColor = System.Drawing.Color.Red;
+        SymbolPartLine symbol = new SymbolPartLine(null) { LineColor = System.Drawing.Color.Red };
 
         //drawable.BeginDraw();
         drawable.BeginDraw(symbol);
@@ -215,9 +214,8 @@ namespace OCourse.Gui
         IPoint p;
         if (g is IPoint)
         { p = (IPoint)g; }
-        else if (g is Polyline)
+        else if (g is Polyline l)
         {
-          Polyline l = (Polyline)g;
           if (start)
           { p = l.Points.First.Value; }
           else
@@ -284,9 +282,9 @@ namespace OCourse.Gui
         sym.Colors.Clear();
 
         sym.Colors.Add(null);
-        for (int iCol = 0; iCol < path.Step.Count; iCol++)
+        for (int iCol = 0; iCol < path.Steps.Count; iCol++)
         {
-          double angle = path.Step.GetStep(iCol).Angle;
+          double angle = path.Steps.GetStep(iCol).Angle;
 
           int r = ColorVal(angle, 0);
           int g = ColorVal(angle, Math.PI * 2.0 / 3.0);

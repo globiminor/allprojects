@@ -1,11 +1,9 @@
-using System.Collections.Generic;
-using Grid;
 using Basics.Geom;
 using Grid.Lcp;
 
 namespace OCourse.Route
 {
-  public class SymLeastCostPath : LeastCostPathBase_T //<IList<int>>
+  public abstract class SymLeastCostPath : LeastCostPath<HeightVeloField> //<IList<int>>
   {
     public SymLeastCostPath(IBox box, double dx)
       : base(box, dx)

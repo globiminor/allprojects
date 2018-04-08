@@ -119,8 +119,7 @@ namespace Basics.Views
           PropertyDescriptor prop = propDir.PropertyDescriptor;
           foreach (Attribute attr in prop.Attributes)
           {
-            SortAttribute sortAttr = attr as SortAttribute;
-            if (sortAttr != null && sortAttr.ComparerType != null)
+            if (attr is SortAttribute sortAttr && sortAttr.ComparerType != null)
             {
               object oCmp = Activator.CreateInstance(sortAttr.ComparerType);
               cmp = oCmp as IComparer<object>;
@@ -149,14 +148,11 @@ namespace Basics.Views
           }
           else
           {
-            IComparable xCmp = xVal as IComparable;
-
-            if (xCmp != null)
+            if (xVal is IComparable xCmp)
             { diff = xCmp.CompareTo(yVal); }
             else
             {
-              IComparable yCmp = yVal as IComparable;
-              if (yCmp != null)
+              if (yVal is IComparable yCmp)
               { diff = -yCmp.CompareTo(xVal); }
               else
               { diff = 0; }
@@ -404,6 +400,10 @@ namespace Basics.Views
         OriginalList.RemoveAt(e.NewIndex);
 
       base.OnListChanged(e);
+
+      if (e.ListChangedType == ListChangedType.Reset && Items.Count == 0)
+      { OriginalList.Clear(); }
+
     }
 
     #endregion Filtering
