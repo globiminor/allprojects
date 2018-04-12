@@ -4,6 +4,7 @@ using Grid;
 using Basics.Geom;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Ocad;
+using Grid.Lcp;
 
 namespace OcadTest
 {
@@ -49,9 +50,8 @@ namespace OcadTest
           {
             continue;
           }
-          if (ocadSymbol is Ocad.Symbol.LineSymbol)
+          if (ocadSymbol is Ocad.Symbol.LineSymbol linSym)
           {
-            Ocad.Symbol.LineSymbol linSym = (Ocad.Symbol.LineSymbol)ocadSymbol;
             symWidths.Add(ocadSymbol.Number, linSym.LineWidth);
           }
         }
@@ -60,17 +60,14 @@ namespace OcadTest
         foreach (Element element in reader.Elements(true, null))
         {
           IEnumerable<int[]> cells = null;
-          if (element.Geometry is Area)
+          if (element.Geometry is Area area)
           {
-            Area area = (Area)element.Geometry;
             area.CloseBorders();
             cells = symGrid.EnumerateCells(area);
           }
-          else if (element.Geometry is Polyline)
+          else if (element.Geometry is Polyline line)
           {
-            Polyline line = (Polyline)element.Geometry;
-            double symWidth;
-            if (symWidths.TryGetValue(element.Symbol, out symWidth)
+            if (symWidths.TryGetValue(element.Symbol, out double symWidth)
               && symWidth > 0)
             {
               cells = symGrid.EnumerateCells(line, symWidth, false);
@@ -97,6 +94,25 @@ namespace OcadTest
           }
         }
       }
+    }
+
+    [TestMethod]
+    public void TestBlockGrid()
+    {
+      DoubleGrid grdHeight = DataDoubleGrid.FromAsciiFile(@"C:\daten\felix\kapreolo\karten\opfikon\2013\opfikon.asc", 0, 0.01, typeof(double));
+      VelocityGrid grdVelo = VelocityGrid.FromImage(@"C:\daten\felix\kapreolo\karten\opfikon\2018\Opfikon_2018_velo.tif");
+      BlockGrid block = BlockGrid.Create(grdVelo);
+
+      grdVelo.MinVelo = 0.3;
+
+      HeightVeloLcp lcp = new HeightVeloLcp(new Box(new Point2D(2685260, 1252920), new Point2D(2685360, 1253010)), 5.0)
+      {
+        HeightGrid = grdHeight,
+        VelocityGrid = grdVelo
+      };
+
+      HeightVeloLcp.BlockLcp blcp = new HeightVeloLcp.BlockLcp(lcp, block);
+      blcp.CalcCost(new Point2D(2685302, 1252930), out DataDoubleGrid costGrid, out IntGrid dirGrid);
     }
     private class SymbolGrid : BaseGrid<List<int>>
     {

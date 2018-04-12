@@ -68,10 +68,11 @@ namespace Grid
 
     public static Pyramide Create(IDoubleGrid grid)
     {
-      Pyramide p = new Pyramide();
-      p._grid = grid;
-
-      p._parentBlock = new Block();
+      Pyramide p = new Pyramide
+      {
+        _grid = grid,
+        _parentBlock = new Block()
+      };
 
       p.CalcPyramid();
 

@@ -77,6 +77,7 @@ namespace Grid
     {
       _img.UnlockBits();
     }
+    public double MinVelo { get; set; } = 0.0001;
     public override double this[int ix, int iy]
     {
       get
@@ -93,7 +94,7 @@ namespace Grid
           double velo = 1 - (pCol.R / 255.0);
           if (velo == 0)
           {
-            velo = 0.0001;
+            velo = MinVelo;
           }
           return velo;
         }
@@ -110,7 +111,7 @@ namespace Grid
             pCol.R > Byte.MaxValue / 2)
           {
             /* impassable / forbidden */
-            t = 0.0001;
+            t = MinVelo;
           }
           else
           {

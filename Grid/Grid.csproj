@@ -49,6 +49,8 @@
     <Compile Include="GridMesh.cs" />
     <Compile Include="ImageGrid.cs" />
     <Compile Include="IntGrid.cs" />
+    <Compile Include="Lcp\BlockGrid.cs" />
+    <Compile Include="Lcp\BlockLcp.cs" />
     <Compile Include="Lcp\Config.cs" />
     <Compile Include="Lcp\ConfigVm.cs" />
     <Compile Include="Lcp\Field.cs" />

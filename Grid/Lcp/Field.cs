@@ -7,8 +7,9 @@ namespace Grid.Lcp
   {
     int X { get; }
     int Y { get; }
-    int IdDir { get; set; }
-    double Cost { get; set; }
+    int IdDir { get; }
+    double Cost { get; }
+    void SetCost(IField fromField, double deltaCost, int idDir);
   }
   public class FieldCompare : IComparer<IField>
   {

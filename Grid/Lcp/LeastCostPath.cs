@@ -51,24 +51,6 @@ namespace Grid.Lcp
     }
   }
 
-  public interface IStepCostCalculator
-  {
-    /// <summary>
-    /// Calculates cost for a step
-    /// </summary>
-    /// <param name="dh">Height difference</param>
-    /// <param name="vMean">mean Velocity</param>
-    /// <param name="slope0_2Mean">mean Square of slope at start point</param>
-    /// <param name="dist">Distance between start and end point of step</param>
-    /// <returns>Cost for the step</returns>
-    double Calc(double dh, double vMean, double slope_2Mean, double dist);
-  }
-
-  public delegate double StepCostHandler<T>(
-  double h0, T v0, double slope0_2,
-  double h1, T v1, double slope1_2,
-  double dist);
-
   public delegate void StatusEventHandler(object sender, StatusEventArgs args);
 
   public abstract class LeastCostPath
@@ -112,11 +94,6 @@ namespace Grid.Lcp
       return e;
     }
 
-    public void CalcCost(IPoint start,
-      out DataDoubleGrid costGrid, out IntGrid dirGrid)
-    {
-      CalcCost(start, out costGrid, out dirGrid, false);
-    }
     public void CalcCost(IPoint start, IPoint end,
       out DataDoubleGrid costGrid, out IntGrid dirGrid)
     {
@@ -141,7 +118,7 @@ namespace Grid.Lcp
       CalcCost(start, out costGrid, out dirGrid, false, stopList);
     }
     public void CalcCost(IPoint start,
-      out DataDoubleGrid costGrid, out IntGrid dirGrid, bool invers)
+      out DataDoubleGrid costGrid, out IntGrid dirGrid, bool invers = false)
     {
       CalcCost(start, out costGrid, out dirGrid, invers, null);
     }
@@ -555,8 +532,7 @@ namespace Grid.Lcp
       return true;
     }
 
-    public delegate double DoubleFct(double value);
-    public static void Assign(Polyline line, DataDoubleGrid routeGrid, DoubleFct valueFct)
+    public static void Assign(Polyline line, DataDoubleGrid routeGrid, Func<double, double> valueFct)
     {
       if (line.Points.Count == 0)
       {
@@ -630,7 +606,7 @@ namespace Grid.Lcp
     }
   }
 
-  public abstract class LeastCostPath<T> : LeastCostPath
+  public abstract partial class LeastCostPath<T> : LeastCostPath
     where T : class, IField
   {
     private class CorridorGrid : BaseGrid<int>
@@ -660,8 +636,6 @@ namespace Grid.Lcp
       }
     }
 
-    public IStepCostCalculator StepCostCalculator { get; set; }
-
     private IntGrid _dirGrid;
     private SortedList<IField, T> _costList;
     private SortedList<IField, T> _fieldList;
@@ -672,6 +646,11 @@ namespace Grid.Lcp
       public int Y { get; set; }
       public int IdDir { get; set; }
       public double Cost { get; set; }
+      public void SetCost(IField fromField, double cost, int idDir)
+      {
+        Cost = (fromField?.Cost ?? 0) + cost;
+        IdDir = idDir;
+      }
     }
 
     protected abstract T InitField(IField position);
@@ -736,8 +715,7 @@ namespace Grid.Lcp
             _costList.Remove(stepField);
           }
           // add at new position
-          stepField.Cost = startField.Cost + cost;
-          stepField.IdDir = step.Index;
+          stepField.SetCost(startField, cost, step.Index);
           _costList.Add(stepField, stepField);
         }
       }
@@ -748,35 +726,6 @@ namespace Grid.Lcp
     public LeastCostPath(IBox box, double dx, Steps step = null)
       : base(box, dx, step)
     { }
-
-    private void Remove()
-    { AssignCost(null, 0, null, null); }
-    [Obsolete("remove")]
-    public void AssignCost(Polyline line, int costDim, IDoubleGrid heightGrid, IGrid<double> velocityGrid)
-    {
-      IPoint p = line.Points.First.Value;
-      double h1 = heightGrid.Value(p.X, p.Y, EGridInterpolation.bilinear);
-      double v1 = 1.0 / velocityGrid.Value(p.X, p.Y);
-      double s1 = heightGrid.Slope2(p.X, p.Y);
-      double costTotal = 0;
-      p[costDim] = costTotal;
-      foreach (Curve curve in line.Segments)
-      {
-        double h0 = h1;
-        double v0 = v1;
-        double s0 = s1;
-
-        p = curve.End;
-
-        h1 = heightGrid.Value(p.X, p.Y, EGridInterpolation.bilinear);
-        v1 = 1.0 / velocityGrid.Value(p.X, p.Y);
-        s1 = heightGrid.Slope2(p.X, p.Y);
-
-        double cost = StepCostCalculator.Calc(h1 - h0, 2.0 / (v0 + v1), (s0 + s1) / 2.0, curve.Length());
-        costTotal += cost;
-        p[costDim] = costTotal;
-      }
-    }
 
     private class CorridorLcp : LeastCostPath<T>
     {
@@ -840,8 +789,7 @@ namespace Grid.Lcp
         _dirGrid = dirGrid;
 
         startField = InitField(new KeyField { X = (int)((start.X - X0) / Dx), Y = (int)((start.Y - Y0) / Dy) });
-        startField.IdDir = -2;
-        startField.Cost = 0;
+        startField.SetCost(null, 0, idDir: -2);
 
         i = 0;
         n = XMax * YMax;
@@ -876,8 +824,17 @@ namespace Grid.Lcp
           //}
           if (_costList.Count > 0)
           {
-            startField = _costList.Values[0];
-            _costList.RemoveAt(0);
+            bool updated = true;
+            while (updated)
+            {
+              startField = _costList.Values[0];
+              _costList.RemoveAt(0);
+              updated = UpdateCost(startField);
+              if (updated)
+              {
+                _costList.Add(startField, startField);
+              }
+            }
             _fieldList.Remove(startField);
           }
           else
@@ -891,6 +848,11 @@ namespace Grid.Lcp
       {
         CalcEnded();
       }
+    }
+
+    protected virtual bool UpdateCost(T field)
+    {
+      return false;
     }
 
     private bool Stop(IList<int[]> stop, T startField)
@@ -910,7 +872,7 @@ namespace Grid.Lcp
       return (stop.Count == 0);
     }
 
-    protected sealed override bool EqualSettingsCore(LeastCostPath o)
+    protected override bool EqualSettingsCore(LeastCostPath o)
     {
       LeastCostPath<T> other = o as LeastCostPath<T>;
       if (other == null)
@@ -924,9 +886,6 @@ namespace Grid.Lcp
         XMax != other.XMax ||
         YMax != other.YMax ||
         Dx != other.Dx)
-      { return false; }
-
-      if (StepCostCalculator != other.StepCostCalculator)
       { return false; }
 
       return true;
