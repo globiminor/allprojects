@@ -661,14 +661,14 @@ namespace Grid.Lcp
       InitField(startField);
 
       bool[] cancelFields = null;
-      IReadOnlyList<Step> steps = Steps.GetDistSteps();
+      IReadOnlyList<Step> distSteps = Steps.GetDistSteps();
       int iStep = 0;
-      T[] fields = new T[steps.Count];
-      foreach (Step s in Steps.GetDistSteps())
+      T[] fields = new T[distSteps.Count];
+      foreach (Step distStep in distSteps)
       {
         iStep++;
         KeyField key = new KeyField
-        { X = startField.X + s.Dx, Y = startField.Y + s.Dy };
+        { X = startField.X + distStep.Dx, Y = startField.Y + distStep.Dy };
 
         // check range
         if (key.X < 0 || key.X >= XMax ||
@@ -687,23 +687,24 @@ namespace Grid.Lcp
           stepField = InitField(key);
           _fieldList.Add(stepField, stepField);
         }
-        fields[iStep - 1] = stepField;
+        fields[distStep.Index] = stepField;
       }
-      for (int iField = 0; iField < Steps.Count; iField++)
+      for (int iDistStep = 0; iDistStep < Steps.Count; iDistStep++)
       {
-        Step step = steps[iField];
+        Step distStep = distSteps[iDistStep];
+        int iField = distStep.Index;
         T stepField = fields[iField];
         if (stepField == null)
         { continue; }
 
-        double cost = CalcCost(startField, step, iField, fields, invers);
+        double cost = CalcCost(startField, distStep, iField, fields, invers);
         {
           if (cost < 0)
           {
-            cancelFields = Steps.GetCancelIndexes(step, cancelFields);
+            cancelFields = Steps.GetCancelIndexes(distStep, cancelFields);
             cost = Math.Abs(cost);
           }
-          if (cancelFields != null && cancelFields[step.Index])
+          if (cancelFields != null && cancelFields[distStep.Index])
           { continue; }
         }
         if (stepField.IdDir < 0 || stepField.Cost > startField.Cost + cost)
@@ -715,7 +716,7 @@ namespace Grid.Lcp
             _costList.Remove(stepField);
           }
           // add at new position
-          stepField.SetCost(startField, cost, step.Index);
+          stepField.SetCost(startField, cost, distStep.Index);
           _costList.Add(stepField, stepField);
         }
       }

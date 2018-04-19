@@ -20,5 +20,7 @@ namespace OCourse.ViewModels
       get { return Resolution?.ToString(); }
       set { Resolution = double.TryParse(value, out double r) ? r : (double?)null; }
     }
+    [XmlAttribute]
+    public string PathesFile { get; set; }
   }
 }

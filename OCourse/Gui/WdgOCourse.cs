@@ -354,7 +354,6 @@ namespace OCourse.Gui
         dgvInfo.CellToolTipTextNeeded += DgvInfo_CellToolTipTextNeeded;
 
         dgvPermut.CellToolTipTextNeeded += DgvPermut_CellToolTipTextNeeded;
-
       }
       finally
       {
@@ -431,11 +430,18 @@ namespace OCourse.Gui
     private void BtnExport_Click(object sender, EventArgs e)
     {
       dlgSave.Filter = "*.shp | *.shp";
+      if (_vm.PathesFile != null && File.Exists(_vm.PathesFile))
+      { dlgSave.FileName = _vm.PathesFile; }
+
       if (dlgSave.ShowDialog(this) != DialogResult.OK)
       { return; }
 
+      string pathesFile = dlgSave.FileName;
       using (CmdShapeExport cmd = new CmdShapeExport(_vm))
-      { cmd.Export(dlgSave.FileName); }
+      {
+        cmd.Export(pathesFile);
+        _vm.PathesFile = pathesFile;
+      }
     }
 
     private void BtnImport_Click(object sender, EventArgs e)
@@ -461,6 +467,16 @@ namespace OCourse.Gui
         selected = dgvInfo.CurrentRow.DataBoundItem;
       }
       _vm.SetSelectionedComb(selected);
+
+      btnRefreshSection.Enabled = false;
+      foreach (DataGridViewRow row in dgvInfo.SelectedRows)
+      {
+        if (row.DataBoundItem is CostFromTo)
+        {
+          btnRefreshSection.Enabled = true;
+          break;
+        }
+      }
     }
 
     private void DgvVars_SelectionChanged(object sender, EventArgs e)
@@ -791,6 +807,20 @@ namespace OCourse.Gui
       { return; }
 
       _vm.SaveSettings(dlgSave.FileName);
+    }
+
+    private void BtnRefreshSection_Click(object sender, EventArgs e)
+    {
+      if (_vm == null)
+      { return; }
+
+      foreach (DataGridViewRow row in dgvInfo.SelectedRows)
+      {
+        if (row.DataBoundItem is CostFromTo cost)
+        {
+          _vm.RouteCalculator.RouteCostDict.Remove(cost);
+        }
+      }
     }
   }
 }

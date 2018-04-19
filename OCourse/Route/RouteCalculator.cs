@@ -409,7 +409,26 @@ namespace OCourse.Route
       return box;
     }
 
+    private List<CostFromTo> _currentCalcList;
+    private object _lock = new object();
+    internal void AccessCurrentCalcList(Action<List<CostFromTo>> action)
+    {
+      lock (_lock)
+      {
+        _currentCalcList = _currentCalcList ?? new List<CostFromTo>();
+        action(_currentCalcList);
+      }
+    }
+
     private CostFromTo CalcSection(Control from, Control to,
+      IPoint start, IPoint end, double resol, string section)
+    {
+      CostFromTo cost = CalcSectionCore(from, to, start, end, resol, section);
+      AccessCurrentCalcList((l) => { l.Add(cost); });
+      return cost;
+    }
+
+    private CostFromTo CalcSectionCore(Control from, Control to,
       IPoint start, IPoint end, double resol, string section)
     {
       CostFromTo existingInfo;

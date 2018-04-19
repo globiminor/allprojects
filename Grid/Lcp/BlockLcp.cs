@@ -1,10 +1,8 @@
-﻿
-using Basics.Geom;
-using System.Linq;
+﻿using System.Linq;
 
 namespace Grid.Lcp
 {
-  public class BlockField<T> : IField
+  public class BlockField<T> : IField, ICell
     where T : class, IField
   {
     public BlockField(T baseField)
@@ -14,6 +12,9 @@ namespace Grid.Lcp
     public int Y { get { return BaseField.Y; } }
     public double Cost { get { return BaseField.Cost; } }
     public int IdDir { get { return BaseField.IdDir; } }
+
+    public int Ix { get; internal set; }
+    public int Iy { get; internal set; }
 
     public void SetCost(IField fromField, double cost, int idDir)
     {
@@ -45,6 +46,17 @@ namespace Grid.Lcp
       protected override BlockField<T> InitField(IField position)
       {
         BlockField<T> field = position as BlockField<T> ?? new BlockField<T>(_baseLcp.InitField(position));
+
+        if (field != position)
+        {
+          double tx = X0 + position.X * Dx;
+          double ty = Y0 + position.Y * Dy;
+
+          _blockGrid.Extent.GetNearest(X0 + position.X * Dx, Y0 + position.Y * Dy, out int ix, out int iy);
+          field.Ix = ix;
+          field.Iy = iy;
+        }
+
         return field;
       }
 
@@ -62,7 +74,20 @@ namespace Grid.Lcp
         _baseFields = _baseFields ?? neighbors.Select(x => x?.BaseField).ToArray();
         double baseCost = _baseLcp.CalcCost(startField.BaseField, step, iField, _baseFields, invers);
 
-        return baseCost;
+        if (!_blockGrid.HasBlocks(startField, neighbors[iField]))
+        {
+          return baseCost;
+        }
+
+        if (step.Distance > 1)
+        {
+          return baseCost * 1000;
+        }
+
+        throw new System.Exception();
+        //double factor;
+        //_blockGrid.FindWay(startField, neighbors[iField], out factor);
+        //return baseCost * factor;
       }
 
       protected override bool UpdateCost(BlockField<T> field)

@@ -129,6 +129,12 @@ namespace OCourse.ViewModels
           LcpConfig.VeloPath = settings.VeloFile;
           LcpConfig.Resolution = settings.Resolution ?? LcpConfig.Resolution;
         }
+        if (settings.PathesFile != null && File.Exists(settings.PathesFile))
+        {
+          PathesFile = settings.PathesFile;
+          ImportRoutes(PathesFile);
+        }
+
         SettingsName = settingsPath;
       }
     }
@@ -142,7 +148,9 @@ namespace OCourse.ViewModels
           CourseFile = CourseFile,
           HeightFile = LcpConfig.HeightPath,
           VeloFile = LcpConfig.VeloPath,
-          Resolution = LcpConfig.Resolution
+          Resolution = LcpConfig.Resolution,
+
+          PathesFile = PathesFile
         };
         Basics.Serializer.Serialize(settings, w);
         SettingsName = settingsPath;
@@ -173,6 +181,7 @@ namespace OCourse.ViewModels
         }
       }
     }
+    public string PathesFile { get; set; }
 
     public Course Course
     {
@@ -252,9 +261,36 @@ namespace OCourse.ViewModels
       }
     }
 
-    public IList<ICost> Info
+    public IReadOnlyList<ICost> Info
     {
-      get { return _info; }
+      get
+      {
+        List<CostFromTo> updated = null;
+
+        RouteCalculator?.AccessCurrentCalcList((calcList) =>
+        {
+          int d = (calcList?.Count ?? 0) - _info.Count;
+          if (d > 0)
+          {
+            updated = new List<CostFromTo>(calcList.GetRange(_info.Count, d));
+          }
+        });
+        if (updated != null)
+        {
+          try
+          {
+            _info.RaiseListChangedEvents = false;
+            foreach (CostFromTo cost in updated)
+            { _info.Add(cost); }
+          }
+          finally
+          {
+            _info.RaiseListChangedEvents = true;
+            _info.ResetBindings();
+          }
+        }
+        return _info;
+      }
     }
 
     public void CalcEventInit()
@@ -656,6 +692,8 @@ namespace OCourse.ViewModels
         }
 
         _selectedRoute.Clear();
+        _info.Clear();
+        RouteCalculator.AccessCurrentCalcList((l) => l.Clear());
         CalcCourseInit(Course, _setup);
       }
       finally

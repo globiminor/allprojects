@@ -566,7 +566,7 @@ namespace Shape
   }
 
 
-  public class ShpWriter
+  public class ShpWriter : IDisposable
   {
     private Box _extent;
     private EndianWriter _indexWriter;
@@ -575,18 +575,24 @@ namespace Shape
     private int _shpPos;
     private int _nRec;
 
-    public ShapeType Type
-    {
-      get
-      { return _shapeType; }
-    }
+    public ShapeType Type => _shapeType;
 
-    public int Count
-    {
-      get
-      { return _nRec; }
-    }
+    public int Count => _nRec;
 
+    public void Dispose()
+    {
+      try
+      {
+        Close();
+      }
+      catch { }
+
+      _geomWriter?.Dispose();
+      _geomWriter = null;
+
+      _indexWriter?.Dispose();
+      _indexWriter = null;
+    }
     public ShpWriter(string name, ShapeType shapeType)
     {
       _shapeType = shapeType;

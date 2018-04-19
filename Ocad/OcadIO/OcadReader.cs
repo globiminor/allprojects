@@ -756,6 +756,9 @@ namespace Ocad
       SectionCollection sectionList;
       string part;
 
+      if (parts.Count <= partIdx)
+      { return new SectionCollection(); }
+
       part = parts[partIdx];
       partIdx++;
 

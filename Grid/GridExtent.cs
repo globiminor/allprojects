@@ -119,8 +119,7 @@ namespace Grid
             return null;
           }
 
-          double val;
-          if (double.TryParse(parts[i], out val) == false)
+          if (double.TryParse(parts[i], out double val) == false)
           {
             return null;
           }

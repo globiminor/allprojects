@@ -10,6 +10,12 @@ namespace Grid
     void UnlockBits();
   }
 
+  public interface ICell
+  {
+    int Ix { get; }
+    int Iy { get; }
+  }
+
   public class Dir : IComparable<Dir>
   {
     public class Comparer : IComparer<Dir>, IEqualityComparer<Dir>

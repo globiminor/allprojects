@@ -49,6 +49,7 @@
       this.dlgSave = new System.Windows.Forms.SaveFileDialog();
       this.splCourse = new System.Windows.Forms.SplitContainer();
       this.splVars = new System.Windows.Forms.SplitContainer();
+      this.btnRefreshSection = new System.Windows.Forms.Button();
       this.btnExportCsv = new System.Windows.Forms.Button();
       this.lblVariations = new System.Windows.Forms.Label();
       this._lstVarBuilders = new System.Windows.Forms.ComboBox();
@@ -253,6 +254,7 @@
       // 
       // splVars.Panel1
       // 
+      this.splVars.Panel1.Controls.Add(this.btnRefreshSection);
       this.splVars.Panel1.Controls.Add(this.btnExportCsv);
       this.splVars.Panel1.Controls.Add(this.lblVariations);
       this.splVars.Panel1.Controls.Add(this._lstVarBuilders);
@@ -276,6 +278,18 @@
       this.splVars.Size = new System.Drawing.Size(374, 266);
       this.splVars.SplitterDistance = 152;
       this.splVars.TabIndex = 1;
+      // 
+      // btnRefreshSection
+      // 
+      this.btnRefreshSection.Enabled = false;
+      this.btnRefreshSection.Image = global::OCourse.Properties.Resources.calc_recalc;
+      this.btnRefreshSection.Location = new System.Drawing.Point(349, 3);
+      this.btnRefreshSection.Name = "btnRefreshSection";
+      this.btnRefreshSection.Size = new System.Drawing.Size(22, 23);
+      this.btnRefreshSection.TabIndex = 39;
+      this.ttp.SetToolTip(this.btnRefreshSection, "Reset calculated route for selected section");
+      this.btnRefreshSection.UseVisualStyleBackColor = true;
+      this.btnRefreshSection.Click += new System.EventHandler(this.BtnRefreshSection_Click);
       // 
       // btnExportCsv
       // 
@@ -597,21 +611,21 @@
       // mniOpen
       // 
       this.mniOpen.Name = "mniOpen";
-      this.mniOpen.Size = new System.Drawing.Size(180, 22);
+      this.mniOpen.Size = new System.Drawing.Size(114, 22);
       this.mniOpen.Text = "Open";
       this.mniOpen.Click += new System.EventHandler(this.MniOpen_Click);
       // 
       // mniSave
       // 
       this.mniSave.Name = "mniSave";
-      this.mniSave.Size = new System.Drawing.Size(180, 22);
+      this.mniSave.Size = new System.Drawing.Size(114, 22);
       this.mniSave.Text = "&Save";
       this.mniSave.Click += new System.EventHandler(this.MniSave_Click);
       // 
       // mniSaveAs
       // 
       this.mniSaveAs.Name = "mniSaveAs";
-      this.mniSaveAs.Size = new System.Drawing.Size(180, 22);
+      this.mniSaveAs.Size = new System.Drawing.Size(114, 22);
       this.mniSaveAs.Text = "Save As";
       this.mniSaveAs.Click += new System.EventHandler(this.MniSaveAs_Click);
       // 
@@ -717,6 +731,7 @@
     private System.Windows.Forms.ToolStripMenuItem mniOpen;
     private System.Windows.Forms.ToolStripMenuItem mniSave;
     private System.Windows.Forms.ToolStripMenuItem mniSaveAs;
+    private System.Windows.Forms.Button btnRefreshSection;
   }
 }
 

@@ -190,6 +190,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Gui\Images\calc_recalc.png" />
     <Content Include="Gui\Images\calc_permuts.png" />
     <Content Include="Gui\Images\calc_permuts_auto.png" />
     <Content Include="Gui\Images\exp_course.png" />

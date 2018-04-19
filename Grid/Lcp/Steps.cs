@@ -53,29 +53,11 @@ namespace Grid.Lcp
         {0, -1}
       };
 
-    public static Steps Step16
-    {
-      get
-      {
-        return new Steps((int[,])_step16.Clone());
-      }
-    }
+    public static Steps Step16 => new Steps((int[,])_step16.Clone());
 
-    public static Steps Step8
-    {
-      get
-      {
-        return new Steps((int[,])_step8.Clone());
-      }
-    }
+    public static Steps Step8 => new Steps((int[,])_step8.Clone());
 
-    public static Steps Step4
-    {
-      get
-      {
-        return new Steps((int[,])_step4.Clone());
-      }
-    }
+    public static Steps Step4 => new Steps((int[,])_step4.Clone());
 
     private int _count;
     private List<Step> _steps;
