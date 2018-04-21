@@ -3,7 +3,7 @@ using iTextSharp.text.pdf;
 using System.Collections.Generic;
 using System.IO;
 
-namespace OcadTest.OEvent
+namespace OTextSharp.Models
 {
   public class PdfText
   {
@@ -34,9 +34,7 @@ namespace OcadTest.OEvent
       if (template == null)
       { return; }
       {
-        Document document;
-        PdfWriter writer;
-        GetDocument(exportFile, template.GetPageSize(1), out document, out writer);
+        GetDocument(exportFile, template.GetPageSize(1), out Document document, out PdfWriter writer);
 
         // step 4: we add content
         PdfContentByte cb = writer.DirectContent;
@@ -90,9 +88,7 @@ namespace OcadTest.OEvent
         }
       }
       {
-        Document document;
-        PdfWriter writer;
-        GetDocument(exportFile, template.GetPageSize(1), out document, out writer);
+        GetDocument(exportFile, template.GetPageSize(1), out Document document, out PdfWriter writer);
 
         // step 4: we add content
         PdfContentByte cb = writer.DirectContent;

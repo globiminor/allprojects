@@ -736,8 +736,44 @@ namespace OCourse.Gui
           //{ course.AddLast(c); }
           //courses.Add(course);
 
-          CourseXmlDocument.GetLineV8("Staffel", comb.Name, comb.DirectKm * 1000, comb.Climb, controlDists);
+          string line = CourseXmlDocument.GetLineV8("Staffel", comb.Name, comb.DirectKm * 1000, comb.Climb, controlDists);
+          w.WriteLine(line);
         }
+
+        w.WriteLine();
+
+        OCourseVm temp = new OCourseVm();
+        temp.CourseFile = _vm.CourseFile;
+
+        List<string> lines = new List<string>();
+        foreach (ICost comb in selectedCombs)
+        {
+          string courseName = comb.Name.Trim();
+          if (!temp.CourseNames.Contains(courseName))
+          {
+            continue;
+          }
+          temp.CourseName = courseName;
+
+          List<string> catNames = new List<string>(temp.CategoryNames);
+          if (catNames.Count > 1)
+          { catNames.RemoveAt(0); } // remove course name
+          foreach (string cat in catNames)
+          {
+            List<CourseXmlDocument.ControlDist> controlDists = new List<CourseXmlDocument.ControlDist>();
+
+            double climb = comb.Climb;
+            climb = (int)(climb / 5) * 5;
+            string line = $"{cat}; {temp.Course.Count - 1}; {comb.DirectKm:N1}; {climb:N0}; {comb.DirectLKm:N1}; {comb.OptimalKm:N1}; {comb.OptimalLKm:N1}";
+            lines.Add(line);
+          }
+        }
+        lines.Sort();
+        foreach (string line in lines)
+        {
+          w.WriteLine(line);
+        }
+
         w.Close();
       }
     }

@@ -59,9 +59,9 @@
     <Compile Include="AsvzTest.cs" />
     <Compile Include="CourseTest.cs" />
     <Compile Include="DataTest.cs" />
+    <Compile Include="OEvent\Events.cs" />
     <Compile Include="OEvent\FuenferStaffel.cs" />
     <Compile Include="LcpTest.cs" />
-    <Compile Include="OEvent\PdfText.cs" />
     <Compile Include="OEvent\Utils.cs" />
     <Compile Include="OscratchTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -106,6 +106,10 @@
     <ProjectReference Include="..\OCourse\OCourse.csproj">
       <Project>{35ea7231-ad8b-4dc0-9e48-b9a577d777c2}</Project>
       <Name>OCourse</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\OTextSharp\OTextSharp.csproj">
+      <Project>{01CF73D5-AF53-4FB8-B60B-CFAA372C6695}</Project>
+      <Name>OTextSharp</Name>
     </ProjectReference>
     <ProjectReference Include="..\Shape\Shape.csproj">
       <Project>{ec0a5266-c017-41eb-bd7b-917eb912b8a9}</Project>

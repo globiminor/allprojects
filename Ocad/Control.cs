@@ -94,4 +94,11 @@ namespace Ocad
       return point;
     }
   }
+
+  public class ControlInfo
+  {
+    public string Key { get; set; }
+    public string Info { get; set; }
+  }
+
 }

@@ -40,8 +40,7 @@ namespace Ocad
     public double CourseClimb(XmlNode nodeVariation)
     {
       string sClimb = nodeVariation.SelectSingleNode("CourseClimb").InnerText.Trim();
-      double climb;
-      if (double.TryParse(sClimb, out climb) == false)
+      if (double.TryParse(sClimb, out double climb) == false)
       { return 0; }
       return climb;
     }
@@ -74,9 +73,7 @@ namespace Ocad
 
     public List<string> CourseVariation(XmlNode nodeVariation)
     {
-      List<string> sCourse = new List<string>();
-
-      sCourse.Add(StartPointCode(nodeVariation));
+      List<string> sCourse = new List<string> { StartPointCode(nodeVariation)};
       foreach (XmlNode nodeControl in CourseControls(nodeVariation))
       {
         string code = ControlCode(nodeControl);
@@ -304,9 +301,8 @@ namespace Ocad
         string comb = VariationName(variation);
         IList<Control> cntls = course.GetCombinationWithDummies(comb, dummies, dummyPrefix);
 
-        List<ControlDist> xmlCourseList = new List<ControlDist>(cntls.Count);
-
-        xmlCourseList.Add(new ControlDist(0, StartPointCode(variation)));
+        List<ControlDist> xmlCourseList = new List<ControlDist>(cntls.Count)
+        { new ControlDist(0, StartPointCode(variation))};
         foreach (XmlNode control in CourseControls(variation))
         {
           xmlCourseList.Add(new ControlDist(LegLength(control), ControlCode(control)));

@@ -57,60 +57,6 @@ namespace OCourse.Ext
       return categories;
     }
 
-    public static IList<CategoryPar> GetCategories(OcadReader reader)
-    {
-      IList<StringParamIndex> paramList = reader.ReadStringParamIndices();
-      IList<CategoryPar> catNames = GetCategories(reader, paramList);
-      return catNames;
-    }
-    public static IList<CategoryPar> GetCategories(OcadReader reader,
-      IList<StringParamIndex> paramList)
-    {
-      List<CategoryPar> catNames = new List<CategoryPar>();
-      foreach (StringParamIndex par in paramList)
-      {
-        if (par.Type == StringType.Class)
-        {
-          CategoryPar candidate = new CategoryPar(reader.ReadStringParam(par));
-            catNames.Add(candidate);
-        }
-      }
-      return catNames;
-    }
-
-    public static IList<string> GetCourseCategories(OcadReader reader, string courseName)
-    {
-      IList<StringParamIndex> paramList = reader.ReadStringParamIndices();
-      IList<string> catNames = GetCourseCategories(reader, paramList, courseName);
-      return catNames;
-    }
-    public static IList<string> GetCourseCategories(OcadReader reader,
-      IList<StringParamIndex> paramList, string courseName)
-    {
-      List<string> catNames = new List<string>();
-      foreach (StringParamIndex par in paramList)
-      {
-        if (par.Type == StringType.Class)
-        {
-          CategoryPar candidate = new CategoryPar(reader.ReadStringParam(par));
-          if (candidate.CourseName == courseName)
-          {
-            catNames.Add(candidate.Name);
-          }
-        }
-
-        if (par.Type == StringType.Course)
-        {
-          CoursePar candidate = new CoursePar(reader.ReadStringParam(par));
-          if (candidate.Name == courseName)
-          {
-            catNames.Add(candidate.Name);
-          }
-        }
-      }
-      return catNames;
-    }
-
     public static Category Create(OcadReader reader, string courseName, int minNr, int runnersConst)
     {
       IList<StringParamIndex> paramList = reader.ReadStringParamIndices();
@@ -126,8 +72,7 @@ namespace OCourse.Ext
 
       if (runnersConst <= 0)
       {
-        int nrRunners;
-        bool success = GetStartNumbers(courseName, reader, paramList, out nrRunners, out min, out max);
+        bool success = GetStartNumbers(courseName, reader, paramList, out int nrRunners, out min, out max);
         if (success == false)
         {
           min = 0;

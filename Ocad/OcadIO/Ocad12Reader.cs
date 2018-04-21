@@ -46,9 +46,11 @@ namespace Ocad
       { elem.Text = BaseReader.ReadUnicodeString(); }
       if (nObjectString > 0)
       {
-        byte[] objectText = BaseReader.ReadBytes(nObjectString);
-        System.Text.UnicodeEncoding unicode = new System.Text.UnicodeEncoding();
-        elem.ObjectString = unicode.GetString(objectText);
+        //byte[] objectText = BaseReader.ReadBytes(nObjectString);
+        //System.Text.UnicodeEncoding unicode = new System.Text.UnicodeEncoding();
+        //elem.ObjectString = unicode.GetString(objectText);
+
+        elem.ObjectString = BaseReader.ReadUnicodeString();
       }
 
       return elem;

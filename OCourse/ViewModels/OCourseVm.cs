@@ -652,7 +652,7 @@ namespace OCourse.ViewModels
 
             IList<string> catNames;
             if (course != null)
-            { catNames = Category.GetCourseCategories(reader, course.Name); }
+            { catNames = reader.GetCourseCategories(course.Name); }
             else
             { catNames = new List<string>(); }
 

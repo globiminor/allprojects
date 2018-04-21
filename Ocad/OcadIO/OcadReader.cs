@@ -232,6 +232,49 @@ namespace Ocad
       return idxList;
     }
 
+    public IList<CategoryPar> GetCategories(IList<StringParamIndex> paramList = null)
+    {
+      paramList = paramList ?? ReadStringParamIndices();
+
+      List<CategoryPar> catNames = new List<CategoryPar>();
+      foreach (StringParamIndex par in paramList)
+      {
+        if (par.Type == StringType.Class)
+        {
+          CategoryPar candidate = new CategoryPar(ReadStringParam(par));
+          catNames.Add(candidate);
+        }
+      }
+      return catNames;
+    }
+
+    public IList<string> GetCourseCategories(string courseName, IList<StringParamIndex> paramList = null)
+    {
+      paramList = paramList ?? ReadStringParamIndices();
+      List<string> catNames = new List<string>();
+      foreach (StringParamIndex par in paramList)
+      {
+        if (par.Type == StringType.Class)
+        {
+          CategoryPar candidate = new CategoryPar(ReadStringParam(par));
+          if (candidate.CourseName == courseName)
+          {
+            catNames.Add(candidate.Name);
+          }
+        }
+
+        if (par.Type == StringType.Course)
+        {
+          CoursePar candidate = new CoursePar(ReadStringParam(par));
+          if (candidate.Name == courseName)
+          {
+            catNames.Add(candidate.Name);
+          }
+        }
+      }
+      return catNames;
+    }
+
     public static bool Exists(string name)
     {
       string ext = Path.GetExtension(name);
