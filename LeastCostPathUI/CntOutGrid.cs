@@ -117,7 +117,7 @@ namespace LeastCostPathUI
       byte[] r = new byte[256];
       byte[] g = new byte[256];
       byte[] b = new byte[256];
-      Common.InitColors(r, g, b);
+      Grid.Common.InitColors(r, g, b);
 
       if (costGrid != null)
       {
@@ -174,7 +174,7 @@ namespace LeastCostPathUI
       { _inSynchron = false; }
     }
     #region events
-    private void btnCost_Click(object sender, EventArgs e)
+    private void BtnCost_Click(object sender, EventArgs e)
     {
       try
       {
@@ -189,7 +189,7 @@ namespace LeastCostPathUI
       { MessageBox.Show(exp.Message + "\n" + exp.StackTrace); }
     }
 
-    private void btnCostImg_Click(object sender, EventArgs e)
+    private void BtnCostImg_Click(object sender, EventArgs e)
     {
       try
       {
@@ -204,7 +204,7 @@ namespace LeastCostPathUI
       { MessageBox.Show(exp.Message + "\n" + exp.StackTrace); }
     }
 
-    private void btnDir_Click(object sender, EventArgs e)
+    private void BtnDir_Click(object sender, EventArgs e)
     {
       try
       {
@@ -219,7 +219,7 @@ namespace LeastCostPathUI
       { MessageBox.Show(exp.Message + "\n" + exp.StackTrace); }
     }
 
-    private void btnDirImg_Click(object sender, EventArgs e)
+    private void BtnDirImg_Click(object sender, EventArgs e)
     {
       try
       {
@@ -234,7 +234,7 @@ namespace LeastCostPathUI
       { MessageBox.Show(exp.Message + "\n" + exp.StackTrace); }
     }
 
-    private void txtCost_TextChanged(object sender, EventArgs e)
+    private void TxtCost_TextChanged(object sender, EventArgs e)
     {
       try
       {
@@ -244,7 +244,7 @@ namespace LeastCostPathUI
       { MessageBox.Show(exp.Message + "\n" + exp.StackTrace); }
     }
 
-    private void txtCostImg_TextChanged(object sender, EventArgs e)
+    private void TxtCostImg_TextChanged(object sender, EventArgs e)
     {
       try
       {
@@ -254,7 +254,7 @@ namespace LeastCostPathUI
       { MessageBox.Show(exp.Message + "\n" + exp.StackTrace); }
     }
 
-    private void txtDir_TextChanged(object sender, EventArgs e)
+    private void TxtDir_TextChanged(object sender, EventArgs e)
     {
       try
       {
@@ -264,7 +264,7 @@ namespace LeastCostPathUI
       { MessageBox.Show(exp.Message + "\n" + exp.StackTrace); }
     }
 
-    private void txtDirImg_TextChanged(object sender, EventArgs e)
+    private void TxtDirImg_TextChanged(object sender, EventArgs e)
     {
       try
       {

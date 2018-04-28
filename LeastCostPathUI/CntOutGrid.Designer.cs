@@ -100,7 +100,7 @@
       this.txtCost.Size = new System.Drawing.Size(256, 20);
       this.txtCost.TabIndex = 5;
       this.txtCost.Text = "*c.grd";
-      this.txtCost.TextChanged += new System.EventHandler(this.txtCost_TextChanged);
+      this.txtCost.TextChanged += new System.EventHandler(this.TxtCost_TextChanged);
       // 
       // txtCostImg
       // 
@@ -111,7 +111,7 @@
       this.txtCostImg.Size = new System.Drawing.Size(256, 20);
       this.txtCostImg.TabIndex = 6;
       this.txtCostImg.Text = "*c.tif";
-      this.txtCostImg.TextChanged += new System.EventHandler(this.txtCostImg_TextChanged);
+      this.txtCostImg.TextChanged += new System.EventHandler(this.TxtCostImg_TextChanged);
       // 
       // txtDir
       // 
@@ -122,7 +122,7 @@
       this.txtDir.Size = new System.Drawing.Size(256, 20);
       this.txtDir.TabIndex = 7;
       this.txtDir.Text = "*d.grd";
-      this.txtDir.TextChanged += new System.EventHandler(this.txtDir_TextChanged);
+      this.txtDir.TextChanged += new System.EventHandler(this.TxtDir_TextChanged);
       // 
       // txtDirImg
       // 
@@ -133,7 +133,7 @@
       this.txtDirImg.Size = new System.Drawing.Size(256, 20);
       this.txtDirImg.TabIndex = 8;
       this.txtDirImg.Text = "*d.tif";
-      this.txtDirImg.TextChanged += new System.EventHandler(this.txtDirImg_TextChanged);
+      this.txtDirImg.TextChanged += new System.EventHandler(this.TxtDirImg_TextChanged);
       // 
       // btnCost
       // 
@@ -143,7 +143,7 @@
       this.btnCost.Name = "btnCost";
       this.btnCost.Size = new System.Drawing.Size(20, 20);
       this.btnCost.TabIndex = 9;
-      this.btnCost.Click += new System.EventHandler(this.btnCost_Click);
+      this.btnCost.Click += new System.EventHandler(this.BtnCost_Click);
       // 
       // btnCostImg
       // 
@@ -153,7 +153,7 @@
       this.btnCostImg.Name = "btnCostImg";
       this.btnCostImg.Size = new System.Drawing.Size(20, 20);
       this.btnCostImg.TabIndex = 10;
-      this.btnCostImg.Click += new System.EventHandler(this.btnCostImg_Click);
+      this.btnCostImg.Click += new System.EventHandler(this.BtnCostImg_Click);
       // 
       // btnDir
       // 
@@ -163,7 +163,7 @@
       this.btnDir.Name = "btnDir";
       this.btnDir.Size = new System.Drawing.Size(20, 20);
       this.btnDir.TabIndex = 11;
-      this.btnDir.Click += new System.EventHandler(this.btnDir_Click);
+      this.btnDir.Click += new System.EventHandler(this.BtnDir_Click);
       // 
       // btnDirImg
       // 
@@ -173,7 +173,7 @@
       this.btnDirImg.Name = "btnDirImg";
       this.btnDirImg.Size = new System.Drawing.Size(20, 20);
       this.btnDirImg.TabIndex = 12;
-      this.btnDirImg.Click += new System.EventHandler(this.btnDirImg_Click);
+      this.btnDirImg.Click += new System.EventHandler(this.BtnDirImg_Click);
       // 
       // txtX
       // 

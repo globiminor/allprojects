@@ -142,6 +142,14 @@ namespace OCourse.Gui
       get { return _working; }
       set
       {
+        if (_working)
+        {
+          if ((dgvInfo.FirstDisplayedCell?.RowIndex ?? short.MaxValue) 
+            + dgvInfo.DisplayedRowCount(includePartialRow:false) < dgvInfo.RowCount)
+          {
+            dgvInfo.FirstDisplayedCell = dgvInfo.Rows[dgvInfo.RowCount - dgvInfo.DisplayedRowCount(includePartialRow: false)].Cells[0]; 
+          }
+        }
         if (_working == value)
         { return; }
 

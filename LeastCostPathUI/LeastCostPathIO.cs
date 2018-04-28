@@ -280,7 +280,7 @@ namespace LeastCostPathUI
       byte[] r = new byte[256];
       byte[] g = new byte[256];
       byte[] b = new byte[256];
-      Common.InitColors(r, g, b);
+      Grid.Common.InitColors(r, g, b);
 
       DataDoubleGrid startCostGrid = null;
       IntGrid startDirGrid = null;
@@ -507,7 +507,7 @@ namespace LeastCostPathUI
       byte[] r = new byte[256];
       byte[] g = new byte[256];
       byte[] b = new byte[256];
-      Common.InitColors(r, g, b);
+      Grid.Common.InitColors(r, g, b);
       r[0] = 255;
       g[0] = 255;
       b[0] = 255;

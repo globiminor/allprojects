@@ -71,6 +71,8 @@ namespace Grid.Lcp
     public int XMax => _xMax;
     public int YMax => _yMax;
 
+    public abstract double MinUnitCost { get; }
+
     public LeastCostPath(IBox box, double dx, Steps steps = null)
     {
       _steps = steps ?? Steps.Step16;
@@ -607,7 +609,7 @@ namespace Grid.Lcp
   }
 
   public abstract partial class LeastCostPath<T> : LeastCostPath
-    where T : class, IField
+    where T : class, ICostField
   {
     private class CorridorGrid : BaseGrid<int>
     {
@@ -636,93 +638,19 @@ namespace Grid.Lcp
       }
     }
 
-    private IntGrid _dirGrid;
-    private SortedList<IField, T> _costList;
-    private SortedList<IField, T> _fieldList;
-
     private class KeyField : IField
     {
       public int X { get; set; }
       public int Y { get; set; }
-      public int IdDir { get; set; }
-      public double Cost { get; set; }
-      public void SetCost(IField fromField, double cost, int idDir)
+
+      public override string ToString()
       {
-        Cost = (fromField?.Cost ?? 0) + cost;
-        IdDir = idDir;
+        return $"X:{X} Y:{Y}";
       }
     }
 
     protected abstract T InitField(IField position);
     protected abstract double CalcCost(T startField, Step step, int iField, T[] neighbors, bool invers);
-
-    private int GotoNeighbours(T startField, bool invers)
-    {
-      InitField(startField);
-
-      bool[] cancelFields = null;
-      IReadOnlyList<Step> distSteps = Steps.GetDistSteps();
-      int iStep = 0;
-      T[] fields = new T[distSteps.Count];
-      foreach (Step distStep in distSteps)
-      {
-        iStep++;
-        KeyField key = new KeyField
-        { X = startField.X + distStep.Dx, Y = startField.Y + distStep.Dy };
-
-        // check range
-        if (key.X < 0 || key.X >= XMax ||
-            key.Y < 0 || key.Y >= YMax)
-        {
-          continue;
-        }
-        // check set
-        if (_dirGrid[key.X, key.Y] != 0)
-        {
-          continue;
-        }
-
-        if (_fieldList.TryGetValue(key, out T stepField) == false)
-        {
-          stepField = InitField(key);
-          _fieldList.Add(stepField, stepField);
-        }
-        fields[distStep.Index] = stepField;
-      }
-      for (int iDistStep = 0; iDistStep < Steps.Count; iDistStep++)
-      {
-        Step distStep = distSteps[iDistStep];
-        int iField = distStep.Index;
-        T stepField = fields[iField];
-        if (stepField == null)
-        { continue; }
-
-        double cost = CalcCost(startField, distStep, iField, fields, invers);
-        {
-          if (cost < 0)
-          {
-            cancelFields = Steps.GetCancelIndexes(distStep, cancelFields);
-            cost = Math.Abs(cost);
-          }
-          if (cancelFields != null && cancelFields[distStep.Index])
-          { continue; }
-        }
-        if (stepField.IdDir < 0 || stepField.Cost > startField.Cost + cost)
-        {
-          // new minimum path found
-          if (stepField.IdDir >= 0)
-          {
-            // remove current position
-            _costList.Remove(stepField);
-          }
-          // add at new position
-          stepField.SetCost(startField, cost, distStep.Index);
-          _costList.Add(stepField, stepField);
-        }
-      }
-
-      return 0;
-    }
 
     public LeastCostPath(IBox box, double dx, Steps step = null)
       : base(box, dx, step)
@@ -739,6 +667,8 @@ namespace Grid.Lcp
         _baseLcp = baseLcp;
         _corridorGrid = corridorGrid;
       }
+
+      public override double MinUnitCost => _baseLcp.MinUnitCost;
 
       protected override double CalcCost(T startField, Step step, int iField, T[] neighbors, bool invers)
       {
@@ -769,81 +699,17 @@ namespace Grid.Lcp
     { }
 
     protected sealed override void CalcCost(IPoint start,
-      out DataDoubleGrid costGrid, out IntGrid dirGrid, bool invers = false, IList<int[]> stop = null)
+      out DataDoubleGrid costGrid, out IntGrid dirGrid, bool invers = false, IList<int[]> stops = null)
     {
       try
       {
         CalcStarting();
 
-        int i, n;
-        CostCompare costComparer = new CostCompare();
-        FieldCompare fieldComparer = new FieldCompare();
+        Calc calc = new Calc(this, start, invers, stops);
+        calc.Process();
 
-        _costList = new SortedList<IField, T>(costComparer);
-        _fieldList = new SortedList<IField, T>(fieldComparer);
-
-        costGrid = new DataDoubleGrid(XMax, YMax, typeof(float),
-          X0, Y0, Dx);
-        dirGrid = new IntGrid(XMax, YMax, typeof(sbyte), X0, Y0, Dx);
-
-        T startField;
-        _dirGrid = dirGrid;
-
-        startField = InitField(new KeyField { X = (int)((start.X - X0) / Dx), Y = (int)((start.Y - Y0) / Dy) });
-        startField.SetCost(null, 0, idDir: -2);
-
-        i = 0;
-        n = XMax * YMax;
-        StatusEventArgs args;
-
-        while (startField != null)
-        {
-          costGrid[startField.X, startField.Y] = startField.Cost;
-          dirGrid[startField.X, startField.Y] = startField.IdDir + 1;
-          args = new StatusEventArgs(costGrid, dirGrid, startField.X, startField.Y, i, n);
-          OnStatus(args);
-          if (args.Cancel || Stop(stop, startField))
-          {
-            _costList.Clear();
-            _fieldList.Clear();
-            return;
-          }
-
-          i++;
-          GotoNeighbours(startField, invers);
-
-          //startField = null;
-          //foreach (Field field in _costList.Keys)
-          //{
-          //  startField = field;
-          //  break;
-          //}
-          //if (startField != null)
-          //{
-          //  _costList.Remove(startField);
-          //  _fieldList.Remove(startField);
-          //}
-          if (_costList.Count > 0)
-          {
-            bool updated = true;
-            while (updated)
-            {
-              startField = _costList.Values[0];
-              _costList.RemoveAt(0);
-              updated = UpdateCost(startField);
-              if (updated)
-              {
-                _costList.Add(startField, startField);
-              }
-            }
-            _fieldList.Remove(startField);
-          }
-          else
-          {
-            startField = null;
-          }
-        }
-        OnStatus(new StatusEventArgs(costGrid, dirGrid, -1, -1, n, n));
+        costGrid = calc.CostGrid;
+        dirGrid = calc.DirGrid;
       }
       finally
       {
@@ -854,23 +720,6 @@ namespace Grid.Lcp
     protected virtual bool UpdateCost(T field)
     {
       return false;
-    }
-
-    private bool Stop(IList<int[]> stop, T startField)
-    {
-      if (stop == null)
-      { return false; }
-
-      int i = stop.Count - 1;
-      while (i >= 0)
-      {
-        int[] s = stop[i];
-        if (startField.X == s[0] && startField.Y == s[1])
-        { stop.RemoveAt(i); }
-        i--;
-      }
-
-      return (stop.Count == 0);
     }
 
     protected override bool EqualSettingsCore(LeastCostPath o)
@@ -890,6 +739,238 @@ namespace Grid.Lcp
       { return false; }
 
       return true;
+    }
+
+    private class Calc
+    {
+      private readonly LeastCostPath<T> _parent;
+      private readonly IPoint _start;
+      private readonly bool _invers;
+      private readonly IList<int[]> _stops;
+
+      private readonly SortedList<T, T> _costList;
+      private readonly Dictionary<IField, T> _fieldList;
+
+      private readonly DataDoubleGrid _costGrid;
+      private readonly IntGrid _dirGrid;
+      private readonly T _startField;
+
+      private readonly Dictionary<IField, int[]> _stopDict;
+      private IField _maxFullCostField;
+
+      public Calc(LeastCostPath<T> parent, IPoint start, bool invers = false, IList<int[]> stops = null)
+      {
+        _parent = parent;
+        _start = start;
+        _invers = invers;
+        _stops = stops;
+
+        LeastCostPath<T> p = _parent;
+
+        _costGrid = new DataDoubleGrid(p.XMax, p.YMax, typeof(float), p.X0, p.Y0, p.Dx);
+
+        _dirGrid = new IntGrid(p.XMax, p.YMax, typeof(sbyte), p.X0, p.Y0, p.Dx);
+
+        _startField = _parent.InitField(new KeyField { X = (int)((start.X - p.X0) / p.Dx), Y = (int)((start.Y - p.Y0) / p.Dy) });
+        _startField.SetCost(null, 0, idDir: -2);
+
+        FieldComparer fieldComparer = new FieldComparer();
+        if (stops == null)
+        {
+          _costList = new SortedList<T, T>(new CostComparer());
+          _stopDict = null;
+          _maxFullCostField = null;
+        }
+        else
+        {
+          _costList = new SortedList<T, T>(new MinFullCostComparer());
+          _stopDict = new Dictionary<IField, int[]>(fieldComparer);
+          foreach (int[] stop in stops)
+          {
+            _stopDict[new KeyField { X = stop[0], Y = stop[1] }] = stop;
+          }
+          _maxFullCostField = RefreshMinCosts();
+        }
+        _fieldList = new Dictionary<IField, T>(fieldComparer);
+      }
+
+      public DataDoubleGrid CostGrid => _costGrid;
+      public IntGrid DirGrid => _dirGrid;
+
+      public void Process()
+      {
+        int i = 0;
+        int n = _parent.XMax * _parent.YMax;
+        StatusEventArgs args;
+
+        T processField = _startField;
+        while (processField != null)
+        {
+          _costGrid[processField.X, processField.Y] = processField.Cost;
+          _dirGrid[processField.X, processField.Y] = processField.IdDir + 1;
+          args = new StatusEventArgs(_costGrid, _dirGrid, processField.X, processField.Y, i, n);
+          _parent.OnStatus(args);
+          if (args.Cancel || Stop(processField))
+          {
+            _costList.Clear();
+            _fieldList.Clear();
+            return;
+          }
+
+          i++;
+          GotoNeighbours(processField, _invers);
+
+          if (_costList.Count > 0)
+          {
+            bool updated = true;
+            while (updated)
+            {
+              processField = _costList.Values[0];
+              _costList.RemoveAt(0);
+              updated = _parent.UpdateCost(processField);
+              if (updated)
+              {
+                _costList.Add(processField, processField);
+              }
+            }
+            _fieldList.Remove(processField);
+          }
+          else
+          {
+            processField = null;
+          }
+        }
+        _parent.OnStatus(new StatusEventArgs(_costGrid, _dirGrid, -1, -1, n, n));
+      }
+
+      private int GotoNeighbours(T startField, bool invers)
+      {
+        _parent.InitField(startField);
+
+        bool[] cancelFields = null;
+        IReadOnlyList<Step> distSteps = _parent.Steps.GetDistSteps();
+        int iStep = 0;
+        T[] fields = new T[distSteps.Count];
+        foreach (Step distStep in distSteps)
+        {
+          iStep++;
+          KeyField key = new KeyField
+          { X = startField.X + distStep.Dx, Y = startField.Y + distStep.Dy };
+
+          // check range
+          if (key.X < 0 || key.X >= _parent.XMax ||
+              key.Y < 0 || key.Y >= _parent.YMax)
+          {
+            continue;
+          }
+          // check set
+          if (_dirGrid[key.X, key.Y] != 0)
+          {
+            continue;
+          }
+
+          if (_fieldList.TryGetValue(key, out T stepField) == false)
+          {
+            stepField = _parent.InitField(key);
+            SetMinRestCost(stepField as IRestCostField, _maxFullCostField);
+            _fieldList.Add(stepField, stepField);
+          }
+          fields[distStep.Index] = stepField;
+        }
+        for (int iDistStep = 0; iDistStep < _parent.Steps.Count; iDistStep++)
+        {
+          Step distStep = distSteps[iDistStep];
+          int iField = distStep.Index;
+          T stepField = fields[iField];
+          if (stepField == null)
+          { continue; }
+
+          double cost = _parent.CalcCost(startField, distStep, iField, fields, invers);
+          {
+            if (cost < 0)
+            {
+              cancelFields = _parent.Steps.GetCancelIndexes(distStep, cancelFields);
+              cost = Math.Abs(cost);
+            }
+            if (cancelFields != null && cancelFields[distStep.Index])
+            { continue; }
+          }
+          if (stepField.IdDir < 0 || stepField.Cost > startField.Cost + cost)
+          {
+            // new minimum path found
+            if (stepField.IdDir >= 0)
+            {
+              // remove current position
+              _costList.Remove(stepField);
+            }
+            // add at new position
+            stepField.SetCost(startField, cost, distStep.Index);
+            _costList.Add(stepField, stepField);
+          }
+        }
+
+        return 0;
+      }
+
+      private bool Stop(T processField)
+      {
+        if (_stopDict == null)
+        { return false; }
+
+        bool removed = _stopDict.Remove(processField);
+        if (_stopDict.Count == 0)
+        { return true; }
+
+        if (removed && !_stopDict.ContainsKey(_maxFullCostField))
+        {
+          _maxFullCostField = RefreshMinCosts();
+        }
+        return false;
+      }
+
+      private IField RefreshMinCosts()
+      {
+        double maxDist = 0;
+        IField maxField = null;
+        foreach (IField stop in _stopDict.Keys)
+        {
+          int dx = stop.X - _startField.X;
+          int dy = stop.Y - _startField.Y;
+          double dist = dx * dx + dy * dy;
+          if (dist > maxDist)
+          {
+            maxDist = dist;
+            maxField = stop;
+          }
+        }
+
+        if (_costList != null)
+        {
+          List<T> toUpdate = new List<T>(_costList.Values);
+
+          _costList.Clear();
+          foreach (T update in toUpdate)
+          {
+            SetMinRestCost(update as IRestCostField, maxField);
+            _costList.Add(update, update);
+          }
+        }
+
+        return maxField;
+      }
+
+      private bool SetMinRestCost(IRestCostField field, IField stop)
+      {
+        if (field == null || stop == null)
+        { return false; }
+
+        double dx = stop.X - field.X;
+        double dy = stop.Y - field.Y;
+        double cellDist = Math.Sqrt(dx * dx + dy * dy);
+
+        field.MinRestCost = _parent.MinUnitCost * _parent.Dx * cellDist;
+        return true;
+      }
     }
   }
 }

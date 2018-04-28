@@ -91,8 +91,16 @@ namespace Grid
       }
     }
 
-    public static void GridToTif(IntGrid grd, string name, byte[] r, byte[] g, byte[] b)
+    public static void GridToTif(IntGrid grd, string name, byte[] r = null, byte[] g = null, byte[] b = null)
     {
+      if (r == null)
+      {
+        r = new byte[256];
+        g = new byte[256];
+        b = new byte[256];
+        Common.InitColors(r, g, b);
+      }
+
       Encoder pEnc = Encoder.SaveFlag;
       EncoderParameters pEncParams = new EncoderParameters();
       pEncParams.Param[0] = new EncoderParameter(pEnc, (long)EncoderValue.CompressionLZW);

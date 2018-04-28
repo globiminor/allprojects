@@ -81,7 +81,6 @@
     <Compile Include="CntOutput.Designer.cs">
       <DependentUpon>CntOutput.cs</DependentUpon>
     </Compile>
-    <Compile Include="Common.cs" />
     <Compile Include="Images.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

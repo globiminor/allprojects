@@ -2,8 +2,8 @@
 
 namespace Grid.Lcp
 {
-  public class BlockField<T> : IField, ICell
-    where T : class, IField
+  public class BlockField<T> : ICostField, ICell
+    where T : class, ICostField
   {
     public BlockField(T baseField)
     { BaseField = baseField; }
@@ -16,7 +16,7 @@ namespace Grid.Lcp
     public int Ix { get; internal set; }
     public int Iy { get; internal set; }
 
-    public void SetCost(IField fromField, double cost, int idDir)
+    public void SetCost(ICostField fromField, double cost, int idDir)
     {
       BaseField.SetCost(fromField, cost, idDir);
     }
@@ -30,7 +30,7 @@ namespace Grid.Lcp
   }
 
   partial class LeastCostPath<T>
-      where T : class, IField
+      where T : class, ICostField
   {
     public class BlockLcp : LeastCostPath<BlockField<T>>
     {
@@ -42,6 +42,8 @@ namespace Grid.Lcp
         _baseLcp = baseLcp;
         _blockGrid = blockGrid;
       }
+
+      public override double MinUnitCost => _baseLcp.MinUnitCost;
 
       protected override BlockField<T> InitField(IField position)
       {

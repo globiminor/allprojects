@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="BaseGrid.cs" />
     <Compile Include="BinarGrid.cs" />
+    <Compile Include="Common.cs" />
     <Compile Include="DoubleGrid.cs" />
     <Compile Include="GridExtent.cs" />
     <Compile Include="GridMesh.cs" />

@@ -537,13 +537,22 @@ namespace OCourse.ViewModels
         }
       }
 
-
+      RouteCalculator.AccessCurrentCalcList((l) => l.Clear());
       _info.Clear();
       try
       {
         _info.RaiseListChangedEvents = false;
+        Dictionary<CostFromTo, CostFromTo> costDict = 
+          new Dictionary<CostFromTo, CostFromTo>(new CostFromTo.SectionComparer());
         foreach (ICost cost in routes)
         {
+          CostFromTo costFromTo = cost as CostFromTo;
+          if (costFromTo != null)
+          {
+            if (costDict.ContainsKey(costFromTo))
+            { continue; }
+            costDict.Add(costFromTo, costFromTo);
+          }
           _info.Add(cost);
         }
       }
@@ -822,6 +831,7 @@ namespace OCourse.ViewModels
 
       EventSetter calcEvent = new EventSetter(this, RouteCalculator, _lcpConfig.Resolution, CourseFile);
 
+      _info.Clear();
       Working = true;
       RunAsync(calcEvent);
     }
@@ -837,7 +847,7 @@ namespace OCourse.ViewModels
         string prog = Progress;
         int l = prog.LastIndexOf(':');
         prog = prog.Substring(0, l + 1) +
-                           args.CurrentStep + " of (max) " + args.TotalStep;
+                          $"{args.CurrentStep:N0} of (max) {args.TotalStep:N0}";
         SetProgressAsync(prog);
 
         //ShowInContext((GridTest.LeastCostPath)sender, args);

@@ -16,7 +16,7 @@ namespace Grid.Lcp
     double Calc(double dh, double vMean, double slope_2Mean, double dist);
   }
 
-  public class HeightVeloField : IField
+  public class HeightVeloField : IRestCostField
   {
     public int X { get; set; }
     public int Y { get; set; }
@@ -24,7 +24,10 @@ namespace Grid.Lcp
     public int IdDir { get; set; }
     public double Cost { get; set; }
 
-    public void SetCost(IField fromField, double cost, int idDir)
+    public double MinFullCost { get { return MinRestCost + Cost; } }
+    public double MinRestCost { get; set; }
+
+    public void SetCost(ICostField fromField, double cost, int idDir)
     {
       Cost = (fromField?.Cost ?? 0) + cost;
       IdDir = idDir;
@@ -32,7 +35,7 @@ namespace Grid.Lcp
 
     public override string ToString()
     {
-      return $"X:{X} Y:{Y} C:{Cost:N1} D:{IdDir}; H:{Height:N1}, V:{Velocity:N1}";
+      return $"X:{X} Y:{Y} C:{Cost:N1} F:{MinFullCost:N1} D:{IdDir}; H:{Height:N1}, V:{Velocity:N1}";
     }
     // performance :
     public double Height;
@@ -75,6 +78,8 @@ namespace Grid.Lcp
     public IGrid<double> VelocityGrid { get; set; }
 
     public IStepCostCalculator StepCostCalculator { get; set; } = VelocityCostProvider.DefaultCalculator;
+
+    public override double MinUnitCost => 1;
 
     protected override double CalcCost(HeightVeloField startField, Step step, int iField,
       HeightVeloField[] neighbors, bool invers)

@@ -62,7 +62,7 @@ namespace OcadTest
       byte[] r = new byte[256];
       byte[] g = new byte[256];
       byte[] b = new byte[256];
-      LeastCostPathUI.Common.InitColors(r, g, b);
+      Grid.Common.InitColors(r, g, b);
       r[0] = 255;
       g[0] = 255;
       b[0] = 255;
@@ -88,7 +88,7 @@ namespace OcadTest
       byte[] r = new byte[256];
       byte[] g = new byte[256];
       byte[] b = new byte[256];
-      LeastCostPathUI.Common.InitColors(r, g, b);
+      Grid.Common.InitColors(r, g, b);
       r[0] = 255;
       g[0] = 255;
       b[0] = 255;
@@ -134,7 +134,7 @@ namespace OcadTest
       byte[] r = new byte[256];
       byte[] g = new byte[256];
       byte[] b = new byte[256];
-      LeastCostPathUI.Common.InitColors(r, g, b);
+      Grid.Common.InitColors(r, g, b);
       LasUtils.InitStructColors(r, g, b);
       foreach (string key in tiles.Keys)
       {
