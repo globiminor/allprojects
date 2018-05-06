@@ -67,7 +67,7 @@ namespace LeastCostPathUI
           txtResol.Bind(x => x.Text, _bindingSource, nameof(_vm.Resolution),
             true, DataSourceUpdateMode.OnPropertyChanged).FormatString = "N1";
 
-          txtCost.Bind(x => x.Text, _bindingSource, nameof(_vm.CostProviderName),
+          txtCost.Bind(x => x.Text, _bindingSource, nameof(_vm.CostTypeName),
             true, DataSourceUpdateMode.Never);
 
           _lstStep.DataSource = steps;
@@ -97,9 +97,7 @@ namespace LeastCostPathUI
       if (wdg.ShowDialog(this) != DialogResult.OK)
       { return; }
 
-      ICostProvider<HeightVeloLcp> p = wdg.CostProvider;
-      //      SetStepCost((StepCostHandler<double>)Delegate.CreateDelegate(typeof(StepCostHandler<double>), type));
-      _vm.SetCostProvider(p);
+      _vm.TvmCalc = wdg.TvmCalc;
     }
 
     private void BtnHeight_Click(object sender, EventArgs e)
@@ -118,7 +116,7 @@ namespace LeastCostPathUI
 
     private void BtnVelo_Click(object sender, EventArgs e)
     {
-      if (_vm == null || _vm.CostProvider == null)
+      if (_vm == null)
       { return; }
       try
       {
@@ -126,7 +124,7 @@ namespace LeastCostPathUI
         using (OpenFileDialog dlg = new OpenFileDialog())
         {
           dlg.InitialDirectory = Path.GetDirectoryName(_vm.VeloPath);
-          dlg.Filter = _vm.CostProvider.FileFilter;
+          dlg.Filter = _vm.VeloFileFilter;
           if (dlg.ShowDialog() != DialogResult.OK)
           { return; }
           velocityName = dlg.FileName;

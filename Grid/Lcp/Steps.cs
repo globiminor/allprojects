@@ -97,106 +97,89 @@ namespace Grid.Lcp
       get { return _count; }
     }
 
-    public double GetMean<T>(double startValue, int iField, T[] fields, Func<T, double> func)
+    public bool GetPointInfos<T>(ICostField startField, int iField, IList<ICostField> allNeighbors, out IList<T> pointInfos, out IList<double> ws)
+      where T : class
     {
-      Calc w = GetCalc(iField);
-      return w.GetMean(startValue, fields, func);
-    }
-    public double GetMaxDiff<T>(double startValue, int iField, T[] fields, Func<T, double> func, bool invers)
-    {
-      Calc w = GetCalc(iField);
-      return w.GetMaxDiff(startValue, fields, func, invers);
+      StepField stepField = StepFields[iField];
+      pointInfos = new List<T>(stepField.FieldIndices.Count);
+      ws = stepField.Ws;
+      foreach (int idx in stepField.FieldIndices)
+      {
+        ICostField field = idx < 0 ? startField as ICostField
+          : allNeighbors[idx];
+
+        if (field == null)
+        {
+          pointInfos.Clear();
+          pointInfos.Add(null);
+          return true;
+        }
+
+        ICostField<T> costField = field as ICostField<T>;
+        if (costField == null)
+        {
+          pointInfos = null;
+          return false;
+        }
+        pointInfos.Add(costField.PointInfo);
+      }
+      return true;
     }
 
-    private abstract class Calc
+    private List<StepField> _stepFields;
+    private List<StepField> StepFields
     {
-      public abstract double GetMean<T>(double startValue, T[] fields, Func<T, double> func);
-      public abstract double GetMaxDiff<T>(double startValue, T[] fields, Func<T, double> func, bool invers);
-    }
-    private class SimpleCalc : Calc
-    {
-      private readonly int _idx;
-      public SimpleCalc(int idx)
-      { _idx = idx; }
-      public override double GetMean<T>(double startValue, T[] fields, Func<T, double> func)
+      get
       {
-        return (startValue + func(fields[_idx])) / 2.0;
-      }
-      public override double GetMaxDiff<T>(double startValue, T[] fields, Func<T, double> func, bool invers)
-      {
-        double diff = func(fields[_idx]) - startValue;
-        return invers ? -diff : diff;
-      }
-    }
-    private class WeightCalc : Calc
-    {
-      private readonly Dictionary<int, double> _ws;
-      public WeightCalc(Dictionary<int, double> ws)
-      { _ws = ws; }
-      public override double GetMean<T>(double startValue, T[] fields, Func<T, double> func)
-      {
-        double sumW = 0;
-        double sumVal = 0;
-        foreach (var pair in _ws)
+        if (_stepFields == null)
         {
-          T field = fields[pair.Key];
-          if (field == null)
-          { continue; }
+          List<StepField> stepFields = new List<StepField>();
+          foreach (Step step in _steps)
+          {
+            Dictionary<int,double> fieldWeights = GetFieldWeights(step);
+            stepFields.Add(new StepField
+            { FieldIndices = new List<int>(fieldWeights.Keys), Ws = new List<double>(fieldWeights.Values) });
+          }
+          _stepFields = stepFields;
+        }
+        return _stepFields;
+      }
+    }
+    private class StepField
+    {
+      public List<int> FieldIndices;
+      public List<double> Ws;
+    }
 
-          double val = func(field);
-          double w = pair.Value;
-          sumW += w;
-          sumVal += w * val;
-        }
-        return (sumVal + startValue) / (sumW + 1);
-      }
-      public override double GetMaxDiff<T>(double startValue, T[] fields, Func<T, double> func, bool invers)
-      {
-        double diff = 0;
-        foreach (var pair in _ws)
-        {
-          T field = fields[pair.Key];
-          diff = func(field) - startValue;
-          break;
-        }
-        return invers ? -diff : diff;
-      }
-    }
-    private List<Calc> _calcs;
-    private Calc GetCalc(int i)
+    public List<int> GetInvolveds(Step step)
     {
-      if (_calcs == null)
-      {
-        List<Calc> weights = new List<Calc>(Count);
-        for (int iStep = 0; iStep < Count; iStep++)
-        {
-          Dictionary<int, double> w = CalcWeights(iStep);
-          if (w.Count == 1)
-          { weights.Add(new SimpleCalc(iStep)); }
-          else
-          { weights.Add(new WeightCalc(w)); }
-        }
-        _calcs = weights;
-      }
-      return _calcs[i];
+      return StepFields[step.Index].FieldIndices;
     }
-    private Dictionary<int, double> CalcWeights(int i)
+
+    public List<double> GetWs(Step step)
     {
-      Step s = _steps[i];
-      double l = s.Distance;
-      Dictionary<int, double> weights = new Dictionary<int, double> { { i, 1 } };
+      return StepFields[step.Index].Ws;
+    }
+
+    private Dictionary<int, double> GetFieldWeights(Step step)
+    {
+      double l = step.Distance;
+      Dictionary<int, double> weights = new Dictionary<int, double> { 
+        { -1, 1 } // start field
+      };
       for (int iStep = 0; iStep < Count; iStep++)
       {
         Step w = _steps[iStep];
-        if (w.Distance >= s.Distance)
+        if (w.Distance >= step.Distance)
         { continue; }
-        double p = w.Dx * s.Dx + w.Dy * s.Dy;
+        double p = w.Dx * step.Dx + w.Dy * step.Dy;
         if (p <= 0)
         { continue; }
-        double v = (w.Dx * s.Dy - w.Dy * s.Dx) / s.Distance;
+        double v = (w.Dx * step.Dy - w.Dy * step.Dx) / step.Distance;
         if (Math.Abs(v) < 0.5)
         { weights.Add(iStep, 1); }
       }
+      weights.Add(step.Index, 1);
       return weights;
     }
 

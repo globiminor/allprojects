@@ -55,13 +55,14 @@
     <Compile Include="Lcp\Config.cs" />
     <Compile Include="Lcp\ConfigVm.cs" />
     <Compile Include="Lcp\Field.cs" />
-    <Compile Include="Lcp\HeightVeloLcp.cs" />
-    <Compile Include="Lcp\LeastCostPath.cs" />
+    <Compile Include="Lcp\TerrainVeloModel.cs" />
+    <Compile Include="Lcp\LeastCostGrid.cs" />
     <Compile Include="Lcp\RouteTable.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Lcp\Steps.cs" />
-    <Compile Include="Lcp\VelocityCostProvider.cs" />
+    <Compile Include="Lcp\StopHandler.cs" />
+    <Compile Include="Lcp\Interfaces.cs" />
     <Compile Include="Processors\GridTable.cs" />
     <Compile Include="Processors\SchartenhoeheInit.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

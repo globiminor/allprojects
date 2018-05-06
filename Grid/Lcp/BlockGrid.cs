@@ -88,7 +88,7 @@ namespace Grid.Lcp
 
       private readonly BlockGrid _grid;
       private Box _detailBox;
-      public Box DetailBox => _detailBox ?? (_detailBox = GetDetailBox_());
+      public Box DetailBox => _detailBox ?? (_detailBox = GetDetailBox());
 
       public override string ToString()
       {
@@ -166,8 +166,7 @@ namespace Grid.Lcp
         return isBlocked;
       }
 
-      [Obsolete("rename")]
-      private Box GetDetailBox_()
+      private Box GetDetailBox()
       {
         int blockSize = _grid._blockSize;
         int x0 = _cellX * blockSize;

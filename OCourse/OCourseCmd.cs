@@ -269,7 +269,7 @@ namespace OCourse.Gui
       get { return new CourseMapData(this); }
     }
 
-    private void ShowInTMap(LeastCostPath path, StatusEventArgs args)
+    private void ShowInTMap(LeastCostGrid path, StatusEventArgs args)
     {
       if (_context == null)
       { return; }

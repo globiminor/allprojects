@@ -21,7 +21,7 @@ namespace OCourse.ViewModels
 
   public class OCourseVm : NotifyListener
   {
-    public delegate void ShowGridInContext(HeightVeloLcp path, StatusEventArgs args);
+    public delegate void ShowGridInContext(LeastCostGrid path, StatusEventArgs args);
     public delegate void DrawCourseHandler();
 
     private const string LegColumn = "Leg";
@@ -546,8 +546,7 @@ namespace OCourse.ViewModels
           new Dictionary<CostFromTo, CostFromTo>(new CostFromTo.SectionComparer());
         foreach (ICost cost in routes)
         {
-          CostFromTo costFromTo = cost as CostFromTo;
-          if (costFromTo != null)
+          if (cost is CostFromTo costFromTo)
           {
             if (costDict.ContainsKey(costFromTo))
             { continue; }
@@ -730,12 +729,12 @@ namespace OCourse.ViewModels
     private void SetVariations(Course course)
     {
       int nLegs = course != null ? course.LegCount() : 0;
-      List<Gaga> variations = new List<Gaga>();
+      List<LegForks> variations = new List<LegForks>();
 
       List<int> legs = new List<int>(nLegs);
       for (int i = 1; i <= nLegs; i++)
       {
-        variations.Add(new Gaga { Leg = "L" + i });
+        variations.Add(new LegForks { Leg = "L" + i });
         legs.Add(i);
       }
       SetVariations(course, legs, variations);
@@ -743,7 +742,7 @@ namespace OCourse.ViewModels
       // Permutations = tbl;
     }
 
-    private void SetVariations(SectionCollection sections, IList<int> legs, List<Gaga> variations)
+    private void SetVariations(SectionCollection sections, IList<int> legs, List<LegForks> variations)
     {
       if (sections == null)
       { return; }
@@ -760,7 +759,7 @@ namespace OCourse.ViewModels
         }
         else if (section is Fork fork)
         {
-          foreach (Gaga row in variations)
+          foreach (LegForks row in variations)
           { row.Forks[fork] = "-"; }
           char v = 'A';
           foreach (int leg in legs)
@@ -785,22 +784,22 @@ namespace OCourse.ViewModels
 
     internal RouteCalculator InitHeightVelo()
     {
-      string veloGrid = null;
+      string veloPath = null;
       IDoubleGrid heightGrid = null;
       bool isNew = false;
       if (_routeCalc != null)
       {
-        veloGrid = _routeCalc.VeloGrid;
+        veloPath = _routeCalc.VeloPath;
         heightGrid = _routeCalc.HeightGrid;
-        if (LcpConfig.StepsMode.Count != _routeCalc.Step.Count)
+        if (LcpConfig.StepsMode.Count != _routeCalc.Steps.Count)
         { isNew = true; }
-        if (LcpConfig.CostProvider != _routeCalc.CostProvider)
+        if (LcpConfig.TvmCalc != _routeCalc.TvmCalc)
         { isNew = true; }
       }
-      if (LcpConfig.VeloPath != veloGrid)
+      if (LcpConfig.VeloPath != veloPath)
       {
         isNew = true;
-        veloGrid = LcpConfig.VeloPath;
+        veloPath = LcpConfig.VeloPath;
       }
       if (LcpConfig.HeightGrid != heightGrid)
       {
@@ -815,8 +814,7 @@ namespace OCourse.ViewModels
           _routeCalc.VariationAdded -= Builder_VariationAdded;
         }
 
-        _routeCalc = new RouteCalculator(LcpConfig.CostProvider,
-          heightGrid, veloGrid, LcpConfig.StepsMode);
+        _routeCalc = new RouteCalculator(heightGrid, veloPath, LcpConfig.StepsMode, LcpConfig.TvmCalc);
         _routeCalc.StatusChanged += RouteCalc_Status;
         _routeCalc.VariationAdded += Builder_VariationAdded;
       }
@@ -851,7 +849,7 @@ namespace OCourse.ViewModels
         SetProgressAsync(prog);
 
         //ShowInContext((GridTest.LeastCostPath)sender, args);
-        ShowProgress?.Invoke((HeightVeloLcp)sender, args);
+        ShowProgress?.Invoke((LeastCostGrid)sender, args);
         if (_cancelCalc)
         {
           args.Cancel = true;
@@ -948,9 +946,9 @@ namespace OCourse.ViewModels
       }
     }
 
-    private class Gaga
+    private class LegForks
     {
-      public Gaga()
+      public LegForks()
       {
         Forks = new Dictionary<Fork, string>();
       }

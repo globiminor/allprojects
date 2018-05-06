@@ -15,32 +15,30 @@ namespace OCourse.Route
     public StatusEventHandler StatusChanged;
     public event VariationBuilder.VariationEventHandler VariationAdded;
 
-    private readonly ICostProvider<HeightVeloLcp> _costProvider;
-    private readonly string _veloGrid;
+    private readonly string _veloPath;
     private readonly IDoubleGrid _heightGrid;
-    private readonly Steps _step;
+    private readonly Steps _steps;
+    private readonly ITvmCalc _tvmCalc;
 
     private readonly Dictionary<CostFromTo, CostFromTo> _calcList;
 
-    public RouteCalculator(ICostProvider<HeightVeloLcp> costProvider, IDoubleGrid heightGrid, string veloGrid,
-      Steps step)
+    public RouteCalculator(IDoubleGrid heightGrid, string veloPath, Steps steps, ITvmCalc tvmCalc)
     {
-      _costProvider = costProvider;
-      _veloGrid = veloGrid;
+      _veloPath = veloPath;
       _heightGrid = heightGrid;
-      _step = step;
+      _steps = steps;
+      _tvmCalc = tvmCalc ?? new TvmCalc();
 
       _calcList = new Dictionary<CostFromTo, CostFromTo>(new CostFromTo.SectionComparer());
     }
 
-    public string VeloGrid
-    { get { return _veloGrid; } }
-    public IDoubleGrid HeightGrid
-    { get { return _heightGrid; } }
-    public Steps Step
-    { get { return _step; } }
-    public ICostProvider CostProvider
-    { get { return _costProvider; } }
+    public string VeloPath => _veloPath;
+    public IDoubleGrid HeightGrid => _heightGrid;
+    public Steps Steps => _steps;
+    public ITvmCalc TvmCalc => _tvmCalc;
+
+    private VelocityGrid _veloGrid;
+    private VelocityGrid VeloGrid => _veloGrid ?? (_veloGrid = VelocityGrid.FromImage(VeloPath));
 
     internal Dictionary<CostFromTo, CostFromTo> RouteCostDict
     {
@@ -314,7 +312,7 @@ namespace OCourse.Route
     private List<CostFromTo> CalcRoutes(List<CostFromTo> calcList,
       double resolution)
     {
-      if (_heightGrid == null || _veloGrid == null || calcList.Count == 0)
+      if (_heightGrid == null || _veloPath == null || calcList.Count == 0)
       {
         return new List<CostFromTo>();
       }
@@ -325,8 +323,9 @@ namespace OCourse.Route
       Box box = GetBox(calcList, endList);
 
       //GridTest.LeastCostPath path = new GridTest.LeastCostPath(new GridTest.Step16(), box, resolution);
-      HeightVeloLcp path = _costProvider.Build(box, resolution, _step, _veloGrid);
-      path.HeightGrid = _heightGrid;
+      IDirCostProvider<TvmPoint> costProvider = new TerrainVeloModel(_heightGrid, VeloGrid)
+      { TvmCalc = _tvmCalc };
+      LeastCostGrid<TvmPoint> path = new LeastCostGrid<TvmPoint>(box, resolution, costProvider, Steps);
       path.Status += RouteCalc_Status;
 
       path.CalcCost(calcList[0].Start, endList, out DataDoubleGrid costGrid, out IntGrid dirGrid);
@@ -334,7 +333,7 @@ namespace OCourse.Route
       foreach (CostFromTo routeCost in calcList)
       {
         double cost = costGrid.Value(routeCost.End.X, routeCost.End.Y);
-        Polyline route = GetRoute(path, dirGrid, costGrid, routeCost.Start, routeCost.End, out double dh, out double optimal);
+        Polyline route = GetRoute(path.Steps, dirGrid, costGrid, routeCost.Start, routeCost.End, out double dh, out double optimal);
 
         CostFromTo add = new CostFromTo(
           routeCost.From, routeCost.To, routeCost.Start, routeCost.End, resolution,
@@ -386,6 +385,12 @@ namespace OCourse.Route
       return cost;
     }
 
+    public TerrainVeloModel GetTerrainVeloModel()
+    {
+      return new TerrainVeloModel(_heightGrid, VeloGrid)
+      { TvmCalc = _tvmCalc };
+    }
+
     private CostFromTo CalcSectionCore(Control from, Control to,
       IPoint start, IPoint end, double resol, string section)
     {
@@ -395,7 +400,7 @@ namespace OCourse.Route
       {
         return routeCost;
       }
-      if (_heightGrid == null || _veloGrid == null || resol < 0)
+      if (_heightGrid == null || VeloPath == null || resol < 0)
       {
         routeCost = new CostFromTo(from, to, start, end, resol,
           Math.Sqrt(PointOperator.Dist2(start, end)), 0, null, 0, 0);
@@ -412,9 +417,8 @@ namespace OCourse.Route
       Box box = GetBox(start, end, l + 200);
 
 
-      //GridTest.LeastCostPath path = new GridTest.LeastCostPath(new GridTest.Step16(), box, resolution);
-      HeightVeloLcp path = _costProvider.Build(box, resol, _step, _veloGrid);
-      path.HeightGrid = _heightGrid;
+      TerrainVeloModel costProvider = GetTerrainVeloModel();
+      LeastCostGrid<TvmPoint> path = new LeastCostGrid<TvmPoint>(box, resol, costProvider, _steps);
       path.Status += Path_Status;
 
 
@@ -425,7 +429,7 @@ namespace OCourse.Route
       TimeSpan dt = t1 - t0;
 
       double cost = costGrid.Value(end.X, end.Y);
-      Polyline route = GetRoute(path, dirGrid, costGrid, start, end, out double dh, out double length);
+      Polyline route = GetRoute(path.Steps, dirGrid, costGrid, start, end, out double dh, out double length);
 
       OnStatusChanged(null);
 
@@ -438,10 +442,10 @@ namespace OCourse.Route
     }
 
     //private Polyline GetRoute(GridTest.LeastCostPath path, 
-    private Polyline GetRoute(LeastCostPath path,
+    private Polyline GetRoute(Steps steps,
       IntGrid dir, IDoubleGrid costGrid, IPoint start, IPoint end, out double climb, out double optimal)
     {
-      Polyline line = LeastCostPath.GetPath(dir, path.Steps, costGrid, end);
+      Polyline line = LeastCostGrid.GetPath(dir, steps, costGrid, end);
 
       line.Points.First.Value.X = start.X;
       line.Points.First.Value.Y = start.Y;

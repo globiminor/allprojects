@@ -12,7 +12,7 @@ namespace LeastCostPathUI
 {
   public partial class CntOutput : UserControl
   {
-    private LeastCostPath _costPath;
+    private LeastCostGrid<TvmPoint> _costPath;
     private bool _cancelled;
     private bool _disposed;
 
@@ -69,7 +69,7 @@ namespace LeastCostPathUI
     private Point2D _from;
     private Point2D _to;
 
-    public void Calc(ICostProvider<HeightVeloLcp> provider,
+    public void Calc(IDirCostProvider<TvmPoint> provider,
       IDoubleGrid grHeight, string grVelo, double resolution, Steps step, ThreadStart resetDlg)
     {
       _cancelled = false;
@@ -102,7 +102,8 @@ namespace LeastCostPathUI
 
       Box box = new Box(new Point2D(dX0, dY0), new Point2D(dX1, dY1));
 
-      HeightVeloLcp costPath = provider.Build(box, dResol, step, grVelo);
+      IDirCostProvider<TvmPoint> costProvider = provider;
+      LeastCostGrid<TvmPoint> costPath = new LeastCostGrid<TvmPoint>(box, dResol, costProvider, step);
 
       if (!costPath.EqualSettings(_costPath) ||
         grVelo != _grdVelo || grHeight != _grdHeight)
@@ -142,7 +143,7 @@ namespace LeastCostPathUI
     private class CalcCostWorker : IWorker
     {
       private readonly CntOutput _parent;
-      private readonly HeightVeloLcp _costPath;
+      private readonly LeastCostGrid<TvmPoint> _costPath;
       private readonly IDoubleGrid _grHeight;
       private readonly Point2D _from;
       private readonly Point2D _to;
@@ -156,7 +157,7 @@ namespace LeastCostPathUI
       private DoubleGrid _route;
       private RouteTable _routes;
 
-      public CalcCostWorker(CntOutput parent, HeightVeloLcp costPath,
+      public CalcCostWorker(CntOutput parent, LeastCostGrid<TvmPoint> costPath,
         IDoubleGrid grHeight, Point2D from, Point2D to, Steps step,
         bool calcRoute, double lengthFact, double offset, ThreadStart resetDlg)
       {
@@ -174,8 +175,6 @@ namespace LeastCostPathUI
 
       public bool Start()
       {
-        _costPath.HeightGrid = _grHeight;
-
         _costPath.Status -= _parent.CostPath_Status;
         _costPath.Status += _parent.CostPath_Status;
 
@@ -228,7 +227,7 @@ namespace LeastCostPathUI
           _parent.CostPath_Status(this, new StatusEventArgs(null, null, 0, 0, 0, 0));
 
           //CreateRouteImage(sum, cntRoute.FullName(txtRoute.Text));
-          _routes = LeastCostPath.CalcBestRoutes(_sum, _parent._fromCost, _parent._fromDir, fromStep,
+          _routes = LeastCostGrid.CalcBestRoutes(_sum, _parent._fromCost, _parent._fromDir, fromStep,
             _parent._toCost, _parent._toDir, toStep, _lengthFact, _offset, _parent.CostPath_Status);
         }
         _parent.SetStepLabel(this, "EXPORT:");

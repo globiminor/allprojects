@@ -40,13 +40,13 @@ namespace LeastCostPathUI
       dgCustom.Columns.Add(col);
       dgCustom.AutoGenerateColumns = false;
 
-      Type t = typeof(IStepCostCalculator);
+      Type t = typeof(ITvmCalc);
       MethodInfo miBase = t.GetMethods()[0];
 
       StringBuilder sbLbl = new StringBuilder();
       StringBuilder sbTtp = new StringBuilder();
-      sbTtp.Append($"public {miBase.ReturnType.Name} {nameof(IStepCostCalculator.Calc)}(");
-      sbLbl.Append($"public {miBase.ReturnType.Name} {nameof(IStepCostCalculator.Calc)}(");
+      sbTtp.Append($"public {miBase.ReturnType.Name} {nameof(ITvmCalc.Calc)}(");
+      sbLbl.Append($"public {miBase.ReturnType.Name} {nameof(ITvmCalc.Calc)}(");
       bool first = true;
       foreach (ParameterInfo paramInfo in miBase.GetParameters())
       {
@@ -122,8 +122,7 @@ namespace LeastCostPathUI
 
     private Rectangle dragBoxFromMouseDown;
 
-    public ICostProvider<HeightVeloLcp> CostProvider { get; set; }
-    public IStepCostCalculator StepCostCalculator { get; set; }
+    public ITvmCalc TvmCalc { get; set; }
 
     private void DgCustom_MouseDown(object sender, MouseEventArgs e)
     {
@@ -187,12 +186,12 @@ namespace LeastCostPathUI
         if (meth == null)
         { return; }
 
-        CostProvider = (ICostProvider<HeightVeloLcp>)Activator.CreateInstance(meth.Type, nonPublic: true);
+        TvmCalc = (ITvmCalc)Activator.CreateInstance(meth.Type, nonPublic: true);
       }
       else if (optCustom.Checked)
       {
-        StepCostCalculator = GetCustomStepCostCalculator();
-        if (StepCostCalculator == null)
+        TvmCalc = GetCustomCostCalculator();
+        if (TvmCalc == null)
         { return; }
       }
 
@@ -200,24 +199,31 @@ namespace LeastCostPathUI
       Close();
     }
 
-    private IStepCostCalculator GetCustomStepCostCalculator()
+    private ITvmCalc GetCustomCostCalculator()
     {
+
+      Type scc = typeof(ITvmCalc);
       StringBuilder meth = new StringBuilder();
       meth.AppendLine("using System;");
-      meth.AppendLine($"using {typeof(IStepCostCalculator).Namespace};");
-      meth.Append($"public class Custom : {nameof(IStepCostCalculator)}");meth.AppendLine("{");
-      meth.AppendFormat("{0}", ttp.GetToolTip(lblDeclare));
+      meth.AppendLine($"using {scc.Namespace};");
+      meth.AppendLine($"public class Custom : {nameof(ITvmCalc)}");
+      meth.AppendLine("{");
+      meth.AppendLine($"{ttp.GetToolTip(lblDeclare)}");
       meth.AppendLine("{");
       meth.AppendLine(txtCode.Text);
       meth.AppendLine("}");
+      string propType = scc.GetProperty(nameof(ITvmCalc.MinUnitCost)).PropertyType.Name;
+      meth.AppendLine($"public {propType} {nameof(ITvmCalc.MinUnitCost)}");
+      meth.AppendLine("{ get { return 0.0; } }");
       meth.AppendLine("}");
+
 
       Assembly assembly = CreateAssembly(meth.ToString());
       if (assembly == null)
       { return null; }
 
-      IList<Type> types = GetCostProviders<IStepCostCalculator>(assembly);
-      return (IStepCostCalculator)Activator.CreateInstance(types[0], nonPublic: true);
+      IList<Type> types = GetCostProviders<ITvmCalc>(assembly);
+      return (ITvmCalc)Activator.CreateInstance(types[0], nonPublic: true);
     }
 
     private static Assembly CreateAssembly(string code)
@@ -229,7 +235,7 @@ namespace LeastCostPathUI
       CompilerParameters parameters = new CompilerParameters();
       // TODO:
       parameters.ReferencedAssemblies.Add(Assembly.GetExecutingAssembly().Location);
-      parameters.ReferencedAssemblies.Add(typeof(IStepCostCalculator).Assembly.Location);
+      parameters.ReferencedAssemblies.Add(typeof(ITvmCalc).Assembly.Location);
       parameters.GenerateInMemory = true;
       //Make sure we generate an EXE, not a DLL
       //parameters.GenerateExecutable = true;
@@ -274,7 +280,7 @@ namespace LeastCostPathUI
       if (meth == null)
       { return; }
 
-      CostProvider = (ICostProvider<HeightVeloLcp>)Activator.CreateInstance(meth.Type, nonPublic: true);
+      TvmCalc = (ITvmCalc)Activator.CreateInstance(meth.Type, nonPublic: true);
 
       DialogResult = DialogResult.OK;
       Close();

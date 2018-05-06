@@ -2,10 +2,9 @@
 
 namespace Grid.Lcp
 {
-  public class BlockField<T> : ICostField, ICell
-    where T : class, ICostField
+  public class BlockField : ICostField, ICell
   {
-    public BlockField(T baseField)
+    public BlockField(ICostField baseField)
     { BaseField = baseField; }
 
     public int X { get { return BaseField.X; } }
@@ -21,7 +20,7 @@ namespace Grid.Lcp
       BaseField.SetCost(fromField, cost, idDir);
     }
 
-    public T BaseField { get; }
+    public ICostField BaseField { get; }
 
     public override string ToString()
     {
@@ -29,43 +28,23 @@ namespace Grid.Lcp
     }
   }
 
-  partial class LeastCostPath<T>
-      where T : class, ICostField
+  partial class LeastCostGrid
   {
-    public class BlockLcp : LeastCostPath<BlockField<T>>
+    public class BlockLcp : LeastCostGrid
     {
-      private readonly LeastCostPath<T> _baseLcp;
+      private readonly LeastCostGrid _baseLcp;
       private readonly BlockGrid _blockGrid;
-      public BlockLcp(LeastCostPath<T> baseLcp, BlockGrid blockGrid)
-        : base(baseLcp.GetGridExtent().Extent, baseLcp.Dx, baseLcp.Steps)
+      public BlockLcp(LeastCostGrid baseLcp, BlockGrid blockGrid)
+        : base(baseLcp.GetGridExtent().Extent, baseLcp.Dx, baseLcp.DirCostProvider, baseLcp.Steps)
       {
         _baseLcp = baseLcp;
         _blockGrid = blockGrid;
       }
 
-      public override double MinUnitCost => _baseLcp.MinUnitCost;
-
-      protected override BlockField<T> InitField(IField position)
-      {
-        BlockField<T> field = position as BlockField<T> ?? new BlockField<T>(_baseLcp.InitField(position));
-
-        if (field != position)
-        {
-          double tx = X0 + position.X * Dx;
-          double ty = Y0 + position.Y * Dy;
-
-          _blockGrid.Extent.GetNearest(X0 + position.X * Dx, Y0 + position.Y * Dy, out int ix, out int iy);
-          field.Ix = ix;
-          field.Iy = iy;
-        }
-
-        return field;
-      }
-
-      private BlockField<T> _startField;
-      private T[] _baseFields;
-      protected override double CalcCost(BlockField<T> startField, Step step, int iField,
-        BlockField<T>[] neighbors, bool invers)
+      private BlockField _startField;
+      private ICostField[] _baseFields;
+      protected double CalcCost(BlockField startField, Step step, int iField,
+        BlockField[] neighbors, bool invers)
       {
         if (_startField != startField)
         {
@@ -92,7 +71,7 @@ namespace Grid.Lcp
         //return baseCost * factor;
       }
 
-      protected override bool UpdateCost(BlockField<T> field)
+      protected bool UpdateCost(BlockField field)
       {
         return false;
       }

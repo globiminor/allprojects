@@ -11,7 +11,7 @@ namespace OcadTest.OEvent
   public class Events
   {
 
-    private static readonly string _courseOpfikon2018 = @"C:\daten\felix\kapreolo\karten\opfikon\2018\GlattalOL\Glattalol_v2.ocd";
+    private static readonly string _courseOpfikon2018 = @"C:\daten\felix\kapreolo\karten\opfikon\2018\GlattalOL\Glattalol_v2_post.ocd";
     private static readonly string _imagesOpfikon2018 = @"C:\daten\felix\kapreolo\karten\opfikon\2018\GlattalOL\Po\P*.jpg";
 
     [TestMethod]
@@ -29,7 +29,10 @@ namespace OcadTest.OEvent
         new ControlInfo{Key = "86", Info="K-Binder"},
       });
 
-      cmd.WriteImages("HAL", _imagesOpfikon2018);
+      cmd.WriteImages("Setzen 1", _imagesOpfikon2018);
+      cmd.WriteImages("Setzen 2", _imagesOpfikon2018);
+      cmd.WriteImages("Setzen 3", _imagesOpfikon2018);
+      cmd.WriteImages("Setzen 4", _imagesOpfikon2018);
     }
 
     [TestMethod]

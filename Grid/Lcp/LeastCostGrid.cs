@@ -4,6 +4,8 @@ using Basics.Geom;
 
 namespace Grid.Lcp
 {
+  public delegate void StatusEventHandler(object sender, StatusEventArgs args);
+
   public class StatusEventArgs
   {
     private DataDoubleGrid _costGrid;
@@ -51,9 +53,7 @@ namespace Grid.Lcp
     }
   }
 
-  public delegate void StatusEventHandler(object sender, StatusEventArgs args);
-
-  public abstract class LeastCostPath
+  public partial class LeastCostGrid
   {
     public event StatusEventHandler Status;
     private readonly Steps _steps;
@@ -62,6 +62,7 @@ namespace Grid.Lcp
     private readonly double _x0, _y0, _dx, _dy;
 
     public Steps Steps => _steps;
+    public IDirCostProvider DirCostProvider { get; }
 
     public double X0 => _x0;
     public double Y0 => _y0;
@@ -71,15 +72,15 @@ namespace Grid.Lcp
     public int XMax => _xMax;
     public int YMax => _yMax;
 
-    public abstract double MinUnitCost { get; }
-
-    public LeastCostPath(IBox box, double dx, Steps steps = null)
+    public LeastCostGrid(IBox box, double dx, IDirCostProvider dirCostProvider, Steps steps = null)
     {
       _steps = steps ?? Steps.Step16;
       _x0 = box.Min.X;
       _dx = dx;
       _y0 = box.Max.Y;
       _dy = -dx;
+
+      DirCostProvider = dirCostProvider;
 
       _xMax = (int)((box.Max.X - box.Min.X) / dx + 1);
       _yMax = (int)((box.Max.Y - box.Min.Y) / dx + 1);
@@ -117,7 +118,9 @@ namespace Grid.Lcp
         stopList.Add(stop);
       }
 
-      CalcCost(start, out costGrid, out dirGrid, false, stopList);
+      ICostOptimizer stopHandler = new StopHandler(stopList, DirCostProvider.MinUnitCost * Dx);
+
+      CalcCost(start, out costGrid, out dirGrid, false, stopHandler);
     }
     public void CalcCost(IPoint start,
       out DataDoubleGrid costGrid, out IntGrid dirGrid, bool invers = false)
@@ -133,29 +136,37 @@ namespace Grid.Lcp
       return path;
     }
 
-    protected abstract void CalcCorridor(IPoint start, IPoint end,
-      Polyline nearLine, double corridorWidth, out DataDoubleGrid costGrid, out IntGrid dirGrid);
 
-    protected abstract void CalcCost(IPoint start,
-      out DataDoubleGrid costGrid, out IntGrid dirGrid, bool invers,
-      IList<int[]> stop);
-
-    public bool EqualSettings(LeastCostPath other)
+    public bool EqualSettings(LeastCostGrid other)
     {
-      bool equals = EqualSettingsCore(other);
-      return equals;
+      if (other == null)
+      { return false; }
+
+      if (Steps.Count != other.Steps.Count)
+      { return false; }
+
+      if (X0 != other.X0 ||
+        Y0 != other.Y0 ||
+        XMax != other.XMax ||
+        YMax != other.YMax ||
+        Dx != other.Dx)
+      { return false; }
+
+      return true;
     }
-    protected abstract bool EqualSettingsCore(LeastCostPath o);
 
-    private delegate bool StopMethod(int ix, int iy);
-
+    protected void GetXy(IField position, out double tx, out double ty)
+    {
+      tx = X0 + position.X * Dx;
+      ty = Y0 + position.Y * Dy;
+    }
     public static Polyline GetPath(IntGrid dirGrid, Steps step, IDoubleGrid costGrid, IPoint end)
     {
       Polyline line = GetPath(dirGrid, step, costGrid, end, null);
       return line;
     }
     private static Polyline GetPath(IntGrid dirGrid, Steps step, IDoubleGrid costGrid, IPoint end,
-      StopMethod stop)
+      Func<int, int, bool> stop)
     {
       dirGrid.Extent.GetNearest(end, out int ix, out int iy);
       Polyline line = GetGridPath(dirGrid, step, costGrid, ix, iy, stop);
@@ -172,7 +183,7 @@ namespace Grid.Lcp
     }
 
     private static Polyline GetGridPath(IntGrid dirGrid, Steps step, IDoubleGrid costGrid,
-      int endX, int endY, StopMethod stopMethod)
+      int endX, int endY, Func<int, int, bool> stopMethod)
     {
       int ix = endX;
       int iy = endY;
@@ -226,7 +237,7 @@ namespace Grid.Lcp
     {
       private readonly IntGrid _dirGrid;
       private readonly IDoubleGrid _stopGrid;
-      private readonly StopMethod _stop;
+      private readonly Func<int, int, bool> _stop;
 
       private readonly int _dx;
       private readonly int _dy;
@@ -606,15 +617,11 @@ namespace Grid.Lcp
       }
       grid[x, y] = z0 + (z1 - z0) * l0 / l;
     }
-  }
 
-  public abstract partial class LeastCostPath<T> : LeastCostPath
-    where T : class, ICostField
-  {
     private class CorridorGrid : BaseGrid<int>
     {
       private readonly IntGrid _blockGrid;
-      public CorridorGrid(LeastCostPath<T> parent, Polyline nearLine, double corridorWidth)
+      public CorridorGrid(LeastCostGrid parent, Polyline nearLine, double corridorWidth)
         : this(nearLine, corridorWidth, parent.GetGridExtent())
       { }
       public CorridorGrid(Polyline nearLine, double corridorWidth, GridExtent extent)
@@ -638,53 +645,58 @@ namespace Grid.Lcp
       }
     }
 
-    private class KeyField : IField
+    protected virtual double CalcCost(ICostField startField, Step step, int iField,
+      ICostField[] neighbors, bool invers)
     {
-      public int X { get; set; }
-      public int Y { get; set; }
+      List<double> xs = new List<double>();
+      List<double> ys = new List<double>();
 
-      public override string ToString()
+      foreach (int iNeighbor in Steps.GetInvolveds(step))
       {
-        return $"X:{X} Y:{Y}";
+        ICostField involved = iNeighbor < 0 ? startField : neighbors[iNeighbor];
+        if (involved == null)
+        { return double.MaxValue; }
+        GetXy(involved , out double tx, out double ty);
+        xs.Add(tx);
+        ys.Add(ty);
       }
+
+
+      return DirCostProvider.GetCost(xs, ys, Steps.GetWs(step), step.Distance * Dx, invers);
     }
 
-    protected abstract T InitField(IField position);
-    protected abstract double CalcCost(T startField, Step step, int iField, T[] neighbors, bool invers);
-
-    public LeastCostPath(IBox box, double dx, Steps step = null)
-      : base(box, dx, step)
-    { }
-
-    private class CorridorLcp : LeastCostPath<T>
+    private class CorridorLcp : LeastCostGrid
     {
-      private readonly LeastCostPath<T> _baseLcp;
+      private readonly LeastCostGrid _baseLcp;
       private readonly BaseGrid<int> _corridorGrid;
-      public CorridorLcp(LeastCostPath<T> baseLcp, BaseGrid<int> corridorGrid)
+      public CorridorLcp(LeastCostGrid baseLcp, BaseGrid<int> corridorGrid)
         : base(new Box(new Point2D(baseLcp.X0, baseLcp.Y0),
-          new Point2D(baseLcp.XMax, baseLcp.YMax)), baseLcp.Dx, baseLcp.Steps)
+          new Point2D(baseLcp.XMax, baseLcp.YMax)), baseLcp.Dx, baseLcp.DirCostProvider, baseLcp.Steps)
       {
         _baseLcp = baseLcp;
         _corridorGrid = corridorGrid;
       }
 
-      public override double MinUnitCost => _baseLcp.MinUnitCost;
-
-      protected override double CalcCost(T startField, Step step, int iField, T[] neighbors, bool invers)
+      protected override double CalcCost(ICostField startField, Step step, int iField, ICostField[] neighbors, bool invers)
       {
-        T nb = neighbors[iField];
+        ICostField nb = neighbors[iField];
         if (_corridorGrid[nb.X, nb.Y] == 0) { return 0; }
 
         return _baseLcp.CalcCost(startField, step, iField, neighbors, invers);
       }
 
-      protected override T InitField(IField position)
+      protected override ICostField InitField(IField position)
       {
         return _baseLcp.InitField(position);
       }
     }
 
-    protected override void CalcCorridor(IPoint start, IPoint end,
+    protected virtual ICostField InitField(IField field)
+    {
+      return field as RestCostField ?? new RestCostField(field);
+    }
+
+    protected void CalcCorridor(IPoint start, IPoint end,
       Polyline nearLine, double corridorWidth, out DataDoubleGrid costGrid, out IntGrid dirGrid)
     {
       BaseGrid<int> corridorGrid = new CorridorGrid(this, nearLine, corridorWidth);
@@ -698,14 +710,13 @@ namespace Grid.Lcp
     protected virtual void CalcEnded()
     { }
 
-    protected sealed override void CalcCost(IPoint start,
-      out DataDoubleGrid costGrid, out IntGrid dirGrid, bool invers = false, IList<int[]> stops = null)
+    protected void CalcCost(IPoint start,
+      out DataDoubleGrid costGrid, out IntGrid dirGrid, bool invers = false, ICostOptimizer calcAdapter = null)
     {
       try
       {
         CalcStarting();
-
-        Calc calc = new Calc(this, start, invers, stops);
+        Calc calc = new Calc(this, start, invers, calcAdapter);
         calc.Process();
 
         costGrid = calc.CostGrid;
@@ -717,14 +728,14 @@ namespace Grid.Lcp
       }
     }
 
-    protected virtual bool UpdateCost(T field)
+    protected virtual bool UpdateCost(ICostField field)
     {
       return false;
     }
 
-    protected override bool EqualSettingsCore(LeastCostPath o)
+    protected bool EqualSettingsCore(LeastCostGrid o)
     {
-      LeastCostPath<T> other = o as LeastCostPath<T>;
+      LeastCostGrid other = o as LeastCostGrid;
       if (other == null)
       { return false; }
 
@@ -743,55 +754,39 @@ namespace Grid.Lcp
 
     private class Calc
     {
-      private readonly LeastCostPath<T> _parent;
+      private readonly LeastCostGrid _parent;
       private readonly IPoint _start;
       private readonly bool _invers;
-      private readonly IList<int[]> _stops;
+      private readonly ICostOptimizer _costOptimizer;
 
-      private readonly SortedList<T, T> _costList;
-      private readonly Dictionary<IField, T> _fieldList;
+      private readonly SortedList<ICostField, ICostField> _costList;
+      private readonly Dictionary<IField, ICostField> _fieldList;
 
       private readonly DataDoubleGrid _costGrid;
       private readonly IntGrid _dirGrid;
-      private readonly T _startField;
+      private readonly ICostField _startField;
 
-      private readonly Dictionary<IField, int[]> _stopDict;
-      private IField _maxFullCostField;
-
-      public Calc(LeastCostPath<T> parent, IPoint start, bool invers = false, IList<int[]> stops = null)
+      public Calc(LeastCostGrid parent, IPoint start, bool invers = false, ICostOptimizer costOptimizer = null)
       {
         _parent = parent;
         _start = start;
         _invers = invers;
-        _stops = stops;
+        _costOptimizer = costOptimizer;
 
-        LeastCostPath<T> p = _parent;
+        LeastCostGrid p = _parent;
 
         _costGrid = new DataDoubleGrid(p.XMax, p.YMax, typeof(float), p.X0, p.Y0, p.Dx);
 
         _dirGrid = new IntGrid(p.XMax, p.YMax, typeof(sbyte), p.X0, p.Y0, p.Dx);
 
-        _startField = _parent.InitField(new KeyField { X = (int)((start.X - p.X0) / p.Dx), Y = (int)((start.Y - p.Y0) / p.Dy) });
+        _startField = _parent.InitField(new Field { X = (int)((start.X - p.X0) / p.Dx), Y = (int)((start.Y - p.Y0) / p.Dy) });
         _startField.SetCost(null, 0, idDir: -2);
 
+        _costOptimizer?.Init(_startField);
+
         FieldComparer fieldComparer = new FieldComparer();
-        if (stops == null)
-        {
-          _costList = new SortedList<T, T>(new CostComparer());
-          _stopDict = null;
-          _maxFullCostField = null;
-        }
-        else
-        {
-          _costList = new SortedList<T, T>(new MinFullCostComparer());
-          _stopDict = new Dictionary<IField, int[]>(fieldComparer);
-          foreach (int[] stop in stops)
-          {
-            _stopDict[new KeyField { X = stop[0], Y = stop[1] }] = stop;
-          }
-          _maxFullCostField = RefreshMinCosts();
-        }
-        _fieldList = new Dictionary<IField, T>(fieldComparer);
+        _costList = new SortedList<ICostField, ICostField>(_costOptimizer?.GetCostComparer() ?? new CostComparer());
+        _fieldList = new Dictionary<IField, ICostField>(fieldComparer);
       }
 
       public DataDoubleGrid CostGrid => _costGrid;
@@ -803,14 +798,14 @@ namespace Grid.Lcp
         int n = _parent.XMax * _parent.YMax;
         StatusEventArgs args;
 
-        T processField = _startField;
+        ICostField processField = _startField;
         while (processField != null)
         {
           _costGrid[processField.X, processField.Y] = processField.Cost;
           _dirGrid[processField.X, processField.Y] = processField.IdDir + 1;
           args = new StatusEventArgs(_costGrid, _dirGrid, processField.X, processField.Y, i, n);
           _parent.OnStatus(args);
-          if (args.Cancel || Stop(processField))
+          if (args.Cancel || (_costOptimizer?.Stop(processField, _costList) ?? false))
           {
             _costList.Clear();
             _fieldList.Clear();
@@ -843,18 +838,18 @@ namespace Grid.Lcp
         _parent.OnStatus(new StatusEventArgs(_costGrid, _dirGrid, -1, -1, n, n));
       }
 
-      private int GotoNeighbours(T startField, bool invers)
+      private int GotoNeighbours(ICostField startField, bool invers)
       {
         _parent.InitField(startField);
 
         bool[] cancelFields = null;
         IReadOnlyList<Step> distSteps = _parent.Steps.GetDistSteps();
         int iStep = 0;
-        T[] fields = new T[distSteps.Count];
+        ICostField[] fields = new ICostField[distSteps.Count];
         foreach (Step distStep in distSteps)
         {
           iStep++;
-          KeyField key = new KeyField
+          Field key = new Field
           { X = startField.X + distStep.Dx, Y = startField.Y + distStep.Dy };
 
           // check range
@@ -869,10 +864,10 @@ namespace Grid.Lcp
             continue;
           }
 
-          if (_fieldList.TryGetValue(key, out T stepField) == false)
+          if (_fieldList.TryGetValue(key, out ICostField stepField) == false)
           {
             stepField = _parent.InitField(key);
-            SetMinRestCost(stepField as IRestCostField, _maxFullCostField);
+            _costOptimizer?.AdaptCost(stepField);
             _fieldList.Add(stepField, stepField);
           }
           fields[distStep.Index] = stepField;
@@ -881,7 +876,7 @@ namespace Grid.Lcp
         {
           Step distStep = distSteps[iDistStep];
           int iField = distStep.Index;
-          T stepField = fields[iField];
+          ICostField stepField = fields[iField];
           if (stepField == null)
           { continue; }
 
@@ -911,65 +906,43 @@ namespace Grid.Lcp
 
         return 0;
       }
+    }
+  }
 
-      private bool Stop(T processField)
+  public class LeastCostGrid<T> : LeastCostGrid
+    where T: class
+  {
+    public LeastCostGrid(IBox box, double dx, IDirCostProvider<T> dirCostProvider, Steps steps = null) :
+      base(box, dx, dirCostProvider, steps)
+    { }
+
+    public new IDirCostProvider<T> DirCostProvider => (IDirCostProvider<T>)base.DirCostProvider;
+
+    protected override ICostField InitField(IField position)
+    {
+      RestCostField<T> init = position as RestCostField<T>;
+      if (init == null)
       {
-        if (_stopDict == null)
-        { return false; }
-
-        bool removed = _stopDict.Remove(processField);
-        if (_stopDict.Count == 0)
-        { return true; }
-
-        if (removed && !_stopDict.ContainsKey(_maxFullCostField))
-        {
-          _maxFullCostField = RefreshMinCosts();
-        }
-        return false;
+        GetXy(position, out double tx, out double ty);
+        T pointInfo = DirCostProvider.InitCostInfos(tx, ty);
+        init = new RestCostField<T>(position, pointInfo);
       }
+      return init;
+    }
 
-      private IField RefreshMinCosts()
+    protected override double CalcCost(ICostField startField, Step step, int iField,
+      ICostField[] neighbors, bool invers)
+    {
+      Steps.GetPointInfos(startField, iField, neighbors, out IList<T> pointInfos, out IList<double> ws);
+      if (pointInfos != null)
       {
-        double maxDist = 0;
-        IField maxField = null;
-        foreach (IField stop in _stopDict.Keys)
-        {
-          int dx = stop.X - _startField.X;
-          int dy = stop.Y - _startField.Y;
-          double dist = dx * dx + dy * dy;
-          if (dist > maxDist)
-          {
-            maxDist = dist;
-            maxField = stop;
-          }
-        }
-
-        if (_costList != null)
-        {
-          List<T> toUpdate = new List<T>(_costList.Values);
-
-          _costList.Clear();
-          foreach (T update in toUpdate)
-          {
-            SetMinRestCost(update as IRestCostField, maxField);
-            _costList.Add(update, update);
-          }
-        }
-
-        return maxField;
+        if (pointInfos.Count == 1)
+        { return double.MaxValue; }
+        return DirCostProvider.GetCost(pointInfos, ws, step.Distance * Dx, invers);
       }
-
-      private bool SetMinRestCost(IRestCostField field, IField stop)
+      else
       {
-        if (field == null || stop == null)
-        { return false; }
-
-        double dx = stop.X - field.X;
-        double dy = stop.Y - field.Y;
-        double cellDist = Math.Sqrt(dx * dx + dy * dy);
-
-        field.MinRestCost = _parent.MinUnitCost * _parent.Dx * cellDist;
-        return true;
+        return base.CalcCost(startField,step, iField, neighbors, invers);
       }
     }
   }

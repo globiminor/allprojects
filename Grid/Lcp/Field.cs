@@ -3,20 +3,55 @@ using System.Collections.Generic;
 
 namespace Grid.Lcp
 {
-  public interface IField
+  public class Field : IField
   {
-    int X { get; }
-    int Y { get; }
+    public int X { get; set; }
+    public int Y { get; set; }
+
+    public override string ToString()
+    {
+      return $"X:{X} Y:{Y}";
+    }
   }
-  public interface ICostField : IField
+
+
+  public class RestCostField : IRestCostField
   {
-    int IdDir { get; }
-    double Cost { get; }
-    void SetCost(ICostField fromField, double deltaCost, int idDir);
+    public RestCostField(IField field)
+    {
+      X = field.X;
+      Y = field.Y;
+      IdDir = -1;
+    }
+
+    public int X { get; }
+    public int Y { get; }
+
+    public int IdDir { get; set; }
+    public double Cost { get; set; }
+
+    public double MinFullCost { get { return MinRestCost + Cost; } }
+    public double MinRestCost { get; set; }
+
+    public void SetCost(ICostField fromField, double cost, int idDir)
+    {
+      Cost = (fromField?.Cost ?? 0) + cost;
+      IdDir = idDir;
+    }
+
+    public override string ToString()
+    {
+      return $"X:{X} Y:{Y} C:{Cost:N1} F:{MinFullCost:N1} D:{IdDir};";
+    }
   }
-  public interface IRestCostField : ICostField
+  public class RestCostField<T> : RestCostField, ICostField<T>
   {
-    double MinRestCost { get; set; }
+    public RestCostField(IField field, T pointInfo)
+      : base(field)
+    {
+      PointInfo = pointInfo;
+    }
+    public T PointInfo { get; }
   }
 
   public class FieldComparer : IComparer<IField>, IEqualityComparer<IField>

@@ -590,8 +590,8 @@ namespace OCourse.Gui
       double l = Math.Sqrt(PointOperator.Dist2(start, end)) / 2.0;
       Box box = _vm.RouteCalculator.GetBox(start, end, l);
 
-      wdg.Init(_vm.LcpConfig.CostProvider, _vm.RouteCalculator.HeightGrid,
-        _vm.RouteCalculator.VeloGrid, _vm.LcpConfig.Resolution, _vm.LcpConfig.StepsMode);
+      wdg.Init(_vm.RouteCalculator.GetTerrainVeloModel(), _vm.RouteCalculator.HeightGrid,
+        _vm.RouteCalculator.VeloPath, _vm.LcpConfig.Resolution, _vm.LcpConfig.StepsMode);
       wdg.SetExtent(box);
       wdg.SetStart(start);
       wdg.SetEnd(end);

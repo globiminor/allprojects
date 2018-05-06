@@ -10,8 +10,6 @@ namespace LeastCostPathUI
     private Bitmap _bitmap;
     private BitmapData _data;
 
-    public event EventHandler Step;
-
     public AnalyzeImg(string file)
     {
       _bitmap = (Bitmap)Image.FromFile(file);

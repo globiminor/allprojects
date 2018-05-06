@@ -105,13 +105,10 @@ namespace OcadTest
 
       grdVelo.MinVelo = 0.3;
 
-      HeightVeloLcp lcp = new HeightVeloLcp(new Box(new Point2D(2685260, 1252920), new Point2D(2685360, 1253010)), 5.0)
-      {
-        HeightGrid = grdHeight,
-        VelocityGrid = grdVelo
-      };
+      LeastCostGrid<TvmPoint> lcp = new LeastCostGrid<TvmPoint>(new Box(new Point2D(2685260, 1252920), new Point2D(2685360, 1253010)), 5.0,
+        new TerrainVeloModel(grdHeight, grdVelo));
 
-      HeightVeloLcp.BlockLcp blcp = new HeightVeloLcp.BlockLcp(lcp, block);
+      LeastCostGrid.BlockLcp blcp = new LeastCostGrid.BlockLcp(lcp, block);
       blcp.CalcCost(new Point2D(2685302, 1252930), out DataDoubleGrid costGrid, out IntGrid dirGrid);
     }
     private class SymbolGrid : BaseGrid<List<int>>

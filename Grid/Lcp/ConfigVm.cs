@@ -1,23 +1,9 @@
-﻿
-using Basics.Geom;
-using Basics.Views;
+﻿using Basics.Views;
 using System.Collections.Generic;
-using System.Reflection;
 using System.IO;
-using Basics;
 
 namespace Grid.Lcp
 {
-  public interface ICostProvider
-  {
-    LeastCostPath Build(IBox box, double dx, Steps step, string velocityData);
-    string FileFilter { get; }
-  }
-  public interface ICostProvider<T> : ICostProvider where T : LeastCostPath
-  {
-    new T Build(IBox box, double dx, Steps step, string velocityData);
-  }
-
   public class ConfigVm : NotifyListener
   {
     private const string _dhmExt = "*.asc";
@@ -31,7 +17,6 @@ namespace Grid.Lcp
     private string _veloPath;
     private double _resolution;
     private Steps _steps;
-    private ICostProvider<HeightVeloLcp> _costProvider;
     private IDoubleGrid _grdHeight;
 
     public ConfigVm()
@@ -40,8 +25,6 @@ namespace Grid.Lcp
       VeloPath = _veloExt;
       Resolution = _resol;
       StepsMode = _stepsModes[0];
-
-      SetCostProvider(new VelocityCostProvider());
     }
 
     protected override void Disposing(bool disposing)
@@ -68,6 +51,9 @@ namespace Grid.Lcp
         { _veloPath = value; }
       }
     }
+    public string VeloFileFilter
+    { get { return $"{_veloExt} | {_veloExt}"; } }
+
     public double Resolution
     {
       get { return _resolution; }
@@ -89,8 +75,18 @@ namespace Grid.Lcp
         { _steps = value; }
       }
     }
-    public string CostProviderName { get { return CostProvider?.GetType().Name; } }
-    public ICostProvider<HeightVeloLcp> CostProvider { get { return _costProvider; } }
+
+    private ITvmCalc _tvmCalc = new TvmCalc();
+    public ITvmCalc TvmCalc
+    {
+      get { return _tvmCalc; }
+      set
+      {
+        using (Changing())
+        { _tvmCalc = value; }
+      }
+    }
+    public string CostTypeName { get { return _tvmCalc?.GetType().Name; } }
 
     public IDoubleGrid HeightGrid
     {
@@ -114,12 +110,6 @@ namespace Grid.Lcp
         foreach (Steps step in _stepsModes)
         { yield return step; }
       }
-    }
-
-    public void SetCostProvider(ICostProvider<HeightVeloLcp> costProvider)
-    {
-      using (Changing(nameof(CostProviderName)))
-      { _costProvider = costProvider; }
     }
 
     public void SetConfig(string dir, Config config)

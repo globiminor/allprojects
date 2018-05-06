@@ -101,7 +101,6 @@
     <Compile Include="Route\Cost.cs" />
     <Compile Include="Route\CostFromTo.cs" />
     <Compile Include="Route\RouteCalculator.cs" />
-    <Compile Include="Route\SymLeastCostPath.cs" />
     <Compile Include="Tracking\Track.cs" />
     <Compile Include="Tracking\TrackReader.cs" />
     <Compile Include="Utils.cs" />

@@ -275,7 +275,7 @@ namespace LeastCostPathUI
 
     private static void ProcessParams(LcpParams lcp)
     {
-      HeightVeloLcp costPath;
+      LeastCostGrid<TvmPoint> costPath;
 
       byte[] r = new byte[256];
       byte[] g = new byte[256];
@@ -295,43 +295,40 @@ namespace LeastCostPathUI
       else if (lcp.stepType == 4) step = Steps.Step4;
       else throw new InvalidOperationException("Unhandled step type " + lcp.stepType);
 
-      Box box = new Box(new Point2D(lcp.x0, lcp.y0), new Point2D(lcp.x1, lcp.y1));
-      costPath = new HeightVeloLcp(box, lcp.dx, step);
-
       IDoubleGrid heightGrid = null;
       if (!string.IsNullOrEmpty(lcp.sHeight))
       { heightGrid = DataDoubleGrid.FromAsciiFile(lcp.sHeight, 0, 0.01, typeof(double)); }
+      IDoubleGrid velocityGrid = VelocityGrid.FromImage(lcp.sVelo);
+
+
+      Box box = new Box(new Point2D(lcp.x0, lcp.y0), new Point2D(lcp.x1, lcp.y1));
+      TerrainVeloModel cost = new TerrainVeloModel(heightGrid, velocityGrid);
+      if (lcp.sCostAssembley != null)
+      {
+        Assembly ass = Assembly.LoadFile(lcp.sCostAssembley);
+        string typeName = lcp.sCostType;
+        Type type = ass.GetType(typeName);
+
+        object calc = Activator.CreateInstance(type);
+        cost.TvmCalc = (ITvmCalc)calc;
+      }
+
+      costPath = new LeastCostGrid<TvmPoint>(box, lcp.dx, cost, step);
 
       if (lcp.bFullCalc)
       {
-        IDoubleGrid velocityGrid = VelocityGrid.FromImage(lcp.sVelo);
-
-        if (lcp.sCostAssembley != null)
-        {
-          Assembly ass = Assembly.LoadFile(lcp.sCostAssembley);
-          string typeName = lcp.sCostType;
-          Type type = ass.GetType(typeName);
-
-          object calc = Activator.CreateInstance(type);
-          costPath.StepCostCalculator = (IStepCostCalculator)calc;
-        }
-        else
-        {
-          costPath.StepCostCalculator = VelocityCostProvider.DefaultCalculator;
-        }
-
         if (lcp.bStart)
         {
           costPath.Status -= CostPath_Status;
           costPath.Status += CostPath_Status;
-          costPath.CalcCost(new Point2D(lcp.xs, lcp.ys), heightGrid, velocityGrid, out startCostGrid, out startDirGrid);
+          costPath.CalcCost(new Point2D(lcp.xs, lcp.ys), out startCostGrid, out startDirGrid);
         }
         if (lcp.bEnd)
         {
           costPath.Status -= CostPath_Status;
           costPath.Status += CostPath_Status;
           Point2D pe = new Point2D(lcp.xe, lcp.ye);
-          costPath.CalcCost(pe, heightGrid, velocityGrid, out endCostGrid, out endDirGrid, inverse: true);
+          costPath.CalcCost(pe, out endCostGrid, out endDirGrid, invers: true);
         }
       }
       if (lcp.ssCostGrd != null)
@@ -401,7 +398,7 @@ namespace LeastCostPathUI
         if (grdSum == null) grdSum = GetSum(startCostGrid, endCostGrid, costPath.GetGridExtent());
         double maxLengthFactor = lcp.maxLonger + 1;
         double minDiffFactor = lcp.minOffset;
-        RouteTable routes = LeastCostPath.CalcBestRoutes(grdSum,
+        RouteTable routes = LeastCostGrid.CalcBestRoutes(grdSum,
           startCostGrid, startDirGrid, null,
           endCostGrid, endDirGrid, null,
           maxLengthFactor, minDiffFactor, Route_Status);
@@ -498,11 +495,11 @@ namespace LeastCostPathUI
               }
             } while (route.Points.Count > 0 && dist < limit);
           }
-          LeastCostPath.Assign(start, routeGrid, RouteValue);
-          LeastCostPath.Assign(end, routeGrid, RouteValue);
+          LeastCostGrid.Assign(start, routeGrid, RouteValue);
+          LeastCostGrid.Assign(end, routeGrid, RouteValue);
         }
         first = false;
-        LeastCostPath.Assign(route, routeGrid, RouteValue);
+        LeastCostGrid.Assign(route, routeGrid, RouteValue);
       }
       byte[] r = new byte[256];
       byte[] g = new byte[256];

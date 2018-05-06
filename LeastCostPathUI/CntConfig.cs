@@ -37,13 +37,13 @@ namespace LeastCostPathUI
         });
       lstStep.SelectedIndex = 0;
 
-      SetCostProviderType(new VelocityCostProvider());
+      SetTerrainVeloCostType(new TvmCalc());
     }
 
-    private void SetCostProviderType(ICostProvider costProvider)
+    private void SetTerrainVeloCostType(ITvmCalc tvmCalc)
     {
-      _costProvider = costProvider;
-      Type type = _costProvider.GetType();
+      _tvmCalc  = tvmCalc;
+      Type type = _tvmCalc.GetType();
       txtCost.Text = type.Name;
       ttp.SetToolTip(txtCost, type.AssemblyQualifiedName);
     }
@@ -84,7 +84,7 @@ namespace LeastCostPathUI
     }
     private IDoubleGrid _grdHeight;
 
-    private ICostProvider _costProvider;
+    private ITvmCalc _tvmCalc;
 
     private void TxtResol_Validating(object sender, CancelEventArgs e)
     {
@@ -110,9 +110,9 @@ namespace LeastCostPathUI
       if (wdg.ShowDialog(this) != DialogResult.OK)
       { return; }
 
-      ICostProvider p = wdg.CostProvider;
+      ITvmCalc calc = wdg.TvmCalc;
       //      SetStepCost((StepCostHandler<double>)Delegate.CreateDelegate(typeof(StepCostHandler<double>), type));
-      SetCostProviderType(p);
+      SetTerrainVeloCostType(calc);
     }
 
     private void BtnHeight_Click(object sender, EventArgs e)
@@ -137,7 +137,7 @@ namespace LeastCostPathUI
         using (OpenFileDialog dlg = new OpenFileDialog())
         {
           dlg.InitialDirectory = Path.GetDirectoryName(txtVelo.Text);
-          dlg.Filter = _costProvider.FileFilter;
+          dlg.Filter = "*.tif | *.tif";
           if (dlg.ShowDialog() != DialogResult.OK)
           { return; }
           velocityName = dlg.FileName;
