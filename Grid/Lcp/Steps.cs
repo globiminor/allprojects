@@ -183,7 +183,7 @@ namespace Grid.Lcp
       return weights;
     }
 
-    public DoubleGrid this[IntGrid grd]
+    public DoubleGrid this[IGrid<int> grd]
     {
       get
       {
@@ -247,7 +247,7 @@ namespace Grid.Lcp
       private readonly List<VVelo> _velos;
       StepInfo _assigned = new StepInfo(0, 0, 0, 0);
 
-      public StepInfoBuilder(IDoubleGrid grid)
+      public StepInfoBuilder(IGrid<double> grid)
       {
         _velos = new List<VVelo>(grid.Extent.Nx * grid.Extent.Ny / 4);
       }
@@ -276,7 +276,7 @@ namespace Grid.Lcp
         return false;
       }
 
-      public void Analyze(StepInfo step, IDoubleGrid costGrid)
+      public void Analyze(StepInfo step, IGrid<double> costGrid)
       {
         for (int iDir = 0; iDir < Candidates.Count; iDir++)
         {
@@ -290,7 +290,7 @@ namespace Grid.Lcp
             continue;
           }
           double cost = step.Cost - costGrid[ix, iy];
-          if (cost <= 0)
+          if (cost <= 0 || double.IsNaN(cost))
           {
             Candidates.RemoveAt(iDir);
             continue;
@@ -365,7 +365,7 @@ namespace Grid.Lcp
         VVelo mean = new VVelo(vX / sumW, vY / sumW, 0);
         return mean;
       }
-      public void AddVelo(IDoubleGrid grid, int ix, int iy)
+      public void AddVelo(IGrid<double> grid, int ix, int iy)
       {
         if (ix < 1 || iy < 1 || ix + 2 > grid.Extent.Nx || iy + 2 > grid.Extent.Ny)
         {
@@ -400,7 +400,7 @@ namespace Grid.Lcp
         _velos.Add(velo);
       }
     }
-    public static Steps ReverseEngineer(IntGrid dirGrid, IDoubleGrid costGrid)
+    public static Steps ReverseEngineer(IGrid<int> dirGrid, IGrid<double> costGrid)
     {
       const int size = 1024;
       SortedList<double, IList<StepInfo>> costs = new SortedList<double, IList<StepInfo>>();
@@ -441,7 +441,11 @@ namespace Grid.Lcp
       {
         for (int iy = 0; iy < extent.Ny; iy++)
         {
-          StepInfo step = new StepInfo(ix, iy, dirGrid[ix, iy], costGrid[ix, iy]);
+          int dirVal = dirGrid[ix, iy];
+          if (dirVal == 0)
+          { continue; }
+
+          StepInfo step = new StepInfo(ix, iy, dirVal, costGrid[ix, iy]);
           StepInfoBuilder dir = dirs[step.Dir];
           if (!dir.IsAssigned() && dir.Candidates.Count > 0)
           {
@@ -521,7 +525,7 @@ namespace Grid.Lcp
       return new Steps(result);
     }
 
-    private static void LoadAnalyzeData(IntGrid dirGrid, IDoubleGrid costGrid,
+    private static void LoadAnalyzeData(IGrid<int> dirGrid, IGrid<double> costGrid,
       Dictionary<int, StepInfoBuilder> dirs,
       SortedList<double, IList<StepInfo>> costs, int size)
     {
@@ -531,8 +535,12 @@ namespace Grid.Lcp
       {
         for (int iy = 0; iy < extent.Ny; iy++)
         {
-          double cost = costGrid[ix, iy];
           int dir = dirGrid[ix, iy];
+          if (dir == 0)
+          { continue; }
+
+          double cost = costGrid[ix, iy];
+
           if (dirs.TryGetValue(dir, out StepInfoBuilder list) == false)
           {
             list = new StepInfoBuilder(costGrid);

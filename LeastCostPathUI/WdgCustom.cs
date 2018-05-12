@@ -17,14 +17,13 @@ namespace LeastCostPathUI
     {
       private readonly Type _type;
 
-      [Obsolete("remove gaga")]
-      public TypeHelper(Type type, bool gaga)
+      public TypeHelper(Type type)
       {
         _type = type;
       }
 
-      public Type Type { get { return _type; } }
-      public string Name { get { return _type.Name; } }
+      public Type Type => _type;
+      public string Name => _type.Name;
     }
 
     public WdgCustom()
@@ -85,7 +84,7 @@ namespace LeastCostPathUI
         List<Type> types = GetCostProviders<ICostProvider>(assembly);
         List<TypeHelper> m = new List<TypeHelper>(types.Count);
         foreach (Type type in types)
-        { m.Add(new TypeHelper(type, false)); }
+        { m.Add(new TypeHelper(type)); }
 
         dgCustom.DataSource = m;
       }

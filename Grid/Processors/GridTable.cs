@@ -126,15 +126,12 @@ namespace Grid.Processors
       {
         if (_cashed == null)
         {
-          IExtractable extractable = _table.Grid as IExtractable;
           IGrid cashed;
-          if (extractable != null)
+          if (_table.Grid is IExtractable extractable)
           { cashed = extractable.Extract(_rowExtent); }
           else
           {
-            int ox;
-            int oy;
-            GridExtent ext = BaseGrid.GetOffsetExtent(_table.Grid, _rowExtent, out ox, out oy);
+            GridExtent ext = BaseGrid.GetOffsetExtent(_table.Grid, _rowExtent, out int ox, out int oy);
             cashed = CreateOffsetGrid(_table.Grid, ox, oy, ext.Nx, ext.Ny);
           }
           _cashed = cashed;
@@ -147,8 +144,7 @@ namespace Grid.Processors
     {
       if (_cashed != null)
       {
-        IDisposable disp = _cashed as IDisposable;
-        if (disp != null)
+        if (_cashed is IDisposable disp)
         { disp.Dispose(); }
 
         _cashed = null;

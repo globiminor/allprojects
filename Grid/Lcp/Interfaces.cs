@@ -25,14 +25,31 @@ namespace Grid.Lcp
 
   public interface IDirCostProvider
   {
+    Basics.Geom.IBox Extent { get; }
+
     double MinUnitCost { get; }
-    double GetCost(IList<double> x, IList<double> y, IList<double> w, double distance, bool inverse);
+    double GetCost(IList<double> x, IList<double> y, IList<double> w, 
+      double cellSize, double distance, bool inverse);
   }
   public interface IDirCostProvider<T> : IDirCostProvider
   {
-    T InitCostInfos(double x, double y);
+    T InitCell(double centerX, double centerY, double cellSize);
     double GetCost(IList<T> costInfos, IList<double> w, double distance, bool inverse);
   }
+
+  [Obsolete("move to other file")]
+  public class Teleport
+  {
+    public Basics.Geom.IPoint From { get; }
+    public Basics.Geom.IPoint ToPoint { get; }
+    public IDirCostProvider ToCostProvider { get; }
+    public double Cost { get; }
+  }
+  public interface ITeleportProvider
+  {
+    IReadOnlyList<Teleport> GetTeleports();
+  }
+
   public interface ICostProvider
   {
     IDirCostProvider GetDirCostProvider();

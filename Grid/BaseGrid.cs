@@ -112,6 +112,10 @@ namespace Grid
     Type Type { get; }
     object this[int ix, int iy] { get; set; }
   }
+  public interface IGridStoreType
+  {
+    Type StoreType { get; }
+  }
   public interface IExtractable
   {
     IGrid Extract(IBox extent);
@@ -122,6 +126,12 @@ namespace Grid
     T Value(double x, double y);
     new T this[int ix, int iy] { get; set; }
   }
+
+  public interface IPartialFilledGrid<T> : IGrid<T>
+  {
+    IGrid<T> GetGridWithData();
+  }
+
 
   public class OffsetGrid<T> : OffsetGrid, IGrid<T>
   {
@@ -139,7 +149,9 @@ namespace Grid
 
     public T Value(double x, double y)
     {
-      return Master.Value(x, y);
+      Extent.GetNearest(x, y, out int ix, out int iy);
+      IGrid<T> t = this;
+      return t[ix, iy];
     }
   }
   public class OffsetGrid : IGrid
@@ -167,11 +179,13 @@ namespace Grid
     {
       get
       {
+        if (ix < 0 || iy < 0 || ix >= Extent.Nx || iy >= Extent.Ny)
+        { return Extent.NN; }
         int tx = ix + _ox;
         int ty = iy + _oy;
         if (tx < 0 || ty < 0 || tx >= _master.Extent.Nx || ty >= _master.Extent.Ny)
         { return _master.Extent.NN; }
-        return _master[ix, iy];
+        return _master[tx, ty];
       }
       set
       {
@@ -184,8 +198,8 @@ namespace Grid
 
   public abstract class BaseGrid : IGrid
   {
-    private GridExtent _extent;
-    private Type _type;
+    private readonly GridExtent _extent;
+    private readonly Type _type;
 
     public static GridExtent GetOffsetExtent(IGrid master, IBox extent, out int offsetX, out int offsetY)
     {
@@ -226,20 +240,20 @@ namespace Grid
     protected abstract object GetThis(int ix, int iy);
     protected abstract void SetThis(int ix, int iy, object value);
 
-    public Type Type
-    { get { return _type; } }
+    public Type Type => _type;
 
-    public GridExtent Extent
+    public GridExtent Extent => _extent;
+
+    public int Topology { get { return 2; } }
+
+    public static IGrid<T> TryReduce<T>(IGrid<T> grid)
     {
-      get { return _extent; }
+      if (grid is IPartialFilledGrid<T> reduceable)
+      {
+        return reduceable.GetGridWithData();
+      }
+      return grid;
     }
-
-    public int Topology
-    {
-      get
-      { return 2; }
-    }
-
     private class TopComparer : IComparer<Line>
     {
       public int Compare(Line x, Line y)
@@ -420,5 +434,79 @@ namespace Grid
     { return this[ix, iy]; }
     protected sealed override void SetThis(int ix, int iy, object value)
     { this[ix, iy] = (T)value; }
+  }
+
+  public abstract class TiledGrid<T> : BaseGrid<T>, IPartialFilledGrid<T>
+  {
+    private readonly Dictionary<Lcp.Field, IGrid<T>> _grids;
+    private int _tileSize;
+    protected TiledGrid(GridExtent extent, int tileSize = 128)
+      : base(extent)
+    {
+      _tileSize = tileSize;
+      _grids = new Dictionary<Lcp.Field, IGrid<T>>(new Lcp.FieldComparer());
+    }
+
+    public int TileSize
+    {
+      get { return _tileSize; }
+      set
+      {
+        if (_tileSize == value)
+        { return; }
+        if (_grids.Count > 0)
+        { throw new InvalidOperationException("Tiles already initiated"); }
+
+        _tileSize = value;
+      }
+    }
+
+    public override T this[int ix, int iy]
+    {
+      get
+      {
+        Lcp.Field key = new Lcp.Field { X = ix / _tileSize, Y = iy / _tileSize };
+        if (!_grids.TryGetValue(key, out IGrid<T> tile))
+        { return default(T); }
+
+        return tile[ix - key.X * _tileSize, iy - key.Y * _tileSize];
+      }
+      set
+      {
+        Lcp.Field key = new Lcp.Field { X = ix / _tileSize, Y = iy / _tileSize };
+        if (!_grids.TryGetValue(key, out IGrid<T> tile))
+        {
+          GridExtent e = Extent;
+          tile = CreateTile(TileSize, TileSize, e.X0 + key.X * TileSize * e.Dx, e.Y0 + key.Y * TileSize * e.Dy);
+          _grids.Add(key, tile);
+        }
+        tile[ix - key.X * _tileSize, iy - key.Y * _tileSize] = value;
+      }
+    }
+
+    IGrid<T> IPartialFilledGrid<T>.GetGridWithData()
+    { return GetGridWithData(); }
+    public IGrid<T> GetGridWithData()
+    {
+      int xMin = Extent.Nx;
+      int xMax = 0;
+      int yMin = Extent.Ny;
+      int yMax = 0;
+
+      foreach (Lcp.Field key in _grids.Keys)
+      {
+        xMin = Math.Min(xMin, key.X);
+        xMax = Math.Max(xMax, key.X);
+
+        yMin = Math.Min(yMin, key.Y);
+        yMax = Math.Max(yMax, key.Y);
+      }
+      if (xMin > xMax)
+      { return null; }
+
+      return new OffsetGrid<T>(this, xMin * TileSize, yMin * TileSize, (1 + xMax - xMin) * TileSize, (1 + yMax - yMin) * TileSize);
+    }
+
+    protected abstract IGrid<T> CreateTile(int nx, int ny, double x0, double y0);
   }
 }

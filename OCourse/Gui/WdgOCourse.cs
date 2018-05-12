@@ -142,7 +142,7 @@ namespace OCourse.Gui
       get { return _working; }
       set
       {
-        if (_working)
+        if (_working && value)
         {
           if ((dgvInfo.FirstDisplayedCell?.RowIndex ?? short.MaxValue) 
             + dgvInfo.DisplayedRowCount(includePartialRow:false) < dgvInfo.RowCount)
@@ -154,6 +154,11 @@ namespace OCourse.Gui
         { return; }
 
         _working = value;
+
+        if (!_working && dgvInfo.Rows.Count > 0)
+        {
+          dgvInfo.FirstDisplayedCell = dgvInfo.Rows[0].Cells[0];
+        }
         SetLayout(_working);
       }
     }

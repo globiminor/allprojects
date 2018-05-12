@@ -29,10 +29,11 @@ namespace OcadTest.OEvent
         new ControlInfo{Key = "86", Info="K-Binder"},
       });
 
-      cmd.WriteImages("Setzen 1", _imagesOpfikon2018);
-      cmd.WriteImages("Setzen 2", _imagesOpfikon2018);
-      cmd.WriteImages("Setzen 3", _imagesOpfikon2018);
-      cmd.WriteImages("Setzen 4", _imagesOpfikon2018);
+      //cmd.WriteImages("Setzen 1", _imagesOpfikon2018);
+      //cmd.WriteImages("Setzen 2", _imagesOpfikon2018);
+      //cmd.WriteImages("Setzen 3", _imagesOpfikon2018);
+      //cmd.WriteImages("Setzen 4", _imagesOpfikon2018);
+      cmd.WriteImages("D4550", _imagesOpfikon2018);
     }
 
     [TestMethod]

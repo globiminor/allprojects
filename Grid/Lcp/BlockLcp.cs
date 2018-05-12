@@ -35,7 +35,7 @@ namespace Grid.Lcp
       private readonly LeastCostGrid _baseLcp;
       private readonly BlockGrid _blockGrid;
       public BlockLcp(LeastCostGrid baseLcp, BlockGrid blockGrid)
-        : base(baseLcp.GetGridExtent().Extent, baseLcp.Dx, baseLcp.DirCostProvider, baseLcp.Steps)
+        : base(baseLcp.DirCostProvider, baseLcp.Dx, baseLcp.GetGridExtent().Extent, baseLcp.Steps)
       {
         _baseLcp = baseLcp;
         _blockGrid = blockGrid;

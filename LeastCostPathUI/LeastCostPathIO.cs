@@ -275,18 +275,18 @@ namespace LeastCostPathUI
 
     private static void ProcessParams(LcpParams lcp)
     {
-      LeastCostGrid<TvmPoint> costPath;
+      LeastCostGrid<TvmCell> costPath;
 
       byte[] r = new byte[256];
       byte[] g = new byte[256];
       byte[] b = new byte[256];
       Grid.Common.InitColors(r, g, b);
 
-      DataDoubleGrid startCostGrid = null;
-      IntGrid startDirGrid = null;
+      IGrid<double> startCostGrid = null;
+      IGrid<int> startDirGrid = null;
 
-      DataDoubleGrid endCostGrid = null;
-      IntGrid endDirGrid = null;
+      IGrid<double> endCostGrid = null;
+      IGrid<int> endDirGrid = null;
 
       Steps step;
       if (lcp.stepType < 0) step = Steps.Step16;
@@ -313,7 +313,7 @@ namespace LeastCostPathUI
         cost.TvmCalc = (ITvmCalc)calc;
       }
 
-      costPath = new LeastCostGrid<TvmPoint>(box, lcp.dx, cost, step);
+      costPath = new LeastCostGrid<TvmCell>(cost, lcp.dx, box, step);
 
       if (lcp.bFullCalc)
       {
@@ -334,49 +334,49 @@ namespace LeastCostPathUI
       if (lcp.ssCostGrd != null)
       {
         if (startCostGrid != null)
-        { startCostGrid.Save(lcp.ssCostGrd); }
+        { DoubleGrid.Save(startCostGrid, lcp.ssCostGrd); }
         else
         { startCostGrid = DataDoubleGrid.FromBinaryFile(lcp.ssCostGrd); }
       }
       if (lcp.ssDirGrd != null)
       {
         if (startDirGrid != null)
-        { startDirGrid.Save(lcp.ssDirGrd); }
+        { IntGrid.Save(startDirGrid, lcp.ssDirGrd); }
         else
         { startDirGrid = IntGrid.FromBinaryFile(lcp.ssDirGrd); }
       }
       if (lcp.ssCostTif != null && startCostGrid != null)
       {
-        ImageGrid.GridToTif(startCostGrid.ToIntGrid() % 256, lcp.ssCostTif, r, g, b);
+        ImageGrid.GridToTif(DoubleGrid.ToIntGrid(startCostGrid) % 256, lcp.ssCostTif, r, g, b);
       }
       if (lcp.ssDirTif != null && startDirGrid != null)
       {
         // make sure that the start point cell returns a valid value for the step angle array
-        ImageGrid.GridToTif(((step[(startDirGrid - 1).Abs() % step.Count] / Math.PI + 1.0) * 128).ToIntGrid(),
+        ImageGrid.GridToTif(((step[IntGrid.Add(startDirGrid, -1).Abs() % step.Count] / Math.PI + 1.0) * 128).ToIntGrid(),
                             lcp.ssDirTif, r, g, b);
       }
       if (lcp.seCostGrd != null)
       {
         if (endCostGrid != null)
-        { endCostGrid.Save(lcp.seCostGrd); }
+        { DoubleGrid.Save(endCostGrid, lcp.seCostGrd); }
         else
         { endCostGrid = DataDoubleGrid.FromBinaryFile(lcp.seCostGrd); }
       }
       if (lcp.seDirGrd != null)
       {
         if (endDirGrid != null)
-        { endDirGrid.Save(lcp.seDirGrd); }
+        { IntGrid.Save(endDirGrid, lcp.seDirGrd); }
         else
         { endDirGrid = IntGrid.FromBinaryFile(lcp.seDirGrd); }
       }
       if (lcp.seCostTif != null && endCostGrid != null)
       {
-        ImageGrid.GridToTif(endCostGrid.ToIntGrid() % 256, lcp.seCostTif, r, g, b);
+        ImageGrid.GridToTif(DoubleGrid.ToIntGrid(endCostGrid) % 256, lcp.seCostTif, r, g, b);
       }
       if (lcp.seDirTif != null && endDirGrid != null)
       {
         // make sure that the end point cell returns a valid value for the step angle array
-        ImageGrid.GridToTif(((step[(endDirGrid - 1).Abs() % step.Count] / Math.PI + 1.0) * 128).ToIntGrid(),
+        ImageGrid.GridToTif(((step[IntGrid.Add(endDirGrid, -1).Abs() % step.Count] / Math.PI + 1.0) * 128).ToIntGrid(),
                             lcp.seDirTif, r, g, b);
       }
 
@@ -414,7 +414,7 @@ namespace LeastCostPathUI
       }
     }
 
-    private static DoubleGrid GetSum(IDoubleGrid startCostGrid, IDoubleGrid endCostGrid, GridExtent extent)
+    private static DoubleGrid GetSum(IGrid<double> startCostGrid, IGrid<double> endCostGrid, GridExtent extent)
     {
       if (extent.EqualExtent(startCostGrid.Extent) && extent.EqualExtent(endCostGrid.Extent))
       {
@@ -427,7 +427,7 @@ namespace LeastCostPathUI
         for (int iy = 0; iy < extent.Ny; iy++)
         {
           Point2D p = extent.CellLL(ix, iy);
-          sum[ix, iy] = startCostGrid.Value(p.X, p.Y, inter) + endCostGrid.Value(p.X, p.Y, inter);
+          sum[ix, iy] = DoubleGrid.Value(startCostGrid, p.X, p.Y, inter) + DoubleGrid.Value(endCostGrid, p.X, p.Y, inter);
         }
       }
       return sum;

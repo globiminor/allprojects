@@ -28,7 +28,6 @@ namespace Grid
     private double _y0;
     private double _dx;
     private double _dy;
-    private double _nn;
 
     private void Init(int nx, int ny, double x0, double y0, double dx, double dy)
     {
@@ -161,7 +160,7 @@ namespace Grid
           }
           else if (code.CompareTo("nodata_value") == 0)
           {
-            extent._nn = val;
+            extent.NN = val;
             inn = 1;
           }
         } while (inx == 0 || iny == 0 || ix0 == 0 ||
@@ -257,10 +256,7 @@ namespace Grid
     /// <summary>
     /// gets the number that shall be treated as NaN
     /// </summary>
-    public double NN
-    {
-      get { return _nn; }
-    }
+    public double NN { get; set; }
 
     public Point2D CellLL(int ix, int iy)
     {

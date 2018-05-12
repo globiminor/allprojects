@@ -5,22 +5,32 @@ namespace Grid.Lcp
 {
   public class StopHandler : ICostOptimizer
   {
-    private readonly Dictionary<IField, int[]> _stopDict;
+    private class StopInfo
+    {
+      public IField Field { get; set; }
+      public int[] Stop { get; set; }
+      public double Cost { get; set; }
+      public bool Handled { get; set; }
+    }
+    private readonly Dictionary<IField, StopInfo> _stopDict;
     private readonly double _minCellCost;
 
     private IField _startField;
-    private IField _maxFullCostField;
+    private StopInfo _maxFullCostField;
 
     public StopHandler(IList<int[]> stops, double minCellCost)
     {
-      _stopDict = new Dictionary<IField, int[]>(new FieldComparer());
+      _stopDict = new Dictionary<IField, StopInfo>(new FieldComparer());
       _minCellCost = minCellCost;
 
       foreach (int[] stop in stops)
       {
-        _stopDict[new Field { X = stop[0], Y = stop[1] }] = stop;
+        Field field = new Field { X = stop[0], Y = stop[1] };
+        _stopDict[field] = new StopInfo { Field = field, Stop = stop, Cost = -1 };
       }
     }
+
+    public double StopFactor { get; set; } = 1;
 
     public void Init(IField startField)
     {
@@ -30,36 +40,58 @@ namespace Grid.Lcp
 
     bool ICostOptimizer.Stop<T>(ICostField processField, SortedList<T, T> costList)
     {
-      bool removed = _stopDict.Remove(processField);
+      if (_stopDict.TryGetValue(processField, out StopInfo stopInfo))
+      {
+        stopInfo.Cost = processField.Cost;
+      }
+
+      if (_maxFullCostField.Cost < 0)
+      { return false; }
+
+      if (processField is IRestCostField restCostField)
+      {
+        if (restCostField.MinRestCost + processField.Cost < _maxFullCostField.Cost * StopFactor)
+        { return false; }
+        _maxFullCostField.Handled = true;
+      }
+      else
+      { _maxFullCostField.Handled = true; }
+
+      if (!_maxFullCostField.Handled)
+      { return false; }
+
+      bool removed = _stopDict.Remove(_maxFullCostField.Field);
       if (_stopDict.Count == 0)
       { return true; }
 
-      if (removed && !_stopDict.ContainsKey(_maxFullCostField))
-      {
-        _maxFullCostField = FindMaxField(_startField);
-        RefreshMinCosts(_maxFullCostField, costList);
-      }
+      _maxFullCostField = FindMaxField(_startField);
+      RefreshMinCosts(_maxFullCostField.Field, costList);
       return false;
     }
 
     bool ICostOptimizer.AdaptCost(ICostField field)
     {
-      return SetMinRestCost(field as IRestCostField, _maxFullCostField);
+      return SetMinRestCost(field as IRestCostField, _maxFullCostField.Field);
     }
 
-    private IField FindMaxField(IField startField)
+    private StopInfo FindMaxField(IField startField)
     {
       double maxDist = 0;
-      IField maxField = null;
-      foreach (IField stop in _stopDict.Keys)
+      StopInfo maxField = null;
+      foreach (var pair in _stopDict)
       {
+        StopInfo stopInfo = pair.Value;
+        if (stopInfo.Handled)
+        { continue; }
+
+        IField stop = stopInfo.Field;
         int dx = stop.X - startField.X;
         int dy = stop.Y - startField.Y;
         double dist = dx * dx + dy * dy;
         if (dist > maxDist)
         {
           maxDist = dist;
-          maxField = stop;
+          maxField = stopInfo;
         }
       }
 

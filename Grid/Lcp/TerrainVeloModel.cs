@@ -3,39 +3,59 @@ using System.Collections.Generic;
 
 namespace Grid.Lcp
 {
-  public class TerrainVeloModel : IDirCostProvider<TvmPoint>
+  public class TerrainVeloModel : IDirCostProvider<TvmCell>, ITeleportProvider
   {
     public IDoubleGrid HeightGrid { get; }
     public IGrid<double> VelocityGrid { get; }
+
+    private List<Teleport> _teleports;
 
     public TerrainVeloModel(IDoubleGrid heightGrid, IGrid<double> velocityGrid)
     {
       HeightGrid = heightGrid;
       VelocityGrid = velocityGrid;
+
+      _teleports = new List<Teleport>();
     }
+
+    public Basics.Geom.IBox Extent
+    {
+      get
+      {
+        Basics.Geom.IBox hBox = HeightGrid.Extent.Extent;
+        Basics.Geom.IBox vBox = VelocityGrid.Extent.Extent;
+
+        Basics.Geom.Box b = new Basics.Geom.Box(hBox.Min, hBox.Max);
+        Basics.Geom.IBox extent = (Basics.Geom.IBox)b.Intersection(vBox)[0];
+        return extent;
+      }
+    }
+    public List<Teleport> Teleports => _teleports;
+    IReadOnlyList<Teleport> ITeleportProvider.GetTeleports() { return _teleports; }
 
     public ITvmCalc TvmCalc { get; set; } = new TvmCalc();
 
-    public TvmPoint InitCostInfos(double tx, double ty)
+    public TvmCell InitCell(double centerX, double centerY, double cellSize)
     {
-      TvmPoint init = new TvmPoint();
-      init.Init(tx, ty, HeightGrid, VelocityGrid);
+      TvmCell init = new TvmCell();
+      init.Init(centerX, centerY, HeightGrid, VelocityGrid);
       return init;
     }
 
     public double MinUnitCost { get { return TvmCalc.MinUnitCost; } }
 
-    double IDirCostProvider.GetCost(IList<double> x, IList<double> y, IList<double> w, double distance, bool inverse)
+    double IDirCostProvider.GetCost(IList<double> x, IList<double> y, IList<double> w,
+      double cellSize, double distance, bool inverse)
     {
-      List<TvmPoint> pts = new List<TvmPoint>(x.Count);
+      List<TvmCell> pts = new List<TvmCell>(x.Count);
       for (int i = 0; i < x.Count; i++)
       {
-        pts.Add(InitCostInfos(x[i], y[i]));
+        pts.Add(InitCell(x[i], y[i], cellSize));
       }
       return GetCost(pts, w, distance, inverse);
     }
 
-    public double GetCost(IList<TvmPoint> pts, IList<double> ws, double distance, bool inverse)
+    public double GetCost(IList<TvmCell> pts, IList<double> ws, double distance, bool inverse)
     {
       double dh = pts[pts.Count - 1].Height - pts[0].Height;
       if (inverse)
@@ -97,9 +117,9 @@ namespace Grid.Lcp
 
   // performance :
   /// <summary>
-  /// Terrain-Velocity-modell point
+  /// Terrain-Velocity-modell cell
   /// </summary>
-  public class TvmPoint
+  public class TvmCell
   {
     public double Height { get; private set; }
     public double Velocity { get; private set; }

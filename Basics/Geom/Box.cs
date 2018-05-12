@@ -359,10 +359,8 @@ namespace Basics.Geom
               IPoint p2 = Point.Create(_min);
               IPoint p3 = Point.Create(_max);
               p2[i] = p3[i];
-              Box b0 = new Box(p0, p1);
-              b0._topology = Topology - 1;
-              Box b1 = new Box(p2, p3);
-              b1._topology = Topology - 1;
+              Box b0 = new Box(p0, p1) { _topology = Topology - 1 };
+              Box b1 = new Box(p2, p3) { _topology = Topology - 1 };
 
               border.Add(b0);
               border.Add(b1);

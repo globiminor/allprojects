@@ -112,7 +112,7 @@ namespace LeastCostPathUI
       chkDirImg.Checked = check;
     }
 
-    public void Export(IDoubleGrid costGrid, IntGrid dirGrid, Steps step)
+    public void Export(IGrid<double> costGrid, IGrid<int> dirGrid, Steps step)
     {
       byte[] r = new byte[256];
       byte[] g = new byte[256];
@@ -129,11 +129,11 @@ namespace LeastCostPathUI
       if (dirGrid != null)
       {
         if (DirGrid != null)
-        { dirGrid.Save(DirGrid); }
+        { IntGrid.Save(dirGrid, DirGrid); }
         if (DirImage != null)
         {
           // make sure that the start point cell returns a valid value for the step angle array
-          IntGrid angleGrid = ((step[(dirGrid - 1).Abs() % step.Count] / Math.PI + 1.0) * 128).ToIntGrid();
+          IntGrid angleGrid = ((step[IntGrid.Add(dirGrid, -1).Abs() % step.Count] / Math.PI + 1.0) * 128).ToIntGrid();
           ImageGrid.GridToTif(angleGrid, DirImage, r, g, b);
         }
       }

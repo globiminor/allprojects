@@ -44,13 +44,10 @@
       this.btnRoute = new System.Windows.Forms.Button();
       this.txtRoute = new System.Windows.Forms.TextBox();
       this.chkRoute = new System.Windows.Forms.CheckBox();
-      this.cntRoute = new LeastCostPathUI.CntOutGrid();
       this.lblPctOffset = new System.Windows.Forms.Label();
       this.lblPctSlower = new System.Windows.Forms.Label();
       this.grpTo = new System.Windows.Forms.GroupBox();
-      this.cntTo = new LeastCostPathUI.CntOutGrid();
       this.grpFrom = new System.Windows.Forms.GroupBox();
-      this.cntFrom = new LeastCostPathUI.CntOutGrid();
       this.grpExtent = new System.Windows.Forms.GroupBox();
       this.lblXMax = new System.Windows.Forms.Label();
       this.lblYMin = new System.Windows.Forms.Label();
@@ -63,16 +60,22 @@
       this.lblProgress = new System.Windows.Forms.Label();
       this.lblStep = new System.Windows.Forms.Label();
       this.ttp = new System.Windows.Forms.ToolTip(this.components);
+      this.pnlExtent = new System.Windows.Forms.Panel();
+      this.chkAuto = new System.Windows.Forms.CheckBox();
+      this.cntRoute = new LeastCostPathUI.CntOutGrid();
+      this.cntTo = new LeastCostPathUI.CntOutGrid();
+      this.cntFrom = new LeastCostPathUI.CntOutGrid();
       this.grpRoute.SuspendLayout();
       this.grpTo.SuspendLayout();
       this.grpFrom.SuspendLayout();
       this.grpExtent.SuspendLayout();
+      this.pnlExtent.SuspendLayout();
       this.SuspendLayout();
       // 
       // grpRoute
       // 
-      this.grpRoute.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                  | System.Windows.Forms.AnchorStyles.Right)));
+      this.grpRoute.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
       this.grpRoute.Controls.Add(this.lblMinOffset);
       this.grpRoute.Controls.Add(this.txtMinOffset);
       this.grpRoute.Controls.Add(this.lblSlower);
@@ -86,7 +89,7 @@
       this.grpRoute.Controls.Add(this.cntRoute);
       this.grpRoute.Controls.Add(this.lblPctOffset);
       this.grpRoute.Controls.Add(this.lblPctSlower);
-      this.grpRoute.Location = new System.Drawing.Point(3, 382);
+      this.grpRoute.Location = new System.Drawing.Point(3, 410);
       this.grpRoute.Name = "grpRoute";
       this.grpRoute.Size = new System.Drawing.Size(416, 175);
       this.grpRoute.TabIndex = 20;
@@ -141,8 +144,8 @@
       // 
       // txtRouteShp
       // 
-      this.txtRouteShp.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                  | System.Windows.Forms.AnchorStyles.Right)));
+      this.txtRouteShp.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
       this.txtRouteShp.Location = new System.Drawing.Point(143, 92);
       this.txtRouteShp.Name = "txtRouteShp";
       this.txtRouteShp.Size = new System.Drawing.Size(239, 20);
@@ -170,8 +173,8 @@
       // 
       // txtRoute
       // 
-      this.txtRoute.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                  | System.Windows.Forms.AnchorStyles.Right)));
+      this.txtRoute.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
       this.txtRoute.Location = new System.Drawing.Point(143, 118);
       this.txtRoute.Name = "txtRoute";
       this.txtRoute.Size = new System.Drawing.Size(239, 20);
@@ -186,18 +189,6 @@
       this.chkRoute.Size = new System.Drawing.Size(87, 17);
       this.chkRoute.TabIndex = 10;
       this.chkRoute.Text = "Route Image";
-      // 
-      // cntRoute
-      // 
-      this.cntRoute.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                  | System.Windows.Forms.AnchorStyles.Right)));
-      this.cntRoute.Location = new System.Drawing.Point(8, 14);
-      this.cntRoute.Name = "cntRoute";
-      this.cntRoute.ShowCoordinates = false;
-      this.cntRoute.Size = new System.Drawing.Size(400, 72);
-      this.cntRoute.TabIndex = 0;
-      this.cntRoute.X = 0;
-      this.cntRoute.Y = 0;
       // 
       // lblPctOffset
       // 
@@ -219,74 +210,43 @@
       // 
       // grpTo
       // 
-      this.grpTo.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                  | System.Windows.Forms.AnchorStyles.Right)));
+      this.grpTo.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
       this.grpTo.Controls.Add(this.cntTo);
-      this.grpTo.Location = new System.Drawing.Point(3, 236);
+      this.grpTo.Location = new System.Drawing.Point(3, 264);
       this.grpTo.Name = "grpTo";
       this.grpTo.Size = new System.Drawing.Size(416, 144);
       this.grpTo.TabIndex = 19;
       this.grpTo.TabStop = false;
       this.grpTo.Text = "To";
       // 
-      // cntTo
-      // 
-      this.cntTo.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                  | System.Windows.Forms.AnchorStyles.Right)));
-      this.cntTo.Location = new System.Drawing.Point(8, 19);
-      this.cntTo.Name = "cntTo";
-      this.cntTo.ShowCoordinates = true;
-      this.cntTo.Size = new System.Drawing.Size(400, 120);
-      this.cntTo.TabIndex = 0;
-      this.cntTo.X = 0;
-      this.cntTo.Y = 0;
-      // 
       // grpFrom
       // 
-      this.grpFrom.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                  | System.Windows.Forms.AnchorStyles.Right)));
+      this.grpFrom.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
       this.grpFrom.Controls.Add(this.cntFrom);
-      this.grpFrom.Location = new System.Drawing.Point(3, 90);
+      this.grpFrom.Location = new System.Drawing.Point(3, 118);
       this.grpFrom.Name = "grpFrom";
       this.grpFrom.Size = new System.Drawing.Size(416, 144);
       this.grpFrom.TabIndex = 18;
       this.grpFrom.TabStop = false;
       this.grpFrom.Text = "From";
       // 
-      // cntFrom
-      // 
-      this.cntFrom.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                  | System.Windows.Forms.AnchorStyles.Right)));
-      this.cntFrom.Location = new System.Drawing.Point(8, 18);
-      this.cntFrom.Name = "cntFrom";
-      this.cntFrom.ShowCoordinates = true;
-      this.cntFrom.Size = new System.Drawing.Size(400, 120);
-      this.cntFrom.TabIndex = 0;
-      this.cntFrom.X = 0;
-      this.cntFrom.Y = 0;
-      // 
       // grpExtent
       // 
-      this.grpExtent.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                  | System.Windows.Forms.AnchorStyles.Right)));
-      this.grpExtent.Controls.Add(this.lblXMax);
-      this.grpExtent.Controls.Add(this.lblYMin);
-      this.grpExtent.Controls.Add(this.lblXMin);
-      this.grpExtent.Controls.Add(this.lblYMax);
-      this.grpExtent.Controls.Add(this.txtYMin);
-      this.grpExtent.Controls.Add(this.txtXMax);
-      this.grpExtent.Controls.Add(this.txtXMin);
-      this.grpExtent.Controls.Add(this.txtYMax);
+      this.grpExtent.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.grpExtent.Controls.Add(this.pnlExtent);
       this.grpExtent.Location = new System.Drawing.Point(3, 3);
       this.grpExtent.Name = "grpExtent";
-      this.grpExtent.Size = new System.Drawing.Size(416, 85);
+      this.grpExtent.Size = new System.Drawing.Size(416, 109);
       this.grpExtent.TabIndex = 17;
       this.grpExtent.TabStop = false;
       this.grpExtent.Text = "Extent";
       // 
       // lblXMax
       // 
-      this.lblXMax.Location = new System.Drawing.Point(238, 39);
+      this.lblXMax.Location = new System.Drawing.Point(200, 28);
       this.lblXMax.Name = "lblXMax";
       this.lblXMax.Size = new System.Drawing.Size(40, 16);
       this.lblXMax.TabIndex = 12;
@@ -294,7 +254,7 @@
       // 
       // lblYMin
       // 
-      this.lblYMin.Location = new System.Drawing.Point(136, 60);
+      this.lblYMin.Location = new System.Drawing.Point(98, 49);
       this.lblYMin.Name = "lblYMin";
       this.lblYMin.Size = new System.Drawing.Size(40, 16);
       this.lblYMin.TabIndex = 11;
@@ -303,7 +263,7 @@
       // lblXMin
       // 
       this.lblXMin.AutoSize = true;
-      this.lblXMin.Location = new System.Drawing.Point(39, 39);
+      this.lblXMin.Location = new System.Drawing.Point(1, 28);
       this.lblXMin.Name = "lblXMin";
       this.lblXMin.Size = new System.Drawing.Size(33, 13);
       this.lblXMin.TabIndex = 10;
@@ -311,7 +271,7 @@
       // 
       // lblYMax
       // 
-      this.lblYMax.Location = new System.Drawing.Point(136, 18);
+      this.lblYMax.Location = new System.Drawing.Point(98, 7);
       this.lblYMax.Name = "lblYMax";
       this.lblYMax.Size = new System.Drawing.Size(40, 16);
       this.lblYMax.TabIndex = 9;
@@ -319,7 +279,7 @@
       // 
       // txtYMin
       // 
-      this.txtYMin.Location = new System.Drawing.Point(184, 57);
+      this.txtYMin.Location = new System.Drawing.Point(146, 46);
       this.txtYMin.Name = "txtYMin";
       this.txtYMin.Size = new System.Drawing.Size(104, 20);
       this.txtYMin.TabIndex = 7;
@@ -329,9 +289,9 @@
       // 
       // txtXMax
       // 
-      this.txtXMax.Location = new System.Drawing.Point(286, 36);
+      this.txtXMax.Location = new System.Drawing.Point(251, 25);
       this.txtXMax.Name = "txtXMax";
-      this.txtXMax.Size = new System.Drawing.Size(104, 20);
+      this.txtXMax.Size = new System.Drawing.Size(111, 20);
       this.txtXMax.TabIndex = 6;
       this.txtXMax.Text = "1";
       this.txtXMax.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
@@ -339,7 +299,7 @@
       // 
       // txtXMin
       // 
-      this.txtXMin.Location = new System.Drawing.Point(80, 36);
+      this.txtXMin.Location = new System.Drawing.Point(42, 25);
       this.txtXMin.Name = "txtXMin";
       this.txtXMin.Size = new System.Drawing.Size(104, 20);
       this.txtXMin.TabIndex = 5;
@@ -349,7 +309,7 @@
       // 
       // txtYMax
       // 
-      this.txtYMax.Location = new System.Drawing.Point(184, 15);
+      this.txtYMax.Location = new System.Drawing.Point(146, 5);
       this.txtYMax.Name = "txtYMax";
       this.txtYMax.Size = new System.Drawing.Size(104, 20);
       this.txtYMax.TabIndex = 4;
@@ -360,7 +320,7 @@
       // lblProgress
       // 
       this.lblProgress.AutoSize = true;
-      this.lblProgress.Location = new System.Drawing.Point(80, 564);
+      this.lblProgress.Location = new System.Drawing.Point(80, 592);
       this.lblProgress.Name = "lblProgress";
       this.lblProgress.Size = new System.Drawing.Size(60, 13);
       this.lblProgress.TabIndex = 22;
@@ -369,16 +329,82 @@
       // lblStep
       // 
       this.lblStep.AutoSize = true;
-      this.lblStep.Location = new System.Drawing.Point(8, 564);
+      this.lblStep.Location = new System.Drawing.Point(8, 592);
       this.lblStep.Name = "lblStep";
       this.lblStep.Size = new System.Drawing.Size(41, 13);
       this.lblStep.TabIndex = 21;
       this.lblStep.Text = "<Step>";
       // 
+      // pnlExtent
+      // 
+      this.pnlExtent.Controls.Add(this.lblXMin);
+      this.pnlExtent.Controls.Add(this.lblXMax);
+      this.pnlExtent.Controls.Add(this.txtYMax);
+      this.pnlExtent.Controls.Add(this.lblYMin);
+      this.pnlExtent.Controls.Add(this.txtXMin);
+      this.pnlExtent.Controls.Add(this.txtXMax);
+      this.pnlExtent.Controls.Add(this.lblYMax);
+      this.pnlExtent.Controls.Add(this.txtYMin);
+      this.pnlExtent.Location = new System.Drawing.Point(25, 35);
+      this.pnlExtent.Name = "pnlExtent";
+      this.pnlExtent.Size = new System.Drawing.Size(362, 70);
+      this.pnlExtent.TabIndex = 13;
+      // 
+      // chkAuto
+      // 
+      this.chkAuto.AutoSize = true;
+      this.chkAuto.Checked = true;
+      this.chkAuto.CheckState = System.Windows.Forms.CheckState.Checked;
+      this.chkAuto.Location = new System.Drawing.Point(11, 22);
+      this.chkAuto.Name = "chkAuto";
+      this.chkAuto.Size = new System.Drawing.Size(48, 17);
+      this.chkAuto.TabIndex = 14;
+      this.chkAuto.Text = "Auto";
+      this.ttp.SetToolTip(this.chkAuto, "Determined by From, To and Max Slower");
+      this.chkAuto.UseVisualStyleBackColor = true;
+      this.chkAuto.CheckedChanged += new System.EventHandler(this.chkAuto_CheckedChanged);
+      // 
+      // cntRoute
+      // 
+      this.cntRoute.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.cntRoute.Location = new System.Drawing.Point(8, 14);
+      this.cntRoute.Name = "cntRoute";
+      this.cntRoute.ShowCoordinates = false;
+      this.cntRoute.Size = new System.Drawing.Size(400, 72);
+      this.cntRoute.TabIndex = 0;
+      this.cntRoute.X = 0D;
+      this.cntRoute.Y = 0D;
+      // 
+      // cntTo
+      // 
+      this.cntTo.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.cntTo.Location = new System.Drawing.Point(8, 19);
+      this.cntTo.Name = "cntTo";
+      this.cntTo.ShowCoordinates = true;
+      this.cntTo.Size = new System.Drawing.Size(400, 120);
+      this.cntTo.TabIndex = 0;
+      this.cntTo.X = 0D;
+      this.cntTo.Y = 0D;
+      // 
+      // cntFrom
+      // 
+      this.cntFrom.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.cntFrom.Location = new System.Drawing.Point(8, 18);
+      this.cntFrom.Name = "cntFrom";
+      this.cntFrom.ShowCoordinates = true;
+      this.cntFrom.Size = new System.Drawing.Size(400, 120);
+      this.cntFrom.TabIndex = 0;
+      this.cntFrom.X = 0D;
+      this.cntFrom.Y = 0D;
+      // 
       // CntOutput
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+      this.Controls.Add(this.chkAuto);
       this.Controls.Add(this.lblProgress);
       this.Controls.Add(this.lblStep);
       this.Controls.Add(this.grpRoute);
@@ -386,13 +412,14 @@
       this.Controls.Add(this.grpFrom);
       this.Controls.Add(this.grpExtent);
       this.Name = "CntOutput";
-      this.Size = new System.Drawing.Size(422, 586);
+      this.Size = new System.Drawing.Size(422, 620);
       this.grpRoute.ResumeLayout(false);
       this.grpRoute.PerformLayout();
       this.grpTo.ResumeLayout(false);
       this.grpFrom.ResumeLayout(false);
       this.grpExtent.ResumeLayout(false);
-      this.grpExtent.PerformLayout();
+      this.pnlExtent.ResumeLayout(false);
+      this.pnlExtent.PerformLayout();
       this.ResumeLayout(false);
       this.PerformLayout();
 
@@ -430,5 +457,7 @@
     private System.Windows.Forms.Label lblMinOffset;
     private System.Windows.Forms.TextBox txtMinOffset;
     private System.Windows.Forms.ToolTip ttp;
+    private System.Windows.Forms.CheckBox chkAuto;
+    private System.Windows.Forms.Panel pnlExtent;
   }
 }

@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using Basics.Geom;
-using System.Collections.Generic;
+using Grid.Lcp;
 
 namespace Grid
 {
@@ -18,22 +18,22 @@ namespace Grid
     private class DoubleOpGrid : DoubleGrid
     {
       private readonly EOperator _eOperator;
-      private IDoubleGrid _dGrd0;
-      private IDoubleGrid _dGrd1;
-      private double _dOperator;
-      private IntGrid _iGrd;
+      private readonly IGrid<double> _dGrd0;
+      private readonly IGrid<double> _dGrd1;
+      private readonly double _dOperator;
+      private readonly IGrid<int> _iGrd;
 
       private double[] _dArray;
       private Func<int, int, double> _opFunc;
 
-      public DoubleOpGrid(IDoubleGrid grid, Func<int, int, double> op)
+      public DoubleOpGrid(IGrid<double> grid, Func<int, int, double> op)
         : base(grid.Extent)
       {
         _dGrd0 = grid;
         _eOperator = EOperator.none;
         _opFunc = op;
       }
-      public DoubleOpGrid(IDoubleGrid grd, double val, EOperator op)
+      public DoubleOpGrid(IGrid<double> grd, double val, EOperator op)
       : base(grd.Extent)
       {
         _dGrd0 = grd;
@@ -41,7 +41,7 @@ namespace Grid
         _eOperator = op;
       }
 
-      public DoubleOpGrid(IDoubleGrid grd0, IDoubleGrid grd1, EOperator op)
+      public DoubleOpGrid(IGrid<double> grd0, IGrid<double> grd1, EOperator op)
       : base(grd0.Extent)
       {
         _dGrd0 = grd0;
@@ -49,7 +49,7 @@ namespace Grid
         _eOperator = op;
       }
 
-      public DoubleOpGrid(double[] dArray, IntGrid grd)
+      public DoubleOpGrid(double[] dArray, IGrid<int> grd)
       : base(grd.Extent)
       {
         _dArray = dArray;
@@ -64,7 +64,12 @@ namespace Grid
         {
           // operators
           if (_eOperator == EOperator.addVal) return _dGrd0[ix, iy] + _dOperator;
-          else if (_eOperator == EOperator.addGrd) return _dGrd0[ix, iy] + _dGrd1[ix, iy];
+          else if (_eOperator == EOperator.addGrd)
+          {
+            double x = _dGrd0.Extent.X0 + ix * _dGrd0.Extent.Dx;
+            double y = _dGrd0.Extent.Y0 + iy * _dGrd0.Extent.Dy;
+            return _dGrd0[ix, iy] + _dGrd1.Value(x, y);
+          }
           else if (_eOperator == EOperator.multVal) return _dGrd0[ix, iy] * _dOperator;
           else if (_eOperator == EOperator.bracket) return _dArray[_iGrd[ix, iy]];
           else if (_eOperator == EOperator.none && _opFunc != null) return _opFunc(ix, iy);
@@ -79,20 +84,20 @@ namespace Grid
       : base(extent)
     { }
 
-    public static DoubleGrid Create(double[] dArray, IntGrid grd)
+    public static DoubleGrid Create(double[] dArray, IGrid<int> grd)
     {
       return new DoubleOpGrid(dArray, grd);
     }
 
     public static DoubleGrid operator +(DoubleGrid grd, double val)
     { return Sum(grd, val); }
-    public static DoubleGrid Sum(IDoubleGrid grd, double val)
+    public static DoubleGrid Sum(IGrid<double> grd, double val)
     {
       return new DoubleOpGrid(grd, val, EOperator.addVal);
     }
-    public static DoubleGrid operator +(DoubleGrid grd0, IDoubleGrid grd1)
+    public static DoubleGrid operator +(DoubleGrid grd0, IGrid<double> grd1)
     { return Sum(grd0, grd1); }
-    public static DoubleGrid Sum(IDoubleGrid grd0, IDoubleGrid grd1)
+    public static DoubleGrid Sum(IGrid<double> grd0, IGrid<double> grd1)
     {
       return new DoubleOpGrid(grd0, grd1, EOperator.addGrd);
     }
@@ -112,7 +117,7 @@ namespace Grid
 
     public IntGrid ToIntGrid()
     { return ToIntGrid(this); }
-    public static IntGrid ToIntGrid(IDoubleGrid grid)
+    public static IntGrid ToIntGrid(IGrid<double> grid)
     {
       return new IntGrid(grid);
     }
@@ -145,22 +150,18 @@ namespace Grid
 
     public void Save(string name)
     { Save(this, name, WriteValue); }
-    public static void Save(IDoubleGrid grid, string name)
+    public static void Save(IGrid<double> grid, string name)
     {
-      DoubleGrid g = grid as DoubleGrid;
-      if (g != null) { g.Save(name); }
+      if (grid is DoubleGrid g) { g.Save(name); }
       else
       {
         Save(grid, name, delegate (BinaryWriter writer, int ix, int iy)
         { writer.Write(grid[ix, iy]); });
       }
     }
-    private static void Save(IDoubleGrid grid, string name, Action<BinaryWriter, int, int> writeAction)
+    private static void Save(IGrid<double> grid, string name, Action<BinaryWriter, int, int> writeAction)
     {
-      short iLength;
-      double z0;
-      double dz;
-      GetStoreProps(grid, out iLength, out z0, out dz);
+      GetStoreProps(grid, out short iLength, out double z0, out double dz);
 
       using (BinaryWriter writer = new BinaryWriter(new FileStream(name, FileMode.Create)))
       {
@@ -182,10 +183,9 @@ namespace Grid
       }
     }
 
-    private static void GetStoreProps(IDoubleGrid grid, out short iLength, out double z0, out double dz)
+    private static void GetStoreProps(IGrid<double> grid, out short iLength, out double z0, out double dz)
     {
-      DoubleGrid g = grid as DoubleGrid;
-      if (g != null)
+      if (grid is DoubleGrid g)
       { g.GetStoreProps(out iLength, out z0, out dz); }
       else
       { GetDefaultStoreProps(out iLength, out z0, out dz); }
@@ -209,10 +209,7 @@ namespace Grid
 
     public Polyline GetContour(double x0, double y0)
     {
-      int ix, iy;
-      double dx, dy;
-
-      Extent.GetBilinear(x0, y0, out ix, out iy, out dx, out dy);
+      Extent.GetBilinear(x0, y0, out int ix, out int iy, out double dx, out double dy);
 
       double hContour = Value(x0, y0, EGridInterpolation.bilinear);
       if (double.IsNaN(hContour))
@@ -252,38 +249,40 @@ namespace Grid
 
     public double Value(double x, double y, EGridInterpolation eInter)
     {
+      return Value(this, x, y, eInter);
+    }
+    public static double Value(IGrid<double> grid, double x, double y, EGridInterpolation eInter)
+    {
       if (eInter == EGridInterpolation.nearest)
       {
-        return Value(x, y);
+        return grid.Value(x, y);
       }
       else if (eInter == EGridInterpolation.bilinear)
       {
-        int ix, iy;
-        double dx, dy;
         double h00, h01, h10, h11;
         double h0, h1;
 
-        Extent.GetBilinear(x, y, out ix, out iy, out dx, out dy);
+        grid.Extent.GetBilinear(x, y, out int ix, out int iy, out double dx, out double dy);
 
-        h00 = this[ix, iy];
+        h00 = grid[ix, iy];
         if (dx == 0)
         {
           if (dy == 0)
           {
             return h00;
           }
-          h01 = this[ix, iy + 1];
+          h01 = grid[ix, iy + 1];
           return h00 + (h01 - h00) * dy;
         }
         if (dy == 0)
         {
-          h10 = this[ix + 1, iy];
+          h10 = grid[ix + 1, iy];
           return h00 + (h10 - h00) * dx;
         }
 
-        h01 = this[ix, iy + 1];
-        h10 = this[ix + 1, iy];
-        h11 = this[ix + 1, iy + 1];
+        h01 = grid[ix, iy + 1];
+        h10 = grid[ix + 1, iy];
+        h11 = grid[ix + 1, iy + 1];
 
         h0 = h00 + (h10 - h00) * dx;
         h1 = h01 + (h11 - h01) * dx;
@@ -297,28 +296,34 @@ namespace Grid
 
     public double Slope2(double x, double y)
     {
-      Point3D vertical = Vertical(x, y);
-
+      return Slope2(this, x, y);
+    }
+    public static double Slope2(IGrid<double> grid, double x, double y)
+    {
+      Point3D vertical = Vertical(grid, x, y);
       return (vertical.X * vertical.X + vertical.Y * vertical.Y);
     }
 
     public Point3D Vertical(double x, double y)
     {
-      int ix, iy;
-      double dx, dy;
+      return Vertical(this, x, y);
+    }
 
-      Extent.GetBilinear(x, y, out ix, out iy, out dx, out dy);
+    public static Point3D Vertical(IGrid<double> grid, double x, double y)
+    {
+      grid.Extent.GetBilinear(x, y, out int ix, out int iy, out double dx, out double dy);
 
-      Point3D p = Vertical(ix, iy, dx, dy);
+      Point3D p = Vertical(grid, ix, iy, dx, dy);
       return p;
     }
 
-    private Point3D Vertical(int ix, int iy, double dx, double dy)
+
+    private static Point3D Vertical(IGrid<double> grid, int ix, int iy, double dx, double dy)
     {
-      double h00 = this[ix, iy];
-      double h01 = this[ix, iy + 1];
-      double h10 = this[ix + 1, iy];
-      double h11 = this[ix + 1, iy + 1];
+      double h00 = grid[ix, iy];
+      double h01 = grid[ix, iy + 1];
+      double h10 = grid[ix + 1, iy];
+      double h11 = grid[ix + 1, iy + 1];
 
       double h0 = h00 + (h10 - h00) * dx;
       double h1 = h01 + (h11 - h01) * dx;
@@ -328,8 +333,8 @@ namespace Grid
 
       double h = h0 + dhy * dy;
 
-      dhy = dhy / Extent.Dy;
-      dhx = dhx / Extent.Dx;
+      dhy = dhy / grid.Extent.Dy;
+      dhx = dhx / grid.Extent.Dx;
 
       Point3D p = new Point3D(dhx, dhy, h);
 
@@ -342,7 +347,7 @@ namespace Grid
     {
       return new DoubleOpGrid(this, delegate (int ix, int iy)
       {
-        Point3D v = Vertical(ix, iy, 0, 0);
+        Point3D v = Vertical(this, ix, iy, 0, 0);
         double s = shadeFunction(v);
         return s;
       });
@@ -369,10 +374,10 @@ namespace Grid
 
     public double Min()
     { return Min(this); }
-    public static double Min(IDoubleGrid grid)
+    public static double Min(IGrid<double> grid)
     {
       double m;
-      m = grid[0, 0];
+      m = double.MaxValue;
       for (int j = 0; j < grid.Extent.Ny; j++)
       {
         for (int i = 0; i < grid.Extent.Nx; i++)
@@ -523,14 +528,9 @@ namespace Grid
         if (ext != null)
         { return FileType.Ascii; }
 
-        short iLength;
-        int nx, ny;
-        double x0, y0, dx;
-        double z0, dz;
-        BinarGrid.EGridType eType;
 
-        BinarGrid.GetHeader(s, out nx, out ny, out eType, out iLength, out x0, out y0, out dx,
-          out z0, out dz);
+        BinarGrid.GetHeader(s, out int nx, out int ny, out BinarGrid.EGridType eType, out short iLength,
+          out double x0, out double y0, out double dx, out double z0, out double dz);
         if (nx > 0 && ny > 0 && iLength > 0)
         { return FileType.Binary; }
       }
@@ -617,16 +617,11 @@ namespace Grid
 
     public static DataDoubleGrid FromBinaryFile(FileStream file)
     {
-      short iLength;
-      int nx, ny;
-      double x0, y0, dx;
-      double z0, dz;
-      BinarGrid.EGridType eType;
       BinaryReader pReader;
       Type type;
 
-      BinarGrid.GetHeader(file, out nx, out ny, out eType, out iLength, out x0, out y0, out dx,
-        out z0, out dz);
+      BinarGrid.GetHeader(file, out int nx, out int ny, out BinarGrid.EGridType eType, out short iLength,
+        out double x0, out double y0, out double dx, out double z0, out double dz);
       if (eType != BinarGrid.EGridType.eDouble)
       {
         throw new Exception("Invalid File Type " + eType);
@@ -777,6 +772,33 @@ namespace Grid
           throw new Exception("Unhandled type " + _type);
         }
       }
+    }
+  }
+
+  public class TiledDoubleGrid : TiledGrid<double>, IDoubleGrid
+  {
+    private readonly Type _storeType;
+    public TiledDoubleGrid(int nx, int ny, Type storeType,
+      double x0, double y0, double dx)
+      : base(new GridExtent(nx, ny, x0, y0, dx))
+    {
+      _storeType = storeType;
+    }
+
+    protected override IGrid<double> CreateTile(int nx, int ny, double x0, double y0)
+    {
+      DataDoubleGrid tile = new DataDoubleGrid(nx, nx, _storeType, x0, y0, Extent.Dx);
+      return tile;
+    }
+
+    public double Value(double x, double y, EGridInterpolation interpolation)
+    {
+      return DoubleGrid.Value(this, x, y, interpolation);
+    }
+
+    public double Slope2(double x, double y)
+    {
+      return DoubleGrid.Slope2(this, x, y);
     }
   }
 }

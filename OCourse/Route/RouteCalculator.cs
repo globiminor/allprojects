@@ -320,15 +320,15 @@ namespace OCourse.Route
 
       List<IPoint> endList = new List<IPoint>();
 
-      Box box = GetBox(calcList, endList);
+      //Box box = GetBox(calcList, endList);
 
       //GridTest.LeastCostPath path = new GridTest.LeastCostPath(new GridTest.Step16(), box, resolution);
-      IDirCostProvider<TvmPoint> costProvider = new TerrainVeloModel(_heightGrid, VeloGrid)
+      IDirCostProvider<TvmCell> costProvider = new TerrainVeloModel(_heightGrid, VeloGrid)
       { TvmCalc = _tvmCalc };
-      LeastCostGrid<TvmPoint> path = new LeastCostGrid<TvmPoint>(box, resolution, costProvider, Steps);
+      LeastCostGrid<TvmCell> path = new LeastCostGrid<TvmCell>(costProvider, resolution, steps: Steps); // box: box);
       path.Status += RouteCalc_Status;
 
-      path.CalcCost(calcList[0].Start, endList, out DataDoubleGrid costGrid, out IntGrid dirGrid);
+      path.CalcCost(calcList[0].Start, endList, out IGrid<double> costGrid, out IGrid<int> dirGrid);
       List<CostFromTo> result = new List<CostFromTo>();
       foreach (CostFromTo routeCost in calcList)
       {
@@ -413,17 +413,16 @@ namespace OCourse.Route
 
       OnStatusChanged(section + " : ");
 
-      double l = Math.Sqrt(PointOperator.Dist2(start, end)) / 2.0;
-      Box box = GetBox(start, end, l + 200);
-
+      double l = Math.Sqrt(PointOperator.Dist2(start, end));
+      // Box box = GetBox(start, end, l / 2 + 200);
 
       TerrainVeloModel costProvider = GetTerrainVeloModel();
-      LeastCostGrid<TvmPoint> path = new LeastCostGrid<TvmPoint>(box, resol, costProvider, _steps);
+      LeastCostGrid<TvmCell> path = new LeastCostGrid<TvmCell>(costProvider, resol, steps: _steps); // box: box);
       path.Status += Path_Status;
 
 
       DateTime t0 = DateTime.Now;
-      path.CalcCost(start, end, out DataDoubleGrid costGrid, out IntGrid dirGrid);
+      path.CalcCost(start, end, out IGrid<double> costGrid, out IGrid<int> dirGrid);
 
       DateTime t1 = DateTime.Now;
       TimeSpan dt = t1 - t0;
@@ -433,7 +432,7 @@ namespace OCourse.Route
 
       OnStatusChanged(null);
 
-      routeCost = new CostFromTo(from, to, start, end, resol, l * 2, dh, route, length, cost);
+      routeCost = new CostFromTo(from, to, start, end, resol, l, dh, route, length, cost);
       if (_calcList.TryGetValue(routeCost, out existingInfo) == false)
       { _calcList.Add(routeCost, routeCost); }
       else
@@ -443,7 +442,7 @@ namespace OCourse.Route
 
     //private Polyline GetRoute(GridTest.LeastCostPath path, 
     private Polyline GetRoute(Steps steps,
-      IntGrid dir, IDoubleGrid costGrid, IPoint start, IPoint end, out double climb, out double optimal)
+      IGrid<int> dir, IGrid<double> costGrid, IPoint start, IPoint end, out double climb, out double optimal)
     {
       Polyline line = LeastCostGrid.GetPath(dir, steps, costGrid, end);
 

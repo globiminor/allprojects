@@ -12,7 +12,7 @@ namespace LeastCostPathUI
 {
   public partial class CntOutput : UserControl
   {
-    private LeastCostGrid<TvmPoint> _costPath;
+    private LeastCostGrid<TvmCell> _costPath;
     private bool _cancelled;
     private bool _disposed;
 
@@ -20,6 +20,8 @@ namespace LeastCostPathUI
     {
       InitializeComponent();
       cntRoute.CheckCostImage(true);
+
+      UpdateExtentEnabled();
     }
 
     public void SetExtent(IBox box)
@@ -60,16 +62,16 @@ namespace LeastCostPathUI
     private IDoubleGrid _grdHeight;
     private string _grdVelo;
 
-    private IDoubleGrid _fromCost;
-    private IntGrid _fromDir;
+    private IGrid<double> _fromCost;
+    private IGrid<int> _fromDir;
 
-    private IDoubleGrid _toCost;
-    private IntGrid _toDir;
+    private IGrid<double> _toCost;
+    private IGrid<int> _toDir;
 
     private Point2D _from;
     private Point2D _to;
 
-    public void Calc(IDirCostProvider<TvmPoint> provider,
+    public void Calc(IDirCostProvider<TvmCell> provider,
       IDoubleGrid grHeight, string grVelo, double resolution, Steps step, ThreadStart resetDlg)
     {
       _cancelled = false;
@@ -100,10 +102,12 @@ namespace LeastCostPathUI
         txtXMax.Text = dX1.ToString();
       }
 
-      Box box = new Box(new Point2D(dX0, dY0), new Point2D(dX1, dY1));
+      Box box = chkAuto.Checked
+        ? null
+        : new Box(new Point2D(dX0, dY0), new Point2D(dX1, dY1));
 
-      IDirCostProvider<TvmPoint> costProvider = provider;
-      LeastCostGrid<TvmPoint> costPath = new LeastCostGrid<TvmPoint>(box, dResol, costProvider, step);
+      IDirCostProvider<TvmCell> costProvider = provider;
+      LeastCostGrid<TvmCell> costPath = new LeastCostGrid<TvmCell>(costProvider, dResol, box, step);
 
       if (!costPath.EqualSettings(_costPath) ||
         grVelo != _grdVelo || grHeight != _grdHeight)
@@ -133,7 +137,7 @@ namespace LeastCostPathUI
       }
 
       CalcCostWorker worker = new CalcCostWorker(this, costPath, grHeight, from, to, _costPath.Steps,
-        chkRoute.Checked || chkRouteShp.Checked, lengthFact, offset, resetDlg);
+        chkAuto.Checked, chkRoute.Checked || chkRouteShp.Checked, lengthFact, offset, resetDlg);
 
       Enable(false);
       BackgroundWorker bgWorker = new BackgroundWorker(this, worker);
@@ -143,7 +147,7 @@ namespace LeastCostPathUI
     private class CalcCostWorker : IWorker
     {
       private readonly CntOutput _parent;
-      private readonly LeastCostGrid<TvmPoint> _costPath;
+      private readonly LeastCostGrid<TvmCell> _costPath;
       private readonly IDoubleGrid _grHeight;
       private readonly Point2D _from;
       private readonly Point2D _to;
@@ -151,14 +155,15 @@ namespace LeastCostPathUI
       private readonly bool _calcRoute;
       private readonly double _lengthFact;
       private readonly double _offset;
+      private readonly bool _autoExtent;
       private readonly ThreadStart _resetDlg;
 
       private DoubleGrid _sum;
       private DoubleGrid _route;
       private RouteTable _routes;
 
-      public CalcCostWorker(CntOutput parent, LeastCostGrid<TvmPoint> costPath,
-        IDoubleGrid grHeight, Point2D from, Point2D to, Steps step,
+      public CalcCostWorker(CntOutput parent, LeastCostGrid<TvmCell> costPath,
+        IDoubleGrid grHeight, Point2D from, Point2D to, Steps step, bool autoExtent,
         bool calcRoute, double lengthFact, double offset, ThreadStart resetDlg)
       {
         _parent = parent;
@@ -167,6 +172,7 @@ namespace LeastCostPathUI
         _from = from;
         _to = to;
         _step = step;
+        _autoExtent = autoExtent;
         _calcRoute = calcRoute;
         _lengthFact = lengthFact;
         _offset = offset;
@@ -189,7 +195,20 @@ namespace LeastCostPathUI
         _parent.SetStepLabel(this, "FROM:");
         if (_parent._from == null || _from.Dist2(_parent._from) != 0 || _parent._fromCost == null)
         {
-          _costPath.CalcCost(_from, out DataDoubleGrid cost, out IntGrid dir, false);
+          IGrid<double> cost;
+          IGrid<int> dir;
+          if (_autoExtent)
+          {
+            _costPath.CalcCost(_from, new[] { _to }, out IGrid<double> allCost, out IGrid<int> allDir, 
+              invers: false, stopFactor: _lengthFact);
+            cost = BaseGrid.TryReduce(allCost);
+            dir = BaseGrid.TryReduce(allDir);
+            LeastCostGrid.SetUndefinedCells(cost, dir, double.NaN);
+          }
+          else
+          {
+            _costPath.CalcCost(_from, out cost, out dir, false);
+          }
           _parent._fromCost = cost;
           _parent._fromDir = dir;
           _parent._from = _from;
@@ -203,13 +222,27 @@ namespace LeastCostPathUI
         _parent.SetStepLabel(this, "TO:");
         if (_parent._to == null || _to.Dist2(_parent._to) != 0 || _parent._toCost == null)
         {
-          _costPath.CalcCost(_to, out DataDoubleGrid cost, out IntGrid dir, true);
+          IGrid<double> cost;
+          IGrid<int> dir;
+          if (_autoExtent)
+          {
+            _costPath.CalcCost(_to, new[] { _from }, out IGrid<double> allCost, out IGrid<int> allDir,
+              invers: true, stopFactor: _lengthFact);
+            cost = BaseGrid.TryReduce(allCost);
+            dir = BaseGrid.TryReduce(allDir);
+            LeastCostGrid.SetUndefinedCells(cost, dir, double.NaN);
+          }
+          else
+          {
+            _costPath.CalcCost(_to, out cost, out dir, true);
+          }
+
           _parent._toCost = cost;
           _parent._toDir = dir;
           _parent._to = _to;
         }
 
-        Steps.ReverseEngineer(_parent._toDir, _parent._toCost);
+        //Steps.ReverseEngineer(_parent._toDir, _parent._toCost);
 
         _parent.SetStepLabel(this, "SUM:");
         _parent.CostPath_Status(this, new StatusEventArgs(null, null, 0, 0, 0, 0));
@@ -294,6 +327,11 @@ namespace LeastCostPathUI
       }
     }
 
+    private void UpdateExtentEnabled()
+    {
+      pnlExtent.Enabled = !chkAuto.Checked;
+    }
+
     void CostPath_Status(object sender, StatusEventArgs args)
     {
       if (InvokeRequired)
@@ -317,7 +355,8 @@ namespace LeastCostPathUI
         {
           if (args.TotalStep > 0)
           {
-            lblProgress.Text = string.Format("Step {0:N0} of {1:N0}", args.CurrentStep, args.TotalStep);
+            string max = chkAuto.Checked ? "(max)" : string.Empty;
+            lblProgress.Text = $"Step {args.CurrentStep:N0} of {max}{args.TotalStep:N0}";
           }
           else
           {
@@ -362,6 +401,11 @@ namespace LeastCostPathUI
         txtRouteShp.Text = cntRoute.dlgSave.FileName;
         cntRoute.Synchrone(txtRouteShp);
       }
+    }
+
+    private void chkAuto_CheckedChanged(object sender, EventArgs e)
+    {
+      UpdateExtentEnabled();
     }
   }
 }

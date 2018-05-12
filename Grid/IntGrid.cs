@@ -1,53 +1,60 @@
 using System;
 using System.IO;
+using Grid.Lcp;
 
 namespace Grid
 {
   /// <summary>
   /// Integer Grid
   /// </summary>
-  public class IntGrid : BaseGrid<int>
+  public class IntGrid : BaseGrid<int>, IGridStoreType
   {
     private Type _type;
-    private short _iLength;
     private Array _value;
 
-    private IntGrid _iGrid;
+    private IGrid<int> _iGrid;
     private int _operator;
     private EOperator _eOperator;
-    private IDoubleGrid _dGrid;
+    private IGrid<double> _dGrid;
 
 
     #region operators
 
-    internal IntGrid(IDoubleGrid grd)
+    internal IntGrid(IGrid<double> grd)
       : base(grd.Extent)
     {
       _dGrid = grd;
       _eOperator = EOperator.none;
     }
 
-    private IntGrid(IntGrid grd, int val, EOperator op)
+    private IntGrid(IGrid<int> grd, int val, EOperator op)
       : base(grd.Extent)
     {
       _iGrid = grd;
       _operator = val;
       _eOperator = op;
     }
+    Type IGridStoreType.StoreType { get { return _type; } }
 
     public static IntGrid operator -(IntGrid grd, int val)
+    { return Add(grd, -val); }
+    public static IntGrid Add(IGrid<int> grd, int val)
     {
-      return new IntGrid(grd, -val, EOperator.addVal);
+      return new IntGrid(grd, val, EOperator.addVal);
     }
 
     public static IntGrid operator %(IntGrid grd, int mod)
+    { return Mod(grd, mod); }
+    public static IntGrid Mod(IGrid<int> grd, int mod)
     {
-      return new IntGrid(grd, mod, EOperator.gridModVal);
+        return new IntGrid(grd, mod, EOperator.gridModVal);
     }
 
     public IntGrid Abs()
+    { return Abs(this); }
+    public static IntGrid Abs(IGrid<int> grid)
     {
-      return new IntGrid(this, 0, EOperator.abs);
+      return new IntGrid(grid, 0, EOperator.abs);
     }
 
     #endregion
@@ -58,17 +65,24 @@ namespace Grid
       double x0, double y0, double dx)
       : base(new GridExtent(nx, ny, x0, y0, dx))
     {
-      if (type == typeof(sbyte) || type == typeof(byte))
-      { _iLength = 1; }
-      else if (type == typeof(short))
-      { _iLength = 2; }
-      else if (type == typeof(int))
-      { _iLength = 4; }
-      else
-      { throw new ArgumentException("Invalid Type " + type); }
 
       _value = Array.CreateInstance(type, new int[] { nx, ny });
       _type = type;
+    }
+
+    private static short GetStoreLength(Type type)
+    {
+      short storeLength;
+      if (type == typeof(sbyte) || type == typeof(byte))
+      { storeLength = 1; }
+      else if (type == typeof(short))
+      { storeLength = 2; }
+      else if (type == typeof(int))
+      { storeLength = 4; }
+      else
+      { throw new ArgumentException("Invalid Type " + type); }
+
+      return storeLength;
     }
 
     public static IntGrid FromBinaryFile(string name)
@@ -123,27 +137,34 @@ namespace Grid
 
     public void Save(string name)
     {
+      Save(this, name, _type);
+    }
+
+    public static void Save(IGrid<int> grid, string name, Type type = null)
+    {
+      type = type ?? (grid as IGridStoreType)?.StoreType ?? typeof(int);
+      short storeLength = GetStoreLength(type);
       BinaryWriter pWriter = new BinaryWriter(new FileStream(name, FileMode.Create));
-      BinarGrid.PutHeader(pWriter.BaseStream, Extent.Nx, Extent.Ny,
-        BinarGrid.EGridType.eInt, _iLength, Extent.X0, Extent.Y0, Extent.Dx,
+      BinarGrid.PutHeader(pWriter.BaseStream, grid.Extent.Nx, grid.Extent.Ny,
+        BinarGrid.EGridType.eInt, storeLength, grid.Extent.X0, grid.Extent.Y0, grid.Extent.Dx,
         0, 0);
       pWriter.Seek(BinarGrid.START_DATA, SeekOrigin.Begin);
 
-      int nx = Extent.Nx;
-      int ny = Extent.Ny;
+      int nx = grid.Extent.Nx;
+      int ny = grid.Extent.Ny;
       for (int iy = 0; iy < ny; iy++)
       {
         for (int ix = 0; ix < nx; ix++)
         {
-          if (_type == typeof(sbyte))
-          { pWriter.Write(Convert.ToSByte(_value.GetValue(ix, iy))); }
-          else if (_type == typeof(byte))
-          { pWriter.Write(Convert.ToByte(_value.GetValue(ix, iy))); }
-          else if (_type == typeof(short))
-          { pWriter.Write(Convert.ToInt16(_value.GetValue(ix, iy))); }
-          else if (_type == typeof(int))
-          { pWriter.Write(Convert.ToInt32(_value.GetValue(ix, iy))); }
-          else throw new Exception("Unhandled Type " + _type);
+          if (type == typeof(sbyte))
+          { pWriter.Write(Convert.ToSByte(grid[ix, iy])); }
+          else if (type == typeof(byte))
+          { pWriter.Write(Convert.ToByte(grid[ix, iy])); }
+          else if (type == typeof(short))
+          { pWriter.Write(Convert.ToInt16(grid[ix, iy])); }
+          else if (type == typeof(int))
+          { pWriter.Write(Convert.ToInt32(grid[ix, iy])); }
+          else throw new Exception("Unhandled Type " + type);
         }
       }
       pWriter.Close();
@@ -169,6 +190,25 @@ namespace Grid
       {
         _value.SetValue(Convert.ChangeType(value, _type), ix, iy);
       }
+    }
+  }
+
+  public class TiledIntGrid : TiledGrid<int>, IGridStoreType
+  {
+    private readonly Type _storeType;
+
+    public TiledIntGrid(int nx, int ny, Type storeType, 
+      double x0, double y0, double dx)
+      : base(new GridExtent(nx, ny, x0, y0, dx))
+    {
+      _storeType = storeType;
+    }
+    Type IGridStoreType.StoreType => _storeType;
+
+    protected override IGrid<int> CreateTile(int nx, int ny, double x0, double y0)
+    {
+      IntGrid tile = new IntGrid(nx, ny, _storeType, x0, y0, Extent.Dx);
+      return tile;
     }
   }
 }
