@@ -8,115 +8,115 @@ namespace TData
 	/// </summary>
   public class DynCell
   {
-    private double mValX0,mValX1;
-    private double mValY0,mValY1;
-    private double mValCenter;
-    private bool mbX0,mbX1;
-    private bool mbY0,mbY1;
-    private bool mbCenter;
+    private double _valX0,_valX1;
+    private double _valY0,_valY1;
+    private double _valCenter;
+    private bool _bX0,_bX1;
+    private bool _bY0,_bY1;
+    private bool _bCenter;
 
-    private DynCell[,] mChild = new DynCell[2,2];
-    private DynCell mParent;
-    private DynGrid mGrid;
+    private DynCell[,] _child = new DynCell[2,2];
+    private DynCell _parent;
+    private DynGrid _grid;
 
     internal DynCell(DynGrid grid)
     {
-      mGrid = grid;
+      _grid = grid;
     }
     internal DynCell(DynCell parent)
     {
-      mParent = parent;
-      mGrid = parent.mGrid;
+      _parent = parent;
+      _grid = parent._grid;
     }
     public DynCell[,] Cell
     {
       get
-      { return mChild; }
+      { return _child; }
     }
     public double ValueX0
     {
       get
-      { return mValX0; }
+      { return _valX0; }
       set
       {
-        mValX0 = value;
-        mbX0 = true;
+        _valX0 = value;
+        _bX0 = true;
       }
     }
     public double ValueX1
     {
       get
-      { return mValX1; }
+      { return _valX1; }
       set
       {
-        mValX1 = value;
-        mbX1 = true;
+        _valX1 = value;
+        _bX1 = true;
       }
     }
     public double ValueY0
     {
       get
-      { return mValY0; }
+      { return _valY0; }
       set
       {
-        mValY0 = value;
-        mbY0 = true;
+        _valY0 = value;
+        _bY0 = true;
       }
     }
     public double ValueY1
     {
       get
-      { return mValY1; }
+      { return _valY1; }
       set
       {
-        mValY1 = value;
-        mbY1 = true;
+        _valY1 = value;
+        _bY1 = true;
       }
     }
     public double ValueCenter
     {
       get
-      { return mValCenter; }
+      { return _valCenter; }
       set
       {
-        mValCenter = value;
-        mbCenter = true;
+        _valCenter = value;
+        _bCenter = true;
       }
     }
     public bool IsX0Set
     {
       get
-      { return mbX0; }
+      { return _bX0; }
       set
-      { mbX0 = value; }
+      { _bX0 = value; }
     }
     public bool IsX1Set
     {
       get
-      { return mbX1; }
+      { return _bX1; }
       set
-      { mbX1 = value; }
+      { _bX1 = value; }
     }
     public bool IsY0Set
     {
       get
-      { return mbY0; }
+      { return _bY0; }
       set
-      { mbY0 = value; }
+      { _bY0 = value; }
     }
     public bool IsY1Set
     {
       get
-      { return mbY1; }
+      { return _bY1; }
       set
-      { mbY1 = value; }
+      { _bY1 = value; }
     }
     public bool IsCenterSet
     {
       get
-      { return mbCenter; }
+      { return _bCenter; }
       set
-      { mbCenter = value; }
+      { _bCenter = value; }
     }
 
     public double GetValue(ref double x,ref double y,double[,] val,out bool isSet)
@@ -133,11 +133,11 @@ namespace TData
       // Aufloesung von x,y verdoppeln : (x - ix * 0.5) * 2, ...
       x += x - ix;
       y += y - iy;
-      if (mChild[ix,iy] != null)
+      if (_child[ix,iy] != null)
       { 
         int bx = (x >= 0.5) ? 1 : 0;
         int by = (y >= 0.5) ? 1 : 0;
-        double res = mChild[ix,iy].GetValue(ref x,ref y,val,out isSet);
+        double res = _child[ix,iy].GetValue(ref x,ref y,val,out isSet);
         if (isSet)
         { return res; }
         int cx = ix + bx;
@@ -169,23 +169,23 @@ namespace TData
       if (ix == 0)
       {
         if (iy == 1)
-        { return mValX0; }
+        { return _valX0; }
         else
         { return 0; }
       }
       else if (ix == 1)
       {
         if (iy == 0)
-        { return mValY0; }
+        { return _valY0; }
         else if (iy == 1)
-        { return mValCenter; }
+        { return _valCenter; }
         else 
-        { return mValY1 ; }
+        { return _valY1 ; }
       }
       else
       {
         if (iy == 1)
-        { return mValX1; }
+        { return _valX1; }
         else
         { return 0; }
       }

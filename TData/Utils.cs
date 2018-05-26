@@ -294,8 +294,7 @@ namespace TData
       foreach (DataRelation relation in topRelations)
       {
         DataTable tbl = relation.ParentTable;
-        DataTable clone;
-        if (clones.TryGetValue(tbl.TableName, out clone) == false)
+        if (clones.TryGetValue(tbl.TableName, out DataTable clone) == false)
         {
           clone = tbl.Copy();
           clones.Add(clone.TableName, clone);
@@ -462,8 +461,7 @@ namespace TData
     private static void GetTables(DataTable table, DataRelation parentRelation,
                                   Dictionary<DataTable, TableInfo> tables, int hierarchy)
     {
-      TableInfo h;
-      if (tables.TryGetValue(table, out h) == false)
+      if (tables.TryGetValue(table, out TableInfo h) == false)
       { tables.Add(table, new TableInfo(table, hierarchy, parentRelation)); }
       else
       {

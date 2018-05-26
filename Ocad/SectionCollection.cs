@@ -37,8 +37,7 @@ namespace Ocad
         if (x == null && y == null)
         { return true; }
 
-        Control cx = x as Control;
-        if (cx != null)
+        if (x is Control cx)
         {
           Control cy = y as Control;
           if (cy == null)
@@ -71,15 +70,13 @@ namespace Ocad
         {
           code = ((Control)section).Name.GetHashCode();
         }
-        else if (section is SplitSection)
+        else if (section is SplitSection split)
         {
-          SplitSection split = (SplitSection)section;
           code = 41 * GetHashCode((ISection)split.Branches[0]);
         }
-        else if (section is SplitSection.Branch)
+        else if (section is SplitSection.Branch splitBranch)
         {
-          SplitSection.Branch split = (SplitSection.Branch)section;
-          code = 61 * GetHashCode((ISection)split.First.Value);
+          code = 61 * GetHashCode(splitBranch.First.Value);
         }
         else
         {
@@ -140,9 +137,8 @@ namespace Ocad
       {
         if (txt.Length > 0)
         { txt.Append("-"); }
-        if (section is Control)
+        if (section is Control cntr)
         {
-          Control cntr = (Control)section;
           txt.Append(cntr.Name);
         }
         else if (section is Fork)
@@ -276,8 +272,7 @@ namespace Ocad
     private Control GetDummyControl(Dictionary<ISection, Control> dummies, ISection key,
       string prefix)
     {
-      Control dummy;
-      if (dummies.TryGetValue(key, out dummy) == false)
+      if (dummies.TryGetValue(key, out Control dummy) == false)
       {
         dummy = new Control();
         int iDummy = dummies.Count + 1;
@@ -341,9 +336,8 @@ namespace Ocad
     {
       for (LinkedListNode<ISection> node = nextNode; node != null; node = node.Next)
       {
-        if (node.Value is Control)
+        if (node.Value is Control next)
         {
-          Control next = (Control)node.Value;
           if (pre != null)
           {
             SimpleSection section = new SimpleSection(pre, next);
@@ -352,18 +346,16 @@ namespace Ocad
           }
           pre = next;
         }
-        else if (node.Value is Variation)
+        else if (node.Value is Variation v)
         {
-          Variation v = (Variation)node.Value;
           int iBranch = v.GetBranchIndex(leg + 1);
           Variation.Branch b = (Variation.Branch)v.Branches[iBranch];
           int ix = b.Legs.IndexOf(leg + 1);
           string legsWhere = b.GetWhere();
           AppendSections(list, ref pre, b.First, leg, ix, legsWhere);
         }
-        else if (node.Value is Fork)
+        else if (node.Value is Fork f)
         {
-          Fork f = (Fork)node.Value;
           SplitSection.Branch b = f.Branches[branch];
           AppendSections(list, ref pre, b.First, leg, -1, where);
         }
@@ -410,10 +402,10 @@ namespace Ocad
       {
         if (node.Value is Control)
         { continue; }
-        else if (node.Value is Fork)
+        else if (node.Value is Fork fork)
         {
+
           #region fork
-          Fork fork = (Fork)node.Value;
 
           if (node.Previous == null || node.Previous.Value is Control)
           {
@@ -424,11 +416,10 @@ namespace Ocad
               add = (char)(add + 1);
             }
           }
-          else if (node.Previous.Value is Fork)
+          else if (node.Previous.Value is Fork preFork)
           {
-            #region fork - fork
 
-            Fork preFork = (Fork)node.Previous.Value;
+            #region fork - fork
 
             char lastComb = pre[pre.Length - 1];
             List<string> validCombs = new List<string>();
@@ -495,10 +486,9 @@ namespace Ocad
             }
             #endregion fork - fork
           }
-          else if (node.Previous.Value is Variation)
+          else if (node.Previous.Value is Variation preVar)
           {
             #region variation-fork
-            Variation preVar = (Variation)node.Previous.Value;
             int preVarIndex = preVar.GetBranchIndex(leg);
 
             Variation.Branch preBranch = (Variation.Branch)preVar.GetExplicitBranch(preVarIndex);
@@ -575,11 +565,9 @@ namespace Ocad
 
           #endregion fork
         }
-        else if (node.Value is Variation)
+        else if (node.Value is Variation var)
         {
           #region variation
-
-          Variation var = (Variation)node.Value;
           Variation.Branch branch = var.GetBranch(leg);
           if (node.Previous == null || node.Previous.Value is Control
             || node.Previous.Value is Variation)
@@ -667,9 +655,8 @@ namespace Ocad
     {
       foreach (ISection section in this)
       {
-        if (section is SplitSection)
+        if (section is SplitSection split)
         {
-          SplitSection split = (SplitSection)section;
           return split.LegCount();
         }
       }
@@ -685,9 +672,8 @@ namespace Ocad
       _parent = parent;
       for (LinkedListNode<ISection> node = First; node != null; node = node.Next)
       {
-        if (node.Value is SplitSection)
+        if (node.Value is SplitSection split)
         {
-          SplitSection split = (SplitSection)node.Value;
           foreach (SplitSection.Branch branch in split.Branches)
           {
             branch.SetParentRecursive(node);
@@ -700,9 +686,8 @@ namespace Ocad
     {
       for (LinkedListNode<ISection> node = First; node != null; node = node.Next)
       {
-        if (node.Value is SplitSection)
+        if (node.Value is SplitSection split)
         {
-          SplitSection split = (SplitSection)node.Value;
           if (node.Previous != null && node.Previous.Value is Control)
           {
             foreach (SplitSection.Branch branch in split.Branches)
@@ -732,9 +717,8 @@ namespace Ocad
               branch.Analyse();
             }
           }
-          else if (this is Variation.Branch)
+          else if (this is Variation.Branch var)
           {
-            Variation.Branch var = (Variation.Branch)this;
             for (int iBranch = 0; iBranch < var.Legs.Count; iBranch++)
             {
             }
@@ -756,10 +740,8 @@ namespace Ocad
       // empty Branch, get control from next Section
       for (LinkedListNode<ISection> node = First; node != null; node = node.Next)
       {
-        if (node.Value is SplitSection)
+        if (node.Value is SplitSection split)
         {
-          SplitSection split = (SplitSection)node.Value;
-
           int iPosBranch = 0;
           for (int iBranch = 0; iBranch < split.Branches.Count; iBranch++)
           {
@@ -803,10 +785,8 @@ namespace Ocad
       // empty Branch, get control from next Section
       for (LinkedListNode<ISection> node = First; node != null; node = node.Next)
       {
-        if (node.Value is SplitSection)
+        if (node.Value is SplitSection split)
         {
-          SplitSection split = (SplitSection)node.Value;
-
           for (int iBranch = 0; iBranch < split.Branches.Count; iBranch++)
           {
             if (split.Branches[iBranch] == branch)
@@ -851,10 +831,8 @@ namespace Ocad
       // empty Branch, get control from next Section
       for (LinkedListNode<ISection> node = First; node != null; node = node.Next)
       {
-        if (node.Value is SplitSection)
+        if (node.Value is SplitSection split)
         {
-          SplitSection split = (SplitSection)node.Value;
-
           for (int iBranch = 0; iBranch < split.Branches.Count; iBranch++)
           {
             if (split.Branches[iBranch] == branch)
@@ -907,9 +885,8 @@ namespace Ocad
     {
       for (LinkedListNode<ISection> node = First; node != null; node = node.Next)
       {
-        if (node.Value is SplitSection)
+        if (node.Value is SplitSection split)
         {
-          SplitSection split = (SplitSection)node.Value;
           foreach (SplitSection.Branch branch in split.Branches)
           {
             if (branch == part)
@@ -938,9 +915,8 @@ namespace Ocad
           { return LastControls(node.Previous); }
         }
 
-        if (node.Value is SplitSection)
+        if (node.Value is SplitSection split)
         {
-          SplitSection split = (SplitSection)node.Value;
           foreach (SplitSection.Branch branch in split.Branches)
           {
             IList<Control> list = branch.PreviousControls(section);
@@ -965,9 +941,8 @@ namespace Ocad
       { return new Control[] { (Control)node.Value }; }
 
       List<Control> list = new List<Control>();
-      if (node.Value is SplitSection)
+      if (node.Value is SplitSection split)
       {
-        SplitSection split = (SplitSection)node.Value;
         foreach (SplitSection.Branch branch in split.Branches)
         {
           if (branch.Count > 0)
@@ -989,9 +964,8 @@ namespace Ocad
           { return FirstControls(node.Next); }
         }
 
-        if (node.Value is SplitSection)
+        if (node.Value is SplitSection split)
         {
-          SplitSection split = (SplitSection)node.Value;
           foreach (SplitSection.Branch branch in split.Branches)
           {
             IList<Control> list = branch.NextControls(section);
@@ -1011,9 +985,8 @@ namespace Ocad
     {
       for (LinkedListNode<ISection> node = First; node != null; node = node.Next)
       {
-        if (node.Value is SplitSection)
+        if (node.Value is SplitSection split)
         {
-          SplitSection split = (SplitSection)node.Value;
           foreach (SplitSection.Branch branch in split.Branches)
           {
             if (branch == part)
@@ -1042,9 +1015,8 @@ namespace Ocad
       { return new Control[] { (Control)node.Value }; }
 
       List<Control> list = new List<Control>();
-      if (node.Value is SplitSection)
+      if (node.Value is SplitSection split)
       {
-        SplitSection split = (SplitSection)node.Value;
         foreach (SplitSection.Branch branch in split.Branches)
         {
           if (branch.Count > 0)

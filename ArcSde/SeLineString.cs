@@ -50,8 +50,7 @@ namespace ArcSde
 
     public bool IsSimple()
     {
-      IntPtr pSeGeom1;
-      CApi.SE_shape_create(IntPtr.Zero, out pSeGeom1);
+      CApi.SE_shape_create(IntPtr.Zero, out IntPtr pSeGeom1);
       bool bReturn;
 
       try
@@ -67,8 +66,7 @@ namespace ArcSde
         }
         else
         {
-          int nParts, nSubParts;
-          CApi.SE_shape_get_num_parts(pSeGeom1, out nParts, out nSubParts);
+          CApi.SE_shape_get_num_parts(pSeGeom1, out int nParts, out int nSubParts);
 
           bReturn = (nParts == 1);
         }

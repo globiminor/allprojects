@@ -49,8 +49,7 @@ namespace Basics.Views
         if (_objectDict == null)
         { _objectDict = new Dictionary<int, Cache>(); }
 
-        Cache value;
-        if (!_objectDict.TryGetValue(index, out value))
+        if (!_objectDict.TryGetValue(index, out Cache value))
         {
           value = LoadData(index, _objectDict);
         }

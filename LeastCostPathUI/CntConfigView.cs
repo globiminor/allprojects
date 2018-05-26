@@ -58,6 +58,14 @@ namespace LeastCostPathUI
 
         if (notBound)
         {
+          optHeightVelo.Bind(x => x.Checked, _bindingSource, nameof(_vm.TerrainVeloModel),
+            false, DataSourceUpdateMode.OnPropertyChanged);
+          pnlTerrainVelo.Bind(x => x.Visible, _bindingSource, nameof(_vm.TerrainVeloModel), 
+            false, DataSourceUpdateMode.Never);
+
+          optMultiLayer.Bind(x => x.Checked, _bindingSource, nameof(_vm.MultiLayerModel),
+            false, DataSourceUpdateMode.OnPropertyChanged);
+
           txtHeight.Bind(x => x.Text, _bindingSource, nameof(_vm.HeightPath),
             true, DataSourceUpdateMode.OnPropertyChanged);
 

@@ -12,18 +12,18 @@ namespace TMapWin
     private System.Windows.Forms.TreeNode _dragNode;
     private System.Windows.Forms.TreeNode _dragBefore;
     // designer variables
-    private System.Windows.Forms.TreeView treData;
+    private System.Windows.Forms.TreeView _treData;
     /// <summary> 
     /// Required designer variable.
     /// </summary>
-    private System.ComponentModel.Container components = null;
+    private System.ComponentModel.Container _components = null;
 
     public CntToc()
     {
       // This call is required by the Windows.Forms Form Designer.
       InitializeComponent();
 
-      _treeData = treData.Nodes.Add("Data");
+      _treeData = _treData.Nodes.Add("Data");
       _mapData = new TMap.GroupMapData("Data");
     }
 
@@ -34,9 +34,9 @@ namespace TMapWin
     {
       if (disposing)
       {
-        if (components != null)
+        if (_components != null)
         {
-          components.Dispose();
+          _components.Dispose();
         }
       }
       base.Dispose(disposing);
@@ -49,28 +49,28 @@ namespace TMapWin
     /// </summary>
     private void InitializeComponent()
     {
-      this.treData = new System.Windows.Forms.TreeView();
+      this._treData = new System.Windows.Forms.TreeView();
       this.SuspendLayout();
       // 
       // treData
       // 
-      this.treData.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.treData.HideSelection = false;
-      this.treData.ImageIndex = -1;
-      this.treData.Location = new System.Drawing.Point(0, 0);
-      this.treData.Name = "treData";
-      this.treData.SelectedImageIndex = -1;
-      this.treData.Size = new System.Drawing.Size(150, 150);
-      this.treData.TabIndex = 0;
-      this.treData.MouseDown += new System.Windows.Forms.MouseEventHandler(this.treData_MouseDown);
-      this.treData.MouseUp += new System.Windows.Forms.MouseEventHandler(this.treData_MouseUp);
-      this.treData.DoubleClick += new System.EventHandler(this.treData_DoubleClick);
-      this.treData.MouseMove += new System.Windows.Forms.MouseEventHandler(this.treData_MouseMove);
+      this._treData.Dock = System.Windows.Forms.DockStyle.Fill;
+      this._treData.HideSelection = false;
+      this._treData.ImageIndex = -1;
+      this._treData.Location = new System.Drawing.Point(0, 0);
+      this._treData.Name = "treData";
+      this._treData.SelectedImageIndex = -1;
+      this._treData.Size = new System.Drawing.Size(150, 150);
+      this._treData.TabIndex = 0;
+      this._treData.MouseDown += new System.Windows.Forms.MouseEventHandler(this.TreData_MouseDown);
+      this._treData.MouseUp += new System.Windows.Forms.MouseEventHandler(this.TreData_MouseUp);
+      this._treData.DoubleClick += new System.EventHandler(this.TreData_DoubleClick);
+      this._treData.MouseMove += new System.Windows.Forms.MouseEventHandler(this.TreData_MouseMove);
       // 
       // WdgToc
       // 
       this.AllowDrop = true;
-      this.Controls.Add(this.treData);
+      this.Controls.Add(this._treData);
       this.Name = "WdgToc";
       this.ResumeLayout(false);
 
@@ -132,13 +132,13 @@ namespace TMapWin
 
     #region events
 
-    private void treData_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
+    private void TreData_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
     {
       try
       {
-        System.Windows.Forms.TreeNode pNode = treData.GetNodeAt(e.X, e.Y);
-        if (pNode == treData.SelectedNode)
-        { _dragNode = treData.SelectedNode; }
+        System.Windows.Forms.TreeNode pNode = _treData.GetNodeAt(e.X, e.Y);
+        if (pNode == _treData.SelectedNode)
+        { _dragNode = _treData.SelectedNode; }
         else
         { _dragNode = null; }
       }
@@ -146,7 +146,7 @@ namespace TMapWin
       { System.Windows.Forms.MessageBox.Show(exp.Message + "\n" + exp.StackTrace, "Error"); }
     }
 
-    private void treData_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
+    private void TreData_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
     {
       try
       {
@@ -159,7 +159,7 @@ namespace TMapWin
         if (_dragNode == null)
         { return; }
 
-        pNode = treData.GetNodeAt(e.X, e.Y);
+        pNode = _treData.GetNodeAt(e.X, e.Y);
         if (pNode == _dragNode)
         { return; }
         if (pNode == null)
@@ -171,20 +171,20 @@ namespace TMapWin
         if (_dragBefore != null)
         {
           System.Drawing.Rectangle rect = new System.Drawing.Rectangle(0, _dragBefore.Bounds.Top,
-            treData.Width, _dragBefore.Bounds.Height);
-          treData.Invalidate(rect);
+            _treData.Width, _dragBefore.Bounds.Height);
+          _treData.Invalidate(rect);
         }
 
         _dragBefore = pNode;
-        System.Drawing.Graphics g = System.Drawing.Graphics.FromHwnd(treData.Handle);
+        System.Drawing.Graphics g = System.Drawing.Graphics.FromHwnd(_treData.Handle);
         System.Drawing.Pen p = new System.Drawing.Pen(System.Drawing.Color.Black, 1);
-        g.DrawLine(p, 0, pNode.Bounds.Top, treData.Width, pNode.Bounds.Top);
+        g.DrawLine(p, 0, pNode.Bounds.Top, _treData.Width, pNode.Bounds.Top);
       }
       catch (System.Exception exp)
       { System.Windows.Forms.MessageBox.Show(exp.Message + "\n" + exp.StackTrace, "Error"); }
     }
 
-    private void treData_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
+    private void TreData_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
     {
       try
       {
@@ -200,19 +200,19 @@ namespace TMapWin
       { System.Windows.Forms.MessageBox.Show(exp.Message + "\n" + exp.StackTrace, "Error"); }
     }
 
-    private WdgProperties wdgProps;
-    private void treData_DoubleClick(object sender, System.EventArgs e)
+    private WdgProperties _wdgProps;
+    private void TreData_DoubleClick(object sender, System.EventArgs e)
     {
       try
       {
-        if (treData.SelectedNode == null)
+        if (_treData.SelectedNode == null)
         { return; }
-        if (treData.SelectedNode.Tag as TMap.MapData == null)
+        if (_treData.SelectedNode.Tag as TMap.MapData == null)
         { return; }
-        if (wdgProps == null)
-        { wdgProps = new WdgProperties(); }
-        wdgProps.SetData((TMap.MapData)treData.SelectedNode.Tag);
-        wdgProps.ShowDialog();
+        if (_wdgProps == null)
+        { _wdgProps = new WdgProperties(); }
+        _wdgProps.SetData((TMap.MapData)_treData.SelectedNode.Tag);
+        _wdgProps.ShowDialog();
       }
       catch (System.Exception exp)
       { System.Windows.Forms.MessageBox.Show(exp.Message + "\n" + exp.StackTrace, "Error"); }

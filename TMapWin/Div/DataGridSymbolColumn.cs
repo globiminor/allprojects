@@ -70,9 +70,8 @@ namespace TMapWin.Div
     {
       if (value is Symbol)
       { return value as Symbol; }
-      else if (value is ISymbolPart)
+      else if (value is ISymbolPart part)
       {
-        ISymbolPart part = (ISymbolPart)value;
         Symbol symbol = new Symbol(part);
         return symbol;
       }
@@ -203,9 +202,8 @@ namespace TMapWin.Div
     {
       if (value is Symbol)
       { return value as Symbol; }
-      else if (value is ISymbolPart)
+      else if (value is ISymbolPart part)
       {
-        ISymbolPart part = (ISymbolPart)value;
         Symbol symbol = new Symbol(part);
         return symbol;
       }

@@ -40,8 +40,7 @@ namespace TMap
 
     public void Refresh()
     {
-      if (Change != null)
-      { Change(this, new System.EventArgs()); }
+      Change?.Invoke(this, new System.EventArgs());
     }
 
     private void AddData(System.Collections.Generic.List<MapData> list, GroupMapData data)

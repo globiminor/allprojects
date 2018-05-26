@@ -51,8 +51,7 @@ namespace OCourse.Commands
         foreach (CostFromTo route in rawList.Keys)
         {
           route.Resolution = resolution;
-          CostFromTo calcRoute;
-          if (_vm.RouteCalculator.RouteCostDict.TryGetValue(route, out calcRoute))
+          if (_vm.RouteCalculator.RouteCostDict.TryGetValue(route, out CostFromTo calcRoute))
           {
             writer.Write(calcRoute.Route,
               new object[] {

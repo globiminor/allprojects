@@ -5,7 +5,7 @@ namespace Macro
 {
   class Test
   {
-    byte[] lastbCharData = new byte[256];
+    byte[] _lastbCharData = new byte[256];
     protected char GetAsciiCharacter(int iKeyCode, int iFlags)
     {
       Processor macro = new Processor();
@@ -26,12 +26,12 @@ namespace Macro
       //ToAscii(66, 66, bCharData, ref lpChar, 1);
       for (int i = 0; i < 256; i++)
       {
-        lastbCharData[i] = bCharData[i];
+        _lastbCharData[i] = bCharData[i];
       }
       return (char)lpChar;
     }
 
-    private void txtHandle_KeyDown(object sender, KeyEventArgs e)
+    private void TxtHandle_KeyDown(object sender, KeyEventArgs e)
     {
       Console.WriteLine("Key Pressed GetAscii: " +
 GetAsciiCharacter((int)e.KeyCode, e.KeyValue));

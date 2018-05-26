@@ -157,19 +157,19 @@ namespace MacroUi
 
       try
       {
-        reader.Executing += reader_Executing;
-        reader.Executed += reader_Executed;
-        reader.Progress += reader_Progress;
+        reader.Executing += Reader_Executing;
+        reader.Executed += Reader_Executed;
+        reader.Progress += Reader_Progress;
         reader.RunMacro(window, macro, vars);
       }
       finally
       {
-        reader.Executing -= reader_Executing;
-        reader.Executed -= reader_Executed;
-        reader.Progress -= reader_Progress;
+        reader.Executing -= Reader_Executing;
+        reader.Executed -= Reader_Executed;
+        reader.Progress -= Reader_Progress;
       }
     }
-    private void btnRun_Click(object sender, EventArgs e)
+    private void BtnRun_Click(object sender, EventArgs e)
     {
       txtProgress.Items.Clear();
       if (optOnce.Checked)
@@ -180,21 +180,20 @@ namespace MacroUi
       { throw new InvalidProgramException("Unhandled option"); }
     }
 
-    private void reader_Executing(object sender, EventArgs e)
+    private void Reader_Executing(object sender, EventArgs e)
     {
-      Reader reader = sender as Reader;
-      if (reader != null)
+      if (sender is Reader reader)
       {
         int pos = txtProgress.Items.Add(reader.CurrentCommand);
         txtProgress.SelectedIndex = pos;
         txtProgress.TopLevelControl.Refresh();
       }
     }
-    private void reader_Executed(object sender, EventArgs e)
+    private void Reader_Executed(object sender, EventArgs e)
     {
       txtProgress.TopLevelControl.Refresh();
     }
-    private void reader_Progress(object sender, Macro.ProgressEventArgs e)
+    private void Reader_Progress(object sender, Macro.ProgressEventArgs e)
     {
       if (e != null)
       {
@@ -215,12 +214,12 @@ namespace MacroUi
       btnRun.Enabled = enable;
     }
 
-    private void txtMacro_Validating(object sender, System.ComponentModel.CancelEventArgs e)
+    private void TxtMacro_Validating(object sender, System.ComponentModel.CancelEventArgs e)
     {
       TryEnableRun();
     }
 
-    private void btnOpen_Click(object sender, EventArgs e)
+    private void BtnOpen_Click(object sender, EventArgs e)
     {
       dlgOpen.FileName = txtMacro.Text;
       if (dlgOpen.ShowDialog() != DialogResult.OK)
@@ -230,13 +229,13 @@ namespace MacroUi
       TryEnableRun();
     }
 
-    private string OcadMainWnd = "OCAD";
-    private string OcadKarteOpen = "Karte öffnen";
-    private string OcadPdfExport = "PDF";
-    private string OcadPraef = "Präferenzen";
+    private string _ocadMainWnd = "OCAD";
+    private string _ocadKarteOpen = "Karte öffnen";
+    private string _ocadPdfExport = "PDF";
+    private string _ocadPraef = "Präferenzen";
 
-    private static readonly string OcadProcName = "Ocad11Std";
-    private static readonly string OcadProgram = @"C:\Program Files (x86)\OCAD\OCAD11\Ocad11Std.exe";
+    private static readonly string _ocadProcName = "Ocad11Std";
+    private static readonly string _ocadProgram = @"C:\Program Files (x86)\OCAD\OCAD11\Ocad11Std.exe";
 
     private delegate bool FuncBool();
     private bool Try(Processor macro, int tries, int sleep, FuncBool function)
@@ -270,9 +269,9 @@ namespace MacroUi
       macro.SendCommands('o', Ui.VK_CONTROL);
       macro.Sleep(100);
 
-      if (TryWindowName(OcadKarteOpen, macro, 5, 200) == false)
+      if (TryWindowName(_ocadKarteOpen, macro, 5, 200) == false)
       {
-        macro.KillProcess(OcadProcName);
+        macro.KillProcess(_ocadProcName);
         return false;
       }
       macro.Sleep(100);
@@ -288,9 +287,9 @@ namespace MacroUi
       //Macro.DestroyWindow(hWnd);
 
 
-      if (TryWindowName(OcadMainWnd, macro, 5, 200) == false)
+      if (TryWindowName(_ocadMainWnd, macro, 5, 200) == false)
       {
-        macro.KillProcess(OcadProcName);
+        macro.KillProcess(_ocadProcName);
         return false;
       }
 
@@ -332,13 +331,13 @@ namespace MacroUi
         bool procSuccess = false;
         while (procSuccess == false)
         {
-          IList<Process> processes = Process.GetProcessesByName(OcadProcName);
+          IList<Process> processes = Process.GetProcessesByName(_ocadProcName);
           if (processes == null || processes.Count == 0)
           {
             // Open Ocad
             ProcessStartInfo startInfo = new ProcessStartInfo();
             startInfo.WorkingDirectory = Path.GetDirectoryName(ocd);
-            startInfo.FileName = OcadProgram;
+            startInfo.FileName = _ocadProgram;
             Process proc = Process.Start(startInfo);
             macro.Sleep(10000);
           }
@@ -346,9 +345,9 @@ namespace MacroUi
           { procSuccess = true; }
         }
 
-        macro.SetForegroundProcess(OcadProcName);
+        macro.SetForegroundProcess(_ocadProcName);
 
-        if (TryWindowName(OcadMainWnd, macro, 5, 200) == false)
+        if (TryWindowName(_ocadMainWnd, macro, 5, 200) == false)
         {
           throw new NotImplementedException();
         }
@@ -357,7 +356,7 @@ namespace MacroUi
         { continue; }
 
 
-        while (Export(macro, pdf, OcadPdfExport) == false)
+        while (Export(macro, pdf, _ocadPdfExport) == false)
         {
           macro.Sleep(1000);
           if (File.Exists(pdf))
@@ -397,7 +396,7 @@ namespace MacroUi
 
       if (success == false)
       {
-        macro.KillProcess(OcadProcName);
+        macro.KillProcess(_ocadProcName);
         return false;
       }
       macro.Sleep(100);
@@ -430,7 +429,7 @@ namespace MacroUi
           macro.SendKey('p');
           macro.Sleep(100);
 
-          if (TryWindowName(OcadPraef, macro, 5, 100))
+          if (TryWindowName(_ocadPraef, macro, 5, 100))
           {
             macro.Sleep(100);
             macro.SendCodes(Ui.VK_RETURN);
@@ -457,9 +456,9 @@ namespace MacroUi
       }
 
 
-      if (TryWindowName(OcadMainWnd, macro, 5, 200) == false)
+      if (TryWindowName(_ocadMainWnd, macro, 5, 200) == false)
       {
-        macro.KillProcess(OcadProcName);
+        macro.KillProcess(_ocadProcName);
         return false;
       }
 
@@ -574,23 +573,23 @@ namespace MacroUi
 
 
 
-    private void txtMacro_MouseDown(object sender, MouseEventArgs e)
+    private void TxtMacro_MouseDown(object sender, MouseEventArgs e)
     {
 
     }
 
 
-    private void txtMacro_KeyDown(object sender, KeyEventArgs e)
-    {
-      e.Handled = true;
-    }
-
-    private void txtMacro_KeyUp(object sender, KeyEventArgs e)
+    private void TxtMacro_KeyDown(object sender, KeyEventArgs e)
     {
       e.Handled = true;
     }
 
-    private void btnSelectFiles_Click(object sender, EventArgs e)
+    private void TxtMacro_KeyUp(object sender, KeyEventArgs e)
+    {
+      e.Handled = true;
+    }
+
+    private void BtnSelectFiles_Click(object sender, EventArgs e)
     {
       if (dlgOpenData.ShowDialog() != DialogResult.OK)
       { return; }
@@ -599,12 +598,12 @@ namespace MacroUi
       SetData(files);
     }
 
-    private void optRun_CheckChanged(object sender, EventArgs e)
+    private void OptRun_CheckChanged(object sender, EventArgs e)
     {
       dgvData.Enabled = (optFiles.Checked == false);
     }
 
-    private void btn5Staffel_Click(object sender, EventArgs e)
+    private void Btn5Staffel_Click(object sender, EventArgs e)
     {
       Run5();
     }

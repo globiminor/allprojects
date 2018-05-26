@@ -40,8 +40,7 @@ namespace Ocad.Data
 
       public OcadElemsInfo GetInfo(string name)
       {
-        OcadElemsInfo info;
-        if (Infos.TryGetValue(name, out info) == false)
+        if (Infos.TryGetValue(name, out OcadElemsInfo info) == false)
         {
           string fullName = _connectionString;
           info = new OcadElemsInfo(fullName);
@@ -57,8 +56,7 @@ namespace Ocad.Data
       if (_poolDict == null)
       { _poolDict = new Dictionary<string, Pool>(); }
 
-      Pool pool;
-      if (_poolDict.TryGetValue(_connection, out pool) == false)
+      if (_poolDict.TryGetValue(_connection, out Pool pool) == false)
       {
         pool = new Pool(_connection);
         _poolDict.Add(_connection, pool);
@@ -169,20 +167,17 @@ namespace Ocad.Data
 
     internal void OnStartingOperation(CancelEventArgs args)
     {
-      if (StartingOperation != null)
-      { StartingOperation(this, args); }
+      StartingOperation?.Invoke(this, args);
     }
 
     internal void OnCommittingOperation(EventArgs args)
     {
-      if (CommittingOperation != null)
-      { CommittingOperation(this, args); }
+      CommittingOperation?.Invoke(this, args);
     }
 
     internal void OnAbortingOperation(EventArgs args)
     {
-      if (AbortingOperation != null)
-      { AbortingOperation(this, args); }
+      AbortingOperation?.Invoke(this, args);
     }
 
     public new OcadAdapter CreateAdapter()

@@ -340,12 +340,8 @@ namespace Basics.Geom
 
     private MeshLineEx FindLine(IPoint goal, MeshPoint start)
     {
-      double vecProdLeft;
-      double vecProdRight;
-      Point dirGoal;
-
       MeshLineEx l0 = FindStartLine(start, goal,
-        out dirGoal, out vecProdLeft, out vecProdRight);
+        out Point dirGoal, out double vecProdLeft, out double vecProdRight);
       if (l0.LeftTri == null)
       {
         if (l0.Start == start.Point || l0.End == start.Point)
@@ -373,8 +369,7 @@ namespace Basics.Geom
 
     private bool FindNextLine(ref MeshLineEx l0, Point2D goal)
     {
-      double lGoal2, vecProd1, vecProd2;
-      return FindNextLine(ref l0, goal, out lGoal2, out vecProd1, out vecProd2);
+      return FindNextLine(ref l0, goal, out double lGoal2, out double vecProd1, out double vecProd2);
     }
     private bool FindNextLine(ref MeshLineEx l0, Point2D goal,
       out double lGoal2, out double vecProd1, out double vecProd2)
@@ -554,19 +549,14 @@ namespace Basics.Geom
       _IntersectInfo untagged = null;
       _IntersectInfo tagged = null;
 
-      double vecProdLeft;
-      double vecProdRight;
-      Point dirGoal;
-
-      MeshLineEx l0 = FindStartLine(p0, p1, out dirGoal, out vecProdLeft, out vecProdRight);
+      MeshLineEx l0 = FindStartLine(p0, p1, out Point dirGoal, out double vecProdLeft, out double vecProdRight);
       MeshLineEx l1 = l0;
 
       while (l1 != null && (PntOp.Sub(l1.End, l1.Start)).VectorProduct(PntOp.Sub(p1, l1.Start)) > 0)
       {
         if (!(allowedCross != 0)) throw new InvalidProgramException("Error in software design assumption");
 
-        bool isReverse;
-        if (l1.GetTag(out isReverse) == null)
+        if (l1.GetTag(out bool isReverse) == null)
         {
           if (untagged == null)
           {
@@ -643,8 +633,7 @@ namespace Basics.Geom
       MeshLineEx cutLine = intersect.Line;
       IPoint p2 = insertFct(this, new Line(p0.Point, p1), lineInfo, cutLine,
         intersect.FactorCut());
-      bool isReverse;
-      object cutInfo = cutLine.GetTag(out isReverse);
+      object cutInfo = cutLine.GetTag(out bool isReverse);
 
       MeshPoint pCut0, pCut1;
       if (isReverse == false)

@@ -37,8 +37,7 @@ namespace Dhm
         _wdg = new WdgSetGridHeight();
       }
       _wdg.SetData(this);
-      IWin32Window parent = _context as IWin32Window;
-      if (parent != null)
+      if (_context is IWin32Window parent)
       { _wdg.Show(parent); }
       else
       { _wdg.Show(); }
@@ -108,9 +107,8 @@ namespace Dhm
       Area area = new Area(line);
       IBox ext = area.Extent;
 
-      int xMin, yMin, xMax, yMax;
-      _grid.Extent.GetNearest(ext.Min, out xMin, out yMax);
-      _grid.Extent.GetNearest(ext.Max, out xMax, out yMin);
+      _grid.Extent.GetNearest(ext.Min, out int xMin, out int yMax);
+      _grid.Extent.GetNearest(ext.Max, out int xMax, out int yMin);
 
       for (int ix = xMin; ix <= xMax; ix++)
       {

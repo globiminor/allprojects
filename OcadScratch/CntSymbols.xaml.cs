@@ -26,8 +26,7 @@ namespace OcadScratch
       protected override void OnRender(DrawingContext dc)
       {
         base.OnRender(dc);
-        ColorRef clr = DataContext as ColorRef;
-        if (clr != null)
+        if (DataContext is ColorRef clr)
         {
           Color color = clr.Color;
           color.A = 255;
@@ -48,8 +47,7 @@ namespace OcadScratch
       protected override void OnRender(DrawingContext dc)
       {
         base.OnRender(dc);
-        Symbol sym = DataContext as Symbol;
-        if (sym != null)
+        if (DataContext is Symbol sym)
         {
           Color color = Colors.Red;
           color.A = 255;
@@ -117,7 +115,7 @@ namespace OcadScratch
       }
     }
 
-    private void btnLoad_Click(object sender, RoutedEventArgs e)
+    private void BtnLoad_Click(object sender, RoutedEventArgs e)
     {
       OpenFileDialog dlg = new OpenFileDialog();
       dlg.Filter = ".xml | *.xml";
@@ -126,7 +124,7 @@ namespace OcadScratch
 
       using (TextReader reader = new StreamReader(dlg.FileName))
       {
-        XmlSymbols symbols; Basics.Serializer.Deserialize(out symbols, reader);
+        Basics.Serializer.Deserialize(out XmlSymbols symbols, reader);
         DataContext.LoadSymbols(symbols);
       }
     }

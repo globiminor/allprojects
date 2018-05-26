@@ -222,8 +222,7 @@ namespace TData
           _baseReader.Dispose();
           _baseReader = null;
         }
-        IDisposable transDisp = _editsEnum as IDisposable;
-        if (transDisp != null)
+        if (_editsEnum is IDisposable transDisp)
         { transDisp.Dispose(); }
 
         if (_vwEdits != null)

@@ -68,10 +68,10 @@ namespace TMapWin
 
       grdRecord.DataSource = vAttr;
 
-      treSelection.NodeMouseClick += treSelection_NodeMouseClick;
+      treSelection.NodeMouseClick += TreSelection_NodeMouseClick;
       _nodeMenu = new ContextMenuStrip();
-      _nodeMenu.Items.Add("ZoomTo", null, nodeMenu_ZoomTo);
-      _nodeMenu.Items.Add("Flash", null, nodeMenu_Flash);
+      _nodeMenu.Items.Add("ZoomTo", null, NodeMenu_ZoomTo);
+      _nodeMenu.Items.Add("Flash", null, NodeMenu_Flash);
     }
 
     public IContext Map
@@ -112,7 +112,7 @@ namespace TMapWin
     private System.Windows.Forms.TreeNode _lastClickedNode;
     private IContext _map;
 
-    void treSelection_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+    void TreSelection_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
     {
       try
       {
@@ -122,7 +122,7 @@ namespace TMapWin
       { MessageBox.Show(Basics.Utils.GetMsg(exp)); }
     }
 
-    private void nodeMenu_ZoomTo(object sender, EventArgs args)
+    private void NodeMenu_ZoomTo(object sender, EventArgs args)
     {
       try
       {
@@ -159,17 +159,16 @@ namespace TMapWin
       catch (Exception exp)
       { MessageBox.Show(Basics.Utils.GetMsg(exp)); }
     }
-    private void nodeMenu_Flash(object sender, EventArgs args)
+    private void NodeMenu_Flash(object sender, EventArgs args)
     {
     }
 
-    private void treSelection_AfterSelect(object sender, TreeViewEventArgs e)
+    private void TreSelection_AfterSelect(object sender, TreeViewEventArgs e)
     {
       try
       {
         _attrs.Clear();
-        RowTreeNode rowNode = treSelection.SelectedNode as RowTreeNode;
-        if (rowNode != null)
+        if (treSelection.SelectedNode is RowTreeNode rowNode)
         {
           DataRow row = rowNode.Row;
           foreach (DataColumn col in row.Table.Columns)

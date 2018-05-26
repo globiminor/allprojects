@@ -180,8 +180,7 @@ namespace Cards
       }
       public override bool EqualPosition(Stand<Move> other)
       {
-        SpiderStand so = other as SpiderStand;
-        if (so != null)
+        if (other is SpiderStand so)
         {
           if (PositionCode != so.PositionCode)
           { return false; }
@@ -275,9 +274,8 @@ namespace Cards
       internal Spider GetCurrent(Stand<Move> stand)
       {
         Spider start = Game;
-        Spider cache;
 
-        if (start._cache.TryGetValue(stand, out cache))
+        if (start._cache.TryGetValue(stand, out Spider cache))
         {
           return cache;
         }
@@ -386,9 +384,9 @@ namespace Cards
         return d;
       }
 
-      private static readonly Card VoidCard = new Card(new Suite("X", "void"), new Height(-1, "X"));
-      private static readonly Card NewRowCard = new Card(new Suite("Row", "Row"), new Height(-2, "Row"));
-      private static readonly Card EmptyColCard = new Card(new Suite("Empty", "Empty"), new Height(-3, "Empty"));
+      private static readonly Card _voidCard = new Card(new Suite("X", "void"), new Height(-1, "X"));
+      private static readonly Card _newRowCard = new Card(new Suite("Row", "Row"), new Height(-2, "Row"));
+      private static readonly Card _emptyColCard = new Card(new Suite("Empty", "Empty"), new Height(-3, "Empty"));
 
       private readonly Stand<Move> _stand;
       private readonly SpiderStand _ss;
@@ -520,9 +518,9 @@ namespace Cards
       private Card InitFromCard()
       {
         if (_ss == null)
-        { return VoidCard; }
+        { return _voidCard; }
         if (_lastMove.FromCard < 0)
-        { return NewRowCard; }
+        { return _newRowCard; }
         List<Card> toCol = Spider.ColumnsOpen[_lastMove.ToColumn];
         int fromIdx = toCol.Count - _lastMove.FromCard;
         Card fromCard = toCol[fromIdx];
@@ -532,12 +530,12 @@ namespace Cards
       private Card InitRemainCard()
       {
         if (_ss == null)
-        { return VoidCard; }
+        { return _voidCard; }
         if (_lastMove.FromCard < 0)
-        { return NewRowCard; }
+        { return _newRowCard; }
         List<Card> fromCol = Spider.ColumnsOpen[_lastMove.FromColumn];
         if (fromCol.Count == 0)
-        { return EmptyColCard; }
+        { return _emptyColCard; }
 
         Card remainCard = fromCol[fromCol.Count - 1];
         return remainCard;
@@ -546,13 +544,13 @@ namespace Cards
       private Card InitToCard()
       {
         if (_ss == null)
-        { return VoidCard; }
+        { return _voidCard; }
         if (_lastMove.FromCard < 0)
-        { return NewRowCard; }
+        { return _newRowCard; }
         List<Card> toCol = Spider.ColumnsOpen[_lastMove.ToColumn];
         int fromIdx = toCol.Count - _lastMove.FromCard;
         if (fromIdx == 0)
-        { return EmptyColCard; }
+        { return _emptyColCard; }
         Card toCard = toCol[fromIdx - 1];
         return toCard;
       }
@@ -801,7 +799,7 @@ namespace Cards
     private double _x0 = 0.5;
     private double _dx = 1.2;
     private double _y0 = 2;
-    private double dy = 0.5;
+    private double _dy = 0.5;
     private double _yStack = 0.2;
 
     private Move TryGetMove(double fx, double fy, double tx, double ty)
@@ -855,7 +853,7 @@ namespace Cards
         List<Card> covereds = ColumnsCovered[iCol];
         foreach (Card covered in covereds)
         {
-          CardPosition pos = new CardPosition { Card = covered, Visible = false, Left = x, Top = _y0 + iy * dy };
+          CardPosition pos = new CardPosition { Card = covered, Visible = false, Left = x, Top = _y0 + iy * _dy };
           yield return new Pos(pos, iCol, -1);
           iy++;
         }
@@ -865,7 +863,7 @@ namespace Cards
         int iOpen = 0;
         foreach (Card open in opens)
         {
-          CardPosition pos = new CardPosition { Card = open, Visible = true, Left = x, Top = _y0 + iy * dy };
+          CardPosition pos = new CardPosition { Card = open, Visible = true, Left = x, Top = _y0 + iy * _dy };
           yield return new Pos(pos, iCol, nOpen - iOpen);
           iOpen++;
           iy++;

@@ -147,8 +147,7 @@ namespace Asvz.Forchlauf
 
         foreach (KmElem elem in elems)
         {
-          List<ForchCategorie> cats;
-          if (!kmElems.TryGetValue(elem, out cats))
+          if (!kmElems.TryGetValue(elem, out List<ForchCategorie> cats))
           {
             cats = new List<ForchCategorie>();
             kmElems.Add(elem, cats);
@@ -401,7 +400,7 @@ namespace Asvz.Forchlauf
 
     private class KmComparer : IEqualityComparer<KmElem>
     {
-      double prec = 10;
+      double _prec = 10;
       public bool Equals(KmElem x, KmElem y)
       {
         int[] ox = GetValues(x);
@@ -419,7 +418,7 @@ namespace Asvz.Forchlauf
       private int[] GetValues(KmElem obj)
       {
         Point p = (Point)obj.Strich.Geometry;
-        return new[] { (int)Math.Round(p.X * prec), (int)Math.Round(p.Y * prec) };
+        return new[] { (int)Math.Round(p.X * _prec), (int)Math.Round(p.Y * _prec) };
       }
     }
   }

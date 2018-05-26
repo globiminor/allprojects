@@ -282,11 +282,8 @@ namespace LeastCostPathUI
       byte[] b = new byte[256];
       Grid.Common.InitColors(r, g, b);
 
-      IGrid<double> startCostGrid = null;
-      IGrid<int> startDirGrid = null;
-
-      IGrid<double> endCostGrid = null;
-      IGrid<int> endDirGrid = null;
+      LeastCostData startLcg = null;
+      LeastCostData endLcg = null;
 
       Steps step;
       if (lcp.stepType < 0) step = Steps.Step16;
@@ -321,86 +318,84 @@ namespace LeastCostPathUI
         {
           costPath.Status -= CostPath_Status;
           costPath.Status += CostPath_Status;
-          costPath.CalcCost(new Point2D(lcp.xs, lcp.ys), out startCostGrid, out startDirGrid);
+          startLcg = costPath.CalcCost(new Point2D(lcp.xs, lcp.ys));
         }
         if (lcp.bEnd)
         {
           costPath.Status -= CostPath_Status;
           costPath.Status += CostPath_Status;
           Point2D pe = new Point2D(lcp.xe, lcp.ye);
-          costPath.CalcCost(pe, out endCostGrid, out endDirGrid, invers: true);
+          endLcg = costPath.CalcCost(pe, invers: true);
         }
       }
       if (lcp.ssCostGrd != null)
       {
-        if (startCostGrid != null)
-        { DoubleGrid.Save(startCostGrid, lcp.ssCostGrd); }
+        if (startLcg?.CostGrid != null)
+        { DoubleGrid.Save(startLcg.CostGrid, lcp.ssCostGrd); }
         else
-        { startCostGrid = DataDoubleGrid.FromBinaryFile(lcp.ssCostGrd); }
+        { startLcg = new LeastCostData(DataDoubleGrid.FromBinaryFile(lcp.ssCostGrd), startLcg?.DirGrid, null); }
       }
       if (lcp.ssDirGrd != null)
       {
-        if (startDirGrid != null)
-        { IntGrid.Save(startDirGrid, lcp.ssDirGrd); }
+        if (startLcg?.DirGrid != null)
+        { IntGrid.Save(startLcg.DirGrid, lcp.ssDirGrd); }
         else
-        { startDirGrid = IntGrid.FromBinaryFile(lcp.ssDirGrd); }
+        { startLcg = new LeastCostData(startLcg?.CostGrid, IntGrid.FromBinaryFile(lcp.ssDirGrd), null); }
       }
-      if (lcp.ssCostTif != null && startCostGrid != null)
+      if (lcp.ssCostTif != null && startLcg?.CostGrid != null)
       {
-        ImageGrid.GridToTif(DoubleGrid.ToIntGrid(startCostGrid) % 256, lcp.ssCostTif, r, g, b);
+        ImageGrid.GridToTif(DoubleGrid.ToIntGrid(startLcg.CostGrid) % 256, lcp.ssCostTif, r, g, b);
       }
-      if (lcp.ssDirTif != null && startDirGrid != null)
+      if (lcp.ssDirTif != null && startLcg?.DirGrid != null)
       {
         // make sure that the start point cell returns a valid value for the step angle array
-        ImageGrid.GridToTif(((step[IntGrid.Add(startDirGrid, -1).Abs() % step.Count] / Math.PI + 1.0) * 128).ToIntGrid(),
+        ImageGrid.GridToTif(((step[IntGrid.Add(startLcg.DirGrid, -1).Abs() % step.Count] / Math.PI + 1.0) * 128).ToIntGrid(),
                             lcp.ssDirTif, r, g, b);
       }
       if (lcp.seCostGrd != null)
       {
-        if (endCostGrid != null)
-        { DoubleGrid.Save(endCostGrid, lcp.seCostGrd); }
+        if (endLcg?.CostGrid != null)
+        { DoubleGrid.Save(endLcg.CostGrid, lcp.seCostGrd); }
         else
-        { endCostGrid = DataDoubleGrid.FromBinaryFile(lcp.seCostGrd); }
+        { endLcg = new LeastCostData(DataDoubleGrid.FromBinaryFile(lcp.seCostGrd), endLcg?.DirGrid, null); }
       }
       if (lcp.seDirGrd != null)
       {
-        if (endDirGrid != null)
-        { IntGrid.Save(endDirGrid, lcp.seDirGrd); }
+        if (endLcg.DirGrid != null)
+        { IntGrid.Save(endLcg.DirGrid, lcp.seDirGrd); }
         else
-        { endDirGrid = IntGrid.FromBinaryFile(lcp.seDirGrd); }
+        { endLcg = new LeastCostData(endLcg.CostGrid, IntGrid.FromBinaryFile(lcp.seDirGrd), null); }
       }
-      if (lcp.seCostTif != null && endCostGrid != null)
+      if (lcp.seCostTif != null && endLcg?.CostGrid != null)
       {
-        ImageGrid.GridToTif(DoubleGrid.ToIntGrid(endCostGrid) % 256, lcp.seCostTif, r, g, b);
+        ImageGrid.GridToTif(DoubleGrid.ToIntGrid(endLcg.CostGrid) % 256, lcp.seCostTif, r, g, b);
       }
-      if (lcp.seDirTif != null && endDirGrid != null)
+      if (lcp.seDirTif != null && endLcg?.DirGrid != null)
       {
         // make sure that the end point cell returns a valid value for the step angle array
-        ImageGrid.GridToTif(((step[IntGrid.Add(endDirGrid, -1).Abs() % step.Count] / Math.PI + 1.0) * 128).ToIntGrid(),
+        ImageGrid.GridToTif(((step[IntGrid.Add(endLcg.DirGrid, -1).Abs() % step.Count] / Math.PI + 1.0) * 128).ToIntGrid(),
                             lcp.seDirTif, r, g, b);
       }
 
-      if (startCostGrid == null || endCostGrid == null)
+      if (startLcg?.CostGrid == null || endLcg?.CostGrid == null)
       { return; }
       DoubleGrid grdSum = null;
       if (lcp.sCostGrd != null)
       {
-        if (grdSum == null) grdSum = GetSum(startCostGrid, endCostGrid, costPath.GetGridExtent());
+        if (grdSum == null) grdSum = GetSum(startLcg.CostGrid, endLcg.CostGrid, costPath.GetGridExtent());
         grdSum.Save(lcp.sCostGrd);
       }
       if (lcp.sCostTif != null)
       {
-        if (grdSum == null) grdSum = GetSum(startCostGrid, endCostGrid, costPath.GetGridExtent());
+        if (grdSum == null) grdSum = GetSum(startLcg.CostGrid, endLcg.CostGrid, costPath.GetGridExtent());
         ImageGrid.GridToTif((grdSum - grdSum.Min()).ToIntGrid() % 256, lcp.sCostTif, r, g, b);
       }
       if (lcp.sRouteShp != null || lcp.sRouteTif != null)
       {
-        if (grdSum == null) grdSum = GetSum(startCostGrid, endCostGrid, costPath.GetGridExtent());
+        if (grdSum == null) grdSum = GetSum(startLcg.CostGrid, endLcg.CostGrid, costPath.GetGridExtent());
         double maxLengthFactor = lcp.maxLonger + 1;
         double minDiffFactor = lcp.minOffset;
-        RouteTable routes = LeastCostGrid.CalcBestRoutes(grdSum,
-          startCostGrid, startDirGrid, null,
-          endCostGrid, endDirGrid, null,
+        RouteTable routes = LeastCostGrid.CalcBestRoutes(grdSum, startLcg, endLcg, 
           maxLengthFactor, minDiffFactor, Route_Status);
         if (lcp.sRouteTif != null)
         {

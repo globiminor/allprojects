@@ -15,9 +15,9 @@ namespace ArcSde
 
     public SeShape(SeCoordRef coord)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero, CApi.SE_coordref_create(out _coordPtr));
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero, CApi.SE_coordref_duplicate(coord.Ptr, _coordPtr));
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero, CApi.SE_shape_create(_coordPtr, out _ptr));
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero, CApi.SE_coordref_create(out _coordPtr));
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero, CApi.SE_coordref_duplicate(coord.Ptr, _coordPtr));
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero, CApi.SE_shape_create(_coordPtr, out _ptr));
     }
 
 

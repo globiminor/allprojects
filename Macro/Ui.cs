@@ -55,44 +55,44 @@ namespace Macro
       uint dwData, IntPtr dwExtraInfo);
     #endregion
 
-    internal const int MOUSEEVENTF_LEFTDOWN = 0x00000002;
-    internal const int MOUSEEVENTF_LEFTUP = 0x00000004;
-    internal const int MOUSEEVENTF_MIDDLEDOWN = 0x00000020;
-    internal const int MOUSEEVENTF_MIDDLEUP = 0x00000040;
-    internal const int MOUSEEVENTF_MOVE = 0x00000001;
-    internal const int MOUSEEVENTF_ABSOLUTE = 0x00008000;
-    internal const int MOUSEEVENTF_RIGHTDOWN = 0x00000008;
-    internal const int MOUSEEVENTF_RIGHTUP = 0x00000010;
+    public const int MOUSEEVENTF_LEFTDOWN = 0x00000002;
+    public const int MOUSEEVENTF_LEFTUP = 0x00000004;
+    public const int MOUSEEVENTF_MIDDLEDOWN = 0x00000020;
+    public const int MOUSEEVENTF_MIDDLEUP = 0x00000040;
+    public const int MOUSEEVENTF_MOVE = 0x00000001;
+    public const int MOUSEEVENTF_ABSOLUTE = 0x00008000;
+    public const int MOUSEEVENTF_RIGHTDOWN = 0x00000008;
+    public const int MOUSEEVENTF_RIGHTUP = 0x00000010;
 
-    private const byte VK_CLEAR = 12;
+    public const byte VK_CLEAR = 12;
     public const byte VK_RETURN = 13;
 
     public const byte VK_SHIFT = 16;
     public const byte VK_CONTROL = 17;
     public const byte VK_ALT = 0x12;
-    private const byte VK_MENU = 18;
-    private const byte VK_PAUSE = 19;
-    private const byte VK_CAPITAL = 20;
+    public const byte VK_MENU = 18;
+    public const byte VK_PAUSE = 19;
+    public const byte VK_CAPITAL = 20;
 
-    private const byte VK_ESCAPE = 27;
+    public const byte VK_ESCAPE = 27;
 
-    private const byte VK_SPACE = 32;
+    public const byte VK_SPACE = 32;
     public const byte VK_PRIOR = 33;
     public const byte VK_NEXT = 34;
-    private const byte VK_END = 35;
-    private const byte VK_HOME = 36;
-    private const byte VK_LEFT = 37;
-    private const byte VK_UP = 38;
-    private const byte VK_RIGHT = 39;
-    private const byte VK_DOWN = 40;
-    private const byte VK_SELECT = 21;
-    private const byte VK_PRINT = 42;
-    private const byte VK_EXECUTE = 43;
-    private const byte VK_SNAPSHOT = 44;
-    private const byte VK_INSERT = 45;
-    private const byte VK_DELETE = 46;
-    private const byte VK_HELP = 47;
+    public const byte VK_END = 35;
+    public const byte VK_HOME = 36;
+    public const byte VK_LEFT = 37;
+    public const byte VK_UP = 38;
+    public const byte VK_RIGHT = 39;
+    public const byte VK_DOWN = 40;
+    public const byte VK_SELECT = 21;
+    public const byte VK_PRINT = 42;
+    public const byte VK_EXECUTE = 43;
+    public const byte VK_SNAPSHOT = 44;
+    public const byte VK_INSERT = 45;
+    public const byte VK_DELETE = 46;
+    public const byte VK_HELP = 47;
 
-    internal const int KEYEVENTF_KEYUP = 0x2;
+    public const int KEYEVENTF_KEYUP = 0x2;
   }
 }

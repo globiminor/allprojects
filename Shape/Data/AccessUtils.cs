@@ -16,7 +16,7 @@ namespace Shape.Data
       return new Box(new Point2D(xMin, yMin), new Point2D(xMax, yMax));
     }
 
-    const int TypeArea = 19;
+    const int _typeArea = 19;
 
     private class AccessArea : Area
     {
@@ -54,7 +54,7 @@ namespace Shape.Data
     {
       const int TypeLine = 10;
       int type = BitConverter.ToInt32(bytes, 0);
-      if (type == TypeArea || type == 5 || type == 536870963)
+      if (type == _typeArea || type == 5 || type == 536870963)
       {
         return new AccessArea(bytes);
         //List<Polyline> lines = GetLines(bytes);

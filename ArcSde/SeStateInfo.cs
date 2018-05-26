@@ -35,8 +35,7 @@ namespace ArcSde
     public DateTime? GetClosingTime()
     {
       DateTime closing = new DateTime();
-      bool isNull;
-      Api.SE_stateinfo_get_closing_time(_stateInfo, ref closing, out isNull);
+      Api.SE_stateinfo_get_closing_time(_stateInfo, ref closing, out bool isNull);
       if (isNull)
       {
         return null;

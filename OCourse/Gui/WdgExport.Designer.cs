@@ -67,7 +67,7 @@
       this.btnExport.TabIndex = 10;
       this.btnExport.Text = "...";
       this.btnExport.UseVisualStyleBackColor = true;
-      this.btnExport.Click += new System.EventHandler(this.btnExport_Click);
+      this.btnExport.Click += new System.EventHandler(this.BtnExport_Click);
       // 
       // btnTemplate
       // 
@@ -78,7 +78,7 @@
       this.btnTemplate.TabIndex = 13;
       this.btnTemplate.Text = "...";
       this.btnTemplate.UseVisualStyleBackColor = true;
-      this.btnTemplate.Click += new System.EventHandler(this.btnTemplate_Click);
+      this.btnTemplate.Click += new System.EventHandler(this.BtnTemplate_Click);
       // 
       // lblTemplate
       // 
@@ -107,7 +107,7 @@
       this.btnOK.TabIndex = 14;
       this.btnOK.Text = "OK";
       this.btnOK.UseVisualStyleBackColor = true;
-      this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
+      this.btnOK.Click += new System.EventHandler(this.BtnOK_Click);
       // 
       // btnCancel
       // 
@@ -118,7 +118,7 @@
       this.btnCancel.TabIndex = 15;
       this.btnCancel.Text = "Cancel";
       this.btnCancel.UseVisualStyleBackColor = true;
-      this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+      this.btnCancel.Click += new System.EventHandler(this.BtnCancel_Click);
       // 
       // WdgExport
       // 

@@ -13,19 +13,19 @@ namespace ArcSde
     internal SeColumn(IntPtr se_columnInfo)
     {
       char[] nm = new char[SdeType.SE_MAX_COLUMN_LEN];
-      ErrorHandling.checkRC(
+      ErrorHandling.CheckRC(
         IntPtr.Zero, IntPtr.Zero, CApi.SE_columninfo_get_name(se_columnInfo, nm));
       _name = Api.String(nm);
 
-      ErrorHandling.checkRC(
+      ErrorHandling.CheckRC(
         IntPtr.Zero, IntPtr.Zero, CApi.SE_columninfo_get_type(se_columnInfo, out _type));
 
       char[] desc = new char[SdeType.SE_MAX_DESCRIPTION_LEN];
-      ErrorHandling.checkRC(
+      ErrorHandling.CheckRC(
         IntPtr.Zero, IntPtr.Zero, CApi.SE_columninfo_get_description(se_columnInfo, desc));
       _description = Api.String(desc);
 
-      ErrorHandling.checkRC(
+      ErrorHandling.CheckRC(
         IntPtr.Zero, IntPtr.Zero, CApi.SE_columninfo_get_decimal_digits(se_columnInfo, out _nDigits));
     }
 

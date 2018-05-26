@@ -336,11 +336,11 @@ namespace Basics.Data
 
         try
         {
-          table.ColumnChanging += insertTable_OnRowChanging;
+          table.ColumnChanging += InsertTable_OnRowChanging;
           n = adapter.Update(rowInsertLst);
         }
         finally
-        { table.ColumnChanging -= insertTable_OnRowChanging; }
+        { table.ColumnChanging -= InsertTable_OnRowChanging; }
       }
       else
       { n = 0; }
@@ -349,7 +349,7 @@ namespace Basics.Data
     }
 
     private static bool _inRowChanging = false;
-    private static void insertTable_OnRowChanging(object sender, DataColumnChangeEventArgs e)
+    private static void InsertTable_OnRowChanging(object sender, DataColumnChangeEventArgs e)
     {
       if (_inRowChanging)
       { return; }

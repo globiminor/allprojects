@@ -59,9 +59,8 @@ namespace Asvz.Sola
 
         string name = node.Attributes[_nodeUeName].Value;
 
-        int from;
         attr = node.Attributes[_nodeUeVon];
-        if (attr == null || int.TryParse(attr.Value, out from) == false)
+        if (attr == null || int.TryParse(attr.Value, out int from) == false)
         {
           int to = int.Parse(node.Attributes[_nodeUeNach].Value);
           from = to - 1;

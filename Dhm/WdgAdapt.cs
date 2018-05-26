@@ -170,13 +170,13 @@ namespace Dhm
       return options;
     }
 
-    private void btnOK_Click(object sender, EventArgs e)
+    private void BtnOK_Click(object sender, EventArgs e)
     {
       DialogResult = DialogResult.OK;
       Close();
     }
 
-    private void btnZoom_Click(object sender, EventArgs e)
+    private void BtnZoom_Click(object sender, EventArgs e)
     {
       ZoomTo();
     }
@@ -201,7 +201,7 @@ namespace Dhm
       Redraw();
     }
 
-    private void btnRedraw_Click(object sender, EventArgs e)
+    private void BtnRedraw_Click(object sender, EventArgs e)
     {
       Redraw();
     }
@@ -240,9 +240,8 @@ namespace Dhm
         { clr = Color.FromArgb(255, 0, 0); }
 
         IGeometry geom = c.Geometry;
-        if (geom is IPoint)
+        if (geom is IPoint p)
         {
-          IPoint p = (IPoint)geom;
           SymbolPartPoint pointSymbol = new SymbolPartPoint(null);
           pointSymbol.SymbolLine = Symbol.SquareLine();
           pointSymbol.LineColor = clr;
@@ -253,7 +252,7 @@ namespace Dhm
       draw.Flush();
     }
 
-    private void btnJoin_Click(object sender, EventArgs e)
+    private void BtnJoin_Click(object sender, EventArgs e)
     {
       JoinOption j = null;
       foreach (DataGridViewRow row in grdJoinOptions.SelectedRows)
@@ -265,7 +264,7 @@ namespace Dhm
       { j.Join(); }
     }
 
-    private void btnSave_Click(object sender, EventArgs e)
+    private void BtnSave_Click(object sender, EventArgs e)
     {
       try
       {

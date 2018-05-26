@@ -174,9 +174,8 @@ namespace Asvz.SolaDuo
       foreach (int iPos in indexList)
       {
         symbol = reader.ReadSymbol(iPos);
-        Ocad.Symbol.PointSymbol pntSym = symbol as Ocad.Symbol.PointSymbol;
 
-        if (pntSym != null)
+        if (symbol is Ocad.Symbol.PointSymbol pntSym)
         {
           if (symbol.Number == SymDD.Ausschnitt)
           { _symAusschnitt = pntSym.GetSymbolGeometry(Setup); }
@@ -522,8 +521,7 @@ namespace Asvz.SolaDuo
           double sumD = 0;
           foreach (Grid.IDoubleGrid grid in grids)
           {
-            int gx, gy;
-            bool inside = grid.Extent.GetNearest(p, out gx, out gy);
+            bool inside = grid.Extent.GetNearest(p, out int gx, out int gy);
             if (inside == false)
             { continue; }
 

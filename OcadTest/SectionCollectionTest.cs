@@ -113,8 +113,7 @@ namespace OcadTest
             yMax = iy + 1;
           }
 
-          int r, g, b;
-          Cmyk2Rgb(c, y, m, k, out r, out g, out b);
+          Cmyk2Rgb(c, y, m, k, out int r, out int g, out int b);
           string hexColor = string.Format("{0:x2}{1:x2}{2:x2}", r, g, b);
 
           int i = nx;
@@ -205,8 +204,7 @@ namespace OcadTest
           yMax = iy + 1;
         }
 
-        int r, g, b;
-        Cmyk2Rgb(c, y, m, k, out r, out g, out b);
+        Cmyk2Rgb(c, y, m, k, out int r, out int g, out int b);
         string hexColor = string.Format("{0:x2}{1:x2}{2:x2}", r, g, b);
 
         int i = nx;
@@ -295,8 +293,7 @@ namespace OcadTest
           yMax = iy + 1;
         }
 
-        int r, g, b;
-        Cmyk2Rgb(c, y, m, k, out r, out g, out b);
+        Cmyk2Rgb(c, y, m, k, out int r, out int g, out int b);
         string color = string.Format("{0} {1} {2}", r, g, b);
         int ci = colors.IndexOf(color);
         if (ci < 0)
@@ -451,8 +448,7 @@ namespace OcadTest
             {
               if (validNr != null)
               {
-                int x0, y0;
-                code = GetString(reader, bahnString, out x0, out y0);
+                code = GetString(reader, bahnString, out int x0, out int y0);
               }
             }
             else if (color.StartsWith(_bahnColor))
@@ -493,8 +489,8 @@ namespace OcadTest
                 code.Substring(code.IndexOf('.') + 1).Trim());
               if (bahn[0] == 'D')
               {
-                bahnX0 -= (int)_D.X0;
-                bahnY0 -= (int)_D.Y0;
+                bahnX0 -= (int)_d.X0;
+                bahnY0 -= (int)_d.Y0;
               }
               writer.WriteLine(StartNrString(snr, bahnX0, bahnY0 + (int)(_pattern[0].Height() * 1.5)));
             }
@@ -840,8 +836,7 @@ namespace OcadTest
         {
           IntPtr hdc = g.GetHdc();
           IntPtr prev = SelectObject(hdc, font.ToHfont());
-          GLYPHMETRICS metrics;
-          int bufferSize = (int)GetGlyphOutline(hdc, c, 2, out metrics, 0, IntPtr.Zero, ref matrix);
+          int bufferSize = (int)GetGlyphOutline(hdc, c, 2, out GLYPHMETRICS metrics, 0, IntPtr.Zero, ref matrix);
           //bufferSize = 1000000;
           IntPtr buffer = Marshal.AllocHGlobal(bufferSize);
           try
@@ -1454,7 +1449,7 @@ namespace OcadTest
 
     #region A
 
-    private Letter _A = new Letter ('A',
+    private Letter _a = new Letter ('A',
       new Pattern(74, -59,
     "25 59 l" + Environment.NewLine +
 "-18 0 l" + Environment.NewLine +
@@ -1480,7 +1475,7 @@ namespace OcadTest
     #endregion
 
     #region D
-    private Letter _D = new Letter ('D',
+    private Letter _d = new Letter ('D',
       new Pattern(98, -59,
 "0 9 -1 17 -3 23 c" + Environment.NewLine +
 "-2 7 -4 13 -8 18 c" + Environment.NewLine +
@@ -1515,7 +1510,7 @@ namespace OcadTest
 
     #endregion
     #region E
- private Letter _E = new Letter('E', 0, 0,
+ private Letter _e = new Letter('E', 0, 0,
       "0 -119 l" + Environment.NewLine +
 "86 0 l" + Environment.NewLine +
 "0 14 l" + Environment.NewLine +
@@ -1530,7 +1525,7 @@ namespace OcadTest
  #endregion
 
     #region H
- private Letter _H = new Letter('H', 0, 0,
+ private Letter _h = new Letter('H', 0, 0,
       "0 -119 l" + Environment.NewLine +
 "16 0 l" + Environment.NewLine +
 "0 49 l" + Environment.NewLine +
@@ -1544,7 +1539,7 @@ namespace OcadTest
 "0 56 l" + Environment.NewLine);
     #endregion
 
- private Letter _K = new Letter('K',
+ private Letter _k = new Letter('K',
       0, 0,
 "0 -119 l" + Environment.NewLine +
 "16 0 l" + Environment.NewLine +
@@ -1881,11 +1876,11 @@ namespace OcadTest
       _pattern.Add(_7);
       _pattern.Add(_8);
       _pattern.Add(_9);
-      _pattern.Add(_A);
-      _pattern.Add(_D);
-      _pattern.Add(_E);
-      _pattern.Add(_H);
-      _pattern.Add(_K);
+      _pattern.Add(_a);
+      _pattern.Add(_d);
+      _pattern.Add(_e);
+      _pattern.Add(_h);
+      _pattern.Add(_k);
     }
 
     private string GetLetter(TextReader reader, StringBuilder store)
@@ -1996,8 +1991,7 @@ namespace OcadTest
       { return false; }
       for (int i = 0; i < 7; i++)
       {
-        int j;
-        if (int.TryParse(parts[i], out j) == false)
+        if (int.TryParse(parts[i], out int j) == false)
         { return false; }
       }
 

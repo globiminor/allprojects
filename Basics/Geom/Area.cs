@@ -97,8 +97,7 @@ namespace Basics.Geom
     private int Intersects(IPoint isInside, Line lineDown, Curve curve, IBox extent,
       ref double? xPre)
     {
-      IMultipartGeometry multi = curve as IMultipartGeometry;
-      if (multi != null && multi.HasSubparts)
+      if (curve is IMultipartGeometry multi && multi.HasSubparts)
       {
         int n = 0;
         foreach (Curve part in multi.Subparts())
@@ -234,10 +233,8 @@ namespace Basics.Geom
     private bool IsWithinCurve(IPoint p, Curve curve, Point2D max, Line searchLine,
       ref IPoint near, ref bool onRightSide)
     {
-      IMultipartGeometry parts = curve as IMultipartGeometry;
-
       bool within = false;
-      if (parts != null && parts.HasSubparts)
+      if (curve is IMultipartGeometry parts && parts.HasSubparts)
       {
         foreach (Curve part in parts.Subparts())
         {

@@ -41,7 +41,7 @@ namespace TMapWin
       this.treSelection.Name = "treSelection";
       this.treSelection.Size = new System.Drawing.Size(150, 160);
       this.treSelection.TabIndex = 0;
-      this.treSelection.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treSelection_AfterSelect);
+      this.treSelection.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.TreSelection_AfterSelect);
       // 
       // grdRecord
       // 

@@ -8,7 +8,7 @@ namespace Grid
 	internal class BinarGrid
 	{
     public enum EGridType {eInt = 0, eDouble = 1};
-    internal const int START_DATA = 52;
+    public const int START_DATA = 52;
 
     public static void PutHeader(System.IO.Stream fi,
       int nx,int ny,EGridType type,short length,

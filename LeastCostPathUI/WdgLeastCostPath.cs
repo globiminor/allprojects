@@ -53,7 +53,7 @@ namespace LeastCostPathUI
       string grdVelo = _lcpConfigVm.VeloPath;
       double resol = _lcpConfigVm.Resolution;
       Steps step = _lcpConfigVm.StepsMode;
-      IDirCostProvider<TvmCell> costProvider = new TerrainVeloModel(grdHeight, VelocityGrid.FromImage(grdVelo))
+      IDirCostModel<TvmCell> costProvider = new TerrainVeloModel(grdHeight, VelocityGrid.FromImage(grdVelo))
       { TvmCalc = _lcpConfigVm.TvmCalc };
 
       cntOutput.Calc(costProvider, grdHeight, grdVelo, resol, step, ResetCalc);

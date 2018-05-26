@@ -179,8 +179,7 @@ namespace Cards
 
       public void Add(SolverStand stand)
       {
-        List<SolverStand> stands;
-        if (!CodeStands.TryGetValue(stand.Stand.PositionCode, out stands))
+        if (!CodeStands.TryGetValue(stand.Stand.PositionCode, out List<SolverStand> stands))
         {
           stands = new List<SolverStand>();
           CodeStands.Add(stand.Stand.PositionCode, stands);
@@ -190,8 +189,7 @@ namespace Cards
 
       internal SolverStand FindStand(Stand<T> stand)
       {
-        List<SolverStand> existings;
-        if (!CodeStands.TryGetValue(stand.PositionCode, out existings))
+        if (!CodeStands.TryGetValue(stand.PositionCode, out List<SolverStand> existings))
         { return null; }
 
         foreach (SolverStand existing in existings)
@@ -412,8 +410,7 @@ namespace Cards
             { _existing.Add(newStand); }
 
             double pot = -newStand.Potential;
-            StandCache cache;
-            if (!_potential.TryGetValue(pot, out cache))
+            if (!_potential.TryGetValue(pot, out StandCache cache))
             {
               cache = new StandCache();
               _potential.Add(pot, cache);

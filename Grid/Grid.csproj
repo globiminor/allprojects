@@ -55,6 +55,7 @@
     <Compile Include="Lcp\Config.cs" />
     <Compile Include="Lcp\ConfigVm.cs" />
     <Compile Include="Lcp\Field.cs" />
+    <Compile Include="Lcp\Teleport.cs" />
     <Compile Include="Lcp\TerrainVeloModel.cs" />
     <Compile Include="Lcp\LeastCostGrid.cs" />
     <Compile Include="Lcp\RouteTable.cs">

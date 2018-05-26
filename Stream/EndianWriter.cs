@@ -9,7 +9,7 @@ namespace System.IO
 	/// </summary>
   public class EndianWriter:BinaryWriter
   {
-    private bool m_bIsLittleEndian = true;
+    private bool _isLittleEndian = true;
 
     #region constructors
     public EndianWriter() {}
@@ -18,33 +18,33 @@ namespace System.IO
 
     public EndianWriter(bool isLittleEndian)
     {
-      m_bIsLittleEndian = isLittleEndian;
+      _isLittleEndian = isLittleEndian;
     }
     public EndianWriter(Stream s,bool isLittleEndian):base(s)
     {
-      m_bIsLittleEndian = isLittleEndian;
+      _isLittleEndian = isLittleEndian;
     }
     public EndianWriter(Stream s,Text.Encoding e,bool isLittleEndian):base(s,e)
     {
-      m_bIsLittleEndian = isLittleEndian;
+      _isLittleEndian = isLittleEndian;
     }
     #endregion
 
     public bool IsLittleEndian
     {
-      get { return m_bIsLittleEndian; }
-      set { m_bIsLittleEndian = value; }
+      get { return _isLittleEndian; }
+      set { _isLittleEndian = value; }
     }
 
     #region override
     public override void Write(char ch)
     {
-      if (m_bIsLittleEndian == BitConverter.IsLittleEndian) {base.Write (ch);} 
+      if (_isLittleEndian == BitConverter.IsLittleEndian) {base.Write (ch);} 
       else {base.Write(EndianReader.InvertBytes(BitConverter.GetBytes(ch)));}
     }
     public override void Write(char[] chars,int index,int count)
     {
-      if (m_bIsLittleEndian == BitConverter.IsLittleEndian) {base.Write (chars,index,count);} 
+      if (_isLittleEndian == BitConverter.IsLittleEndian) {base.Write (chars,index,count);} 
       else 
       {
         for (int i = index; i < index + count; i++) {
@@ -54,47 +54,47 @@ namespace System.IO
     }
     public override void Write(char[] chars)
     {
-      if (m_bIsLittleEndian == BitConverter.IsLittleEndian) base.Write (chars);
+      if (_isLittleEndian == BitConverter.IsLittleEndian) base.Write (chars);
       else Write(chars,0,chars.GetLength(0));
     }
     public override void Write(double value)
     {
-      if (m_bIsLittleEndian == BitConverter.IsLittleEndian) base.Write (value);
+      if (_isLittleEndian == BitConverter.IsLittleEndian) base.Write (value);
       else base.Write(EndianReader.InvertBytes(BitConverter.GetBytes(value)));
     }
     public override void Write(float value)
     {
-      if (m_bIsLittleEndian == BitConverter.IsLittleEndian) base.Write (value);
+      if (_isLittleEndian == BitConverter.IsLittleEndian) base.Write (value);
       else base.Write(EndianReader.InvertBytes(BitConverter.GetBytes(value)));
     }
     public override void Write(int value)
     {
-      if (m_bIsLittleEndian == BitConverter.IsLittleEndian) base.Write (value);
+      if (_isLittleEndian == BitConverter.IsLittleEndian) base.Write (value);
       else base.Write(EndianReader.InvertBytes(BitConverter.GetBytes(value)));
     }
     public override void Write(long value)
     {
-      if (m_bIsLittleEndian == BitConverter.IsLittleEndian) base.Write (value);
+      if (_isLittleEndian == BitConverter.IsLittleEndian) base.Write (value);
       else base.Write(EndianReader.InvertBytes(BitConverter.GetBytes(value)));
     }
     public override void Write(short value)
     {
-      if (m_bIsLittleEndian == BitConverter.IsLittleEndian) base.Write (value);
+      if (_isLittleEndian == BitConverter.IsLittleEndian) base.Write (value);
       else base.Write(EndianReader.InvertBytes(BitConverter.GetBytes(value)));
     }
     public override void Write(uint value)
     {
-      if (m_bIsLittleEndian == BitConverter.IsLittleEndian) base.Write (value);
+      if (_isLittleEndian == BitConverter.IsLittleEndian) base.Write (value);
       else base.Write(EndianReader.InvertBytes(BitConverter.GetBytes(value)));
     }
     public override void Write(ulong value)
     {
-      if (m_bIsLittleEndian == BitConverter.IsLittleEndian) base.Write (value);
+      if (_isLittleEndian == BitConverter.IsLittleEndian) base.Write (value);
       else base.Write(EndianReader.InvertBytes(BitConverter.GetBytes(value)));
     }
     public override void Write(ushort value)
     {
-      if (m_bIsLittleEndian == BitConverter.IsLittleEndian) base.Write (value);
+      if (_isLittleEndian == BitConverter.IsLittleEndian) base.Write (value);
       else base.Write(EndianReader.InvertBytes(BitConverter.GetBytes(value)));
     }
     #endregion

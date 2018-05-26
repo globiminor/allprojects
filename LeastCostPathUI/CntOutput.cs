@@ -62,16 +62,14 @@ namespace LeastCostPathUI
     private IDoubleGrid _grdHeight;
     private string _grdVelo;
 
-    private IGrid<double> _fromCost;
-    private IGrid<int> _fromDir;
+    private LeastCostData _fromResult;
 
-    private IGrid<double> _toCost;
-    private IGrid<int> _toDir;
+    private LeastCostData _toResult;
 
     private Point2D _from;
     private Point2D _to;
 
-    public void Calc(IDirCostProvider<TvmCell> provider,
+    public void Calc(IDirCostModel<TvmCell> provider,
       IDoubleGrid grHeight, string grVelo, double resolution, Steps step, ThreadStart resetDlg)
     {
       _cancelled = false;
@@ -106,17 +104,12 @@ namespace LeastCostPathUI
         ? null
         : new Box(new Point2D(dX0, dY0), new Point2D(dX1, dY1));
 
-      IDirCostProvider<TvmCell> costProvider = provider;
+      IDirCostModel<TvmCell> costProvider = provider;
       LeastCostGrid<TvmCell> costPath = new LeastCostGrid<TvmCell>(costProvider, dResol, box, step);
 
       if (!costPath.EqualSettings(_costPath) ||
         grVelo != _grdVelo || grHeight != _grdHeight)
       {
-        _fromCost = null;
-        _fromDir = null;
-        _toCost = null;
-        _toDir = null;
-
         _costPath = costPath;
 
         _grdVelo = grVelo;
@@ -189,28 +182,21 @@ namespace LeastCostPathUI
           return false;
         }
 
-        Steps fromStep = _step;
-        Steps toStep = _step;
-
         _parent.SetStepLabel(this, "FROM:");
-        if (_parent._from == null || _from.Dist2(_parent._from) != 0 || _parent._fromCost == null)
+        if (_parent._from == null || _from.Dist2(_parent._from) != 0 || _parent._fromResult == null)
         {
-          IGrid<double> cost;
-          IGrid<int> dir;
+          LeastCostData result;
           if (_autoExtent)
           {
-            _costPath.CalcCost(_from, new[] { _to }, out IGrid<double> allCost, out IGrid<int> allDir, 
-              invers: false, stopFactor: _lengthFact);
-            cost = BaseGrid.TryReduce(allCost);
-            dir = BaseGrid.TryReduce(allDir);
-            LeastCostGrid.SetUndefinedCells(cost, dir, double.NaN);
+            LeastCostData allResult = _costPath.CalcCost(_from, new[] { _to }, stopFactor: _lengthFact);
+
+            result = allResult.GetReduced();
           }
           else
           {
-            _costPath.CalcCost(_from, out cost, out dir, false);
+            result = _costPath.CalcCost(_from);
           }
-          _parent._fromCost = cost;
-          _parent._fromDir = dir;
+          _parent._fromResult = result;
           _parent._from = _from;
         }
 
@@ -220,25 +206,20 @@ namespace LeastCostPathUI
         }
 
         _parent.SetStepLabel(this, "TO:");
-        if (_parent._to == null || _to.Dist2(_parent._to) != 0 || _parent._toCost == null)
+        if (_parent._to == null || _to.Dist2(_parent._to) != 0 || _parent._toResult == null)
         {
-          IGrid<double> cost;
-          IGrid<int> dir;
+          LeastCostData result;
           if (_autoExtent)
           {
-            _costPath.CalcCost(_to, new[] { _from }, out IGrid<double> allCost, out IGrid<int> allDir,
-              invers: true, stopFactor: _lengthFact);
-            cost = BaseGrid.TryReduce(allCost);
-            dir = BaseGrid.TryReduce(allDir);
-            LeastCostGrid.SetUndefinedCells(cost, dir, double.NaN);
+            LeastCostData allResult = _costPath.CalcCost(_to, new[] { _from }, invers: true, stopFactor: _lengthFact);
+            result = allResult.GetReduced();
           }
           else
           {
-            _costPath.CalcCost(_to, out cost, out dir, true);
+            result = _costPath.CalcCost(_to, invers: true);
           }
 
-          _parent._toCost = cost;
-          _parent._toDir = dir;
+          _parent._toResult = result;
           _parent._to = _to;
         }
 
@@ -246,7 +227,7 @@ namespace LeastCostPathUI
 
         _parent.SetStepLabel(this, "SUM:");
         _parent.CostPath_Status(this, new StatusEventArgs(null, null, 0, 0, 0, 0));
-        _sum = DoubleGrid.Sum(_parent._fromCost, _parent._toCost);
+        _sum = DoubleGrid.Sum(_parent._fromResult.CostGrid, _parent._toResult.CostGrid);
         _route = _sum - _sum.Min();
 
         if (_parent._cancelled)
@@ -260,8 +241,8 @@ namespace LeastCostPathUI
           _parent.CostPath_Status(this, new StatusEventArgs(null, null, 0, 0, 0, 0));
 
           //CreateRouteImage(sum, cntRoute.FullName(txtRoute.Text));
-          _routes = LeastCostGrid.CalcBestRoutes(_sum, _parent._fromCost, _parent._fromDir, fromStep,
-            _parent._toCost, _parent._toDir, toStep, _lengthFact, _offset, _parent.CostPath_Status);
+          _routes = LeastCostGrid.CalcBestRoutes(_sum, _parent._fromResult,
+            _parent._toResult, _lengthFact, _offset, _parent.CostPath_Status);
         }
         _parent.SetStepLabel(this, "EXPORT:");
 
@@ -284,9 +265,9 @@ namespace LeastCostPathUI
         _parent.lblStep.Text = "EXPORT:";
         _parent.CostPath_Status(this, new StatusEventArgs(null, null, 0, 0, 0, 0));
 
-        _parent.cntFrom.Export(_parent._fromCost, _parent._fromDir, _parent._costPath.Steps);
-        _parent.cntTo.Export(_parent._toCost, _parent._toDir, _parent._costPath.Steps);
-        _parent.cntRoute.Export(_route, null, null);
+        _parent.cntFrom.Export(_parent._fromResult);
+        _parent.cntTo.Export(_parent._toResult);
+        _parent.cntRoute.Export(_route);
 
         _parent.lblStep.Text = "< >";
         _parent.CostPath_Status(this, new StatusEventArgs(null, null, 0, 0, 0, 0));
@@ -403,7 +384,7 @@ namespace LeastCostPathUI
       }
     }
 
-    private void chkAuto_CheckedChanged(object sender, EventArgs e)
+    private void ChkAuto_CheckedChanged(object sender, EventArgs e)
     {
       UpdateExtentEnabled();
     }

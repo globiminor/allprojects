@@ -82,23 +82,23 @@ namespace Dhm
       return 10 * h;
     }
 
-    static byte[] Red = new byte[] { 0, 64, 128, 160, 192, 255 };
-    static byte[] Green = new byte[] { 0, 64, 128, 160, 192, 224, 255 };
-    static byte[] Blue = new byte[] { 0, 64, 128, 160, 192, 255 };
+    static byte[] _red = new byte[] { 0, 64, 128, 160, 192, 255 };
+    static byte[] _green = new byte[] { 0, 64, 128, 160, 192, 224, 255 };
+    static byte[] _blue = new byte[] { 0, 64, 128, 160, 192, 255 };
 
     public static void InitStructColors(byte[] r, byte[] g, byte[] b)
     {
 
       int idx = 1;
-      for (int iHeight = 0; iHeight < Red.Length; iHeight++)
+      for (int iHeight = 0; iHeight < _red.Length; iHeight++)
       {
-        for (int iDens = 0; iDens < Green.Length; iDens++)
+        for (int iDens = 0; iDens < _green.Length; iDens++)
         {
-          for (int iUndef = 0; iUndef < Blue.Length; iUndef++)
+          for (int iUndef = 0; iUndef < _blue.Length; iUndef++)
           {
-            r[idx] = Red[iHeight];
-            g[idx] = Green[iDens];
-            b[idx] = Blue[iUndef];
+            r[idx] = _red[iHeight];
+            g[idx] = _green[iDens];
+            b[idx] = _blue[iUndef];
             idx++;
           }
         }
@@ -160,16 +160,16 @@ namespace Dhm
         double mm = (vegMin + vegMax) / 2.0;
         if (m < mm)
         {
-          iRed = Math.Min(iGreen, (int)((mm - m) / (mm - vegMin) * (Red.Length - 1)));
+          iRed = Math.Min(iGreen, (int)((mm - m) / (mm - vegMin) * (_red.Length - 1)));
           iBlue = 0;
         }
         else
         {
           iRed = 0;
-          iBlue = Math.Min(iGreen, (int)((m - mm) / (vegMax - mm) * (Blue.Length - 1)));
+          iBlue = Math.Min(iGreen, (int)((m - mm) / (vegMax - mm) * (_blue.Length - 1)));
         }
 
-        return 1 + iRed * Green.Length * Blue.Length + iGreen * Blue.Length + iBlue;
+        return 1 + iRed * _green.Length * _blue.Length + iGreen * _blue.Length + iBlue;
       }
       //if (forest)
       //{ return 0; }
@@ -188,7 +188,7 @@ namespace Dhm
           : mean > 400 ? 3
           : mean > 300 ? 4 : 5;
 
-        int idx = 1 + (Red.Length - 1) * Green.Length * Blue.Length + i * Blue.Length + i;
+        int idx = 1 + (_red.Length - 1) * _green.Length * _blue.Length + i * _blue.Length + i;
 
         return idx;
       }
@@ -379,8 +379,7 @@ namespace Dhm
         };
 
         Cell key = new Cell { IX = ix, IY = iy };
-        List<LasPoint> pts;
-        if (!ptsDict.TryGetValue(key, out pts))
+        if (!ptsDict.TryGetValue(key, out List<LasPoint> pts))
         {
           pts = new List<LasPoint>();
           ptsDict.Add(key, pts);
@@ -418,8 +417,7 @@ namespace Dhm
         grd[ix, iy] = grdFct(c.IX, c.IY, (tx, ty) =>
         {
           Cell key = new Cell { IX = tx, IY = ty };
-          List<LasPoint> pts;
-          if (!ptsDict.TryGetValue(key, out pts))
+          if (!ptsDict.TryGetValue(key, out List<LasPoint> pts))
           { return null; }
           return LasPoint.GetVectors(tx * res, ty * res, pts);
         });

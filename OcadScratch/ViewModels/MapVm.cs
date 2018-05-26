@@ -23,8 +23,7 @@ namespace OcadScratch.ViewModels
       _configPath = null;
       _symbolIds = null;
 
-      XmlConfig config;
-      Basics.Window.Browse.PortableDeviceUtils.Deserialize(scratchFile, out config);
+      Basics.Window.Browse.PortableDeviceUtils.Deserialize(scratchFile, out XmlConfig config);
 
       Map map = new Map();
       map.Load(scratchFile, config);

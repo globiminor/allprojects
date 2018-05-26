@@ -15,7 +15,7 @@ namespace TMapWin
     /// <summary> 
     /// Required designer variable.
     /// </summary>
-    private System.ComponentModel.Container components = null;
+    private System.ComponentModel.Container _components = null;
 
     public OptionButton()
     {
@@ -38,9 +38,9 @@ namespace TMapWin
     {
       if( disposing )
       {
-        if(components != null)
+        if(_components != null)
         {
-          components.Dispose();
+          _components.Dispose();
         }
       }
       base.Dispose( disposing );
@@ -53,7 +53,7 @@ namespace TMapWin
     /// </summary>
     private void InitializeComponent()
     {
-      components = new System.ComponentModel.Container();
+      _components = new System.ComponentModel.Container();
     }
     #endregion
 
@@ -66,8 +66,7 @@ namespace TMapWin
         Checked = true;
         foreach (Control cntr in Parent.Controls)
         {
-          OptionButton obtn = cntr as OptionButton;
-          if (obtn != null && obtn != this)
+          if (cntr is OptionButton obtn && obtn != this)
           { obtn.Checked = false; }
         }
       }

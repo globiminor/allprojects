@@ -81,7 +81,7 @@ namespace LeastCostPathUI
         txtAssembly.ReadOnly = true;
 
         Assembly assembly = Assembly.LoadFile(assemblyName);
-        List<Type> types = GetCostProviders<ICostProvider>(assembly);
+        List<Type> types = GetImplementations<ITvmCalc>(assembly);
         List<TypeHelper> m = new List<TypeHelper>(types.Count);
         foreach (Type type in types)
         { m.Add(new TypeHelper(type)); }
@@ -90,7 +90,7 @@ namespace LeastCostPathUI
       }
     }
 
-    private List<Type> GetCostProviders<T>(Assembly assembly)
+    private List<Type> GetImplementations<T>(Assembly assembly)
     {
       List<Type> types = new List<Type>();
       Type baseType = typeof(T);
@@ -119,7 +119,7 @@ namespace LeastCostPathUI
       }
     }
 
-    private Rectangle dragBoxFromMouseDown;
+    private Rectangle _dragBoxFromMouseDown;
 
     public ITvmCalc TvmCalc { get; set; }
 
@@ -137,13 +137,13 @@ namespace LeastCostPathUI
 
         // Create a rectangle using the DragSize, with the mouse position being
         // at the center of the rectangle.
-        dragBoxFromMouseDown = new Rectangle(new Point(e.X - (dragSize.Width / 2),
+        _dragBoxFromMouseDown = new Rectangle(new Point(e.X - (dragSize.Width / 2),
                                                        e.Y - (dragSize.Height / 2)), dragSize);
       }
       else
       {
         // Reset the rectangle if the mouse is not over an item in the ListBox.
-        dragBoxFromMouseDown = Rectangle.Empty;
+        _dragBoxFromMouseDown = Rectangle.Empty;
       }
     }
 
@@ -153,8 +153,8 @@ namespace LeastCostPathUI
       { return; }
 
       // If the mouse moves outside the rectangle, start the drag.
-      if (dragBoxFromMouseDown == Rectangle.Empty ||
-            dragBoxFromMouseDown.Contains(e.X, e.Y))
+      if (_dragBoxFromMouseDown == Rectangle.Empty ||
+            _dragBoxFromMouseDown.Contains(e.X, e.Y))
       { return; }
 
       // Proceed with the drag-and-drop, passing in the list item.                    
@@ -169,7 +169,7 @@ namespace LeastCostPathUI
 
     private void DgCustom_MouseUp(object sender, MouseEventArgs e)
     {
-      dragBoxFromMouseDown = Rectangle.Empty;
+      _dragBoxFromMouseDown = Rectangle.Empty;
     }
 
     private void DgCustom_SelectionChanged(object sender, EventArgs e)
@@ -221,7 +221,7 @@ namespace LeastCostPathUI
       if (assembly == null)
       { return null; }
 
-      IList<Type> types = GetCostProviders<ITvmCalc>(assembly);
+      IList<Type> types = GetImplementations<ITvmCalc>(assembly);
       return (ITvmCalc)Activator.CreateInstance(types[0], nonPublic: true);
     }
 

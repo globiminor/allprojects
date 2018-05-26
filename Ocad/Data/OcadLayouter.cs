@@ -115,8 +115,7 @@ namespace Ocad.Data
         IPoint nbGeom = nb.Element.Geometry as IPoint;
         if (nbGeom == null)
         {
-          PointCollection txt = nb.Element.Geometry as PointCollection;
-          if (txt != null && txt.Count > 0)
+          if (nb.Element.Geometry is PointCollection txt && txt.Count > 0)
           { nbGeom = txt[0]; }
         }
 
@@ -137,9 +136,8 @@ namespace Ocad.Data
           IPoint p = elem.Geometry as IPoint;
           if (p == null)
           {
-            PointCollection txt = elem.Geometry as PointCollection;
-            if (txt != null && txt.Count > 0)
-            { p= txt[0]; }
+            if (elem.Geometry is PointCollection txt && txt.Count > 0)
+            { p = txt[0]; }
           }
 
           if (p == null)
@@ -152,8 +150,7 @@ namespace Ocad.Data
           if (elem.Text != nb.Element.Text)
           { continue; }
 
-          List<Offset> elems;
-          if (!gagas.TryGetValue(nb, out elems))
+          if (!gagas.TryGetValue(nb, out List<Offset> elems))
           {
             elems = new List<Offset>();
             gagas.Add(nb, elems);

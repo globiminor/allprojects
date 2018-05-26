@@ -26,7 +26,7 @@ namespace TMapWin
       grdSymbolPart.AutoGenerateColumns = false;
 
       _tblParts = new SymbolPartTable();
-      _tblParts.RowChanged += tblParts_RowChanged;
+      _tblParts.RowChanged += TblParts_RowChanged;
 
       DataGridViewColumn pSymCol = new DataGridViewColumn(new Div.DataGridViewSymbolCell());
       pSymCol.DataPropertyName = SymbolPartTable.PartColumn.Name;
@@ -107,7 +107,7 @@ namespace TMapWin
     }
 
     #region events
-    void tblParts_RowChanged(object sender, DataRowChangeEventArgs e)
+    void TblParts_RowChanged(object sender, DataRowChangeEventArgs e)
     {
       _newSymbol = new Symbol(_inSymbol.Topology);
       foreach (SymbolPartTable.Row row in _tblParts.Rows)
@@ -119,7 +119,7 @@ namespace TMapWin
       pnlSymbol.Invalidate();
     }
 
-    private void pnlSymbol_Paint(object sender, PaintEventArgs e)
+    private void PnlSymbol_Paint(object sender, PaintEventArgs e)
     {
       e.Graphics.Clear(Color.White);
 
@@ -131,18 +131,18 @@ namespace TMapWin
       _newSymbol.Draw(pGraphics);
     }
 
-    private void pgrSymbol_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
+    private void PgrSymbol_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
     {
       pnlSymbol.Invalidate();
       grdSymbolPart.InvalidateRow(grdSymbolPart.CurrentRow.Index);
     }
 
-    private void grdSymbolPart_SelectionChanged(object sender, EventArgs e)
+    private void GrdSymbolPart_SelectionChanged(object sender, EventArgs e)
     {
       SetSymbolPart(grdSymbolPart.CurrentRow.Index);
     }
 
-    private void btnApply_Click(object sender, EventArgs e)
+    private void BtnApply_Click(object sender, EventArgs e)
     {
       DialogResult = DialogResult.OK;
       Close();

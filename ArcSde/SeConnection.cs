@@ -104,10 +104,8 @@ namespace ArcSde
     {
       string[] tables;
 
-      IntPtr names;
-      int numTables;
-      ErrorHandling.checkRC(Conn, IntPtr.Zero,
-        CApi.SE_table_list(Conn, privilege, out numTables, out names));
+      ErrorHandling.CheckRC(Conn, IntPtr.Zero,
+        CApi.SE_table_list(Conn, privilege, out int numTables, out IntPtr names));
 
       IntPtr[] ptrArray = new IntPtr[numTables];
       Marshal.Copy(names, ptrArray, 0, numTables);
@@ -124,13 +122,11 @@ namespace ArcSde
 
     public void Check(int rc)
     {
-      ErrorHandling.checkRC(Conn, IntPtr.Zero, rc);
+      ErrorHandling.CheckRC(Conn, IntPtr.Zero, rc);
     }
     public SeLayerInfoList GetLayers()
     {
-      IntPtr layers;
-      int numLayers;
-      Check(CApi.SE_layer_get_info_list(Conn, out layers, out numLayers));
+      Check(CApi.SE_layer_get_info_list(Conn, out IntPtr layers, out int numLayers));
 
       SeLayerInfoList layerList = new SeLayerInfoList(numLayers, layers);
       return layerList;

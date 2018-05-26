@@ -38,9 +38,8 @@ namespace OCourse.Ext
       IList<Control> fromControls, List<SimpleSection> sections, string where)
     {
       IList<Control> toControls;
-      if (section is Control)
+      if (section is Control to)
       {
-        Control to = (Control)section;
         foreach (Control from in fromControls)
         {
           SimpleSection simple = new SimpleSection(from, to);
@@ -49,9 +48,8 @@ namespace OCourse.Ext
         }
         toControls = new Control[] { to };
       }
-      else if (section is Fork)
+      else if (section is Fork fork)
       {
-        Fork fork = (Fork)section;
         List<Control> tos = new List<Control>(fork.Branches.Count);
         foreach (Fork.Branch branch in fork.Branches)
         {
@@ -60,18 +58,16 @@ namespace OCourse.Ext
         }
         toControls = tos;
       }
-      else if (section is Fork.Branch)
+      else if (section is Fork.Branch forkBranch)
       {
-        Fork.Branch branch = (Fork.Branch)section;
-        foreach (ISection control in branch)
+        foreach (ISection control in forkBranch)
         {
           fromControls = AppendSections(leg, control, fromControls, sections, where);
         }
         toControls = fromControls;
       }
-      else if (section is Variation)
+      else if (section is Variation var)
       {
-        Variation var = (Variation)section;
         List<Control> tos = new List<Control>();
         foreach (Variation.Branch branch in var.Branches)
         {
@@ -83,16 +79,14 @@ namespace OCourse.Ext
         }
         toControls = tos;
       }
-      else if (section is Variation.Branch)
+      else if (section is Variation.Branch varBranch)
       {
-        Variation.Branch branch = (Variation.Branch)section;
-
         if (AddingBranch != null)
-        { fromControls = AddingBranch(leg, branch, fromControls, sections, branch.GetWhere()); }
+        { fromControls = AddingBranch(leg, varBranch, fromControls, sections, varBranch.GetWhere()); }
 
-        foreach (ISection control in branch)
+        foreach (ISection control in varBranch)
         {
-          fromControls = AppendSections(leg, control, fromControls, sections, branch.GetWhere());
+          fromControls = AppendSections(leg, control, fromControls, sections, varBranch.GetWhere());
         }
         toControls = fromControls;
       }
@@ -141,9 +135,8 @@ namespace OCourse.Ext
       IList<Control> fromControls, List<SimpleSection> sections, string where)
     {
       IList<Control> toControls;
-      if (section is Control)
+      if (section is Control to)
       {
-        Control to = (Control)section;
         foreach (Control from in fromControls)
         {
           MultiSection simple = new MultiSection(from, to);
@@ -153,9 +146,8 @@ namespace OCourse.Ext
         }
         toControls = new Control[] { to };
       }
-      else if (section is Fork)
+      else if (section is Fork fork)
       {
-        Fork fork = (Fork)section;
         List<Control> tos = new List<Control>(fork.Branches.Count);
         char code = 'A';
         foreach (Fork.Branch branch in fork.Branches)
@@ -172,12 +164,11 @@ namespace OCourse.Ext
         }
         toControls = tos;
       }
-      else if (section is Fork.Branch)
+      else if (section is Fork.Branch forkBranch)
       {
-        Fork.Branch branch = (Fork.Branch)section;
         List<Control> interBranch = new List<Control>();
         Control lastControl = null;
-        foreach (ISection control in branch)
+        foreach (ISection control in forkBranch)
         {
           if (control is Control)
           {
@@ -201,9 +192,8 @@ namespace OCourse.Ext
         }
         toControls = fromControls;
       }
-      else if (section is Variation)
+      else if (section is Variation var)
       {
-        Variation var = (Variation)section;
         List<Control> tos = new List<Control>();
         foreach (Variation.Branch branch in var.Branches)
         {
@@ -215,16 +205,14 @@ namespace OCourse.Ext
         }
         toControls = tos;
       }
-      else if (section is Variation.Branch)
+      else if (section is Variation.Branch varBranch)
       {
-        Variation.Branch branch = (Variation.Branch)section;
-
         if (AddingBranch != null)
-        { fromControls = AddingBranch(leg, branch, fromControls, sections, branch.GetWhere()); }
+        { fromControls = AddingBranch(leg, varBranch, fromControls, sections, varBranch.GetWhere()); }
 
         List<Control> interBranch = new List<Control>();
         Control lastControl = null;
-        foreach (ISection control in branch)
+        foreach (ISection control in varBranch)
         {
           if (control is Control)
           {
@@ -235,16 +223,16 @@ namespace OCourse.Ext
           {
             if (lastControl != null)
             {
-              fromControls = AppendParts(leg, lastControl, interBranch, fromControls, sections, branch.GetWhere());
+              fromControls = AppendParts(leg, lastControl, interBranch, fromControls, sections, varBranch.GetWhere());
               lastControl = null;
               interBranch = new List<Control>();
             }
-            fromControls = AppendParts(leg, control, interBranch, fromControls, sections, branch.GetWhere());
+            fromControls = AppendParts(leg, control, interBranch, fromControls, sections, varBranch.GetWhere());
           }
         }
         if (lastControl != null)
         {
-          fromControls = AppendParts(leg, lastControl, interBranch, fromControls, sections, branch.GetWhere());
+          fromControls = AppendParts(leg, lastControl, interBranch, fromControls, sections, varBranch.GetWhere());
         }
         toControls = fromControls;
       }

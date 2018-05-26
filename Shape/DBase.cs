@@ -15,7 +15,7 @@ namespace DBase
 
   public class DBaseColumn : DataColumn
   {
-    private const string DB_START = "start";
+    private const string _dbStart = "start";
     private string _dBaseName;
     private ColumnType _dBaseType;
     private int _length;

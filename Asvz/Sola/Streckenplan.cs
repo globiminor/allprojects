@@ -272,8 +272,7 @@ namespace Asvz.Sola
       string sText = bewilligung;
       double xMap = _printParam.Right * 100;
       double yMap = _printParam.Bottom * 100;
-      Ocad.Symbol.TextSymbol.RectFraming frame = _symBewilligung.Frame as Ocad.Symbol.TextSymbol.RectFraming;
-      if (frame != null)
+      if (_symBewilligung.Frame is Ocad.Symbol.TextSymbol.RectFraming frame)
       {
         xMap -= frame.Right;
         yMap += frame.Bottom;

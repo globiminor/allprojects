@@ -66,9 +66,8 @@ namespace TMap
 
     public Color? Color(double x, double y)
     {
-      int ix, iy;
       IGrid grd = _data.Raster;
-      if (grd.Extent.GetNearest(x, y, out ix, out iy) == false)
+      if (grd.Extent.GetNearest(x, y, out int ix, out int iy) == false)
       { return null; }
 
       if (grd.Type == typeof(Color))

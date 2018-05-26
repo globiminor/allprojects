@@ -186,7 +186,7 @@ namespace OCourse.Gui
           {
             DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn
             {
-              DataPropertyName = OCourseVm.StartNrName,
+              DataPropertyName = OCourseVm._startNrName,
               HeaderText = "StartNr"
             };
             col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
@@ -196,7 +196,7 @@ namespace OCourse.Gui
           {
             DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn
             {
-              DataPropertyName = OCourseVm.IndexName,
+              DataPropertyName = OCourseVm._indexName,
               HeaderText = "Index",
               Width = 50
             };
@@ -204,10 +204,10 @@ namespace OCourse.Gui
             dgvPermut.Columns.Add(col);
           }
 
-          int nPartName = OCourseVm.PartName.Length;
+          int nPartName = OCourseVm._partName.Length;
           foreach (DataColumn column in permutTbl.Columns)
           {
-            if (!column.ColumnName.StartsWith(OCourseVm.PartName))
+            if (!column.ColumnName.StartsWith(OCourseVm._partName))
             {
               continue;
             }
@@ -661,7 +661,7 @@ namespace OCourse.Gui
 
       ICost row = (ICost)dgvInfo.CurrentRow.DataBoundItem;
       string comb = row.Name;
-      if (comb.StartsWith(OCourseVm.MeanPrefix))
+      if (comb.StartsWith(OCourseVm._meanPrefix))
       { return string.Format("Invalid Course {0} selected", comb); }
 
       Setup setup;

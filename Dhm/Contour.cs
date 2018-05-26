@@ -94,7 +94,7 @@ namespace Dhm
 
     private static Comparer _comparer = new Comparer();
 
-    private SortedDictionary<Contour, NeighborInfo> neighbors;
+    private SortedDictionary<Contour, NeighborInfo> _neighbors;
 
     public Contour(int id, Polyline polyline, ContourType type)
     {
@@ -102,12 +102,12 @@ namespace Dhm
       _line = polyline;
       _type = type;
 
-      neighbors = new SortedDictionary<Contour, NeighborInfo>(_comparer);
+      _neighbors = new SortedDictionary<Contour, NeighborInfo>(_comparer);
     }
 
     internal SortedDictionary<Contour, NeighborInfo> Neighbors
     {
-      get { return neighbors; }
+      get { return _neighbors; }
     }
     public Polyline Polyline
     { get { return _line; } }

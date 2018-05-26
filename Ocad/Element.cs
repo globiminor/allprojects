@@ -165,7 +165,7 @@ namespace Ocad
   }
   public class ElementV8 : Element
   {
-    private double mdReservedHeight;
+    private double _reservedHeight;
 
     public ElementV8(bool isGeometryProjected)
       : base(isGeometryProjected)
@@ -174,9 +174,9 @@ namespace Ocad
     public double ReservedHeight
     {
       get
-      { return mdReservedHeight; }
+      { return _reservedHeight; }
       set
-      { mdReservedHeight = value; }
+      { _reservedHeight = value; }
     }
 
     public override ElementIndex GetIndex(OcadReader reader)

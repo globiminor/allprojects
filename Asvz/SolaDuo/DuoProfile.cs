@@ -33,8 +33,7 @@ namespace Asvz.SolaDuo
         double sumDist = 0;
         double distStart = 0;
         Random random = new Random(1);
-        double nextWald, nextHaus;
-        InitHausWald(out nextHaus, out nextWald);
+        InitHausWald(out double nextHaus, out double nextWald);
 
         WriteStart(writer, _data.PostenListe[0].Name, distStart, sumDist);
 

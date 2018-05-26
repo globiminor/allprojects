@@ -38,8 +38,7 @@ namespace Basics.Views
     {
       get
       {
-        string error;
-        if (!Errors.TryGetValue(columnName, out error))
+        if (!Errors.TryGetValue(columnName, out string error))
         { return null; }
 
         return error;

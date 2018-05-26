@@ -33,7 +33,7 @@ namespace TMapWin
         return vRow.Row;
       }
     }
-    private void btnOK_Click(object sender, EventArgs e)
+    private void BtnOK_Click(object sender, EventArgs e)
     {
       DialogResult = DialogResult.OK;
       Close();

@@ -18,37 +18,37 @@ namespace OCourse.Tracking
 
   class GpxIO
   {
-    private const string TrkSeg = "trkseg";
+    private const string _trkSeg = "trkseg";
 
-    private const string Trkpt = "trkpt";
-    private const string Lat = "lat";
-    private const string Lon = "lon";
-    private const string Ele = "ele";
-    private const string Time = "time";
+    private const string _trkpt = "trkpt";
+    private const string _lat = "lat";
+    private const string _lon = "lon";
+    private const string _ele = "ele";
+    private const string _time = "time";
 
     public static IList<TrackPoint> ReadData(string file)
     {
       DataSet ds = new DataSet();
       ds.ReadXml(file);
 
-      if (ds.Tables.Contains(Trkpt) == false)
+      if (ds.Tables.Contains(_trkpt) == false)
       {
         return null;
       }
 
-      DataTable tbl = ds.Tables[Trkpt];
+      DataTable tbl = ds.Tables[_trkpt];
 
       List<TrackPoint> pntList = new List<TrackPoint>();
       foreach (DataRow row in tbl.Rows)
       {
         TrackPoint pnt = new TrackPoint
         {
-          Lat = double.Parse(row[Lat].ToString()),
-          Long = double.Parse(row[Lon].ToString()),
-          H = double.Parse(row[Ele].ToString())
+          Lat = double.Parse(row[_lat].ToString()),
+          Long = double.Parse(row[_lon].ToString()),
+          H = double.Parse(row[_ele].ToString())
         };
 
-        string t = row[Time].ToString();
+        string t = row[_time].ToString();
         string[] dateTime = t.Split('T');
         string[] date = dateTime[0].Split('-');
         string[] time = dateTime[1].Split('Z')[0].Split(':');
@@ -73,24 +73,24 @@ namespace OCourse.Tracking
       double la = xyz.Y * 180.0 / Math.PI;
       double lo = xyz.X * 180.0 / Math.PI;
 
-      XmlNode trkpt = trkseg.OwnerDocument.CreateElement(Trkpt);
+      XmlNode trkpt = trkseg.OwnerDocument.CreateElement(_trkpt);
 
-      XmlAttribute lat = trkseg.OwnerDocument.CreateAttribute(Lat);
+      XmlAttribute lat = trkseg.OwnerDocument.CreateAttribute(_lat);
       lat.Value = la.ToString("N7");
       trkpt.Attributes.Append(lat);
 
-      XmlAttribute lon = trkseg.OwnerDocument.CreateAttribute(Lon);
+      XmlAttribute lon = trkseg.OwnerDocument.CreateAttribute(_lon);
       lon.Value = lo.ToString("N7");
       trkpt.Attributes.Append(lon);
 
-      XmlElement ele = trkseg.OwnerDocument.CreateElement(Ele);
+      XmlElement ele = trkseg.OwnerDocument.CreateElement(_ele);
       {
         XmlText txt = trkseg.OwnerDocument.CreateTextNode(xyz.Z.ToString("N7"));
         ele.AppendChild(txt);
       }
       trkpt.AppendChild(ele);
 
-      XmlElement time = trkseg.OwnerDocument.CreateElement(Time);
+      XmlElement time = trkseg.OwnerDocument.CreateElement(_time);
       {
         XmlText txt = trkseg.OwnerDocument.CreateTextNode(t.ToString("yyyy-MM-ddThh:mm:ssZ"));
         time.AppendChild(txt);
@@ -109,7 +109,7 @@ namespace OCourse.Tracking
       XmlElement trk = doc.CreateElement("trk");
       gpx.AppendChild(trk);
 
-      XmlElement trkseg = doc.CreateElement(TrkSeg);
+      XmlElement trkseg = doc.CreateElement(_trkSeg);
       trk.AppendChild(trkseg);
 
       return trkseg;

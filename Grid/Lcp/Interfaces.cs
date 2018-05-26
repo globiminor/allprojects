@@ -23,7 +23,7 @@ namespace Grid.Lcp
     double Calc(double dh, double vMean, double slope_2Mean, double dist);
   }
 
-  public interface IDirCostProvider
+  public interface IDirCostModel
   {
     Basics.Geom.IBox Extent { get; }
 
@@ -31,33 +31,15 @@ namespace Grid.Lcp
     double GetCost(IList<double> x, IList<double> y, IList<double> w, 
       double cellSize, double distance, bool inverse);
   }
-  public interface IDirCostProvider<T> : IDirCostProvider
+  public interface IDirCostModel<T> : IDirCostModel
   {
     T InitCell(double centerX, double centerY, double cellSize);
     double GetCost(IList<T> costInfos, IList<double> w, double distance, bool inverse);
   }
 
-  [Obsolete("move to other file")]
-  public class Teleport
-  {
-    public Basics.Geom.IPoint From { get; }
-    public Basics.Geom.IPoint ToPoint { get; }
-    public IDirCostProvider ToCostProvider { get; }
-    public double Cost { get; }
-  }
   public interface ITeleportProvider
   {
     IReadOnlyList<Teleport> GetTeleports();
-  }
-
-  public interface ICostProvider
-  {
-    IDirCostProvider GetDirCostProvider();
-    string FileFilter { get; }
-  }
-  public interface ICostProvider<T> : ICostProvider
-  {
-    new IDirCostProvider<T> GetDirCostProvider();
   }
 
   public interface IField

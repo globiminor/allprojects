@@ -146,8 +146,7 @@ namespace Basics.Geom
 
     public static bool IsMultipart(IGeometry geom)
     {
-      IMultipartGeometry multi = geom as IMultipartGeometry;
-      return multi != null && multi.HasSubparts;
+      return geom is IMultipartGeometry multi && multi.HasSubparts;
     }
 
     public abstract int Dimension { get; }
@@ -211,13 +210,12 @@ namespace Basics.Geom
 
     public static Point2D OutCircleCenter(IPoint p0, IPoint p1, IPoint p2)
     {
-      double f;
       Point s0 = 0.5 * PntOp.Add(p0, p1);
       Point dir0 = PntOp.Sub(p1, p0);
       Point s1 = 0.5 * PntOp.Add(p1, p2);
       Point dir1 = PntOp.Sub(p2, p1);
       return CutDirDir(s0, new Point2D(dir0.Y, -dir0.X), s1,
-        new Point2D(dir1.Y, -dir1.X), out f);
+        new Point2D(dir1.Y, -dir1.X), out double f);
     }
     public static double TriArea(IPoint p0, IPoint p1, IPoint p2)
     {

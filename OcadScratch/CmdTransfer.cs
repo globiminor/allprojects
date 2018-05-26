@@ -120,8 +120,7 @@ namespace OcadScratch
       }
       else if (type == SymbolType.Text)
       {
-        List<SymbolCurve> curves;
-        if (_charSymbols.TryGetValue(e.Symbol.Text, out curves))
+        if (_charSymbols.TryGetValue(e.Symbol.Text, out List<SymbolCurve> curves))
         {
           Basics.Geom.Point2D center = (Basics.Geom.Point2D)geom;
           TransferPoint(new Basics.Geom.Point2D(center.X - 2, center.Y - 2), (eGeom as DirectedPnt)?.Azimuth, curves, color, w);

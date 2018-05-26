@@ -15,40 +15,40 @@ namespace Macro
     [DllImport("Comdlg32.dll", CharSet = CharSet.Auto)]
     internal static extern bool GetOpenFileName([In, Out] OpenFileName ofn);
 
-    internal const int WM_SIZE = 0x0005;
-    internal const int WM_SHOWWINDOW = 0x0018;
-    internal const int WM_CHILDACTIVATE = 0x0022;
-    internal const int WM_SETFONT = 0x0030;
-    internal const int WM_WINDOWPOSCHANGING = 0x0046;
-    internal const int WM_WINDOWPOSCHANGED = 0x0047;
-    internal const int WM_NOTIFY = 0x004E;
-    internal const int WM_NCCALCSIZE = 0x0083;
-    internal const int WM_INITDIALOG = 0x0110;
-    internal const int WM_USER = 0x0400;
+    public const int WM_SIZE = 0x0005;
+    public const int WM_SHOWWINDOW = 0x0018;
+    public const int WM_CHILDACTIVATE = 0x0022;
+    public const int WM_SETFONT = 0x0030;
+    public const int WM_WINDOWPOSCHANGING = 0x0046;
+    public const int WM_WINDOWPOSCHANGED = 0x0047;
+    public const int WM_NOTIFY = 0x004E;
+    public const int WM_NCCALCSIZE = 0x0083;
+    public const int WM_INITDIALOG = 0x0110;
+    public const int WM_USER = 0x0400;
 
-    internal const int OFN_READONLY = 0x00000001;
-    internal const int OFN_HIDEREADONLY = 0x00000004;
-    internal const int OFN_NOCHANGEDIR = 0x00000008;
-    internal const int OFN_ENABLEHOOK = 0x00000020;
-    internal const int OFN_NOVALIDATE = 0x00000100;
-    internal const int OFN_ALLOWMULTISELECT = 0x00000200;
-    internal const int OFN_PATHMUSTEXIST = 0x00000800;
-    internal const int OFN_CREATEPROMPT = 0x00002000;
-    internal const int OFN_EXPLORER = 0x00080000;
-    internal const int OFN_NODEREFERENCELINKS = 0x00100000;
-    internal const int OFN_ENABLESIZING = 0x00800000;
+    public const int OFN_READONLY = 0x00000001;
+    public const int OFN_HIDEREADONLY = 0x00000004;
+    public const int OFN_NOCHANGEDIR = 0x00000008;
+    public const int OFN_ENABLEHOOK = 0x00000020;
+    public const int OFN_NOVALIDATE = 0x00000100;
+    public const int OFN_ALLOWMULTISELECT = 0x00000200;
+    public const int OFN_PATHMUSTEXIST = 0x00000800;
+    public const int OFN_CREATEPROMPT = 0x00002000;
+    public const int OFN_EXPLORER = 0x00080000;
+    public const int OFN_NODEREFERENCELINKS = 0x00100000;
+    public const int OFN_ENABLESIZING = 0x00800000;
 
-    internal const int CDM_FIRST = (WM_USER + 100);
-    internal const int CDM_GETSPEC = (CDM_FIRST + 0x0000);
-    internal const int CDM_GETFILEPATH = (CDM_FIRST + 0x0001);
-    internal const int CDM_GETFOLDERPATH = (CDM_FIRST + 0x0002);
+    public const int CDM_FIRST = (WM_USER + 100);
+    public const int CDM_GETSPEC = (CDM_FIRST + 0x0000);
+    public const int CDM_GETFILEPATH = (CDM_FIRST + 0x0001);
+    public const int CDM_GETFOLDERPATH = (CDM_FIRST + 0x0002);
 
-    internal const int CDN_FIRST = unchecked((int)(0U - 601U));
-    internal const int CDN_INITDONE = (CDN_FIRST - 0x0000);
-    internal const int CDN_SELCHANGE = (CDN_FIRST - 0x0001);
-    internal const int CDN_FOLDERCHANGE = (CDN_FIRST - 0x0002);
-    internal const int CDN_SHAREVIOLATION = (CDN_FIRST - 0x0003);
-    internal const int CDN_FILEOK = (CDN_FIRST - 0x0005);
+    public const int CDN_FIRST = unchecked((int)(0U - 601U));
+    public const int CDN_INITDONE = (CDN_FIRST - 0x0000);
+    public const int CDN_SELCHANGE = (CDN_FIRST - 0x0001);
+    public const int CDN_FOLDERCHANGE = (CDN_FIRST - 0x0002);
+    public const int CDN_SHAREVIOLATION = (CDN_FIRST - 0x0003);
+    public const int CDN_FILEOK = (CDN_FIRST - 0x0005);
 
     public static string GetFileDialogFolder(string dialogTitle)
     {

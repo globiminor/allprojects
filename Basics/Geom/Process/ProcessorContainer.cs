@@ -29,8 +29,7 @@ namespace Basics.Geom.Process
       ISearchEngine searchEngine = rowEnumerator.GetSearchEngine();
       foreach (ITablesProcessor spatialProc in spatialProcs)
       {
-        ISearchProcessor searchProc = spatialProc as ISearchProcessor;
-        if (searchProc != null)
+        if (spatialProc is ISearchProcessor searchProc)
         { searchProc.SearchEngine = searchEngine; }
       }
       foreach (ProcessRow row in rowEnumerator.GetProcessRows())

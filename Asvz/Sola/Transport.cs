@@ -354,11 +354,8 @@ namespace Asvz.Sola
 
         if (_transportBox != null)
         {
-          Polyline partEnd, partStart;
-          IPoint centerEnd, centerStart;
-
-          GetBorder(_transportBox, out partEnd, out partStart,
-            out centerEnd, out centerStart);
+          GetBorder(_transportBox, out Polyline partEnd, out Polyline partStart,
+            out IPoint centerEnd, out IPoint centerStart);
 
           WriteStartEnd(writer, centerStart, centerEnd, _transportBox);
 

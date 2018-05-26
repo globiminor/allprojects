@@ -308,20 +308,17 @@ namespace Basics.Data
 
     internal void OnStartingOperation(CancelEventArgs args)
     {
-      if (StartingOperation != null)
-      { StartingOperation(this, args); }
+      StartingOperation?.Invoke(this, args);
     }
 
     internal void OnCommittingOperation(EventArgs args)
     {
-      if (CommittingOperation != null)
-      { CommittingOperation(this, args); }
+      CommittingOperation?.Invoke(this, args);
     }
 
     internal void OnAbortingOperation(EventArgs args)
     {
-      if (AbortingOperation != null)
-      { AbortingOperation(this, args); }
+      AbortingOperation?.Invoke(this, args);
     }
 
     public new SimpleAdapter<T> CreateAdapter()

@@ -94,10 +94,10 @@ namespace TMapWin
       this.wdgMap.Name = "wdgMap";
       this.wdgMap.Size = new System.Drawing.Size(404, 282);
       this.wdgMap.TabIndex = 2;
-      this.wdgMap.MouseMoveMap += new System.Windows.Forms.MouseEventHandler(this.wdgMap_MouseMove);
-      this.wdgMap.DragDrop += new System.Windows.Forms.DragEventHandler(this.data_DragDrop);
-      this.wdgMap.Resize += new System.EventHandler(this.wdgMap_Resize);
-      this.wdgMap.DragEnter += new System.Windows.Forms.DragEventHandler(this.data_DragEnter);
+      this.wdgMap.MouseMoveMap += new System.Windows.Forms.MouseEventHandler(this.WdgMap_MouseMove);
+      this.wdgMap.DragDrop += new System.Windows.Forms.DragEventHandler(this.Data_DragDrop);
+      this.wdgMap.Resize += new System.EventHandler(this.WdgMap_Resize);
+      this.wdgMap.DragEnter += new System.Windows.Forms.DragEventHandler(this.Data_DragEnter);
       // 
       // splitter1
       // 
@@ -134,8 +134,8 @@ namespace TMapWin
       this.wdgToc.Name = "wdgToc";
       this.wdgToc.Size = new System.Drawing.Size(150, 282);
       this.wdgToc.TabIndex = 0;
-      this.wdgToc.DragDrop += new System.Windows.Forms.DragEventHandler(this.data_DragDrop);
-      this.wdgToc.DragEnter += new System.Windows.Forms.DragEventHandler(this.data_DragEnter);
+      this.wdgToc.DragDrop += new System.Windows.Forms.DragEventHandler(this.Data_DragDrop);
+      this.wdgToc.DragEnter += new System.Windows.Forms.DragEventHandler(this.Data_DragEnter);
       // 
       // txtPosition
       // 
@@ -195,7 +195,7 @@ namespace TMapWin
       this.mnuLoad.Name = "mnuLoad";
       this.mnuLoad.Size = new System.Drawing.Size(131, 22);
       this.mnuLoad.Text = "Load";
-      this.mnuLoad.Click += new System.EventHandler(this.mnuLoad_Click);
+      this.mnuLoad.Click += new System.EventHandler(this.MnuLoad_Click);
       // 
       // mnuRefresh_
       // 
@@ -204,7 +204,7 @@ namespace TMapWin
       this.mnuRefresh_.ShortcutKeys = System.Windows.Forms.Keys.F5;
       this.mnuRefresh_.Size = new System.Drawing.Size(131, 22);
       this.mnuRefresh_.Text = "Refresh";
-      this.mnuRefresh_.Click += new System.EventHandler(this.mnuRefresh_Click);
+      this.mnuRefresh_.Click += new System.EventHandler(this.MnuRefresh_Click);
       // 
       // optionsToolStripMenuItem
       // 
@@ -233,7 +233,7 @@ namespace TMapWin
       this.mniPluginNew.Name = "mniPluginNew";
       this.mniPluginNew.Size = new System.Drawing.Size(107, 22);
       this.mniPluginNew.Text = "New...";
-      this.mniPluginNew.Click += new System.EventHandler(this.mnuNew_Click);
+      this.mniPluginNew.Click += new System.EventHandler(this.MnuNew_Click);
       // 
       // optMove
       // 
@@ -246,7 +246,7 @@ namespace TMapWin
       this.optMove.Size = new System.Drawing.Size(24, 24);
       this.optMove.TabIndex = 16;
       this.optMove.UseVisualStyleBackColor = false;
-      this.optMove.Click += new System.EventHandler(this.optMove_Click);
+      this.optMove.Click += new System.EventHandler(this.OptMove_Click);
       // 
       // optSelect
       // 
@@ -259,7 +259,7 @@ namespace TMapWin
       this.optSelect.Size = new System.Drawing.Size(24, 24);
       this.optSelect.TabIndex = 13;
       this.optSelect.UseVisualStyleBackColor = false;
-      this.optSelect.Click += new System.EventHandler(this.optSelect_Click);
+      this.optSelect.Click += new System.EventHandler(this.OptSelect_Click);
       // 
       // optZoomOut
       // 
@@ -272,7 +272,7 @@ namespace TMapWin
       this.optZoomOut.Size = new System.Drawing.Size(24, 24);
       this.optZoomOut.TabIndex = 12;
       this.optZoomOut.UseVisualStyleBackColor = false;
-      this.optZoomOut.Click += new System.EventHandler(this.optZoomOut_Click);
+      this.optZoomOut.Click += new System.EventHandler(this.OptZoomOut_Click);
       // 
       // optZoomIn
       // 
@@ -283,7 +283,7 @@ namespace TMapWin
       this.optZoomIn.Name = "optZoomIn";
       this.optZoomIn.Size = new System.Drawing.Size(24, 24);
       this.optZoomIn.TabIndex = 11;
-      this.optZoomIn.Click += new System.EventHandler(this.optZoomIn_Click);
+      this.optZoomIn.Click += new System.EventHandler(this.OptZoomIn_Click);
       // 
       // WdgMain
       // 

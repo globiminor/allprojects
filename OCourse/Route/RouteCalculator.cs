@@ -323,17 +323,17 @@ namespace OCourse.Route
       //Box box = GetBox(calcList, endList);
 
       //GridTest.LeastCostPath path = new GridTest.LeastCostPath(new GridTest.Step16(), box, resolution);
-      IDirCostProvider<TvmCell> costProvider = new TerrainVeloModel(_heightGrid, VeloGrid)
+      IDirCostModel<TvmCell> costProvider = new TerrainVeloModel(_heightGrid, VeloGrid)
       { TvmCalc = _tvmCalc };
       LeastCostGrid<TvmCell> path = new LeastCostGrid<TvmCell>(costProvider, resolution, steps: Steps); // box: box);
       path.Status += RouteCalc_Status;
 
-      path.CalcCost(calcList[0].Start, endList, out IGrid<double> costGrid, out IGrid<int> dirGrid);
+      LeastCostData lcg = path.CalcCost(calcList[0].Start, endList);
       List<CostFromTo> result = new List<CostFromTo>();
       foreach (CostFromTo routeCost in calcList)
       {
-        double cost = costGrid.Value(routeCost.End.X, routeCost.End.Y);
-        Polyline route = GetRoute(path.Steps, dirGrid, costGrid, routeCost.Start, routeCost.End, out double dh, out double optimal);
+        double cost = lcg.CostGrid.Value(routeCost.End.X, routeCost.End.Y);
+        Polyline route = GetRoute(lcg, routeCost.Start, routeCost.End, out double dh, out double optimal);
 
         CostFromTo add = new CostFromTo(
           routeCost.From, routeCost.To, routeCost.Start, routeCost.End, resolution,
@@ -422,13 +422,13 @@ namespace OCourse.Route
 
 
       DateTime t0 = DateTime.Now;
-      path.CalcCost(start, end, out IGrid<double> costGrid, out IGrid<int> dirGrid);
+      LeastCostData lcg = path.CalcCost(start, end);
 
       DateTime t1 = DateTime.Now;
       TimeSpan dt = t1 - t0;
 
-      double cost = costGrid.Value(end.X, end.Y);
-      Polyline route = GetRoute(path.Steps, dirGrid, costGrid, start, end, out double dh, out double length);
+      double cost = lcg.CostGrid.Value(end.X, end.Y);
+      Polyline route = GetRoute(lcg, start, end, out double dh, out double length);
 
       OnStatusChanged(null);
 
@@ -441,10 +441,9 @@ namespace OCourse.Route
     }
 
     //private Polyline GetRoute(GridTest.LeastCostPath path, 
-    private Polyline GetRoute(Steps steps,
-      IGrid<int> dir, IGrid<double> costGrid, IPoint start, IPoint end, out double climb, out double optimal)
+    private Polyline GetRoute(LeastCostData lcg, IPoint start, IPoint end, out double climb, out double optimal)
     {
-      Polyline line = LeastCostGrid.GetPath(dir, steps, costGrid, end);
+      Polyline line = lcg.GetPath(end);
 
       line.Points.First.Value.X = start.X;
       line.Points.First.Value.Y = start.Y;

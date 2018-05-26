@@ -57,15 +57,13 @@ namespace Ocad
 
     public static Color FromRgb(byte r, byte g, byte b)
     {
-      double c, m, y, k;
-      RgbToCmyk(r / 255.0, g / 255.0, b / 255.0, out c, out m, out y, out k);
+      RgbToCmyk(r / 255.0, g / 255.0, b / 255.0, out double c, out double m, out double y, out double k);
       Color col = new Color { Cyan = (byte)(255 * c), Magenta = (byte)(255 * m), Yellow = (byte)(255 * y), Black = (byte)(255 * k) };
       return col;
     }
     public static Color ColorToCmyk(System.Drawing.Color color)
     {
-      double c, m, y, k;
-      ColorToCmyk(color, out c, out m, out y, out k);
+      ColorToCmyk(color, out double c, out double m, out double y, out double k);
       Color col = new Color { Cyan = (byte)(255 * c), Magenta = (byte)(255 * m), Yellow = (byte)(255 * y), Black = (byte)(255 * k) };
       return col;
     }
@@ -103,7 +101,7 @@ namespace Ocad
     private int _res;
     private Color _color;
     private string _name;
-    private string msSepPercentage;
+    private string _sepPercentage;
 
     public ColorInfo()
     {
@@ -154,9 +152,9 @@ namespace Ocad
     public string SepPercentage
     {
       get
-      { return msSepPercentage; }
+      { return _sepPercentage; }
       set
-      { msSepPercentage = value; }
+      { _sepPercentage = value; }
     }
 
     public override string ToString()
@@ -175,46 +173,46 @@ namespace Ocad
 
   public class ColorSeparation
   {
-    private string msName;
-    private Color mpColor;
-    private int miRasterFreq;
-    private int miRasterAng;
+    private string _name;
+    private Color _color;
+    private int _rasterFreq;
+    private int _rasterAng;
 
     public ColorSeparation()
     {
-      mpColor = new Color();
+      _color = new Color();
     }
 
     public Color Color
     {
       get
-      { return mpColor; }
+      { return _color; }
       set
-      { mpColor = value; }
+      { _color = value; }
     }
 
     public string Name
     {
       get
-      { return msName; }
+      { return _name; }
       set
-      { msName = value; }
+      { _name = value; }
     }
 
     public int RasterFreq
     {
       get
-      { return miRasterFreq; }
+      { return _rasterFreq; }
       set
-      { miRasterFreq = value; }
+      { _rasterFreq = value; }
     }
 
     public int RasterAngle
     {
       get
-      { return miRasterAng; }
+      { return _rasterAng; }
       set
-      { miRasterAng = value; }
+      { _rasterAng = value; }
     }
 
     public override string ToString()
@@ -227,8 +225,8 @@ namespace Ocad
         "  black   = {4,3}\n" +
         "  Raster frequency = {5,5}\n" +
         "  Raster angle     = {6,5}",
-        msName, mpColor.Cyan, mpColor.Magenta, mpColor.Yellow, mpColor.Black,
-        miRasterFreq, miRasterAng);
+        _name, _color.Cyan, _color.Magenta, _color.Yellow, _color.Black,
+        _rasterFreq, _rasterAng);
     }
   }
 }

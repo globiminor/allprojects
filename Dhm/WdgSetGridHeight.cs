@@ -30,7 +30,7 @@ namespace Dhm
         DataSourceUpdateMode.OnPropertyChanged));
     }
 
-    private void btnExport_Click(object sender, EventArgs e)
+    private void BtnExport_Click(object sender, EventArgs e)
     {
       if (_setGridHeight == null) { return; }
 

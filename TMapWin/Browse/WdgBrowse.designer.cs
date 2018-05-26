@@ -65,7 +65,7 @@ namespace TMapWin.Browse
       this.btnOpen.TabIndex = 3;
       this.btnOpen.Text = "Open";
       this.btnOpen.UseVisualStyleBackColor = true;
-      this.btnOpen.Click += new System.EventHandler(this.btnOpen_Click);
+      this.btnOpen.Click += new System.EventHandler(this.BtnOpen_Click);
       // 
       // WdgBrowse
       // 

@@ -35,7 +35,7 @@ namespace Dhm
       this.btnOK.TabIndex = 0;
       this.btnOK.Text = "Continue";
       this.btnOK.UseVisualStyleBackColor = true;
-      this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
+      this.btnOK.Click += new System.EventHandler(this.BtnOK_Click);
       // 
       // grdContours
       // 
@@ -58,7 +58,7 @@ namespace Dhm
       this.btnZoom.TabIndex = 2;
       this.btnZoom.Text = "Zoom";
       this.btnZoom.UseVisualStyleBackColor = true;
-      this.btnZoom.Click += new System.EventHandler(this.btnZoom_Click);
+      this.btnZoom.Click += new System.EventHandler(this.BtnZoom_Click);
       // 
       // btnRedraw
       // 
@@ -69,7 +69,7 @@ namespace Dhm
       this.btnRedraw.TabIndex = 3;
       this.btnRedraw.Text = "Redraw";
       this.btnRedraw.UseVisualStyleBackColor = true;
-      this.btnRedraw.Click += new System.EventHandler(this.btnRedraw_Click);
+      this.btnRedraw.Click += new System.EventHandler(this.BtnRedraw_Click);
       // 
       // btnJoin
       // 
@@ -80,7 +80,7 @@ namespace Dhm
       this.btnJoin.TabIndex = 4;
       this.btnJoin.Text = "Join";
       this.btnJoin.UseVisualStyleBackColor = true;
-      this.btnJoin.Click += new System.EventHandler(this.btnJoin_Click);
+      this.btnJoin.Click += new System.EventHandler(this.BtnJoin_Click);
       // 
       // btnSave
       // 
@@ -91,7 +91,7 @@ namespace Dhm
       this.btnSave.TabIndex = 5;
       this.btnSave.Text = "Save";
       this.btnSave.UseVisualStyleBackColor = true;
-      this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
+      this.btnSave.Click += new System.EventHandler(this.BtnSave_Click);
       // 
       // grdJoinOptions
       // 

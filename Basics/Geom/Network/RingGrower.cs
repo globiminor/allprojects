@@ -45,13 +45,11 @@ namespace Basics.Geom.Network
 
     public LineList Add(DirectedRow row0, DirectedRow row1)
     {
-      LineList pre, post;
-
-      if (_endRows.TryGetValue(row0, out pre))
+      if (_endRows.TryGetValue(row0, out LineList pre))
       {
         _endRows.Remove(row0);
       }
-      if (_startRows.TryGetValue(row1, out post))
+      if (_startRows.TryGetValue(row1, out LineList post))
       {
         _startRows.Remove(row1);
       }
@@ -104,8 +102,7 @@ namespace Basics.Geom.Network
 
     private void OnClosing(LineList closedPolygon)
     {
-      if (GeometryCompleted != null)
-      { GeometryCompleted(this, closedPolygon); }
+      GeometryCompleted?.Invoke(this, closedPolygon);
     }
 
     public void ResolvePoint(IPoint point, List<DirectedRow> intersectList, DirectedRow row)

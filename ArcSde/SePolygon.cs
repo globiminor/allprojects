@@ -7,8 +7,7 @@ namespace ArcSde
     internal SePolygon(IntPtr linePtr, bool allowFree)
       : base(linePtr, allowFree)
     {
-      int nPoints;
-      CApi.SE_shape_get_num_points(_shpPtr, 0, 0, out nPoints);
+      CApi.SE_shape_get_num_points(_shpPtr, 0, 0, out int nPoints);
     }
 
     public SePolygon(Se_Point[][] pointList)

@@ -18,17 +18,17 @@ namespace ArcSde
   //-------------------------------------------------------------------------
   internal class CApi
   {
-    private const string sdeDll = "sde.dll";
+    private const string _sdeDll = "sde.dll";
 
     #region instance
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_instance_get_users(string server, string instance,
       ref IntPtr userList, ref int userCount);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_instance_free_users(IntPtr userList, int userCount);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_instance_control(string server, string instance, string passwd,
       int option, int pid);
 
@@ -37,28 +37,28 @@ namespace ArcSde
     #region connection
 
     #region state
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_state_get_info(IntPtr connection, Int32 stateId, IntPtr stateInfo);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_state_create(IntPtr connection,
         IntPtr stateInfo, Int32 parentStateId, IntPtr resultStateInfo);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_state_new_edit(IntPtr connection,
         IntPtr stateInfo, Int32 parentStateId, IntPtr resultStateInfo);
 
     #endregion
 
     #region version
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_version_get_info(IntPtr connection, string versionName, IntPtr versionInfo);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_version_change_state(IntPtr connection, IntPtr versionInfo, Int32 newStateId);
     #endregion
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_connection_create(string server,
         string instance,
         string database,
@@ -66,125 +66,125 @@ namespace ArcSde
         string password,
         ref Se_Error error,
         ref IntPtr conn);
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_connection_reconnect(
       IntPtr conn,ref Se_Error error);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_connection_start_transaction(IntPtr conn);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_connection_rollback_transaction(IntPtr conn);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_connection_commit_transaction(IntPtr conn);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_connection_get_ext_error(
         IntPtr Connection,
         ref Se_Error Error);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern void SE_connection_free(IntPtr conn);
 
     #endregion
 
     #region coordref
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_coordref_create(out IntPtr coordref);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_coordref_duplicate(IntPtr src_ref, IntPtr tgt_ref);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_coordref_set_xy(IntPtr coordref,
         double falsex,
         double falsey,
         double xyunits);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern void SE_coordref_free(IntPtr coordref);
     #endregion
 
     #region layerinfo
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_layerinfo_create(IntPtr coordref,
         out IntPtr layerinfo);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_layerinfo_set_spatial_column(
         IntPtr layerinfo,
         string table,
         string column);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_layer_get_info(IntPtr Connection,
         string table,
         string column,
         IntPtr Layer);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_layer_get_info_list(IntPtr connection,
       out IntPtr layer_list, // SE_LAYERINFO** layer_list,
       out int num_layers);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern void SE_layer_free_info_list(int count, IntPtr layer_list);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_layer_get_info_by_id(IntPtr Connection,
         Int32 layer_id,
         IntPtr Layer);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_layerinfo_get_spatial_column(IntPtr Layerinfo,
         [In, Out] char[] table,
         [In, Out] char[] column);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_layerinfo_get_coordref(IntPtr layerinfo,
         IntPtr Coordref);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_layerinfo_get_envelope(IntPtr layerinfo,
         ref Se_Envelope extent);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_layerinfo_set_shape_types(
         IntPtr layerinfo,
         Int32 shape_types);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_layerinfo_get_shape_types(
         IntPtr layerinfo,
         out Int32 shape_types);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_layerinfo_set_grid_sizes(IntPtr layerinfo,
         double grid_size,
         double grid_size2,
         double grid_size3);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_layerinfo_get_grid_sizes(IntPtr layerinfo,
         out double grid_size,
         out double grid_size2,
         out double grid_size3);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_layerinfo_set_creation_keyword(
         IntPtr layerinfo,
         string config_keyword);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern void SE_layerinfo_free(IntPtr Layerinfo);
     #endregion
 
     #region layer
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_layer_create(IntPtr Connection,
         IntPtr Layerinfo,
         Single initialf,
@@ -193,143 +193,143 @@ namespace ArcSde
 
     #region error
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_error_get_string(Int32 error_code,
         [Out] char[] error_string);
     #endregion
 
     #region query
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_queryinfo_create(ref IntPtr queryInfo);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern void SE_queryinfo_free(IntPtr queryInfo);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_queryinfo_set_tables(IntPtr queryInfo,
         int nrTables, string[] tableList, string[] aliasList);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_queryinfo_set_columns(IntPtr queryInfo,
         int nrColumns, string[] columnList);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_queryinfo_set_where_clause(IntPtr queryInfo,
         string whereClause);
 
     #endregion
 
     #region raster
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_rasterinfo_create(ref IntPtr rasterinfo);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern void SE_rasterinfo_free(IntPtr rasterinfo);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_rasterattr_create(ref IntPtr rasAttr, bool inputMode);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern void SE_rasterattr_free(IntPtr rasAttr);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_rasterattr_get_extent_by_level(IntPtr rasterAttr,
         ref Se_Envelope extent, ref double coordOffsetX, ref double coordOffsetY, int level);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_rasterattr_get_image_size_by_level(IntPtr rasterAttr,
         ref int pixelWidth, ref int pixelHeight, ref int pixelOffetX, ref int pixelOffsetY,
         ref int nrBands, int level);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_rasterattr_get_tile_size(IntPtr rasterAttr, ref int tileWidth, ref int tileHeight);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_rascolinfo_create(ref IntPtr rasterColumInfo);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern void SE_rascolinfo_free(IntPtr rasterColumnInfo);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_rascolinfo_get_id(IntPtr rasterColumnInfo,
         ref Int32 rasterColumnId);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_rascolinfo_get_raster_column(IntPtr rasColInfo,
       char[] table, char[] column);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     unsafe
     internal static extern Int32 SE_rastercolumn_get_info_list(IntPtr connection,
       out IntPtr* arrayPos, out int count);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_rastercolumn_get_info_by_name(IntPtr connection,
             string table, string column, IntPtr rasColInfo);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_raster_get_info_by_id(IntPtr connection,
         int columnId, int rasterId, IntPtr rasterBandInfo);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_raster_get_bands(IntPtr connection, IntPtr raster,
         ref IntPtr[] rasterBands, ref Int32 nrBands);
 
     #region rasbandinfo
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_rasbandinfo_create(ref IntPtr rasBandInfo);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern void SE_rasbandinfo_free(IntPtr rasBandInfo);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_rasbandinfo_get_band_size(IntPtr rasBandInfo,
         ref Int32 width, ref Int32 height);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_rasbandinfo_get_extent(IntPtr rasBandInfo,
         IntPtr extent);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_rasbandinfo_get_pixel_type(IntPtr rasBandInfo,
         ref Int32 pixelType);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_rasterband_get_info_by_id(IntPtr connection,
         Int32 rasterColId, Int32 bandId, IntPtr rasBandInfo);
 
     #endregion
 
     #region rasconstraint
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_rasconstraint_create(ref IntPtr rasConstraint);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern void SE_rasconstraint_free(IntPtr rasConstraint);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_rasconstraint_reset(IntPtr rasConstraint);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_rasconstraint_set_bands(IntPtr rasConstraint, int nrBands,
         int[] bandList);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_rasconstraint_set_envelope(IntPtr rasConstraint,
         int minx, int miny, int maxx, int maxy);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_rasconstraint_set_level(IntPtr rasConstraint, int level);
     #endregion
 
     #region rastileinfo
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_rastileinfo_create(ref IntPtr rasTileInfo);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_rastileinfo_free(IntPtr rasTileInfo);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_rastileinfo_get_pixel_data(IntPtr rasTileInfo,
         ref IntPtr data, ref int length);
 
@@ -339,29 +339,29 @@ namespace ArcSde
 
     #region shape
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_shape_create(IntPtr Coordref,
         out IntPtr Shape);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern void SE_shape_free(IntPtr Shape);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern void SE_shape_free_array(int nShape, IntPtr[] shapeList);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_shape_generate_point(Int32 num_pts,
         Se_Point[] arrSePoint,
         double[] z,
         double[] measure,
         IntPtr Shape);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_shape_generate_line(Int32 num_pts,
       Int32 num_parts, Int32[] part_offsets, Se_Point[] point_array,
       double[] z, double[] measure, IntPtr tgt_shape);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_shape_generate_polygon(Int32 num_pts,
         Int32 num_parts,
         Int32[] part_offsets,
@@ -370,15 +370,15 @@ namespace ArcSde
         double[] measure,
         IntPtr Shape);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_shape_generate_rectangle(
         [In] IntPtr pEnvelope,
         IntPtr Shape);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_shape_as_simple_line(IntPtr srcShape, IntPtr tgtShape);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_shape_get_points(IntPtr Shape,
         Int32 part_num,
         Int16 rotEnum,
@@ -387,57 +387,57 @@ namespace ArcSde
         double[] z,
         double[] measure);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_shape_get_num_parts(IntPtr Shape,
         out int arrNumParts,
         out int arrNumSubParts);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_shape_get_num_subparts(IntPtr Shape,
         int part_num,
         out int arrNumSubParts);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_shape_get_num_points(IntPtr Shape,
         int part_num,
         int subpart_num,
         out int arrNumPts);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_shape_get_extent(IntPtr shape,
       Int32 part_num, ref Se_Envelope envelope);
 
     #region shape relation
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern bool SE_shape_is_crossing(IntPtr primaryShape,
       IntPtr secondaryShape);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern bool SE_shape_is_disjoint(IntPtr primaryShape,
       IntPtr secondaryShape);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern bool SE_shape_is_within(IntPtr primaryShape,
       IntPtr secondaryShape);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern bool SE_shape_is_equal(IntPtr primaryShape,
       IntPtr secondaryShape);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern bool SE_shape_is_overlapping(IntPtr primaryShape,
       IntPtr secondaryShape);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern bool SE_shape_is_touching(IntPtr primaryShape,
       IntPtr secondaryShape);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_shape_build(IntPtr srcShape, int mode,
       bool dissolve, int matchMask, IntPtr tgtShape);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_shape_intersect(IntPtr primaryShape,
       IntPtr secondaryShape, ref int numShape, ref IntPtr[] intersections);
 
@@ -445,29 +445,29 @@ namespace ArcSde
 
     #region shape properties
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern bool SE_shape_is_point(IntPtr shape);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern bool SE_shape_is_line(IntPtr shape);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern bool SE_shape_is_simple_line(IntPtr shape);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern bool SE_shape_is_multipart(IntPtr shape);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern bool SE_shape_is_polygon(IntPtr shape);
 
     #endregion
 
     #region shape Elevation and Measure
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern bool SE_shape_is_3D(IntPtr shape);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern bool SE_shape_is_measured(IntPtr shape);
 
     #endregion
@@ -476,25 +476,25 @@ namespace ArcSde
 
     #region stream
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_create(IntPtr Connection,
         ref IntPtr Stream);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_free(IntPtr stream);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_bind_output_column(IntPtr Stream,
         Int16 column,
         IntPtr data,
         IntPtr indicator);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_delete_row(IntPtr Stream,
         string table,
         Int32 sde_row_id);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_close(IntPtr Stream,
         Int32 reset);
 
@@ -510,122 +510,122 @@ namespace ArcSde
     /// <param name="columns">const CHAR **columns</param>
     /// <param name="sqlConstruct">const SE_SQL_CONSTRUCT *construct</param>/>
     //-------------------------------------------------------------------------
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_query(IntPtr Stream, Int16 num_columns,
         [In, Out] String[] columns, ref Se_Sql_Construct sqlConstruct);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_query_with_info(IntPtr stream, IntPtr queryInfo);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_set_raster_constraint(IntPtr stream,
         IntPtr rasterConstraint);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_query_raster_tile(IntPtr stream, IntPtr rasterConstraint);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_execute(IntPtr Stream);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_fetch(IntPtr Stream);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_fetch_row(IntPtr Stream,
         string table
         , Int32 sde_row_id
         , Int16 num_columns
         , [In, Out] String[] columns);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_get_string(IntPtr Stream,
         Int16 column,
         IntPtr string_val);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_get_nstring(IntPtr Stream,
         Int16 column,
         IntPtr wchar);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_get_double(IntPtr Stream,
         Int16 column,
         out double double_val);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_get_uuid(IntPtr Stream,
         Int16 column,
         IntPtr guid_val);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_get_date(IntPtr Stream,
         Int16 column,
-        out tm date_val);
+        out Tm date_val);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_get_integer(IntPtr Stream,
         Int16 column,
         out int int_val);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_get_smallint(IntPtr Stream,
         Int16 column,
         out Int16 short_val);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_get_raster(IntPtr stream,
         Int16 column, IntPtr rasterAttr);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_get_raster_tile(IntPtr stream, IntPtr rasterTile);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_get_shape(IntPtr Stream,
         Int16 column,
         [In, Out] IntPtr Shape);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_set_shape(IntPtr Stream,
         Int16 column,
         IntPtr Shape);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_set_integer(IntPtr Stream,
         Int16 column,
         Int32 int_val);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_set_spatial_constraints(IntPtr Stream,
         Int16 search_order,
         bool calc_masks,
         Int16 num_filters,
         [In] Se_Filter[] filters);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_insert_table(IntPtr Stream,
         char[] table,
         Int16 num_columns,
         [In, Out] String[] columns);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_last_inserted_row_id(IntPtr Stream,
         Int32[] arrLastRowId);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_delete_by_id_list(IntPtr stream,
         string table, Int32[] idList, int idCount);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_get_ext_error(
         IntPtr Stream,
         ref Se_Error Error);
 
     #region version
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_set_state(IntPtr stream, Int32 sourceId,
         Int32 differencesId, Int32 differenceType);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stream_copy_state_rows(IntPtr stream, string table,
         Int32[] rowIdList, Int32 rowIdCount);
     #endregion
@@ -634,66 +634,66 @@ namespace ArcSde
 
     #region sql
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_sql_construct_alloc(
         Int32 num_tables,
         out IntPtr ppSe_sql_construct);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern void SE_sql_construct_free(IntPtr pSe_sql_construct);
     #endregion
 
     #region state
     #region stateinfo
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stateinfo_create(ref IntPtr stateInfo);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern void SE_stateinfo_free(IntPtr stateInfo);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_stateinfo_get_id(IntPtr stateInfo, ref Int32 stateId);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
-    internal static extern Int32 SE_stateinfo_get_closing_time(IntPtr stateInfo, ref tm time);
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    internal static extern Int32 SE_stateinfo_get_closing_time(IntPtr stateInfo, ref Tm time);
 
     #endregion
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_state_close(IntPtr connection, Int32 stateId);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_state_open(IntPtr connection, Int32 stateId);
     #endregion
 
     #region table
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern unsafe Int32 SE_table_list_(IntPtr connection,
       int permissions,
       out int num_tables,
       byte*** tables);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_table_list(IntPtr connection,
       int permissions,
       out int num_tables,
       out IntPtr tables);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern void SE_table_free_list
       (int num_tables,
       IntPtr tables);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_table_create(IntPtr connection,
         string table,
         Int16 num_columns,
         Se_Column_Def[] column_defs,
         string config_keyword);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_table_create_view(IntPtr connection,
       string view,
       Int16 num_view_columns,
@@ -702,29 +702,29 @@ namespace ArcSde
       IntPtr[] table_columns,
       ref Se_Sql_Construct sqlc);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_table_delete(IntPtr connection,
         string table);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_table_get_column_list(IntPtr conn, string _name, out IntPtr columns,
                                                           out short nColumns);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern void SE_table_free_column_list(short nColumns, IntPtr columns);
 
     #region columninfo
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern int SE_columninfo_get_decimal_digits(IntPtr se_columnInfo, out int decimal_digits);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern int SE_columninfo_get_description(IntPtr info, [In, Out] char[] description);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern int SE_columninfo_get_name(IntPtr info, [In, Out] char[] name);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern int SE_columninfo_get_type(IntPtr info, out int type);
 
     #endregion
@@ -732,16 +732,16 @@ namespace ArcSde
     #endregion
 
     #region versioninfo
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_versioninfo_create(ref IntPtr versionInfo);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern void SE_versioninfo_free(IntPtr versionInfo);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_versioninfo_get_state_id(IntPtr versionInfo, ref Int32 stateId);
 
-    [DllImport(sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
+    [DllImport(_sdeDll, SetLastError = true, ThrowOnUnmappableChar = true)]
     internal static extern Int32 SE_versioninfo_set_state_id(IntPtr versionInfo, Int32 stateId);
 
     #endregion
@@ -780,35 +780,35 @@ namespace ArcSde
     /// <summary>
     /// C-Def: LONG num_tables
     /// </summary>
-    private Int32 num_tables;
+    private Int32 _numTables;
     ///// <summary>
     ///// C-Def: CHAR **tables
     ///// </summary>
-    private IntPtr tables;
+    private IntPtr _tables;
     /// <summary>
     /// C-Def: CHAR *where
     /// </summary>
-    private string where;
+    private string _where;
 
     public Se_Sql_Construct(string[] tables, string where)
     {
-      num_tables = tables.Length;
+      _numTables = tables.Length;
       IntPtr values = Api.GetIntPtr(tables);
-      this.tables = values;
-      this.where = where;
+      _tables = values;
+      _where = where;
     }
 
     public void Dispose()
     {
-      for (int i = 0; i < num_tables; i++)
+      for (int i = 0; i < _numTables; i++)
       {
         unsafe
         {
-          Marshal.FreeHGlobal(new IntPtr(((byte**)tables)[i]));
+          Marshal.FreeHGlobal(new IntPtr(((byte**)_tables)[i]));
         }
       }
 
-      Marshal.FreeHGlobal(tables);
+      Marshal.FreeHGlobal(_tables);
     }
   }
 
@@ -866,7 +866,7 @@ namespace ArcSde
     /// C-Def: SHORT decimal_digits: number of digits after decimal
     /// </summary>
     public Int16 decimal_digits;
-    private Int32 nulls_allowed;
+    private Int32 _nullsAllowed;
     /// <summary>
     /// C-Def: SHORT row_id_type: column's use as table's row id
     /// </summary>
@@ -874,8 +874,8 @@ namespace ArcSde
 
     public bool Nulls_Allowed
     { // Methode, wird nicht gemarshalled
-      get { return Convert.ToBoolean(nulls_allowed); }
-      set { nulls_allowed = Convert.ToInt32(value); }
+      get { return Convert.ToBoolean(_nullsAllowed); }
+      set { _nullsAllowed = Convert.ToInt32(value); }
     }
   }
 
@@ -907,7 +907,7 @@ namespace ArcSde
       filter = f;
       filter_type = SdeType.SE_SHAPE_FILTER;
       method = m;
-      truth = true;
+      _truth = true;
     }
     /// <summary>
     /// C-Def: CHAR table[SE_QUALIFIED_TABLE_NAME]: the spatial table name -> [ MarshalAs(UnmanagedType.ByValArray, SizeConst=226)]
@@ -931,7 +931,7 @@ namespace ArcSde
     /// C-Def: LONG method: the search method to satisfy
     /// </summary>
     public Int32 method;
-    private bool truth;
+    private bool _truth;
     /// <summary>
     /// C-Def: char *cbm_source: set ONLY if the method is SM_CBM
     /// </summary>
@@ -947,8 +947,8 @@ namespace ArcSde
     /// <value name="Truth">TRUE to pass the test, FALSE if it must NOT pass</value>
     public bool Truth
     {
-      get { return Convert.ToBoolean(truth); }
-      set { truth = value; }
+      get { return Convert.ToBoolean(_truth); }
+      set { _truth = value; }
     }
     /*public string Cbm_source
     {
@@ -1027,9 +1027,9 @@ namespace ArcSde
 
   }
 
-  struct tm
+  struct Tm
   {
-    public tm(DateTime tmVal)
+    public Tm(DateTime tmVal)
     {
       tm_sec = tmVal.Second;
       tm_min = tmVal.Minute;

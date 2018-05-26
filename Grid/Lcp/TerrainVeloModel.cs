@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Grid.Lcp
 {
-  public class TerrainVeloModel : IDirCostProvider<TvmCell>, ITeleportProvider
+  public class TerrainVeloModel : IDirCostModel<TvmCell>, ITeleportProvider
   {
     public IDoubleGrid HeightGrid { get; }
     public IGrid<double> VelocityGrid { get; }
@@ -44,7 +44,7 @@ namespace Grid.Lcp
 
     public double MinUnitCost { get { return TvmCalc.MinUnitCost; } }
 
-    double IDirCostProvider.GetCost(IList<double> x, IList<double> y, IList<double> w,
+    double IDirCostModel.GetCost(IList<double> x, IList<double> y, IList<double> w,
       double cellSize, double distance, bool inverse)
     {
       List<TvmCell> pts = new List<TvmCell>(x.Count);

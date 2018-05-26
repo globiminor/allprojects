@@ -257,9 +257,8 @@ namespace OCourse.Ext
           PreInfo pre = new PreInfo(c, cost);
           preList.Add(pre);
         }
-        else if (section is Fork)
+        else if (section is Fork fork)
         {
-          Fork fork = (Fork)section;
           List<ForkInfo> branches = new List<ForkInfo>();
           foreach (Fork.Branch branch in fork.Branches)
           {
@@ -301,9 +300,8 @@ namespace OCourse.Ext
             preList.Add(pre);
           }
         }
-        else if (section is Variation)
+        else if (section is Variation var)
         {
-          Variation var = (Variation)section;
           Variation.Branch branch = var.GetBranch(leg + 1);
           preList = WriteList(list, branch, leg, nLegs, preList, routeCosts);
         }
@@ -618,8 +616,7 @@ namespace OCourse.Ext
         }
 
         info.TeamName = parts[0];
-        int leg;
-        if (int.TryParse(parts[1], out leg) == false)
+        if (int.TryParse(parts[1], out int leg) == false)
         {
           info.Error = "Invalid Leg in StartNr";
           return info;

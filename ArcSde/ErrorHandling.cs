@@ -48,7 +48,7 @@ namespace ArcSde
 		/// <param name="rc">Return Code aus ArcSDE (Error code)</param>
 		/// <exception cref="SdeException"></exception>
 		//-------------------------------------------------------------------------
-		public static void checkRC(IntPtr conn, IntPtr stream, Int32 rc) 
+		public static void CheckRC(IntPtr conn, IntPtr stream, Int32 rc) 
 		{ 
 			if ( (rc != SdeErrNo.SE_SUCCESS) && (rc != SdeErrNo.SE_FINISHED) ) 
 			{ 

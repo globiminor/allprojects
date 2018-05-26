@@ -152,14 +152,12 @@ namespace TMapWin.Div
 
       foreach (Curve seg in line.Segments)
       {
-        if (seg is Line)
+        if (seg is Line l)
         {
-          Line l = (Line)seg;
           path.AddLine(GetPoint(l.Start), GetPoint(l.End));
         }
-        else if (seg is Bezier)
+        else if (seg is Bezier b)
         {
-          Bezier b = (Bezier)seg;
           path.AddBezier(GetPoint(b.Start), GetPoint(b.P1), GetPoint(b.P2), GetPoint(b.End));
         }
       }
@@ -199,8 +197,7 @@ namespace TMapWin.Div
 
     public void EndDraw(ISymbolPart symbolPart)
     {
-      Pen pen;
-      if (_symbolPens.TryGetValue(symbolPart, out pen))
+      if (_symbolPens.TryGetValue(symbolPart, out Pen pen))
       {
         _symbolPens.Remove(symbolPart);
         pen.Dispose();

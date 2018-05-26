@@ -58,28 +58,24 @@ namespace OCourse
       XmlNode ocourseNode = doc.SelectSingleNode("//OCourse");
       if (ocourseNode == null)
       { return config; }
-      XmlElement dhmNode = ocourseNode.SelectSingleNode("./Dhm") as XmlElement;
-      if (dhmNode != null)
+      if (ocourseNode.SelectSingleNode("./Dhm") is XmlElement dhmNode)
       {
         XmlAttribute attr = dhmNode.Attributes["name"];
         if (attr != null) config.Dhm = attr.Value;
       }
-      XmlElement veloNode = ocourseNode.SelectSingleNode("./Velocity") as XmlElement;
-      if (veloNode != null)
+      if (ocourseNode.SelectSingleNode("./Velocity") is XmlElement veloNode)
       {
         XmlAttribute attr = veloNode.Attributes["name"];
         if (attr != null) config.Velo = attr.Value;
       }
 
-      XmlElement stepNode = ocourseNode.SelectSingleNode("./Step") as XmlElement;
-      if (stepNode != null)
+      if (ocourseNode.SelectSingleNode("./Step") is XmlElement stepNode)
       {
         XmlAttribute attr = stepNode.Attributes["size"];
         if (attr != null) config.Resolution = double.Parse(attr.Value);
       }
 
-      XmlElement routesNode = ocourseNode.SelectSingleNode("./Routes") as XmlElement;
-      if (routesNode != null)
+      if (ocourseNode.SelectSingleNode("./Routes") is XmlElement routesNode)
       {
         XmlAttribute attr = routesNode.Attributes["name"];
         if (attr != null) config.Routes = attr.Value;

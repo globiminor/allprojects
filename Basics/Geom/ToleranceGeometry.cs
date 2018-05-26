@@ -50,8 +50,7 @@ namespace Basics.Geom
       if (_base.IsWithin(point))
       { return true; }
 
-      IPoint pnt = _base as IPoint;
-      if (pnt != null)
+      if (_base is IPoint pnt)
       {
         double dist2 = PointOperator.Dist2(point, pnt);
         double tol2 = _tolerance * _tolerance;

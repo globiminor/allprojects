@@ -31,7 +31,7 @@ namespace OCourse
       _routeCosts = costInfos;
     }
 
-    private void btnCourseXml_Click(object sender, EventArgs e)
+    private void BtnCourseXml_Click(object sender, EventArgs e)
     {
       string filter = dlgOpen.Filter;
       dlgOpen.Filter = "*.xml | *.xml";
@@ -44,19 +44,19 @@ namespace OCourse
       txtCourseXml.Text = dlgOpen.FileName;
     }
 
-    private void btnVerify_Click(object sender, EventArgs e)
+    private void BtnVerify_Click(object sender, EventArgs e)
     {
       RelayAdapt adapt = new RelayAdapt(txtCourseOcd.Text, txtCourseXml.Text);
       adapt.VerifyFromTo();
     }
 
-    private void btnEstimate_Click(object sender, EventArgs e)
+    private void BtnEstimate_Click(object sender, EventArgs e)
     {
       RelayAdapt adapt = new RelayAdapt(txtCourseOcd.Text, txtCourseXml.Text);
       adapt.EstimateFromTo();
     }
 
-    private void btnCombinations_Click(object sender, EventArgs e)
+    private void BtnCombinations_Click(object sender, EventArgs e)
     {
       string sTxt = Path.GetDirectoryName(txtCourseOcd.Text)
         + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(txtCourseOcd.Text)
@@ -76,7 +76,7 @@ namespace OCourse
       adapt.ExportCoursesTxt(sTxt, _routeCosts);
     }
 
-    private void btnCreateCsv_Click(object sender, EventArgs e)
+    private void BtnCreateCsv_Click(object sender, EventArgs e)
     {
       string csvExport = Path.GetDirectoryName(txtCourseXml.Text)
         + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(txtCourseXml.Text)
@@ -87,7 +87,7 @@ namespace OCourse
       adapt.ExportCoursesCsv(csvExport);
     }
 
-    private void btnExportTxtV8_Click(object sender, EventArgs e)
+    private void BtnExportTxtV8_Click(object sender, EventArgs e)
     {
       string txtExport = Path.GetDirectoryName(txtCourseXml.Text)
         + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(txtCourseXml.Text)
@@ -101,7 +101,7 @@ namespace OCourse
       adapt.ExportCoursesTxtV8(txtExport, dummyPrefix);
     }
 
-    private void btnAdaptMaps_Click(object sender, EventArgs e)
+    private void BtnAdaptMaps_Click(object sender, EventArgs e)
     {
       string txtTemplate = txtGrafics.Text;
       string txtBahn = txtMapFolder.Text;
@@ -116,7 +116,7 @@ namespace OCourse
 
     }
 
-    private void btnGrafics_Click(object sender, EventArgs e)
+    private void BtnGrafics_Click(object sender, EventArgs e)
     {
       string filter = dlgOpen.Filter;
       dlgOpen.Filter = "*.ocd | *.ocd";
@@ -130,7 +130,7 @@ namespace OCourse
 
     }
 
-    private void bntMapFolder_Click(object sender, EventArgs e)
+    private void BntMapFolder_Click(object sender, EventArgs e)
     {
       dlgFolder.SelectedPath = Path.GetDirectoryName(txtMapFolder.Text);
 

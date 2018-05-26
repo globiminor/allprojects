@@ -38,8 +38,7 @@ namespace Basics.Data
 
     public bool TryGetValue(K key, out V value)
     {
-      LinkedListNode<Pair> node;
-      if (_dict.TryGetValue(key, out node))
+      if (_dict.TryGetValue(key, out LinkedListNode<Pair> node))
       {
         value = node.Value.Value;
 

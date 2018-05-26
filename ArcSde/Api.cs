@@ -91,7 +91,7 @@ namespace ArcSde
     public static void SE_instance_get_users(string server, string instance,
       ref IntPtr userList, ref int userCount)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_instance_get_users(server, instance, ref userList, ref userCount));
     }
 
@@ -99,7 +99,7 @@ namespace ArcSde
     {
       IntPtr lst = IntPtr.Zero;
       int userCount = 0;
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_instance_get_users(server, instance, ref lst, ref userCount));
 
       Se_Instance_User[] userList = new Se_Instance_User[userCount];
@@ -130,21 +130,21 @@ namespace ArcSde
 
     internal static void SE_state_get_info(IntPtr connection, Int32 stateID, IntPtr stateInfo)
     {
-      ErrorHandling.checkRC(connection, IntPtr.Zero,
+      ErrorHandling.CheckRC(connection, IntPtr.Zero,
         CApi.SE_state_get_info(connection, stateID, stateInfo));
     }
 
     internal static void SE_state_create(IntPtr connection,
       IntPtr stateInfo, Int32 parentStateId, IntPtr resultStateInfo)
     {
-      ErrorHandling.checkRC(connection, IntPtr.Zero,
+      ErrorHandling.CheckRC(connection, IntPtr.Zero,
         CApi.SE_state_create(connection, stateInfo, parentStateId, resultStateInfo));
     }
 
     public static void SE_state_new_edit(IntPtr connection,
       IntPtr stateInfo, Int32 parentStateId, IntPtr resultStateInfo)
     {
-      ErrorHandling.checkRC(connection, IntPtr.Zero,
+      ErrorHandling.CheckRC(connection, IntPtr.Zero,
         CApi.SE_state_new_edit(connection, stateInfo, parentStateId, resultStateInfo));
     }
 
@@ -153,13 +153,13 @@ namespace ArcSde
     #region version
     internal static void SE_version_get_info(IntPtr connection, string versionName, IntPtr versionInfo)
     {
-      ErrorHandling.checkRC(connection, IntPtr.Zero,
+      ErrorHandling.CheckRC(connection, IntPtr.Zero,
         CApi.SE_version_get_info(connection, versionName, versionInfo));
     }
 
     internal static void SE_version_change_state(IntPtr connection, IntPtr versionInfo, Int32 newStateId)
     {
-      ErrorHandling.checkRC(connection, IntPtr.Zero,
+      ErrorHandling.CheckRC(connection, IntPtr.Zero,
         CApi.SE_version_change_state(connection, versionInfo, newStateId));
     }
 
@@ -173,33 +173,33 @@ namespace ArcSde
       ref Se_Error error,
       ref IntPtr conn)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_connection_create(server, instance, database, username,
         password, ref error, ref conn));
     }
 
     internal static void SE_connection_start_transaction(IntPtr conn)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_connection_start_transaction(conn));
     }
 
     internal static void SE_connection_rollback_transaction(IntPtr conn)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_connection_rollback_transaction(conn));
     }
 
     internal static void SE_connection_commit_transaction(IntPtr conn)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_connection_commit_transaction(conn));
     }
 
     public static void SE_connection_get_ext_error(IntPtr Connection,
       ref Se_Error Error)
     {
-      ErrorHandling.checkRC(Connection, IntPtr.Zero,
+      ErrorHandling.CheckRC(Connection, IntPtr.Zero,
         CApi.SE_connection_get_ext_error(Connection, ref Error));
     }
 
@@ -214,7 +214,7 @@ namespace ArcSde
 
     public static void SE_coordref_create(ref IntPtr coordref)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_coordref_create(out coordref));
     }
 
@@ -223,7 +223,7 @@ namespace ArcSde
       Single falsey,
       Single xyunits)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_coordref_set_xy(coordref, falsex, falsey, xyunits));
     }
 
@@ -238,7 +238,7 @@ namespace ArcSde
     public static void SE_layerinfo_create(IntPtr coordref,
       out IntPtr layerinfo)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_layerinfo_create(coordref, out layerinfo));
     }
 
@@ -246,7 +246,7 @@ namespace ArcSde
       string table,
       string column)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_layerinfo_set_spatial_column(layerinfo, table, column));
     }
 
@@ -254,21 +254,21 @@ namespace ArcSde
       char[] table,
       char[] column)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_layerinfo_get_spatial_column(Layerinfo, table, column));
     }
 
     public static void SE_layerinfo_get_coordref(IntPtr Layerinfo,
       IntPtr Coordref)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_layerinfo_get_coordref(Layerinfo, Coordref));
     }
 
     public static void SE_layerinfo_set_shape_types(IntPtr layerinfo,
       Int32 shape_types)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_layerinfo_set_shape_types(layerinfo, shape_types));
     }
 
@@ -276,7 +276,7 @@ namespace ArcSde
       IntPtr layerinfo,
       out Int32 shape_types)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_layerinfo_get_shape_types(layerinfo, out shape_types));
     }
 
@@ -285,7 +285,7 @@ namespace ArcSde
       double grid_size2,
       double grid_size3)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_layerinfo_set_grid_sizes(layerinfo, grid_size, grid_size2,
         grid_size3));
     }
@@ -295,7 +295,7 @@ namespace ArcSde
       out double grid_size2,
       out double grid_size3)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_layerinfo_get_grid_sizes(layerinfo, out grid_size,
         out grid_size2, out grid_size3));
     }
@@ -303,7 +303,7 @@ namespace ArcSde
     public static void SE_layerinfo_set_creation_keyword(IntPtr layerinfo,
       string config_keyword)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_layerinfo_set_creation_keyword(layerinfo, config_keyword));
     }
 
@@ -319,7 +319,7 @@ namespace ArcSde
       Int32 layer_id,
       IntPtr Layer)
     {
-      ErrorHandling.checkRC(connection.Conn, IntPtr.Zero,
+      ErrorHandling.CheckRC(connection.Conn, IntPtr.Zero,
         CApi.SE_layer_get_info_by_id(connection.Conn, layer_id, Layer));
     }
 
@@ -328,7 +328,7 @@ namespace ArcSde
       Single initialf,
       Single avg_points)
     {
-      ErrorHandling.checkRC(Connection, IntPtr.Zero,
+      ErrorHandling.CheckRC(Connection, IntPtr.Zero,
         CApi.SE_layer_create(Connection, Layerinfo, initialf, avg_points));
     }
     #endregion
@@ -338,7 +338,7 @@ namespace ArcSde
     public static void SE_error_get_string(Int32 error_code,
       char[] error_string)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_error_get_string(error_code, error_string));
     }
     #endregion
@@ -346,7 +346,7 @@ namespace ArcSde
     #region query
     public static void SE_queryinfo_create(ref IntPtr queryInfo)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_queryinfo_create(ref queryInfo));
     }
     public static void SE_queryinfo_free(IntPtr queryInfo)
@@ -356,13 +356,13 @@ namespace ArcSde
 
     public static void SE_queryinfo_set_tables(IntPtr queryInfo, string[] tableList, string[] aliasList)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_queryinfo_set_tables(queryInfo, tableList.Length, tableList, aliasList));
     }
 
     public static void SE_queryinfo_set_columns(IntPtr queryInfo, string[] columnList)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_queryinfo_set_columns(queryInfo, columnList.Length, columnList));
     }
 
@@ -372,7 +372,7 @@ namespace ArcSde
     #region rasterinfo
     public static void SE_rasterinfo_create(ref IntPtr raster)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_rasterinfo_create(ref raster));
     }
 
@@ -385,7 +385,7 @@ namespace ArcSde
     #region rasterattr
     public static void SE_rasterattr_create(ref IntPtr rasAttr, bool inputMode)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_rasterattr_create(ref rasAttr, inputMode));
     }
 
@@ -397,7 +397,7 @@ namespace ArcSde
     public static void SE_rasterattr_get_extent_by_level(IntPtr rasterAttr,
       ref Se_Envelope extent, ref double coordOffsetX, ref double coordOffsetY, int level)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_rasterattr_get_extent_by_level(rasterAttr,
         ref extent, ref coordOffsetX, ref coordOffsetY, level));
     }
@@ -405,14 +405,14 @@ namespace ArcSde
       ref int pixelWidth, ref int pixelHeight, ref int pixelOffetX, ref int pixelOffsetY,
       ref int nrBands, int level)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_rasterattr_get_image_size_by_level(rasterAttr,
       ref pixelWidth, ref pixelHeight, ref pixelOffetX, ref pixelOffsetY,
       ref nrBands, level));
     }
     public static void SE_rasterattr_get_tile_size(IntPtr rasterAttr, ref int tileWidth, ref int tileHeight)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_rasterattr_get_tile_size(rasterAttr, ref tileWidth, ref tileHeight));
     }
     #endregion
@@ -420,7 +420,7 @@ namespace ArcSde
     #region rascolinfo
     public static void SE_rascolinfo_create(ref IntPtr rasColInfo)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_rascolinfo_create(ref rasColInfo));
     }
 
@@ -431,7 +431,7 @@ namespace ArcSde
 
     public static void SE_rascolinfo_get_id(IntPtr rasColInfo, ref int rasterColumnId)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_rascolinfo_get_id(rasColInfo, ref rasterColumnId));
     }
 
@@ -439,7 +439,7 @@ namespace ArcSde
     {
       char[] t = new char[SdeType.SE_QUALIFIED_TABLE_NAME];
       char[] c = new char[SdeType.SE_MAX_COLUMN_LEN];
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_rascolinfo_get_raster_column(rasColInfo, t, c));
       table = new string(t);
       col = new string(c);
@@ -450,11 +450,8 @@ namespace ArcSde
     {
       unsafe
       {
-        IntPtr* pos;
-        int count;
-
-        ErrorHandling.checkRC(connection, IntPtr.Zero,
-        CApi.SE_rastercolumn_get_info_list(connection, out pos, out count));
+        ErrorHandling.CheckRC(connection, IntPtr.Zero,
+        CApi.SE_rastercolumn_get_info_list(connection, out IntPtr* pos, out int count));
 
         rascol_list = new IntPtr[count];
         for (int i = 0; i < count; i++)
@@ -467,7 +464,7 @@ namespace ArcSde
     public static void SE_rastercolumn_get_info_by_name(IntPtr connection,
       string table, string column, IntPtr rasColInfo)
     {
-      ErrorHandling.checkRC(connection, IntPtr.Zero,
+      ErrorHandling.CheckRC(connection, IntPtr.Zero,
         CApi.SE_rastercolumn_get_info_by_name(connection, table, column, rasColInfo));
     }
     #endregion
@@ -476,14 +473,14 @@ namespace ArcSde
     public static void SE_raster_get_info_by_id(IntPtr connection,
       int columnId, int rasterId, IntPtr rasterInfo)
     {
-      ErrorHandling.checkRC(connection, IntPtr.Zero,
+      ErrorHandling.CheckRC(connection, IntPtr.Zero,
         CApi.SE_raster_get_info_by_id(connection, columnId, rasterId, rasterInfo));
     }
 
     public static void SE_raster_get_bands(IntPtr connection, IntPtr raster, ref IntPtr[] rasterBands)
     {
       int nrBands = 0;
-      ErrorHandling.checkRC(connection, IntPtr.Zero,
+      ErrorHandling.CheckRC(connection, IntPtr.Zero,
         CApi.SE_raster_get_bands(connection, raster, ref rasterBands, ref nrBands));
     }
     #endregion
@@ -491,7 +488,7 @@ namespace ArcSde
     #region rasbandinfo
     public static void SE_rasbandinfo_create(ref IntPtr rasBandInfo)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_rasbandinfo_create(ref rasBandInfo));
     }
     public static void SE_rasbandinfo_free(IntPtr rasBandInfo)
@@ -501,7 +498,7 @@ namespace ArcSde
     public static void SE_rasbandinfo_get_band_size(IntPtr rasBandInfo,
       ref Int32 width, ref Int32 height)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_rasbandinfo_get_band_size(rasBandInfo, ref width, ref height));
     }
     public static void SE_rasbandinfo_get_extent(IntPtr rasBandInfo, ref Se_Envelope extent)
@@ -513,7 +510,7 @@ namespace ArcSde
         Marshal.StructureToPtr(extent, ptrExtent, false);
 
         //				ptrExtent = Marshal.GetIDispatchForObject(extent);
-        ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+        ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
           CApi.SE_rasbandinfo_get_extent(rasBandInfo, ptrExtent));
 
         extent = (Se_Envelope)Marshal.PtrToStructure(ptrExtent, typeof(Se_Envelope));
@@ -525,13 +522,13 @@ namespace ArcSde
     }
     public static void SE_rasbandinfo_get_pixel_type(IntPtr rasBandInfo, ref Int32 pixelType)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_rasbandinfo_get_pixel_type(rasBandInfo, ref pixelType));
     }
     public static void SE_rasterband_get_info_by_id(IntPtr connection, Int32 rasterColId,
       Int32 bandId, IntPtr rasBandInfo)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_rasterband_get_info_by_id(connection, rasterColId, bandId, rasBandInfo));
     }
     #endregion
@@ -539,7 +536,7 @@ namespace ArcSde
     #region rasconstraint
     public static void SE_rasconstraint_create(ref IntPtr rasConstraint)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_rasconstraint_create(ref rasConstraint));
     }
     public static void SE_rasconstraint_free(IntPtr rasConstraint)
@@ -548,24 +545,24 @@ namespace ArcSde
     }
     public static void SE_rasconstraint_reset(IntPtr rasConstraint)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_rasconstraint_reset(rasConstraint));
     }
     public static void SE_rasconstraint_set_bands(IntPtr rasConstraint,
       int[] bandList)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_rasconstraint_set_bands(rasConstraint, bandList.Length, bandList));
     }
     public static void SE_rasconstraint_set_envelope(IntPtr rasConstraint,
       int minx, int miny, int maxx, int maxy)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_rasconstraint_set_envelope(rasConstraint, minx, miny, maxx, maxy));
     }
     public static void SE_rasconstraint_set_level(IntPtr rasConstraint, int level)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_rasconstraint_set_level(rasConstraint, level));
     }
 
@@ -574,7 +571,7 @@ namespace ArcSde
     #region rastileinfo
     public static void SE_rastileinfo_create(ref IntPtr rasTileInfo)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_rastileinfo_create(ref rasTileInfo));
     }
 
@@ -593,7 +590,7 @@ namespace ArcSde
         int l;
         float* res;
 
-        ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+        ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
           CApi.SE_rastileinfo_get_pixel_data(rasTileInfo, ref ptrData, ref length));
         res = (float*)ptrData.ToPointer();
         l = data.Length;
@@ -613,7 +610,7 @@ namespace ArcSde
     public static void SE_shape_create(IntPtr Coordref,
       ref IntPtr Shape)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_shape_create(Coordref, out Shape));
     }
 
@@ -628,7 +625,7 @@ namespace ArcSde
       double[] measure,
       IntPtr Shape)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_shape_generate_point(num_pts, arrSePoint, z, measure, Shape));
     }
 
@@ -640,7 +637,7 @@ namespace ArcSde
       double[] measure,
       IntPtr Shape)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_shape_generate_polygon(num_pts, num_parts, part_offsets,
         arrSePoint, z, measure, Shape));
     }
@@ -648,7 +645,7 @@ namespace ArcSde
     public static void SE_shape_generate_rectangle(IntPtr pEnvelope,
       IntPtr Shape)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_shape_generate_rectangle(pEnvelope, Shape));
     }
 
@@ -660,7 +657,7 @@ namespace ArcSde
       double[] z,
       double[] measure)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_shape_get_points(Shape, part_num, rotEnum, subpart_offsets,
         arrSePoint, z, measure));
     }
@@ -669,7 +666,7 @@ namespace ArcSde
       out int arrNumParts,
       out int arrNumSubParts)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_shape_get_num_parts(Shape, out arrNumParts, out arrNumSubParts));
     }
 
@@ -677,7 +674,7 @@ namespace ArcSde
       int part_num,
       out int arrNumSubParts)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_shape_get_num_subparts(Shape, part_num, out arrNumSubParts));
     }
 
@@ -686,7 +683,7 @@ namespace ArcSde
       int subpart_num,
       out int arrNumPts)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_shape_get_num_points(Shape, part_num, subpart_num, out arrNumPts));
     }
     #endregion
@@ -698,26 +695,26 @@ namespace ArcSde
     public static void SE_stream_create(IntPtr Connection,
       ref IntPtr Stream)
     {
-      ErrorHandling.checkRC(Connection, IntPtr.Zero,
+      ErrorHandling.CheckRC(Connection, IntPtr.Zero,
         CApi.SE_stream_create(Connection, ref Stream));
     }
 
     public static void SE_stream_execute(IntPtr Stream)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, Stream,
+      ErrorHandling.CheckRC(IntPtr.Zero, Stream,
         CApi.SE_stream_execute(Stream));
     }
 
     public static void SE_stream_close(IntPtr Stream,
       Int32 reset)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, Stream,
+      ErrorHandling.CheckRC(IntPtr.Zero, Stream,
         CApi.SE_stream_close(Stream, reset));
     }
 
     public static void SE_stream_free(IntPtr stream)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, stream,
+      ErrorHandling.CheckRC(IntPtr.Zero, stream,
         CApi.SE_stream_free(stream));
     }
     #endregion
@@ -739,7 +736,7 @@ namespace ArcSde
       string table,
       Int32 sde_row_id)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, Stream,
+      ErrorHandling.CheckRC(IntPtr.Zero, Stream,
         CApi.SE_stream_delete_row(Stream, table, sde_row_id));
     }
 
@@ -747,32 +744,32 @@ namespace ArcSde
       String[] columnList,
       Se_Sql_Construct sqlConstruct)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, stream,
+      ErrorHandling.CheckRC(IntPtr.Zero, stream,
         CApi.SE_stream_query(stream, (short)columnList.Length, columnList, ref sqlConstruct));
     }
 
     public static void SE_stream_query_with_info(IntPtr stream, IntPtr queryInfo)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, stream,
+      ErrorHandling.CheckRC(IntPtr.Zero, stream,
         CApi.SE_stream_query_with_info(stream, queryInfo));
     }
 
     public static void SE_stream_set_raster_constraint(IntPtr stream, IntPtr rasterConstraint)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, stream,
+      ErrorHandling.CheckRC(IntPtr.Zero, stream,
         CApi.SE_stream_set_raster_constraint(stream, rasterConstraint));
     }
 
     public static void SE_stream_query_raster_tile(IntPtr stream, IntPtr rasterConstraint)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, stream,
+      ErrorHandling.CheckRC(IntPtr.Zero, stream,
         CApi.SE_stream_query_raster_tile(stream, rasterConstraint));
     }
 
     public static Int32 SE_stream_fetch(IntPtr stream)
     {
       int rc = CApi.SE_stream_fetch(stream);
-      ErrorHandling.checkRC(IntPtr.Zero, stream, rc);
+      ErrorHandling.CheckRC(IntPtr.Zero, stream, rc);
       return rc;
     }
 
@@ -782,7 +779,7 @@ namespace ArcSde
       , Int16 num_columns
       , String[] columns)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, Stream,
+      ErrorHandling.CheckRC(IntPtr.Zero, Stream,
         CApi.SE_stream_fetch_row(Stream, table, sde_row_id, num_columns,
         columns));
     }
@@ -820,14 +817,14 @@ namespace ArcSde
     public static void SE_stream_get_raster(IntPtr stream,
       Int16 column, IntPtr rasterAttr)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, stream,
+      ErrorHandling.CheckRC(IntPtr.Zero, stream,
         CApi.SE_stream_get_raster(stream, column, rasterAttr));
     }
 
     public static int SE_stream_get_raster_tile(IntPtr stream, IntPtr rasterTile)
     {
       int res = CApi.SE_stream_get_raster_tile(stream, rasterTile);
-      ErrorHandling.checkRC(IntPtr.Zero, stream, res);
+      ErrorHandling.CheckRC(IntPtr.Zero, stream, res);
       return res;
     }
 
@@ -835,7 +832,7 @@ namespace ArcSde
       Int16 column,
       IntPtr Shape)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, Stream,
+      ErrorHandling.CheckRC(IntPtr.Zero, Stream,
         CApi.SE_stream_get_shape(Stream, column, Shape));
     }
 
@@ -843,7 +840,7 @@ namespace ArcSde
       Int16 column,
       IntPtr Shape)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, Stream,
+      ErrorHandling.CheckRC(IntPtr.Zero, Stream,
         CApi.SE_stream_set_shape(Stream, column, Shape));
     }
 
@@ -851,7 +848,7 @@ namespace ArcSde
       Int16 column,
       Int32 int_val)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, Stream,
+      ErrorHandling.CheckRC(IntPtr.Zero, Stream,
         CApi.SE_stream_set_integer(Stream, column, int_val));
     }
 
@@ -861,7 +858,7 @@ namespace ArcSde
       Int16 num_filters,
       Se_Filter[] filters)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, Stream,
+      ErrorHandling.CheckRC(IntPtr.Zero, Stream,
         CApi.SE_stream_set_spatial_constraints(Stream, search_order,
         calc_masks, num_filters, filters));
     }
@@ -871,21 +868,21 @@ namespace ArcSde
       Int16 num_columns,
       String[] columns)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, Stream,
+      ErrorHandling.CheckRC(IntPtr.Zero, Stream,
         CApi.SE_stream_insert_table(Stream, table, num_columns, columns));
     }
 
     public static void SE_stream_last_inserted_row_id(IntPtr Stream,
       Int32[] arrLastRowId)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, Stream,
+      ErrorHandling.CheckRC(IntPtr.Zero, Stream,
         CApi.SE_stream_last_inserted_row_id(Stream, arrLastRowId));
     }
 
     internal static void SE_stream_delete_by_id_list(IntPtr stream,
       string table, Int32[] idList)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, stream,
+      ErrorHandling.CheckRC(IntPtr.Zero, stream,
         CApi.SE_stream_delete_by_id_list(stream, table, idList, idList.Length));
     }
     #endregion
@@ -895,7 +892,7 @@ namespace ArcSde
     public static void SE_stream_get_ext_error(IntPtr Stream,
       ref Se_Error Error)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, Stream,
+      ErrorHandling.CheckRC(IntPtr.Zero, Stream,
         CApi.SE_stream_get_ext_error(Stream, ref Error));
     }
     #endregion
@@ -905,14 +902,14 @@ namespace ArcSde
     internal static void SE_stream_set_state(IntPtr stream,
       Int32 sourceId, Int32 differencesId, Int32 differenceType)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, stream,
+      ErrorHandling.CheckRC(IntPtr.Zero, stream,
         CApi.SE_stream_set_state(stream, sourceId, differencesId, differenceType));
     }
 
     internal static void SE_stream_copy_state_rows(IntPtr stream,
       string table, Int32[] rowIdList)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, stream,
+      ErrorHandling.CheckRC(IntPtr.Zero, stream,
         CApi.SE_stream_copy_state_rows(stream, table, rowIdList, rowIdList.Length));
     }
 
@@ -934,7 +931,7 @@ namespace ArcSde
     public static void SE_sql_construct_alloc(Int32 num_tables,
       out IntPtr ppSe_sql_construct)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_sql_construct_alloc(num_tables, out ppSe_sql_construct));
     }
 
@@ -959,7 +956,7 @@ namespace ArcSde
 
     internal static void SE_stateinfo_create(ref IntPtr stateInfo)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_stateinfo_create(ref stateInfo));
     }
 
@@ -970,14 +967,14 @@ namespace ArcSde
 
     internal static void SE_stateinfo_get_id(IntPtr stateInfo, ref Int32 stateId)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_stateinfo_get_id(stateInfo, ref stateId));
     }
 
     internal static void SE_stateinfo_get_closing_time(IntPtr stateInfo, ref DateTime closing, out bool isNull)
     {
-      tm t = new tm();
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      Tm t = new Tm();
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_stateinfo_get_closing_time(stateInfo, ref t));
 
       isNull = t.IsNull();
@@ -991,13 +988,13 @@ namespace ArcSde
 
     internal static void SE_state_close(IntPtr connection, Int32 stateId)
     {
-      ErrorHandling.checkRC(connection, IntPtr.Zero,
+      ErrorHandling.CheckRC(connection, IntPtr.Zero,
         CApi.SE_state_close(connection, stateId));
     }
 
     public static void SE_state_open(IntPtr connection, Int32 stateId)
     {
-      ErrorHandling.checkRC(connection, IntPtr.Zero,
+      ErrorHandling.CheckRC(connection, IntPtr.Zero,
         CApi.SE_state_open(connection, stateId));
     }
 
@@ -1022,7 +1019,7 @@ namespace ArcSde
 
     internal static void SE_versioninfo_create(ref IntPtr versionInfo)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_versioninfo_create(ref versionInfo));
     }
 
@@ -1033,13 +1030,13 @@ namespace ArcSde
 
     internal static void SE_versioninfo_get_state_id(IntPtr versionInfo, ref Int32 stateId)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_versioninfo_get_state_id(versionInfo, ref stateId));
     }
 
     public static void SE_versioninfo_set_state_id(IntPtr versionInfo, Int32 stateId)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero,
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero,
         CApi.SE_versioninfo_set_state_id(versionInfo, stateId));
     }
 

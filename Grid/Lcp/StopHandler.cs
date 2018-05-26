@@ -7,8 +7,7 @@ namespace Grid.Lcp
   {
     private class StopInfo
     {
-      public IField Field { get; set; }
-      public int[] Stop { get; set; }
+      public IField Stop { get; set; }
       public double Cost { get; set; }
       public bool Handled { get; set; }
     }
@@ -18,15 +17,14 @@ namespace Grid.Lcp
     private IField _startField;
     private StopInfo _maxFullCostField;
 
-    public StopHandler(IList<int[]> stops, double minCellCost)
+    public StopHandler(IList<IField> stops, double minCellCost)
     {
       _stopDict = new Dictionary<IField, StopInfo>(new FieldComparer());
       _minCellCost = minCellCost;
 
-      foreach (int[] stop in stops)
+      foreach (IField stop in stops)
       {
-        Field field = new Field { X = stop[0], Y = stop[1] };
-        _stopDict[field] = new StopInfo { Field = field, Stop = stop, Cost = -1 };
+        _stopDict[stop] = new StopInfo { Stop = stop, Cost = -1 };
       }
     }
 
@@ -60,18 +58,18 @@ namespace Grid.Lcp
       if (!_maxFullCostField.Handled)
       { return false; }
 
-      bool removed = _stopDict.Remove(_maxFullCostField.Field);
+      bool removed = _stopDict.Remove(_maxFullCostField.Stop);
       if (_stopDict.Count == 0)
       { return true; }
 
       _maxFullCostField = FindMaxField(_startField);
-      RefreshMinCosts(_maxFullCostField.Field, costList);
+      RefreshMinCosts(_maxFullCostField.Stop, costList);
       return false;
     }
 
     bool ICostOptimizer.AdaptCost(ICostField field)
     {
-      return SetMinRestCost(field as IRestCostField, _maxFullCostField.Field);
+      return SetMinRestCost(field as IRestCostField, _maxFullCostField.Stop);
     }
 
     private StopInfo FindMaxField(IField startField)
@@ -84,7 +82,7 @@ namespace Grid.Lcp
         if (stopInfo.Handled)
         { continue; }
 
-        IField stop = stopInfo.Field;
+        IField stop = stopInfo.Stop;
         int dx = stop.X - startField.X;
         int dy = stop.Y - startField.Y;
         double dist = dx * dx + dy * dy;

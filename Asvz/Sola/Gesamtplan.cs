@@ -319,9 +319,7 @@ namespace Asvz.Sola
       int n = Ddx.Uebergabe.Count;
       for (int i = 0; i < n; i++)
       {
-        Polyline box;
-        Point pos;
-        UebergabeTransport.GetLayout(i, out box, out pos, false);
+        UebergabeTransport.GetLayout(i, out Polyline box, out Point pos, false);
 
         if (box != null)
         {

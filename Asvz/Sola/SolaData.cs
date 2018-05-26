@@ -111,8 +111,7 @@ namespace Asvz.Sola
         { strecken.Add(elem); }
         else if (elem.Symbol == SymT.TextStrecke)
         {
-          int iStrecke;
-          if (int.TryParse(elem.Text, out iStrecke))
+          if (int.TryParse(elem.Text, out int iStrecke))
           { nummern.Add(elem); }
         }
         else if (elem.Symbol == SymT.Transport)
@@ -289,12 +288,9 @@ namespace Asvz.Sola
 
       Transport t = new Transport(streckeFrom, streckeTo);
 
-      Point legendPos;
-      Polyline borderFrom;
-      UebergabeTransport.GetLayout(streckeFrom, out borderFrom, out legendPos);
+      UebergabeTransport.GetLayout(streckeFrom, out Polyline borderFrom, out Point legendPos);
 
-      Polyline borderTo;
-      UebergabeTransport.GetLayout(streckeTo, out borderTo, out legendPos);
+      UebergabeTransport.GetLayout(streckeTo, out Polyline borderTo, out legendPos);
 
 
       IBox boxFrom = null;

@@ -48,8 +48,7 @@ namespace ArcSde
     {
       get
       {
-        int types;
-        Check(CApi.SE_layerinfo_get_shape_types(_ptr, out types));
+        Check(CApi.SE_layerinfo_get_shape_types(_ptr, out int types));
         return types;
       }
     }
@@ -78,7 +77,7 @@ namespace ArcSde
 
     private void Check(int rc)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero, rc);
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero, rc);
     }
 
     private SeCoordRef QCoord
@@ -101,8 +100,7 @@ namespace ArcSde
 
     public int GetShapeTypes()
     {
-      int shapeTypes;
-      Check(CApi.SE_layerinfo_get_shape_types(_ptr, out shapeTypes));
+      Check(CApi.SE_layerinfo_get_shape_types(_ptr, out int shapeTypes));
       return shapeTypes;
     }
 

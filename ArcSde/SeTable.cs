@@ -11,7 +11,7 @@ namespace ArcSde
       Se_Column_Def[] column_defs,
       string config_keyword)
     {
-      ErrorHandling.checkRC(connection.Conn, IntPtr.Zero,
+      ErrorHandling.CheckRC(connection.Conn, IntPtr.Zero,
           CApi.SE_table_create(connection.Conn, table,
           (Int16)column_defs.Length, column_defs, config_keyword));
       return new SeTable(connection, table);
@@ -31,7 +31,7 @@ namespace ArcSde
 
       int rc = CApi.SE_table_create_view(connection.Conn, view, nViewCols, nTblCols,
                                          vCols, tCols, ref sqlc);
-      ErrorHandling.checkRC(connection.Conn, IntPtr.Zero, rc);
+      ErrorHandling.CheckRC(connection.Conn, IntPtr.Zero, rc);
       return new SeTable(connection, view);
     }
     #endregion
@@ -58,9 +58,7 @@ namespace ArcSde
       {
         if (_columns == null)
         {
-          IntPtr columnsPtr;
-          Int16 nColumns;
-          Check(CApi.SE_table_get_column_list(_conn.Conn, _name, out columnsPtr, out nColumns));
+          Check(CApi.SE_table_get_column_list(_conn.Conn, _name, out IntPtr columnsPtr, out short nColumns));
 
           IntPtr[] columnsArray = new IntPtr[nColumns];
           Marshal.Copy(columnsPtr, columnsArray, 0, nColumns);
@@ -113,7 +111,7 @@ namespace ArcSde
 
     protected void Check(int rc)
     {
-      ErrorHandling.checkRC(_conn.Conn, IntPtr.Zero, rc);
+      ErrorHandling.CheckRC(_conn.Conn, IntPtr.Zero, rc);
     }
 
   }

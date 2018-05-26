@@ -20,19 +20,19 @@ namespace OCourse.Gui
       set { txtTemplate.Text = value; }
     }
 
-    private void btnOK_Click(object sender, EventArgs e)
+    private void BtnOK_Click(object sender, EventArgs e)
     {
-      DialogResult = System.Windows.Forms.DialogResult.OK;
+      DialogResult = DialogResult.OK;
       Close();
     }
 
-    private void btnCancel_Click(object sender, EventArgs e)
+    private void BtnCancel_Click(object sender, EventArgs e)
     {
-      DialogResult = System.Windows.Forms.DialogResult.Cancel;
+      DialogResult = DialogResult.Cancel;
       Close();
     }
 
-    private void btnExport_Click(object sender, EventArgs e)
+    private void BtnExport_Click(object sender, EventArgs e)
     {
       dlgSave.Filter = "*.ocd|*.ocd";
       if (dlgSave.ShowDialog(this) != DialogResult.OK)
@@ -41,7 +41,7 @@ namespace OCourse.Gui
       txtExport.Text = dlgSave.FileName;
     }
 
-    private void btnTemplate_Click(object sender, EventArgs e)
+    private void BtnTemplate_Click(object sender, EventArgs e)
     {
       if (dlgOpen.ShowDialog(this) != DialogResult.OK)
       { return; }

@@ -96,11 +96,11 @@ namespace OCourse.Gui
     }
     public Control StartControl
     {
-      get { return _startControl != null ? _startControl.Control : null; }
+      get { return _startControl?.Control; }
     }
     public Control EndControl
     {
-      get { return _endControl != null ? _endControl.Control : null; }
+      get { return _endControl?.Control; }
     }
 
 
@@ -166,7 +166,7 @@ namespace OCourse.Gui
       }
     }
 
-    void lbl_MouseDown(object sender, MouseEventArgs e)
+    void Lbl_MouseDown(object sender, MouseEventArgs e)
     {
       CLabel lbl = (CLabel)sender;
       MouseEventArgs f = new MouseEventArgs(e.Button, e.Clicks,
@@ -196,14 +196,14 @@ namespace OCourse.Gui
       if (_endControl != null) _endControl.SetBeginEnd();
     }
 
-    void lbl_MouseMove(object sender, MouseEventArgs e)
+    void Lbl_MouseMove(object sender, MouseEventArgs e)
     {
       Label lbl = (Label)sender;
       MouseEventArgs f = new MouseEventArgs(e.Button, e.Clicks,
         e.X + lbl.Left, e.Y + lbl.Top, e.Delta);
       SectionMouseMove(f);
     }
-    void lbl_MouseUp(object sender, MouseEventArgs e)
+    void Lbl_MouseUp(object sender, MouseEventArgs e)
     {
       CLabel lbl = (CLabel)sender;
       MouseEventArgs f = new MouseEventArgs(e.Button, e.Clicks,
@@ -298,8 +298,7 @@ namespace OCourse.Gui
       NextControl.EqualControlComparer cmp = new NextControl.EqualControlComparer();
       do
       {
-        NextControlList list;
-        if (!nextDict.TryGetValue(start, out list))
+        if (!nextDict.TryGetValue(start, out NextControlList list))
         { return; }
         if (list.Count == 0)
         {
@@ -370,8 +369,7 @@ namespace OCourse.Gui
 
     protected void OnPartChanged(IList<SectionList> part)
     {
-      if (PartChanged != null)
-      { PartChanged(this, part); }
+      PartChanged?.Invoke(this, part);
     }
 
     private Dictionary<NextControl, NextControlList> AssembleNextSections(SectionCollection _course)
@@ -379,7 +377,7 @@ namespace OCourse.Gui
       SectionCollection course = _course.Clone();
 
       SectionsBuilder secBuilder = new SectionsBuilder();
-      secBuilder.AddingBranch += secBuilder_AddingBranch;
+      secBuilder.AddingBranch += SecBuilder_AddingBranch;
       List<SimpleSection> simples = secBuilder.GetSections(course);
 
       Dictionary<string, Control> uniqueDict = new Dictionary<string, Control>();
@@ -408,14 +406,12 @@ namespace OCourse.Gui
       Dictionary<Control, NextControl> whereControls = new Dictionary<Control, NextControl>();
       foreach (SimpleSection section in sections)
       {
-        NextControl from;
-        if (whereControls.TryGetValue(section.From, out from) == false)
+        if (whereControls.TryGetValue(section.From, out NextControl from) == false)
         {
           from = new NextControl(section.From);
           whereControls.Add(from.Control, from);
         }
-        NextControlList nextList;
-        if (vars.TryGetValue(from, out nextList) == false)
+        if (vars.TryGetValue(from, out NextControlList nextList) == false)
         {
           nextList = new NextControlList();
           vars.Add(from, nextList);
@@ -441,7 +437,7 @@ namespace OCourse.Gui
       { oldNew.Add(ctr, uniqueCtr); }
     }
 
-    IList<Control> secBuilder_AddingBranch(int leg, ISection section, IList<Control> fromControls,
+    IList<Control> SecBuilder_AddingBranch(int leg, ISection section, IList<Control> fromControls,
       List<SimpleSection> sections, string where)
     {
       Variation.Branch branch = (Variation.Branch)section;
@@ -506,8 +502,7 @@ namespace OCourse.Gui
       {
         int j = -1;
         int dh = 0;
-        List<int> occupied;
-        if (!rowOcc.TryGetValue(i, out occupied))
+        if (!rowOcc.TryGetValue(i, out List<int> occupied))
         { occupied = null; }
 
         foreach (ControlLabel ctrLbl in dict.Values)
@@ -529,8 +524,7 @@ namespace OCourse.Gui
 
             ctrLbl.Lbl = lbl;
 
-            NextControlList nextList;
-            if (next.TryGetValue(new NextControl(ctrLbl.Control), out nextList))
+            if (next.TryGetValue(new NextControl(ctrLbl.Control), out NextControlList nextList))
             {
               foreach (NextControl info in nextList.List)
               {
@@ -542,8 +536,7 @@ namespace OCourse.Gui
                 { ni = nl.RecPos; }
                 for (int k = i + 1; k < ni; k++)
                 {
-                  List<int> occ;
-                  if (!rowOcc.TryGetValue(k, out occ))
+                  if (!rowOcc.TryGetValue(k, out List<int> occ))
                   {
                     occ = new List<int>();
                     rowOcc.Add(k, occ);
@@ -590,8 +583,7 @@ namespace OCourse.Gui
     {
       int pos = pos0;
 
-      ControlLabel controlLabel;
-      if (!dict.TryGetValue(c, out controlLabel))
+      if (!dict.TryGetValue(c, out ControlLabel controlLabel))
       {
         controlLabel = new ControlLabel();
         controlLabel.Control = c.Control;
@@ -624,8 +616,7 @@ namespace OCourse.Gui
       List<NextControl> nextPres = new List<NextControl>(preList.Count + 1);
       nextPres.AddRange(preList);
       nextPres.Add(c);
-      NextControlList list;
-      if (!next.TryGetValue(c, out list))
+      if (!next.TryGetValue(c, out NextControlList list))
       { return; }
       foreach (NextControl info in list.List)
       {
@@ -643,8 +634,7 @@ namespace OCourse.Gui
       { return; }
 
       controlLabel.Pos = pos;
-      NextControlList list;
-      if (!next.TryGetValue(c, out list))
+      if (!next.TryGetValue(c, out NextControlList list))
       { return; }
       foreach (NextControl info in list.List)
       {
@@ -665,7 +655,7 @@ namespace OCourse.Gui
       private readonly CntSection _parent;
       public Control Control;
       private readonly bool _isReverseControl;
-      Timer t;
+      Timer _t;
 
       public CLabel(CntSection parent, Control ctr)
         : this(parent, ctr, false)
@@ -673,9 +663,9 @@ namespace OCourse.Gui
 
       public CLabel(CntSection parent, Control ctr, bool isReverseControl)
       {
-        MouseDown += parent.lbl_MouseDown;
-        MouseMove += parent.lbl_MouseMove;
-        MouseUp += parent.lbl_MouseUp;
+        MouseDown += parent.Lbl_MouseDown;
+        MouseMove += parent.Lbl_MouseMove;
+        MouseUp += parent.Lbl_MouseUp;
 
         _parent = parent;
         _isReverseControl = isReverseControl;
@@ -695,10 +685,10 @@ namespace OCourse.Gui
 
           _parent.ttp.AutoPopDelay = int.MaxValue;
 
-          t = new Timer();
-          t.Interval = _parent.ttp.ReshowDelay;
-          t.Tick += t_Tick;
-          MouseMove += tb_MouseMove;
+          _t = new Timer();
+          _t.Interval = _parent.ttp.ReshowDelay;
+          _t.Tick += T_Tick;
+          MouseMove += Tb_MouseMove;
         }
       }
 
@@ -726,17 +716,17 @@ namespace OCourse.Gui
         }
       }
 
-      void t_Tick(object sender, EventArgs e)
+      void T_Tick(object sender, EventArgs e)
       {
-        t.Stop();
-        MouseMove += tb_MouseMove;
+        _t.Stop();
+        MouseMove += Tb_MouseMove;
       }
 
-      void tb_MouseMove(object sender, MouseEventArgs e)
+      void Tb_MouseMove(object sender, MouseEventArgs e)
       {
-        MouseMove -= tb_MouseMove;
+        MouseMove -= Tb_MouseMove;
         _parent.ttp.SetToolTip((sender as CLabel), Control.Text);
-        t.Start();
+        _t.Start();
       }
 
       public void Clear()
@@ -782,8 +772,7 @@ namespace OCourse.Gui
       }
       foreach (NextControl key in combination.NextControls)
       {
-        ControlLabel lbl;
-        if (_lblDict.TryGetValue(key, out lbl))
+        if (_lblDict.TryGetValue(key, out ControlLabel lbl))
         {
           lbl.Lbl.SetOnCombination();
         }

@@ -48,7 +48,7 @@
       this.btnAnalyze.TabIndex = 1;
       this.btnAnalyze.Text = "Analyze";
       this.btnAnalyze.UseVisualStyleBackColor = true;
-      this.btnAnalyze.Click += new System.EventHandler(this.btnAnalyze_Click);
+      this.btnAnalyze.Click += new System.EventHandler(this.BtnAnalyze_Click);
       // 
       // btnOpen
       // 
@@ -58,7 +58,7 @@
       this.btnOpen.TabIndex = 2;
       this.btnOpen.Text = "...";
       this.btnOpen.UseVisualStyleBackColor = true;
-      this.btnOpen.Click += new System.EventHandler(this.btnOpen_Click);
+      this.btnOpen.Click += new System.EventHandler(this.BtnOpen_Click);
       // 
       // WdgAnalyzeImg
       // 

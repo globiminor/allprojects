@@ -8,7 +8,7 @@ namespace LeastCostPathUI
 {
   public partial class WdgOutput : Form
   {
-    private IDirCostProvider<TvmCell> _costProvider;
+    private IDirCostModel<TvmCell> _costProvider;
     private IDoubleGrid _height;
     private string _velo;
     private double _resol;
@@ -19,7 +19,7 @@ namespace LeastCostPathUI
       InitializeComponent();
     }
 
-    public void Init(IDirCostProvider<TvmCell> costProvider, IDoubleGrid height, string velo,
+    public void Init(IDirCostModel<TvmCell> costProvider, IDoubleGrid height, string velo,
       double resolution, Steps step)
     {
       _costProvider = costProvider;

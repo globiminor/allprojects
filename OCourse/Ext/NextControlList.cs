@@ -25,8 +25,7 @@ namespace OCourse.Ext
         new Dictionary<NextControl, List<NextControl>>(new NextControl.EqualityComparer());
       foreach (NextControl next in _list)
       {
-        List<NextControl> nextList;
-        if (!dict.TryGetValue(next, out nextList))
+        if (!dict.TryGetValue(next, out List<NextControl> nextList))
         {
           nextList = new List<NextControl>();
           dict.Add(next, nextList);
@@ -52,8 +51,7 @@ namespace OCourse.Ext
     {
       NextControl newNext = new NextControl(section.To);
       newNext.Where = section.Where;
-      MultiSection m = section as MultiSection;
-      if (m != null)
+      if (section is MultiSection m)
       { newNext.Inter.AddRange(m.Inter); }
       _list.Add(newNext);
 

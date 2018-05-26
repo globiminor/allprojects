@@ -67,9 +67,8 @@ namespace Ocad.Symbol
         Polyline line;
         if (_geometry is Polyline)
         { line = (Polyline)_geometry; }
-        else if (_geometry is Area)
+        else if (_geometry is Area area)
         {
-          Area area = (Area)_geometry;
           if (area.Border.Count != 1)
           { return 0; }
           line = area.Border[0];

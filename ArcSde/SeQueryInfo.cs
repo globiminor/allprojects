@@ -30,7 +30,7 @@ namespace ArcSde
 
     private void Check(int rc)
     {
-      ErrorHandling.checkRC(IntPtr.Zero, IntPtr.Zero, rc);
+      ErrorHandling.CheckRC(IntPtr.Zero, IntPtr.Zero, rc);
     }
 
   }

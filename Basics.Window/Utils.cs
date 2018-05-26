@@ -51,8 +51,7 @@ namespace Basics.Window
       tooltip.IsVisibleChanged += (s, e) =>
       {
         string ttp = null;
-        IDataErrorInfo errInfo = tooltip.DataContext as IDataErrorInfo;
-        if (errInfo != null)
+        if (tooltip.DataContext is IDataErrorInfo errInfo)
         {
           ttp = errInfo[property];
         }
@@ -122,8 +121,7 @@ namespace Basics.Window
       { key = System.IO.Path.GetExtension(path) ?? string.Empty; }
 
       Dictionary<string, ImageSource> cache = smallIcon ? _smallIconCache : _largeIconCache;
-      ImageSource icon;
-      if (!cache.TryGetValue(key, out icon))
+      if (!cache.TryGetValue(key, out ImageSource icon))
       {
         icon = GetIconCore(path, smallIcon, isDirectory);
         cache.Add(key, icon);
@@ -154,18 +152,18 @@ namespace Basics.Window
     /// </summary>
     static class Shell32
     {
-      private const int MaxPath = 256;
+      public const int MaxPath = 256;
       [StructLayout(LayoutKind.Sequential)]
       public struct Shfileinfo
       {
-        private const int Namesize = 80;
+        public const int Namesize = 80;
         public readonly IntPtr hIcon;
-        private readonly int iIcon;
-        private readonly uint dwAttributes;
+        public readonly int iIcon;
+        public readonly uint dwAttributes;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MaxPath)]
-        private readonly string szDisplayName;
+        public readonly string szDisplayName;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = Namesize)]
-        private readonly string szTypeName;
+        public readonly string szTypeName;
       };
       public const uint ShgfiIcon = 0x000000100;     // get icon
       public const uint ShgfiLinkoverlay = 0x000008000;     // put a link overlay on icon

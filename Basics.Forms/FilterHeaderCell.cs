@@ -64,8 +64,8 @@ namespace Basics.Forms
         FilteringEnabled = filterCell.FilteringEnabled;
         AutomaticSortingEnabled = filterCell.AutomaticSortingEnabled;
         DropDownListBoxMaxLines = filterCell.DropDownListBoxMaxLines;
-        currentDropDownButtonPaddingOffset =
-            filterCell.currentDropDownButtonPaddingOffset;
+        _currentDropDownButtonPaddingOffset =
+            filterCell._currentDropDownButtonPaddingOffset;
       }
     }
 
@@ -88,7 +88,7 @@ namespace Basics.Forms
       clone.FilteringEnabled = FilteringEnabled;
       clone.AutomaticSortingEnabled = AutomaticSortingEnabled;
       clone.DropDownListBoxMaxLines = DropDownListBoxMaxLines;
-      clone.currentDropDownButtonPaddingOffset = currentDropDownButtonPaddingOffset;
+      clone._currentDropDownButtonPaddingOffset = _currentDropDownButtonPaddingOffset;
       clone.ConvertSelectedValue = ConvertSelectedValue;
 
       clone._filterText = _filterText;
@@ -953,7 +953,7 @@ namespace Basics.Forms
       // Determine the difference between the new and current 
       // padding adjustment.
       Int32 widthChange = newDropDownButtonPaddingOffset -
-          currentDropDownButtonPaddingOffset;
+          _currentDropDownButtonPaddingOffset;
 
       // If the padding needs to change, store the new value and 
       // make the change.
@@ -961,7 +961,7 @@ namespace Basics.Forms
       {
         // Store the offset for the drop-down button separately from 
         // the padding in case the client needs additional padding.
-        currentDropDownButtonPaddingOffset =
+        _currentDropDownButtonPaddingOffset =
             newDropDownButtonPaddingOffset;
 
         // Create a new Padding using the adjustment amount, then add it
@@ -975,7 +975,7 @@ namespace Basics.Forms
     /// <summary>
     /// The current width of the drop-down button. This field is used to adjust the cell padding.  
     /// </summary>
-    private Int32 currentDropDownButtonPaddingOffset;
+    private Int32 _currentDropDownButtonPaddingOffset;
 
     #endregion button bounds
 
@@ -1023,7 +1023,7 @@ namespace Basics.Forms
     /// <summary>
     /// Indicates whether automatic sorting is enabled. 
     /// </summary>
-    private Boolean automaticSortingEnabledValue = true;
+    private Boolean _automaticSortingEnabledValue = true;
 
     /// <summary>
     /// Gets or sets a value indicating whether automatic sorting is enabled for the owning column. 
@@ -1033,11 +1033,11 @@ namespace Basics.Forms
     {
       get
       {
-        return automaticSortingEnabledValue;
+        return _automaticSortingEnabledValue;
       }
       set
       {
-        automaticSortingEnabledValue = value;
+        _automaticSortingEnabledValue = value;
         if (OwningColumn != null)
         {
           if (value)
@@ -1055,7 +1055,7 @@ namespace Basics.Forms
     /// <summary>
     /// The maximum number of lines in the drop-down list. 
     /// </summary>
-    private Int32 dropDownListBoxMaxLinesValue = 20;
+    private Int32 _dropDownListBoxMaxLinesValue = 20;
 
     /// <summary>
     /// Gets or sets the maximum number of lines to display in the drop-down filter list. 
@@ -1064,8 +1064,8 @@ namespace Basics.Forms
     [DefaultValue(20)]
     public Int32 DropDownListBoxMaxLines
     {
-      get { return dropDownListBoxMaxLinesValue; }
-      set { dropDownListBoxMaxLinesValue = value; }
+      get { return _dropDownListBoxMaxLinesValue; }
+      set { _dropDownListBoxMaxLinesValue = value; }
     }
 
     #endregion public properties

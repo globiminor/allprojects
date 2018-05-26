@@ -362,7 +362,7 @@
       this.chkAuto.Text = "Auto";
       this.ttp.SetToolTip(this.chkAuto, "Determined by From, To and Max Slower");
       this.chkAuto.UseVisualStyleBackColor = true;
-      this.chkAuto.CheckedChanged += new System.EventHandler(this.chkAuto_CheckedChanged);
+      this.chkAuto.CheckedChanged += new System.EventHandler(this.ChkAuto_CheckedChanged);
       // 
       // cntRoute
       // 

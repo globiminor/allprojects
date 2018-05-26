@@ -3,14 +3,14 @@ namespace Basics.Num
 {
   public class Polynom
   {
-    double[] mA;
+    double[] _a;
     public Polynom(double[] a)
-    { mA = a; }
+    { _a = a; }
 
     public double Value(double x)
     {
       double d = 0;
-      foreach (double a in mA)
+      foreach (double a in _a)
       { d = d * x + a; }
       return d;
     }

@@ -109,7 +109,7 @@ namespace OcadTest
         new Box(new Point2D(2685260, 1252920), new Point2D(2685360, 1253010)));
 
       LeastCostGrid.BlockLcp blcp = new LeastCostGrid.BlockLcp(lcp, block);
-      blcp.CalcCost(new Point2D(2685302, 1252930), out IGrid<double> costGrid, out IGrid<int> dirGrid);
+      blcp.CalcCost(new Point2D(2685302, 1252930));
     }
     private class SymbolGrid : BaseGrid<List<int>>
     {

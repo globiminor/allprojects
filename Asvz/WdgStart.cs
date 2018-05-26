@@ -57,14 +57,13 @@ namespace Asvz
     private Button _btnBegleit;
     private TextBox _txtBegleit;
     private Button _btnGpx;
-    private ToolTip ttp;
-    private System.ComponentModel.IContainer components;
-    private CheckBox chkStartZiel;
+    private ToolTip _ttp;
+    private CheckBox _chkStartZiel;
 
     /// <summary>
     /// Required designer variable.
     /// </summary>
-    private readonly System.ComponentModel.Container _components = null;
+    private System.ComponentModel.Container _components = null;
 
     public WdgStart()
     {
@@ -108,7 +107,7 @@ namespace Asvz
     /// </summary>
     private void InitializeComponent()
     {
-      this.components = new System.ComponentModel.Container();
+      this._components = new System.ComponentModel.Container();
       System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WdgStart));
       this._btnGetClipboard = new System.Windows.Forms.Button();
       this._lblFormat = new System.Windows.Forms.Label();
@@ -141,7 +140,7 @@ namespace Asvz
       this._btnKml = new System.Windows.Forms.Button();
       this._grpUebergabe = new System.Windows.Forms.GroupBox();
       this._grpStrecke = new System.Windows.Forms.GroupBox();
-      this.chkStartZiel = new System.Windows.Forms.CheckBox();
+      this._chkStartZiel = new System.Windows.Forms.CheckBox();
       this._btnBegleit = new System.Windows.Forms.Button();
       this._txtBegleit = new System.Windows.Forms.TextBox();
       this._grpGesamt = new System.Windows.Forms.GroupBox();
@@ -149,7 +148,7 @@ namespace Asvz
       this._btnTestForch = new System.Windows.Forms.Button();
       this._btnTestDuo = new System.Windows.Forms.Button();
       this._btnGpx = new System.Windows.Forms.Button();
-      this.ttp = new System.Windows.Forms.ToolTip(this.components);
+      this._ttp = new System.Windows.Forms.ToolTip(this._components);
       this._grpUebergabe.SuspendLayout();
       this._grpStrecke.SuspendLayout();
       this._grpGesamt.SuspendLayout();
@@ -330,7 +329,7 @@ namespace Asvz
       this._btnStrecke.Size = new System.Drawing.Size(115, 26);
       this._btnStrecke.TabIndex = 18;
       this._btnStrecke.Text = "Strecke aufdatieren";
-      this.ttp.SetToolTip(this._btnStrecke, "Strecke aus Gesamtplan übernehmen");
+      this._ttp.SetToolTip(this._btnStrecke, "Strecke aus Gesamtplan übernehmen");
       this._btnStrecke.Click += new System.EventHandler(this.BtnStrecke_Click);
       // 
       // _btnStreckeExp
@@ -438,7 +437,7 @@ namespace Asvz
       // 
       this._grpStrecke.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
-      this._grpStrecke.Controls.Add(this.chkStartZiel);
+      this._grpStrecke.Controls.Add(this._chkStartZiel);
       this._grpStrecke.Controls.Add(this._btnBegleit);
       this._grpStrecke.Controls.Add(this._txtBegleit);
       this._grpStrecke.Controls.Add(this._btnCreate);
@@ -456,13 +455,13 @@ namespace Asvz
       // 
       // chkStartZiel
       // 
-      this.chkStartZiel.AutoSize = true;
-      this.chkStartZiel.Location = new System.Drawing.Point(206, 19);
-      this.chkStartZiel.Name = "chkStartZiel";
-      this.chkStartZiel.Size = new System.Drawing.Size(70, 17);
-      this.chkStartZiel.TabIndex = 24;
-      this.chkStartZiel.Text = "Start/Ziel";
-      this.ttp.SetToolTip(this.chkStartZiel, "Streckenstart/-ziel aus Gesamtplan übernehmen");
+      this._chkStartZiel.AutoSize = true;
+      this._chkStartZiel.Location = new System.Drawing.Point(206, 19);
+      this._chkStartZiel.Name = "chkStartZiel";
+      this._chkStartZiel.Size = new System.Drawing.Size(70, 17);
+      this._chkStartZiel.TabIndex = 24;
+      this._chkStartZiel.Text = "Start/Ziel";
+      this._ttp.SetToolTip(this._chkStartZiel, "Streckenstart/-ziel aus Gesamtplan übernehmen");
       // 
       // _btnBegleit
       // 
@@ -1103,7 +1102,7 @@ namespace Asvz
           if (_chkDamen.Checked)
           { kat = Kategorie.Damen; }
 
-          strecke.Update(kat, chkStartZiel.Checked);
+          strecke.Update(kat, _chkStartZiel.Checked);
         }
       }
       finally

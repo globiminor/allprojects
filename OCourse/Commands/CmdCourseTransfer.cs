@@ -22,8 +22,8 @@ namespace OCourse.Commands
 
     private bool _disposed;
 
-    private int CustomConnectSymId = 704002;
-    private int ConnectSymId = 704000;
+    private int _customConnectSymId = 704002;
+    private int _connectSymId = 704000;
 
     public CmdCourseTransfer(string exportFile, string templateFile, string origFile)
     {

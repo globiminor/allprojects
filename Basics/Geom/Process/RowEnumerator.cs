@@ -83,9 +83,8 @@ namespace Basics.Geom.Process
       {
         foreach (TableAction tableAction in processor.TableActions)
         {
-          TableActions involved;
           ISpatialTable table = (ISpatialTable)tableAction.Table;
-          if (!involvedTables.TryGetValue(table, out involved))
+          if (!involvedTables.TryGetValue(table, out TableActions involved))
           {
             involved = new TableActions();
             involvedTables.Add(table, involved);

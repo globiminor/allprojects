@@ -13,12 +13,12 @@ namespace Cards
     {
     }
 
-    private static readonly Suite UnknownSuite = new Suite("U", "Undefined");
-    private static readonly Height UnknownHeight = new Height(-1, "U");
+    private static readonly Suite _unknownSuite = new Suite("U", "Undefined");
+    private static readonly Height _unknownHeight = new Height(-1, "U");
 
     internal static Card CreateEmpty()
     {
-      return new Card(UnknownSuite, UnknownHeight);
+      return new Card(_unknownSuite, _unknownHeight);
     }
 
     internal Card(string code)
@@ -108,8 +108,8 @@ namespace Cards
     {
       foreach (Card card in cards)
       {
-        card.Suite = UnknownSuite;
-        card.Height = UnknownHeight;
+        card.Suite = _unknownSuite;
+        card.Height = _unknownHeight;
       }
     }
     public static List<Card> Shuffle(List<Card> cards, Random r = null)

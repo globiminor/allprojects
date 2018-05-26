@@ -69,8 +69,7 @@ namespace TMap
         while (reader.Read() && !drawable.BreakDraw)
         {
           Symbol symbol;
-          System.Data.DataRow data;
-          symbol = sym.GetSymbol(reader, out data);
+          symbol = sym.GetSymbol(reader, out System.Data.DataRow data);
           if (symbol == null)
           {
             continue;
@@ -105,8 +104,7 @@ namespace TMap
         System.Collections.Generic.Dictionary<int, SymbolInfo> symbols = new System.Collections.Generic.Dictionary<int, SymbolInfo>();
         foreach (Ocad.ElementIndex idx in reader.GetIndices())
         {
-          SymbolInfo symInfo;
-          if (symbols.TryGetValue(idx.Symbol, out symInfo) == false)
+          if (symbols.TryGetValue(idx.Symbol, out SymbolInfo symInfo) == false)
           {
             symInfo = new SymbolInfo();
             symbols.Add(idx.Symbol, symInfo);
@@ -152,17 +150,15 @@ namespace TMap
                                    System.Collections.Generic.Dictionary<int, Ocad.ColorInfo> colors)
     {
       Symbol sym = null;
-      if (ocadSymbol is Ocad.Symbol.PointSymbol)
+      if (ocadSymbol is Ocad.Symbol.PointSymbol ocadPoint)
       {
-        Ocad.Symbol.PointSymbol ocadPoint = (Ocad.Symbol.PointSymbol)ocadSymbol;
         sym = new Symbol(0);
         foreach (Ocad.Symbol.SymbolGraphics graphic in ocadPoint.Graphics)
         {
           SymbolPartPoint part = new SymbolPartPoint(null);
           part.Scale = true;
           part.LineWidth = graphic.LineWidth * Ocad.FileParam.OCAD_UNIT * setup.Scale;
-          Ocad.ColorInfo color;
-          if (colors.TryGetValue(graphic.Color, out color))
+          if (colors.TryGetValue(graphic.Color, out Ocad.ColorInfo color))
           { part.LineColor = GetColor(color.Color); }
           if (graphic.Geometry is Basics.Geom.Polyline) part.SymbolLine = (Basics.Geom.Polyline)graphic.Geometry.Project(setup.Map2Prj);
           else if (graphic.Geometry is Basics.Geom.Area) part.SymbolLine = ((Basics.Geom.Area)graphic.Geometry).Border[0].Project(setup.Map2Prj);
@@ -172,15 +168,13 @@ namespace TMap
           sym.Add(part);
         }
       }
-      else if (ocadSymbol is Ocad.Symbol.LineSymbol)
+      else if (ocadSymbol is Ocad.Symbol.LineSymbol ocadLine)
       {
-        Ocad.Symbol.LineSymbol ocadLine = (Ocad.Symbol.LineSymbol)ocadSymbol;
         sym = new Symbol(1);
         SymbolPartLine part = new SymbolPartLine(null);
         part.Scale = true;
         part.LineWidth = ocadLine.LineWidth * Ocad.FileParam.OCAD_UNIT * setup.Scale;
-        Ocad.ColorInfo oc;
-        if (!colors.TryGetValue(ocadLine.LineColor, out oc))
+        if (!colors.TryGetValue(ocadLine.LineColor, out Ocad.ColorInfo oc))
         {
           oc = new Ocad.ColorInfo();
           oc.Color = new Ocad.Color(0, 0, 0, 128);
@@ -189,14 +183,12 @@ namespace TMap
         part.DrawLevel = 3;
         sym.Add(part);
       }
-      else if (ocadSymbol is Ocad.Symbol.AreaSymbol)
+      else if (ocadSymbol is Ocad.Symbol.AreaSymbol ocadArea)
       {
-        Ocad.Symbol.AreaSymbol ocadArea = (Ocad.Symbol.AreaSymbol)ocadSymbol;
         sym = new Symbol(2);
         SymbolPartArea part = new SymbolPartArea(null);
         //part.FillColor = GetColor(colors[ocadArea.FillColor].Color);
-        Ocad.ColorInfo oc;
-        if (!colors.TryGetValue(ocadArea.FillColor, out oc))
+        if (!colors.TryGetValue(ocadArea.FillColor, out Ocad.ColorInfo oc))
         {
           oc = new Ocad.ColorInfo();
           oc.Color = new Ocad.Color(0, 0, 0, 128);

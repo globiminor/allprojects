@@ -49,7 +49,7 @@ namespace OcadScratch
       set { base.DataContext = value; }
     }
 
-    private void cnvSymbol_DataContextChanged(object sender, System.Windows.DependencyPropertyChangedEventArgs e)
+    private void CnvSymbol_DataContextChanged(object sender, System.Windows.DependencyPropertyChangedEventArgs e)
     {
       cnvSymbol.InvalidateVisual();
     }

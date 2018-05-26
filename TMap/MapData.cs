@@ -28,9 +28,8 @@ namespace TMap
     {
       yield return this;
 
-      if (this is GroupMapData)
+      if (this is GroupMapData grpData)
       {
-        GroupMapData grpData = (GroupMapData)this;
         foreach (MapData subpart in grpData.Subparts)
         {
           foreach (MapData data in subpart.GetAllData())

@@ -30,8 +30,7 @@ namespace OcadTest
           IPoint p = comb.Extent.CellCenter(ix, iy);
           foreach (DataDoubleGrid gr in grs)
           {
-            int tx, ty;
-            bool inside = gr.Extent.GetNearest(p, out tx, out ty);
+            bool inside = gr.Extent.GetNearest(p, out int tx, out int ty);
             if (inside)
             {
               comb[ix, iy] = gr[tx, ty];
@@ -69,8 +68,7 @@ namespace OcadTest
           {
             if (p.X > 681006 && gr == grs[0])
             { continue; }
-            int tx, ty;
-            bool inside = gr.Extent.GetNearest(p, out tx, out ty);
+            bool inside = gr.Extent.GetNearest(p, out int tx, out int ty);
             if (inside)
             {
               comb[ix, iy] = gr[tx, ty];

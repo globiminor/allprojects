@@ -84,7 +84,7 @@ namespace Basics.Forms
       get { return _focused; }
     }
 
-    private void btnApply_Click(object sender, System.EventArgs e)
+    private void BtnApply_Click(object sender, System.EventArgs e)
     {
       _applyFilter = true;
       Hide();

@@ -93,8 +93,7 @@ namespace Basics.Geom.Network
         IPoint _qPntAssignInnerRings = new Point2D(_tBox.Max.X, line.YMax());
 
         // no unassigned line right of pnt exists, because we sorted the innerLines in this fashion
-        int side;
-        TopologicalLine nearLine = NearestLine(tree, _qPntAssignInnerRings, true, out side);
+        TopologicalLine nearLine = NearestLine(tree, _qPntAssignInnerRings, true, out int side);
         if (nearLine == null)
         { continue; }
         if (side > 0)

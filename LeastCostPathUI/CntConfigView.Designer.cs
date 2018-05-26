@@ -29,7 +29,7 @@
     private void InitializeComponent()
     {
       this.components = new System.ComponentModel.Container();
-      System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CntConfig));
+      System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CntConfigView));
       this.btnStepCost = new System.Windows.Forms.Button();
       this.txtCost = new System.Windows.Forms.TextBox();
       this.label2 = new System.Windows.Forms.Label();
@@ -45,13 +45,17 @@
       this.lblVelo = new System.Windows.Forms.Label();
       this.lblHeight = new System.Windows.Forms.Label();
       this.dlgOpen = new System.Windows.Forms.OpenFileDialog();
+      this.optHeightVelo = new System.Windows.Forms.RadioButton();
+      this.optMultiLayer = new System.Windows.Forms.RadioButton();
+      this.pnlTerrainVelo = new System.Windows.Forms.Panel();
+      this.pnlTerrainVelo.SuspendLayout();
       this.SuspendLayout();
       // 
       // btnStepCost
       // 
       this.btnStepCost.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
       this.btnStepCost.Image = ((System.Drawing.Image)(resources.GetObject("btnStepCost.Image")));
-      this.btnStepCost.Location = new System.Drawing.Point(399, 68);
+      this.btnStepCost.Location = new System.Drawing.Point(399, 71);
       this.btnStepCost.Name = "btnStepCost";
       this.btnStepCost.Size = new System.Drawing.Size(20, 20);
       this.btnStepCost.TabIndex = 19;
@@ -59,18 +63,18 @@
       // 
       // txtCost
       // 
-      this.txtCost.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                  | System.Windows.Forms.AnchorStyles.Right)));
-      this.txtCost.Location = new System.Drawing.Point(291, 66);
+      this.txtCost.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.txtCost.Location = new System.Drawing.Point(276, 72);
       this.txtCost.Name = "txtCost";
       this.txtCost.ReadOnly = true;
-      this.txtCost.Size = new System.Drawing.Size(104, 20);
+      this.txtCost.Size = new System.Drawing.Size(119, 20);
       this.txtCost.TabIndex = 18;
       // 
       // label2
       // 
       this.label2.AutoSize = true;
-      this.label2.Location = new System.Drawing.Point(243, 71);
+      this.label2.Location = new System.Drawing.Point(242, 75);
       this.label2.Name = "label2";
       this.label2.Size = new System.Drawing.Size(28, 13);
       this.label2.TabIndex = 17;
@@ -79,27 +83,27 @@
       // label1
       // 
       this.label1.AutoSize = true;
-      this.label1.Location = new System.Drawing.Point(141, 71);
+      this.label1.Location = new System.Drawing.Point(149, 75);
       this.label1.Name = "label1";
       this.label1.Size = new System.Drawing.Size(34, 13);
       this.label1.TabIndex = 16;
       this.label1.Text = "Steps";
       // 
-      // lstStep
+      // _lstStep
       // 
       this._lstStep.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
       this._lstStep.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
       this._lstStep.FormattingEnabled = true;
       this._lstStep.ItemHeight = 18;
-      this._lstStep.Location = new System.Drawing.Point(189, 66);
-      this._lstStep.Name = "lstStep";
+      this._lstStep.Location = new System.Drawing.Point(189, 70);
+      this._lstStep.Name = "_lstStep";
       this._lstStep.Size = new System.Drawing.Size(47, 24);
       this._lstStep.TabIndex = 15;
       this._lstStep.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.LstStep_DrawItem);
       // 
       // txtResol
       // 
-      this.txtResol.Location = new System.Drawing.Point(85, 68);
+      this.txtResol.Location = new System.Drawing.Point(85, 72);
       this.txtResol.Name = "txtResol";
       this.txtResol.Size = new System.Drawing.Size(37, 20);
       this.txtResol.TabIndex = 14;
@@ -109,7 +113,7 @@
       // lblResol
       // 
       this.lblResol.AutoSize = true;
-      this.lblResol.Location = new System.Drawing.Point(3, 71);
+      this.lblResol.Location = new System.Drawing.Point(5, 75);
       this.lblResol.Name = "lblResol";
       this.lblResol.Size = new System.Drawing.Size(57, 13);
       this.lblResol.TabIndex = 13;
@@ -117,9 +121,9 @@
       // 
       // txtVelo
       // 
-      this.txtVelo.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                  | System.Windows.Forms.AnchorStyles.Right)));
-      this.txtVelo.Location = new System.Drawing.Point(85, 40);
+      this.txtVelo.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.txtVelo.Location = new System.Drawing.Point(85, 31);
       this.txtVelo.Name = "txtVelo";
       this.txtVelo.Size = new System.Drawing.Size(310, 20);
       this.txtVelo.TabIndex = 23;
@@ -127,9 +131,9 @@
       // 
       // txtHeight
       // 
-      this.txtHeight.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                  | System.Windows.Forms.AnchorStyles.Right)));
-      this.txtHeight.Location = new System.Drawing.Point(85, 14);
+      this.txtHeight.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.txtHeight.Location = new System.Drawing.Point(85, 6);
       this.txtHeight.Name = "txtHeight";
       this.txtHeight.Size = new System.Drawing.Size(310, 20);
       this.txtHeight.TabIndex = 20;
@@ -139,7 +143,7 @@
       // 
       this.btnVelo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
       this.btnVelo.Image = ((System.Drawing.Image)(resources.GetObject("btnVelo.Image")));
-      this.btnVelo.Location = new System.Drawing.Point(399, 40);
+      this.btnVelo.Location = new System.Drawing.Point(399, 31);
       this.btnVelo.Name = "btnVelo";
       this.btnVelo.Size = new System.Drawing.Size(20, 20);
       this.btnVelo.TabIndex = 25;
@@ -149,7 +153,7 @@
       // 
       this.btnHeight.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
       this.btnHeight.Image = ((System.Drawing.Image)(resources.GetObject("btnHeight.Image")));
-      this.btnHeight.Location = new System.Drawing.Point(399, 14);
+      this.btnHeight.Location = new System.Drawing.Point(399, 5);
       this.btnHeight.Name = "btnHeight";
       this.btnHeight.Size = new System.Drawing.Size(20, 20);
       this.btnHeight.TabIndex = 24;
@@ -157,30 +161,66 @@
       // 
       // lblVelo
       // 
-      this.lblVelo.Location = new System.Drawing.Point(5, 44);
+      this.lblVelo.AutoSize = true;
+      this.lblVelo.Location = new System.Drawing.Point(3, 34);
       this.lblVelo.Name = "lblVelo";
-      this.lblVelo.Size = new System.Drawing.Size(100, 16);
+      this.lblVelo.Size = new System.Drawing.Size(66, 13);
       this.lblVelo.TabIndex = 22;
       this.lblVelo.Text = "Velocity Grid";
       // 
       // lblHeight
       // 
-      this.lblHeight.Location = new System.Drawing.Point(5, 18);
+      this.lblHeight.AutoSize = true;
+      this.lblHeight.Location = new System.Drawing.Point(5, 9);
       this.lblHeight.Name = "lblHeight";
-      this.lblHeight.Size = new System.Drawing.Size(100, 16);
+      this.lblHeight.Size = new System.Drawing.Size(60, 13);
       this.lblHeight.TabIndex = 21;
       this.lblHeight.Text = "Height Grid";
       // 
-      // CntConfig
+      // optHeightVelo
+      // 
+      this.optHeightVelo.AutoSize = true;
+      this.optHeightVelo.Location = new System.Drawing.Point(8, 3);
+      this.optHeightVelo.Name = "optHeightVelo";
+      this.optHeightVelo.Size = new System.Drawing.Size(127, 17);
+      this.optHeightVelo.TabIndex = 26;
+      this.optHeightVelo.TabStop = true;
+      this.optHeightVelo.Text = "TerrainVelocity Model";
+      this.optHeightVelo.UseVisualStyleBackColor = true;
+      // 
+      // optMultiLayer
+      // 
+      this.optMultiLayer.AutoSize = true;
+      this.optMultiLayer.Location = new System.Drawing.Point(152, 3);
+      this.optMultiLayer.Name = "optMultiLayer";
+      this.optMultiLayer.Size = new System.Drawing.Size(108, 17);
+      this.optMultiLayer.TabIndex = 27;
+      this.optMultiLayer.TabStop = true;
+      this.optMultiLayer.Text = "Multi Level Model";
+      this.optMultiLayer.UseVisualStyleBackColor = true;
+      // 
+      // pnlTerrainVelo
+      // 
+      this.pnlTerrainVelo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.pnlTerrainVelo.Controls.Add(this.lblHeight);
+      this.pnlTerrainVelo.Controls.Add(this.lblVelo);
+      this.pnlTerrainVelo.Controls.Add(this.txtVelo);
+      this.pnlTerrainVelo.Controls.Add(this.btnHeight);
+      this.pnlTerrainVelo.Controls.Add(this.txtHeight);
+      this.pnlTerrainVelo.Controls.Add(this.btnVelo);
+      this.pnlTerrainVelo.Location = new System.Drawing.Point(0, 17);
+      this.pnlTerrainVelo.Name = "pnlTerrainVelo";
+      this.pnlTerrainVelo.Size = new System.Drawing.Size(419, 53);
+      this.pnlTerrainVelo.TabIndex = 28;
+      // 
+      // CntConfigView
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-      this.Controls.Add(this.txtVelo);
-      this.Controls.Add(this.txtHeight);
-      this.Controls.Add(this.btnVelo);
-      this.Controls.Add(this.btnHeight);
-      this.Controls.Add(this.lblVelo);
-      this.Controls.Add(this.lblHeight);
+      this.Controls.Add(this.optMultiLayer);
+      this.Controls.Add(this.optHeightVelo);
       this.Controls.Add(this.btnStepCost);
       this.Controls.Add(this.txtCost);
       this.Controls.Add(this.lblResol);
@@ -188,8 +228,11 @@
       this.Controls.Add(this.txtResol);
       this.Controls.Add(this.label1);
       this.Controls.Add(this._lstStep);
-      this.Name = "CntConfig";
-      this.Size = new System.Drawing.Size(422, 98);
+      this.Controls.Add(this.pnlTerrainVelo);
+      this.Name = "CntConfigView";
+      this.Size = new System.Drawing.Size(422, 96);
+      this.pnlTerrainVelo.ResumeLayout(false);
+      this.pnlTerrainVelo.PerformLayout();
       this.ResumeLayout(false);
       this.PerformLayout();
 
@@ -212,5 +255,8 @@
     private System.Windows.Forms.Label lblVelo;
     private System.Windows.Forms.Label lblHeight;
     private System.Windows.Forms.OpenFileDialog dlgOpen;
+    private System.Windows.Forms.RadioButton optHeightVelo;
+    private System.Windows.Forms.RadioButton optMultiLayer;
+    private System.Windows.Forms.Panel pnlTerrainVelo;
   }
 }

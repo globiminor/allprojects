@@ -311,7 +311,7 @@ namespace OMapIssues.Controllers
         // GET: /Manage/LinkLoginCallback
         public async Task<ActionResult> LinkLoginCallback()
         {
-            var loginInfo = await AuthenticationManager.GetExternalLoginInfoAsync(XsrfKey, User.Identity.GetUserId());
+            var loginInfo = await AuthenticationManager.GetExternalLoginInfoAsync(_xsrfKey, User.Identity.GetUserId());
             if (loginInfo == null)
             {
                 return RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
@@ -333,7 +333,7 @@ namespace OMapIssues.Controllers
 
 #region Hilfsprogramme
         // Wird für XSRF-Schutz beim Hinzufügen externer Anmeldungen verwendet.
-        private const string XsrfKey = "XsrfId";
+        private const string _xsrfKey = "XsrfId";
 
         private IAuthenticationManager AuthenticationManager
         {

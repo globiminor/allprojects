@@ -398,26 +398,26 @@ namespace Basics.Geom
       return list;
     }
 
-    private static readonly double Math2PI = 2 * Math.PI;
+    private static readonly double _math2PI = 2 * Math.PI;
     private double GetA(double phi)
     {
       double startAngle = phi - _dirStart;
-      while (startAngle >= Math2PI)
+      while (startAngle >= _math2PI)
       {
-        startAngle -= Math2PI;
+        startAngle -= _math2PI;
       }
-      while (startAngle <= -Math2PI)
+      while (startAngle <= -_math2PI)
       {
-        startAngle += Math2PI;
+        startAngle += _math2PI;
       }
 
       while (startAngle < 0 && _angle > 0)
       {
-        startAngle += Math2PI;
+        startAngle += _math2PI;
       }
       while (startAngle > 0 && _angle < 0)
       {
-        startAngle -= Math2PI;
+        startAngle -= _math2PI;
       }
       double a = startAngle / _angle;
 

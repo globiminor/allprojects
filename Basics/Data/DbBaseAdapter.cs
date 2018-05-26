@@ -42,8 +42,7 @@ namespace Basics.Data
         {
           if (first)
           {
-            DbDataReader dbReader = dataReader as DbDataReader;
-            if (dbReader != null)
+            if (dataReader is DbDataReader dbReader)
             { schemaTable = dbReader.GetSchemaTable(); }
 
             first = false;

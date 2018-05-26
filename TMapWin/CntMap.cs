@@ -21,22 +21,22 @@ namespace TMapWin
     private class _Projection : IProjection
     {
       #region IProjection Members
-      private CntMap mMap;
+      private CntMap _map;
       public _Projection(CntMap map)
       {
-        mMap = map;
+        _map = map;
       }
 
       public IPoint Project(IPoint point)
       {
-        if (mMap._extent != null)
+        if (_map._extent != null)
         {
-          return new Point2D((point.X - mMap._extent.Min.X) * mMap._dF,
-                             mMap.Height - (point.Y - mMap._extent.Min.Y) * mMap._dF);
+          return new Point2D((point.X - _map._extent.Min.X) * _map._dF,
+                             _map.Height - (point.Y - _map._extent.Min.Y) * _map._dF);
         }
         else
         {
-          return new Point2D(point.X * mMap._dF, mMap.Height - point.Y * mMap._dF);
+          return new Point2D(point.X * _map._dF, _map.Height - point.Y * _map._dF);
         }
       }
 
@@ -68,11 +68,11 @@ namespace TMapWin
     public ToolHandler ToolEnd;
     public ToolHandler ToolMove;
     // designer variables
-    private PictureBox pnlMap;
+    private PictureBox _pnlMap;
     /// <summary> 
     /// Required designer variable.
     /// </summary>
-    private Container components = null;
+    private Container _components = null;
 
     public CntMap()
     {
@@ -81,15 +81,15 @@ namespace TMapWin
 
       _dataImages = new SortedList<int, Bitmap>();
       _dataGraphics = new Dictionary<int, Graphics>();
-      _backImage = new Bitmap(pnlMap.Width, pnlMap.Height, pnlMap.CreateGraphics());
-      pnlMap.BackgroundImage = _backImage;
+      _backImage = new Bitmap(_pnlMap.Width, _pnlMap.Height, _pnlMap.CreateGraphics());
+      _pnlMap.BackgroundImage = _backImage;
 
       //_image = new Bitmap(pnlMap.Width, pnlMap.Height, pnlMap.CreateGraphics());
       //_background = Graphics.FromImage(_image);
       //pnlMap.BackgroundImage = _image;
 
-      pnlMap.MouseWheel += pnlMap_MouseWheel;
-      pnlMap.MouseLeave += pnlMap_MouseLeave;
+      _pnlMap.MouseWheel += PnlMap_MouseWheel;
+      _pnlMap.MouseLeave += PnlMap_MouseLeave;
 
       _prj = new _Projection(this);
     }
@@ -103,9 +103,9 @@ namespace TMapWin
 
       if (disposing)
       {
-        if (components != null)
+        if (_components != null)
         {
-          components.Dispose();
+          _components.Dispose();
         }
       }
       base.Dispose(disposing);
@@ -135,29 +135,29 @@ namespace TMapWin
     /// </summary>
     private void InitializeComponent()
     {
-      this.pnlMap = new System.Windows.Forms.PictureBox();
+      this._pnlMap = new System.Windows.Forms.PictureBox();
       this.SuspendLayout();
       // 
       // pnlMap
       // 
-      this.pnlMap.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+      this._pnlMap.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                   | System.Windows.Forms.AnchorStyles.Left)
                   | System.Windows.Forms.AnchorStyles.Right)));
-      this.pnlMap.BackColor = System.Drawing.SystemColors.Window;
-      this.pnlMap.Location = new System.Drawing.Point(-1, -1);
-      this.pnlMap.Name = "pnlMap";
-      this.pnlMap.Size = new System.Drawing.Size(336, 232);
-      this.pnlMap.TabIndex = 0;
-      this.pnlMap.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pnlMap_MouseDown);
-      this.pnlMap.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pnlMap_MouseMove);
-      this.pnlMap.Resize += new System.EventHandler(this.pnlMap_Resize);
-      this.pnlMap.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlMap_Paint);
-      this.pnlMap.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pnlMap_MouseUp);
+      this._pnlMap.BackColor = System.Drawing.SystemColors.Window;
+      this._pnlMap.Location = new System.Drawing.Point(-1, -1);
+      this._pnlMap.Name = "pnlMap";
+      this._pnlMap.Size = new System.Drawing.Size(336, 232);
+      this._pnlMap.TabIndex = 0;
+      this._pnlMap.MouseDown += new System.Windows.Forms.MouseEventHandler(this.PnlMap_MouseDown);
+      this._pnlMap.MouseMove += new System.Windows.Forms.MouseEventHandler(this.PnlMap_MouseMove);
+      this._pnlMap.Resize += new System.EventHandler(this.PnlMap_Resize);
+      this._pnlMap.Paint += new System.Windows.Forms.PaintEventHandler(this.PnlMap_Paint);
+      this._pnlMap.MouseUp += new System.Windows.Forms.MouseEventHandler(this.PnlMap_MouseUp);
       // 
       // WdgMap
       // 
       this.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-      this.Controls.Add(this.pnlMap);
+      this.Controls.Add(this._pnlMap);
       this.Name = "WdgMap";
       this.Size = new System.Drawing.Size(334, 230);
       this.ResumeLayout(false);
@@ -185,10 +185,9 @@ namespace TMapWin
 
     private Graphics BackGroundGraphics(int level)
     {
-      Graphics back;
-      if (_dataGraphics.TryGetValue(level, out back) == false)
+      if (_dataGraphics.TryGetValue(level, out Graphics back) == false)
       {
-        Bitmap image = new Bitmap(pnlMap.Width, pnlMap.Height, pnlMap.CreateGraphics());
+        Bitmap image = new Bitmap(_pnlMap.Width, _pnlMap.Height, _pnlMap.CreateGraphics());
         back = Graphics.FromImage(image);
 
         _dataImages.Add(level, image);
@@ -201,7 +200,7 @@ namespace TMapWin
     {
       if (_foreground == null)
       {
-        _foreground = pnlMap.CreateGraphics();
+        _foreground = _pnlMap.CreateGraphics();
       }
       return _foreground;
     }
@@ -239,12 +238,10 @@ namespace TMapWin
       if (_symbolPens.ContainsKey(symbolPart) == false)
       {
         Pen pen = new Pen(symbolPart.LineColor);
-        ILineWidthPart lineWidth = symbolPart as ILineWidthPart;
-        if (lineWidth != null)
+        if (symbolPart is ILineWidthPart lineWidth)
         {
           double width = lineWidth.LineWidth;
-          IScaleablePart scalable = symbolPart as IScaleablePart;
-          if (scalable != null && scalable.Scale)
+          if (symbolPart is IScaleablePart scalable && scalable.Scale)
           {
             Polyline wLine = Polyline.Create(new[] { new Point2D(0, 0), new Point2D(0, width) });
             wLine = wLine.Project(_prj);
@@ -276,14 +273,13 @@ namespace TMapWin
         }
         g.Flush();
       }
-      pnlMap.Invalidate();
+      _pnlMap.Invalidate();
       Application.DoEvents();
     }
 
     public void DrawLine(Polyline line, ISymbolPart symbolPart)
     {
-      Pen pen;
-      if (_symbolPens.TryGetValue(symbolPart, out pen) == false)
+      if (_symbolPens.TryGetValue(symbolPart, out Pen pen) == false)
       {
         BeginDraw(symbolPart);
         pen = _symbolPens[symbolPart];
@@ -293,8 +289,7 @@ namespace TMapWin
 
     public void DrawArea(Area area, ISymbolPart symbolPart)
     {
-      Brush brush;
-      if (_symbolBrushes.TryGetValue(symbolPart, out brush) == false)
+      if (_symbolBrushes.TryGetValue(symbolPart, out Brush brush) == false)
       {
         BeginDraw(symbolPart);
         brush = _symbolBrushes[symbolPart];
@@ -474,7 +469,7 @@ namespace TMapWin
 
     public void EndDraw()
     {
-      pnlMap.Invalidate();
+      _pnlMap.Invalidate();
       Flush();
     }
 
@@ -494,7 +489,7 @@ namespace TMapWin
 
       _screenPointLast.X = (int)args.End.X;
       _screenPointLast.Y = (int)args.End.Y;
-      _screenPointLast = pnlMap.PointToScreen(_screenPointLast);
+      _screenPointLast = _pnlMap.PointToScreen(_screenPointLast);
 
       DrawSelExtent();
     }
@@ -507,11 +502,11 @@ namespace TMapWin
     {
       if (args.Mouse == 0)
       { return; }
-      System.Drawing.Point end = pnlMap.PointToScreen(
+      System.Drawing.Point end = _pnlMap.PointToScreen(
         new System.Drawing.Point((int)args.End.X, (int)args.End.Y));
       end = PointToClient(end);
-      pnlMap.Top = (int)(end.Y - args.Start.Y);
-      pnlMap.Left = (int)(end.X - args.Start.X);
+      _pnlMap.Top = (int)(end.Y - args.Start.Y);
+      _pnlMap.Left = (int)(end.X - args.Start.X);
       //Console.WriteLine(args.Start + " " + args.End + " " + pnlMap.Left + ";" + pnlMap.Top);
     }
 
@@ -546,31 +541,31 @@ namespace TMapWin
     }
     #region events
 
-    private void pnlMap_Resize(object sender, EventArgs e)
+    private void PnlMap_Resize(object sender, EventArgs e)
     {
       try
       {
         Form wdg = (Form)TopLevelControl;
         if (wdg == null || wdg.WindowState == FormWindowState.Minimized)
         { return; }
-        if (pnlMap.Height <= 0 || pnlMap.Width <= 0)
+        if (_pnlMap.Height <= 0 || _pnlMap.Width <= 0)
         { return; }
 
         DisposeDatagraphics();
-        _backImage = new Bitmap(pnlMap.Width, pnlMap.Height, pnlMap.CreateGraphics());
-        pnlMap.BackgroundImage = _backImage;
+        _backImage = new Bitmap(_pnlMap.Width, _pnlMap.Height, _pnlMap.CreateGraphics());
+        _pnlMap.BackgroundImage = _backImage;
       }
       catch (Exception exp)
       { MessageBox.Show(exp.Message + "\n" + exp.StackTrace); }
     }
 
-    private void pnlMap_MouseDown(object sender, MouseEventArgs e)
+    private void PnlMap_MouseDown(object sender, MouseEventArgs e)
     {
       try
       {
         _pointDown.X = e.X;
         _pointDown.Y = e.Y;
-        _screenPointDown = pnlMap.PointToScreen(_pointDown);
+        _screenPointDown = _pnlMap.PointToScreen(_pointDown);
         _screenPointLast = _screenPointDown;
       }
       catch (Exception exp)
@@ -578,32 +573,28 @@ namespace TMapWin
     }
 
     public event MouseEventHandler MouseMoveMap;
-    private void pnlMap_MouseMove(object sender, MouseEventArgs e)
+    private void PnlMap_MouseMove(object sender, MouseEventArgs e)
     {
       try
       {
         Point2D p0 = InvProject(e.X, e.Y);
         Console.WriteLine("{0:N0} {1:N0}", p0.X, p0.Y);
-        pnlMap.Focus();
-        if (ToolMove != null)
-        {
-          ToolMove(this, new ToolArgs(p0, (int)e.Button,
-            new Point2D(_pointDown.X, _pointDown.Y),
-            new Point2D(e.X, e.Y), false));
-        }
-        if (MouseMoveMap != null)
-        { MouseMoveMap(this, e); }
+        _pnlMap.Focus();
+        ToolMove?.Invoke(this, new ToolArgs(p0, (int)e.Button,
+          new Point2D(_pointDown.X, _pointDown.Y),
+          new Point2D(e.X, e.Y), false));
+        MouseMoveMap?.Invoke(this, e);
       }
       catch (Exception exp)
       { MessageBox.Show(exp.Message + "\n" + exp.StackTrace); }
     }
 
-    private void pnlMap_MouseUp(object sender, MouseEventArgs e)
+    private void PnlMap_MouseUp(object sender, MouseEventArgs e)
     {
       try
       {
         DrawSelExtent();
-        System.Drawing.Point end = new System.Drawing.Point(e.X + pnlMap.Left, e.Y + pnlMap.Top);
+        System.Drawing.Point end = new System.Drawing.Point(e.X + _pnlMap.Left, e.Y + _pnlMap.Top);
         if (ToolEnd != null)
         {
           Point2D pm = InvProject(end.X, end.Y);
@@ -619,19 +610,19 @@ namespace TMapWin
               InvProject(_pointDown.X, _pointDown.Y), pm, false));
           }
         }
-        pnlMap.Left = 0;
-        pnlMap.Top = 0;
+        _pnlMap.Left = 0;
+        _pnlMap.Top = 0;
       }
       catch (Exception exp)
       { MessageBox.Show(exp.Message + "\n" + exp.StackTrace); }
     }
 
-    private void pnlMap_MouseLeave(object sender, EventArgs e)
+    private void PnlMap_MouseLeave(object sender, EventArgs e)
     {
-      pnlMap.Parent.Focus();
+      _pnlMap.Parent.Focus();
     }
 
-    private void pnlMap_MouseWheel(object sender, MouseEventArgs e)
+    private void PnlMap_MouseWheel(object sender, MouseEventArgs e)
     {
       try
       {
@@ -660,7 +651,7 @@ namespace TMapWin
 
     #endregion
 
-    private void pnlMap_Paint(object sender, PaintEventArgs e)
+    private void PnlMap_Paint(object sender, PaintEventArgs e)
     {
       //System.Diagnostics.Debug.WriteLine(_graphics == e.Graphics);
       //e.Graphics.DrawLine(Pens.Red, 10, 10, 50, 60);

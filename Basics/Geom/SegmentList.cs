@@ -27,9 +27,7 @@ namespace Basics.Geom
     {
       get
       {
-        LinkedListNode<IPoint> p0;
-        LinkedListNode<InnerCurve> c;
-        _polyline.InitNode(out p0, out c);
+        _polyline.InitNode(out LinkedListNode<IPoint> p0, out LinkedListNode<InnerCurve> c);
 
         for (int i = 0; i < index; i++)
         { _polyline.NextNodes(ref p0, ref c); }
@@ -40,9 +38,7 @@ namespace Basics.Geom
     {
       get
       {
-        LinkedListNode<IPoint> p0;
-        LinkedListNode<InnerCurve> c;
-        _polyline.InitNode(out p0, out c);
+        _polyline.InitNode(out LinkedListNode<IPoint> p0, out LinkedListNode<InnerCurve> c);
 
         InnerCurve ic = null;
         if (c != null)
@@ -57,7 +53,7 @@ namespace Basics.Geom
         LinkedListNode<IPoint> p0 = _polyline.Points.Last;
         LinkedList<InnerCurve> c = _polyline.SegmentParts;
 
-        return Curve.Create(p0.Previous.Value, p0.Value, c == null ? null : c.Last.Value);
+        return Curve.Create(p0.Previous.Value, p0.Value, c?.Last.Value);
       }
     }
 

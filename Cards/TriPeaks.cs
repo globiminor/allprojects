@@ -74,8 +74,7 @@ namespace Cards
       }
       public override bool EqualPosition(Stand<Move> other)
       {
-        TriPeaksStand so = other as TriPeaksStand;
-        if (so != null)
+        if (other is TriPeaksStand so)
         {
           if (PositionCode != so.PositionCode)
           { return false; }
@@ -156,9 +155,8 @@ namespace Cards
       internal TriPeaks GetCurrent(Stand<Move> stand)
       {
         TriPeaks start = Game;
-        TriPeaks cache;
 
-        if (start._cache.TryGetValue(stand, out cache))
+        if (start._cache.TryGetValue(stand, out TriPeaks cache))
         {
           return cache;
         }

@@ -44,8 +44,7 @@ namespace Asvz.Forchlauf
 
         WriteStart(writer, "Fluntern", distStart, sumDist);
 
-        double nextWald, nextHaus;
-        InitHausWald(out nextHaus, out nextWald);
+        InitHausWald(out double nextHaus, out double nextWald);
 
 
         WriteProfile(writer, cat.ProfilNormed, sumDist);

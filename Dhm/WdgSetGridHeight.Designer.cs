@@ -78,7 +78,7 @@ namespace Dhm
       this.btnExport.TabIndex = 4;
       this.btnExport.Text = "Save as...";
       this.btnExport.UseVisualStyleBackColor = true;
-      this.btnExport.Click += new System.EventHandler(this.btnExport_Click);
+      this.btnExport.Click += new System.EventHandler(this.BtnExport_Click);
       // 
       // lblPos
       // 

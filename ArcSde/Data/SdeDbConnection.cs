@@ -34,8 +34,7 @@ namespace ArcSde.Data
 
     private SeConnection GetFreeConnection(string connectionString)
     {
-      SeConnection connection;
-      if (_connectionPool.TryGetValue(connectionString, out connection) == false)
+      if (_connectionPool.TryGetValue(connectionString, out SeConnection connection) == false)
       {
         connection = new SeConnection(connectionString);
         _connectionPool.Add(connectionString, connection);
@@ -185,8 +184,7 @@ namespace ArcSde.Data
 
     public override SchemaColumnsTable GetTableSchema(string name)
     {
-      SchemaColumnsTable schema;
-      if (_tableSchemas.TryGetValue(name, out schema))
+      if (_tableSchemas.TryGetValue(name, out SchemaColumnsTable schema))
       {
         return schema;
       }
@@ -246,20 +244,17 @@ namespace ArcSde.Data
 
     internal void OnStartingOperation(CancelEventArgs args)
     {
-      if (StartingOperation != null)
-      { StartingOperation(this, args); }
+      StartingOperation?.Invoke(this, args);
     }
 
     internal void OnCommittingOperation(EventArgs args)
     {
-      if (CommittingOperation != null)
-      { CommittingOperation(this, args); }
+      CommittingOperation?.Invoke(this, args);
     }
 
     internal void OnAbortingOperation(EventArgs args)
     {
-      if (AbortingOperation != null)
-      { AbortingOperation(this, args); }
+      AbortingOperation?.Invoke(this, args);
     }
 
     public new SdeDbAdapter CreateAdapter()

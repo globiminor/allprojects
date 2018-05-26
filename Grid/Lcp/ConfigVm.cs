@@ -6,6 +6,8 @@ namespace Grid.Lcp
 {
   public class ConfigVm : NotifyListener
   {
+    private enum ConfigMode { Unknown, TerrainVeloModel, MultiLayerModel };
+
     private const string _dhmExt = "*.asc";
     private const string _veloExt = "*.tif";
     private const double _resol = 4.0;
@@ -13,6 +15,7 @@ namespace Grid.Lcp
     private readonly List<Steps> _stepsModes =
       new List<Steps> { Steps.Step16, Steps.Step8, Steps.Step4 };
 
+    private ConfigMode _configMode;
     private string _heightPath;
     private string _veloPath;
     private double _resolution;
@@ -25,10 +28,47 @@ namespace Grid.Lcp
       VeloPath = _veloExt;
       Resolution = _resol;
       StepsMode = _stepsModes[0];
+
+      _configMode = ConfigMode.TerrainVeloModel;
     }
 
     protected override void Disposing(bool disposing)
     { }
+
+    public bool TerrainVeloModel
+    {
+      get { return _configMode == ConfigMode.TerrainVeloModel; }
+      set
+      {
+        if (value)
+        {
+          _configMode = ConfigMode.TerrainVeloModel;
+        }
+        else if (_configMode == ConfigMode.TerrainVeloModel)
+        {
+          MultiLayerModel = true;
+        }
+        ChangedAll();
+      }
+    }
+
+    public bool MultiLayerModel
+    {
+      get { return _configMode == ConfigMode.MultiLayerModel; }
+      set
+      {
+        if (value)
+        {
+          _configMode = ConfigMode.MultiLayerModel;
+        }
+        else if (_configMode == ConfigMode.MultiLayerModel)
+        {
+          TerrainVeloModel = true;
+        }
+        ChangedAll();
+      }
+    }
+
 
     public string HeightPath
     {
@@ -39,6 +79,7 @@ namespace Grid.Lcp
         {
           _heightPath = value;
           _grdHeight = null;
+          TerrainVeloModel = true;
         }
       }
     }

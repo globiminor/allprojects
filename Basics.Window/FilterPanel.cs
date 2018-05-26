@@ -199,17 +199,15 @@ namespace Basics.Window
         if (_filterView == null)
         {
           DataGridColumn column = GetColumn();
-          DataGridComboBoxColumn lstCol = column as DataGridComboBoxColumn;
-          if (lstCol != null)
+          if (column is DataGridComboBoxColumn lstCol)
           {
             var setters = lstCol.ElementStyle?.Setters;
             if (setters != null)
             {
               foreach (Setter setter in setters)
               {
-                Binding binding = setter.Value as Binding;
                 DependencyProperty prop = setter.Property;
-                if (binding != null && prop == ComboBox.ItemsSourceProperty)
+                if (setter.Value is Binding binding && prop == ComboBox.ItemsSourceProperty)
                 {
                   _filterView = new ListFilter(this, binding);
                 }

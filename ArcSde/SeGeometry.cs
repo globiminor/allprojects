@@ -116,12 +116,10 @@ namespace ArcSde
       {
         pBoundary = new SeGeometryCollection();
 
-        int nParts, nSubParts;
-        CApi.SE_shape_get_num_parts(_shpPtr, out nParts, out nSubParts);
+        CApi.SE_shape_get_num_parts(_shpPtr, out int nParts, out int nSubParts);
         for (int iPart = 1; iPart <= nParts; iPart++)
         {
-          int nPoints;
-          CApi.SE_shape_get_num_points(_shpPtr, iPart, 0, out nPoints);
+          CApi.SE_shape_get_num_points(_shpPtr, iPart, 0, out int nPoints);
           CApi.SE_shape_get_num_subparts(_shpPtr, iPart, out nSubParts);
           if ((nSubParts == 1) == false)
           { throw new NotImplementedException(string.Format("Expected 1 subpart, got {0}", nSubParts)); }

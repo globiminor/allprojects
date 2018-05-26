@@ -46,7 +46,7 @@ namespace OCourse.Ext
     }
 
     private Control _start;
-    private readonly List<VariationBuilder.WhereInfo> Wheres = new List<VariationBuilder.WhereInfo>();
+    private readonly List<VariationBuilder.WhereInfo> _wheres = new List<VariationBuilder.WhereInfo>();
     private readonly List<NextControl> _nextControls = new List<NextControl>();
 
     private string _preName;
@@ -163,17 +163,17 @@ namespace OCourse.Ext
     {
       SectionList clone = new SectionList(_start);
       clone._nextControls.AddRange(_nextControls);
-      clone.Wheres.AddRange(Wheres);
+      clone._wheres.AddRange(_wheres);
       return clone;
     }
 
     public VariationBuilder.WhereInfo.State GetState()
     {
-      if (Wheres.Count == 0)
+      if (_wheres.Count == 0)
       { return VariationBuilder.WhereInfo.State.Fulfilled; }
 
       List<VariationBuilder.WhereInfo> remove = new List<VariationBuilder.WhereInfo>();
-      foreach (VariationBuilder.WhereInfo where in Wheres)
+      foreach (VariationBuilder.WhereInfo where in _wheres)
       {
         VariationBuilder.WhereInfo.State state = where.GetState(this);
         if (state == VariationBuilder.WhereInfo.State.Failed)
@@ -186,9 +186,9 @@ namespace OCourse.Ext
         { remove.Add(where); }
       }
       foreach (VariationBuilder.WhereInfo rem in remove)
-      { Wheres.Remove(rem); }
+      { _wheres.Remove(rem); }
 
-      if (Wheres.Count == 0)
+      if (_wheres.Count == 0)
       { return VariationBuilder.WhereInfo.State.Fulfilled; }
 
       return VariationBuilder.WhereInfo.State.Unknown;
@@ -239,7 +239,7 @@ namespace OCourse.Ext
     {
       if (where == null)
       { return null; }
-      Wheres.Add(where);
+      _wheres.Add(where);
       return where;
     }
 

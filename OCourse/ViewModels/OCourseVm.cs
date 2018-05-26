@@ -24,15 +24,15 @@ namespace OCourse.ViewModels
     public delegate void ShowGridInContext(LeastCostGrid path, StatusEventArgs args);
     public delegate void DrawCourseHandler();
 
-    private const string LegColumn = "Leg";
+    private const string _legColumn = "Leg";
     public event ShowGridInContext ShowProgress;
     public event DrawCourseHandler DrawingCourse;
 
-    internal const string MeanPrefix = "_Mean ";
+    internal const string _meanPrefix = "_Mean ";
 
-    internal const string IndexName = "Index";
-    internal const string StartNrName = "StartNr";
-    internal const string PartName = "Part";
+    internal const string _indexName = "Index";
+    internal const string _startNrName = "StartNr";
+    internal const string _partName = "Part";
 
 
     private readonly BindingListView<string> _courseNames;
@@ -511,7 +511,7 @@ namespace OCourse.ViewModels
           CostSum sum = pair.Value;
           sum = (1.0 / countList[leg].Count) * sum;
           CostMean mean = new CostMean(sum, countList[leg])
-          { Name = string.Format("{0} {1}", MeanPrefix, leg) };
+          { Name = string.Format("{0} {1}", _meanPrefix, leg) };
           routes.Add(mean);
         }
       }
@@ -1107,19 +1107,19 @@ namespace OCourse.ViewModels
           if (permutTbl.Columns.Count == 0)
           {
             permutTbl.Columns.Add("All", typeof(IList<SectionList>));
-            permutTbl.Columns.Add(IndexName, typeof(int));
-            permutTbl.Columns.Add(StartNrName, typeof(int));
+            permutTbl.Columns.Add(_indexName, typeof(int));
+            permutTbl.Columns.Add(_startNrName, typeof(int));
             foreach (SectionList part in parts)
             {
-              permutTbl.Columns.Add(string.Format("{0}{1}", PartName, iPart), typeof(string));
+              permutTbl.Columns.Add(string.Format("{0}{1}", _partName, iPart), typeof(string));
               iPart++;
             }
           }
 
           DataRow row = permutTbl.NewRow();
           row[0] = parts;
-          row[IndexName] = index;
-          row[StartNrName] = startNr;
+          row[_indexName] = index;
+          row[_startNrName] = startNr;
           iPart = 3;
           foreach (SectionList part in parts)
           {
@@ -1134,7 +1134,7 @@ namespace OCourse.ViewModels
           AllowDelete = false,
           AllowNew = false,
           AllowEdit = false,
-          Sort = StartNrName
+          Sort = _startNrName
         };
 
         _parent.Permutations = permutView;

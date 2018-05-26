@@ -39,13 +39,8 @@ namespace Basics.Data
 
       public ExpressionInfo(string expression, BaseCommand parent)
       {
-        if (expression == null)
-        { throw new ArgumentNullException("expression"); }
-        if (parent == null)
-        { throw new ArgumentNullException("parent"); }
-
-        _expression = expression;
-        _parent = parent;
+        _expression = expression ?? throw new ArgumentNullException(nameof(expression));
+        _parent = parent ?? throw new ArgumentNullException(nameof(parent));
       }
 
       public string Expression
@@ -266,9 +261,7 @@ namespace Basics.Data
       public SelectCommand(DbBaseCommand baseCommand)
         : base(baseCommand)
       {
-        string text;
-        int position;
-        InitCommand("SELECT", out text, out position);
+        InitCommand("SELECT", out string text, out int position);
 
         _fields = new List<FieldExpression>();
         string next = null;
@@ -333,9 +326,7 @@ namespace Basics.Data
         : base(baseCommand)
       {
 
-        string text;
-        int position;
-        InitCommand("INSERT", out text, out position);
+        InitCommand("INSERT", out string text, out int position);
 
         string into = GetPart(text, ref position);
         if (into.Equals("INTO", StringComparison.InvariantCultureIgnoreCase) == false)
@@ -392,9 +383,8 @@ namespace Basics.Data
         nextField = true;
         while (nextField)
         {
-          string next;
           StringBuilder expressionBuilder = new StringBuilder();
-          GetExpression(expressionBuilder, text, ref position, out next, new char[] { ',', ')' });
+          GetExpression(expressionBuilder, text, ref position, out string next, new char[] { ',', ')' });
           expressions.Add(new ExpressionInfo(expressionBuilder.ToString(), this));
 
           nextField = (text[position] == ',');
@@ -543,9 +533,7 @@ namespace Basics.Data
       public UpdateCommand(DbBaseCommand baseCommand)
         : base(baseCommand)
       {
-        string text;
-        int position;
-        InitCommand("UPDATE", out text, out position);
+        InitCommand("UPDATE", out string text, out int position);
 
         BaseCmnd.InitTable(text, ref position);
 
@@ -646,9 +634,7 @@ namespace Basics.Data
       public DeleteCommand(DbBaseCommand baseCommand)
         : base(baseCommand)
       {
-        string text;
-        int position;
-        InitCommand("DELETE", out text, out position);
+        InitCommand("DELETE", out string text, out int position);
 
         string next;
         next = GetPart(text, ref position);
@@ -688,9 +674,8 @@ namespace Basics.Data
             { throw new InvalidOperationException(ErrorText("Expected WHERE", text, position)); }
           }
 
-          string next;
           StringBuilder whereBuilder = new StringBuilder();
-          GetExpression(whereBuilder, text, ref position, out next, null);
+          GetExpression(whereBuilder, text, ref position, out string next, null);
 
           _where = new ExpressionInfo(whereBuilder.ToString(), this);
         }
@@ -752,8 +737,8 @@ namespace Basics.Data
           iFunction++;
         }
 
-        _validateView = new DataView(validateSchema);
-        _validateView.RowFilter = validateWhere.ToString();
+        _validateView = new DataView(validateSchema)
+        { RowFilter = validateWhere.ToString() };
       }
 
       public bool Validate(IDataRecord row)
@@ -959,7 +944,7 @@ namespace Basics.Data
         }
       }
 
-      protected void InitCommand(string command, out  string text, out int position)
+      protected void InitCommand(string command, out string text, out int position)
       {
         text = _baseCommand.CommandText.Trim();
         position = 0;
@@ -977,8 +962,8 @@ namespace Basics.Data
 
       static Function()
       {
-        _functionHandlers = new Dictionary<string, FunctionHandler>();
-        _functionHandlers.Add("ST_Intersects", ST_Intersects);
+        _functionHandlers = new Dictionary<string, FunctionHandler>
+        { { "ST_Intersects", ST_Intersects } };
       }
 
       private static object ST_Intersects(IList<object> values)
@@ -1330,19 +1315,16 @@ namespace Basics.Data
     {
       BaseCommand cmd = BaseCmd;
 
-      if (cmd is UpdateCommand)
+      if (cmd is UpdateCommand update)
       {
-        UpdateCommand update = (UpdateCommand)cmd;
         return ExecuteUpdate(update);
       }
-      else if (cmd is InsertCommand)
+      else if (cmd is InsertCommand insert)
       {
-        InsertCommand insert = (InsertCommand)cmd;
         return ExecuteInsert(insert);
       }
-      else if (cmd is DeleteCommand)
+      else if (cmd is DeleteCommand delete)
       {
-        DeleteCommand delete = (DeleteCommand)cmd;
         return ExecuteDelete(delete);
       }
       else
@@ -1362,10 +1344,8 @@ namespace Basics.Data
 
     public SchemaColumnsTable GetSchemaTable()
     {
-      if (BaseCmd is SelectCommand)
+      if (BaseCmd is SelectCommand selCmd)
       {
-        SelectCommand selCmd = (SelectCommand)BaseCmd;
-
         SchemaColumnsTable table = Connection.GetTableSchema(TableName);
         SchemaColumnsTable schema = new SchemaColumnsTable();
         foreach (FieldExpression field in selCmd.Fields)
@@ -1499,10 +1479,9 @@ namespace Basics.Data
 
         if (position < text.Length && text[position] == '(')
         {
-          string n;
           position++;
           expression.Append("(");
-          GetExpression(expression, text, ref position, out n, new char[] { ')' });
+          GetExpression(expression, text, ref position, out string n, new char[] { ')' });
           if (position >= text.Length || text[position] != ')')
           { throw new InvalidOperationException(ErrorText("Unbalanced ()", text, position)); }
           expression.Append(")");

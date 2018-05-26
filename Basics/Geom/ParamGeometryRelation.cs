@@ -92,8 +92,7 @@ namespace Basics.Geom
         ParamGeometryRelation rel, Info asY, out ParamGeometryRelation result)
       {
         result = null;
-        Info resultInfo;
-        if (!TryGetInfo(parent, out resultInfo))
+        if (!TryGetInfo(parent, out Info resultInfo))
         { return false; }
 
         if (resultInfo != null)
@@ -107,8 +106,8 @@ namespace Basics.Geom
 
           resultInfo._parents = _parents;
 
-          result._X = resultInfo;
-          result._Y = asY;
+          result._x = resultInfo;
+          result._y = asY;
         }
         else
         { result = null; }
@@ -191,19 +190,19 @@ namespace Basics.Geom
       public bool Equals(ParamGeometryRelation x, ParamGeometryRelation y)
       {
         if (x == y) return true;
-        if (x._X.Param != null && x._Y.Param != null)
+        if (x._x.Param != null && x._y.Param != null)
         {
-          if (x._X.Param == y._X.Param && x._Y.Param == y._Y.Param) return true;
-          if (x._X.Param == y._Y.Param && x._Y.Param == y._X.Param) return true;
+          if (x._x.Param == y._x.Param && x._y.Param == y._y.Param) return true;
+          if (x._x.Param == y._y.Param && x._y.Param == y._x.Param) return true;
           return false;
         }
-        if (x._X.Hierarchy.Count == 1 && x._Y.Hierarchy.Count == 1 &&
-          x._X.Hierarchy.First.Value.Geometry == x._Y.Hierarchy.First.Value.Geometry)
+        if (x._x.Hierarchy.Count == 1 && x._y.Hierarchy.Count == 1 &&
+          x._x.Hierarchy.First.Value.Geometry == x._y.Hierarchy.First.Value.Geometry)
         {
-          if (y._X.Hierarchy.Count == 1 && y._Y.Hierarchy.Count == 1 &&
-            y._X.Hierarchy.First.Value.Geometry == y._Y.Hierarchy.First.Value.Geometry)
+          if (y._x.Hierarchy.Count == 1 && y._y.Hierarchy.Count == 1 &&
+            y._x.Hierarchy.First.Value.Geometry == y._y.Hierarchy.First.Value.Geometry)
           {
-            bool equals = x._X.Hierarchy.First.Value == y._X.Hierarchy.First.Value;
+            bool equals = x._x.Hierarchy.First.Value == y._x.Hierarchy.First.Value;
             return equals;
           }
         }
@@ -212,17 +211,17 @@ namespace Basics.Geom
 
       public int GetHashCode(ParamGeometryRelation obj)
       {
-        if (obj._X == null || obj._X.Param == null) return base.GetHashCode();
-        if (obj._Y == null || obj._Y.Param == null) return base.GetHashCode();
+        if (obj._x == null || obj._x.Param == null) return base.GetHashCode();
+        if (obj._y == null || obj._y.Param == null) return base.GetHashCode();
 
-        int code = obj._X.Param.GetHashCode() + obj._Y.Param.GetHashCode();
+        int code = obj._x.Param.GetHashCode() + obj._y.Param.GetHashCode();
         return code;
       }
     }
 
     private List<ParamGeometryRelation> _borderRelations;
-    private Info _X;
-    private Info _Y;
+    private Info _x;
+    private Info _y;
     private IPoint _offset;
 
     private IGeometry _intersect;
@@ -235,34 +234,34 @@ namespace Basics.Geom
     public ParamGeometryRelation(IParamGeometry x, IParamGeometry y,
       IGeometry intersection)
     {
-      _X = new Info(x, null);
-      _Y = new Info(y, null);
+      _x = new Info(x, null);
+      _y = new Info(y, null);
       Intersection = intersection;
     }
 
     public static ParamGeometryRelation CreateWithin(IGeometry contains, IGeometry within)
     {
       ParamGeometryRelation rel = new ParamGeometryRelation(null, null, within);
-      rel._X = new Info(null, null);
-      rel._X.SetFirstParent(contains);
-      rel._Y = new Info(null, null);
-      rel._Y.SetFirstParent(within);
+      rel._x = new Info(null, null);
+      rel._x.SetFirstParent(contains);
+      rel._y = new Info(null, null);
+      rel._y.SetFirstParent(within);
 
       return rel;
     }
     public ParamGeometryRelation(IParamGeometry x, IPoint xParam,
       IParamGeometry y, IPoint yParam, IPoint offset)
     {
-      _X = new Info(x, xParam);
-      _Y = new Info(y, yParam);
+      _x = new Info(x, xParam);
+      _y = new Info(y, yParam);
       _offset = offset;
     }
 
     public void AddParent(IGeometry parent, int childIndex, IGeometry child)
     {
-      if (_X.TryAddParent(parent, childIndex, child))
+      if (_x.TryAddParent(parent, childIndex, child))
       { }
-      else if (_Y.TryAddParent(parent, childIndex, child))
+      else if (_y.TryAddParent(parent, childIndex, child))
       { }
       else
       { throw new InvalidOperationException("child not valid"); }
@@ -270,10 +269,9 @@ namespace Basics.Geom
 
     public ParamGeometryRelation GetChildRelation(IGeometry parent)
     {
-      ParamGeometryRelation relation;
-      if (_X.TryGetChildRelation(parent, this, _Y, out relation))
+      if (_x.TryGetChildRelation(parent, this, _y, out ParamGeometryRelation relation))
       { }
-      else if (_Y.TryGetChildRelation(parent, this, _X, out relation))
+      else if (_y.TryGetChildRelation(parent, this, _x, out relation))
       { }
       else
       { throw new InvalidOperationException("child not valid"); }
@@ -282,12 +280,12 @@ namespace Basics.Geom
 
     public IPoint XParam
     {
-      get { return _X.Param; }
+      get { return _x.Param; }
     }
 
     public IGeometry CurrentX
     {
-      get { return _X.Current; }
+      get { return _x.Current; }
     }
 
     public IGeometry Intersection
@@ -321,8 +319,8 @@ namespace Basics.Geom
       {
         if (_intersect == null)
         {
-          if (Offset2 == 0 && _X.Param != null)
-          { _intersect = _X.Geometry.PointAt(_X.Param); }
+          if (Offset2 == 0 && _x.Param != null)
+          { _intersect = _x.Geometry.PointAt(_x.Param); }
         }
         return _intersect;
       }
@@ -333,7 +331,7 @@ namespace Basics.Geom
       get
       {
         if (_isWithin == null)
-        { _isWithin = CheckRange(_X.Param) && CheckRange(_Y.Param); }
+        { _isWithin = CheckRange(_x.Param) && CheckRange(_y.Param); }
         return _isWithin.Value;
       }
     }
@@ -375,11 +373,10 @@ namespace Basics.Geom
     private Info GetInfo(IGeometry parent)
     {
       Info i;
-      Info rel;
-      if (_X.TryGetInfo(parent, out rel))
-      { i = _X; }
-      else if (_Y.TryGetInfo(parent, out rel))
-      { i = _Y; }
+      if (_x.TryGetInfo(parent, out Info rel))
+      { i = _x; }
+      else if (_y.TryGetInfo(parent, out rel))
+      { i = _y; }
       else { throw new InvalidOperationException("Unknown Parent"); }
       return i;
     }
@@ -518,17 +515,15 @@ namespace Basics.Geom
         else
         { CheckAddPart(x, y, assembled); }
       }
-      else if (y is PolylineCollection)
+      else if (y is PolylineCollection lines)
       {
-        PolylineCollection lines = (PolylineCollection)y;
         int nLines = lines.Count;
         Dictionary<int, List<ParamGeometryRelation>> parts = new Dictionary<int, List<ParamGeometryRelation>>(nLines);
         foreach (ParamGeometryRelation rel in sortY)
         {
           Info yInfo = rel.GetInfo(y);
           int i = yInfo.Hierarchy.Last.Value.ChildIndex;
-          List<ParamGeometryRelation> rels;
-          if (!parts.TryGetValue(i, out rels))
+          if (!parts.TryGetValue(i, out List<ParamGeometryRelation> rels))
           {
             rels = new List<ParamGeometryRelation>();
             parts.Add(i, rels);
@@ -538,8 +533,7 @@ namespace Basics.Geom
         for (int i = 0; i < nLines; i++)
         {
           Polyline line = lines[i];
-          List<ParamGeometryRelation> part;
-          if (parts.TryGetValue(i, out part))
+          if (parts.TryGetValue(i, out List<ParamGeometryRelation> part))
           {
             List<ParamGeometryRelation> splits = new List<ParamGeometryRelation>(part.Count);
             foreach (ParamGeometryRelation split in part)
@@ -619,8 +613,7 @@ namespace Basics.Geom
         while (start != null)
         {
 
-          ParamGeometryRelation[] connected;
-          if (!rels.TryGetValue(start, out connected))
+          if (!rels.TryGetValue(start, out ParamGeometryRelation[] connected))
           { break; }
 
           ParamGeometryRelation b;
@@ -754,15 +747,14 @@ namespace Basics.Geom
       ParamGeometryRelation rel)
     {
       Polyline line;
-      if (rel._X.Hierarchy.Last.Value.Geometry is Polyline)
-      { line = (Polyline)rel._X.Hierarchy.Last.Value.Geometry; }
-      else if (rel._Y.Hierarchy.Last.Value.Geometry is Polyline)
-      { line = (Polyline)rel._Y.Hierarchy.Last.Value.Geometry; }
+      if (rel._x.Hierarchy.Last.Value.Geometry is Polyline)
+      { line = (Polyline)rel._x.Hierarchy.Last.Value.Geometry; }
+      else if (rel._y.Hierarchy.Last.Value.Geometry is Polyline)
+      { line = (Polyline)rel._y.Hierarchy.Last.Value.Geometry; }
       else
       { return null; }
 
-      ParamGeometryRelation s;
-      if (!startEnds.TryGetValue(line, out s))
+      if (!startEnds.TryGetValue(line, out ParamGeometryRelation s))
       {
         s = CreateWithin(line, line);
         s.Intersection = GeometryOperator.GetFirstPoint(line);

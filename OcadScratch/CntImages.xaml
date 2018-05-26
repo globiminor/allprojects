@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:OcadScratch"
              mc:Ignorable="d" MinWidth="100" MinHeight="80" >
     <Grid>
-        <Button x:Name="btnAdd" Content="Add..." Height="24" VerticalAlignment="Top" HorizontalAlignment="Left" Width="42" Click="btnAddClick"></Button>
+        <Button x:Name="btnAdd" Content="Add..." Height="24" VerticalAlignment="Top" HorizontalAlignment="Left" Width="42" Click="BtnAddClick"></Button>
         <DataGrid x:Name="grdImages" Margin="0,24,0,0">
         </DataGrid>
     </Grid>

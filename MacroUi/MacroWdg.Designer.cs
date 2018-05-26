@@ -56,7 +56,7 @@
       this.btnRun.TabIndex = 0;
       this.btnRun.Text = "Run";
       this.btnRun.UseVisualStyleBackColor = true;
-      this.btnRun.Click += new System.EventHandler(this.btnRun_Click);
+      this.btnRun.Click += new System.EventHandler(this.BtnRun_Click);
       // 
       // txtMacro
       // 
@@ -66,10 +66,10 @@
       this.txtMacro.Name = "txtMacro";
       this.txtMacro.Size = new System.Drawing.Size(343, 20);
       this.txtMacro.TabIndex = 2;
-      this.txtMacro.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtMacro_KeyDown);
-      this.txtMacro.KeyUp += new System.Windows.Forms.KeyEventHandler(this.txtMacro_KeyUp);
-      this.txtMacro.MouseDown += new System.Windows.Forms.MouseEventHandler(this.txtMacro_MouseDown);
-      this.txtMacro.Validating += new System.ComponentModel.CancelEventHandler(this.txtMacro_Validating);
+      this.txtMacro.KeyDown += new System.Windows.Forms.KeyEventHandler(this.TxtMacro_KeyDown);
+      this.txtMacro.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TxtMacro_KeyUp);
+      this.txtMacro.MouseDown += new System.Windows.Forms.MouseEventHandler(this.TxtMacro_MouseDown);
+      this.txtMacro.Validating += new System.ComponentModel.CancelEventHandler(this.TxtMacro_Validating);
       // 
       // btnOpen
       // 
@@ -80,7 +80,7 @@
       this.btnOpen.TabIndex = 3;
       this.btnOpen.Text = "...";
       this.btnOpen.UseVisualStyleBackColor = true;
-      this.btnOpen.Click += new System.EventHandler(this.btnOpen_Click);
+      this.btnOpen.Click += new System.EventHandler(this.BtnOpen_Click);
       // 
       // dlgOpen
       // 
@@ -119,7 +119,7 @@
       this.btnSelectFiles.TabIndex = 7;
       this.btnSelectFiles.Text = "...";
       this.btnSelectFiles.UseVisualStyleBackColor = true;
-      this.btnSelectFiles.Click += new System.EventHandler(this.btnSelectFiles_Click);
+      this.btnSelectFiles.Click += new System.EventHandler(this.BtnSelectFiles_Click);
       // 
       // dlgOpenData
       // 
@@ -135,7 +135,7 @@
       this.optFiles.TabIndex = 8;
       this.optFiles.Text = "Run all Files";
       this.optFiles.UseVisualStyleBackColor = true;
-      this.optFiles.CheckedChanged += new System.EventHandler(this.optRun_CheckChanged);
+      this.optFiles.CheckedChanged += new System.EventHandler(this.OptRun_CheckChanged);
       // 
       // optOnce
       // 
@@ -148,7 +148,7 @@
       this.optOnce.TabStop = true;
       this.optOnce.Text = "Run once";
       this.optOnce.UseVisualStyleBackColor = true;
-      this.optOnce.CheckedChanged += new System.EventHandler(this.optRun_CheckChanged);
+      this.optOnce.CheckedChanged += new System.EventHandler(this.OptRun_CheckChanged);
       // 
       // txtProgress
       // 
@@ -167,7 +167,7 @@
       this.btn5Staffel.TabIndex = 11;
       this.btn5Staffel.Text = "5erStaffel";
       this.btn5Staffel.UseVisualStyleBackColor = true;
-      this.btn5Staffel.Click += new System.EventHandler(this.btn5Staffel_Click);
+      this.btn5Staffel.Click += new System.EventHandler(this.Btn5Staffel_Click);
       // 
       // MacroWdg
       // 

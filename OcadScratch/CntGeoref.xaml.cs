@@ -20,17 +20,17 @@ namespace OcadScratch
       set { base.DataContext = value; }
     }
 
-    private void btnGetWgs_Click(object sender, RoutedEventArgs e)
+    private void BtnGetWgs_Click(object sender, RoutedEventArgs e)
     {
       DataContext?.CalcWgs84();
     }
 
-    private void btnGetKoord_Click(object sender, RoutedEventArgs e)
+    private void BtnGetKoord_Click(object sender, RoutedEventArgs e)
     {
       DataContext?.CalcMapCoord();
     }
 
-    private void btnGetDeklination_Click(object sender, RoutedEventArgs e)
+    private void BtnGetDeklination_Click(object sender, RoutedEventArgs e)
     {
       DataContext?.CalcDeclination();
     }

@@ -39,13 +39,11 @@ namespace Basics.Data
       }
       else if (FieldTag.Equals(name, StringComparison.InvariantCultureIgnoreCase))
       {
-        bool reverse;
-        return element.GetTag(out reverse);
+        return element.GetTag(out bool reverse);
       }
       else if (FieldTagReverse.Equals(name, StringComparison.InvariantCultureIgnoreCase))
       {
-        bool reverse;
-        element.GetTag(out reverse);
+        element.GetTag(out bool reverse);
         return reverse;
       }
       else

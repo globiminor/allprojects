@@ -425,7 +425,7 @@ namespace OMapIssues.Controllers
 
         #region Hilfsprogramme
         // Wird für XSRF-Schutz beim Hinzufügen externer Anmeldungen verwendet
-        private const string XsrfKey = "XsrfId";
+        private const string _xsrfKey = "XsrfId";
 
         private IAuthenticationManager AuthenticationManager
         {
@@ -475,7 +475,7 @@ namespace OMapIssues.Controllers
                 var properties = new AuthenticationProperties { RedirectUri = RedirectUri };
                 if (UserId != null)
                 {
-                    properties.Dictionary[XsrfKey] = UserId;
+                    properties.Dictionary[_xsrfKey] = UserId;
                 }
                 context.HttpContext.GetOwinContext().Authentication.Challenge(properties, LoginProvider);
             }

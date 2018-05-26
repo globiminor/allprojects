@@ -52,8 +52,7 @@ namespace Asvz.Sola
 
         WriteStart(writer, Ddx.Uebergabe[von].Name, distStart, sumDist);
 
-        double nextWald, nextHaus;
-        InitHausWald(out nextHaus, out nextWald);
+        InitHausWald(out double nextHaus, out double nextWald);
 
         for (int iStrecke = von; iStrecke < bis; iStrecke++)
         {

@@ -101,12 +101,10 @@ namespace Basics.Geom.Network
     {
       foreach (T rawNeighbor in startNode.RawNeighbors)
       {
-        T neighbor;
-
         if (IsFixed(rawNeighbor))
         { continue; }
 
-        if (nodes.TryGetValue(rawNeighbor, out neighbor) == false)
+        if (nodes.TryGetValue(rawNeighbor, out T neighbor) == false)
         {
           neighbor = rawNeighbor;
           nodes.Add(neighbor, neighbor);

@@ -126,7 +126,7 @@ namespace TMapWin
 
 
     #region context events
-    private void optZoomIn_SelectionEnd(object sender, ToolArgs e)
+    private void OptZoomIn_SelectionEnd(object sender, ToolArgs e)
     {
       if (e.IsPoint == false)
       { wdgMap.SetExtent(new Basics.Geom.Box(e.Start, e.End, true)); }
@@ -135,7 +135,7 @@ namespace TMapWin
       Redraw();
     }
 
-    private void optZoomOut_SelectionEnd(object sender, ToolArgs e)
+    private void OptZoomOut_SelectionEnd(object sender, ToolArgs e)
     {
       if (e.IsPoint == false)
       {
@@ -166,7 +166,7 @@ namespace TMapWin
       Redraw();
     }
 
-    private void optMove_SelectionEnd(object sender, ToolArgs e)
+    private void OptMove_SelectionEnd(object sender, ToolArgs e)
     {
       if (e.IsPoint == false)
       {
@@ -180,7 +180,7 @@ namespace TMapWin
     }
 
 
-    private void optSelect_SelectionEnd(object sender, ToolArgs e)
+    private void OptSelect_SelectionEnd(object sender, ToolArgs e)
     {
       wdgSel.Clear();
       foreach (MapData mapData in wdgToc.MapData.VisibleList().Subparts)
@@ -219,7 +219,7 @@ namespace TMapWin
 
     #region events
 
-    private void mnuLoad_Click(object sender, EventArgs e)
+    private void MnuLoad_Click(object sender, EventArgs e)
     {
       string fileName;
       using (WdgOpen open = new WdgOpen())
@@ -345,8 +345,7 @@ namespace TMapWin
       cmd = (ICommand)Activator.CreateInstance(t);
       cmd.Execute(this);
 
-      ITool tool = cmd as ITool;
-      if (tool != null)
+      if (cmd is ITool tool)
       {
         _currentTool = tool;
         wdgMap.ToolEnd = PluginToolEnd;
@@ -376,7 +375,7 @@ namespace TMapWin
       RunPlugin(rPlugin);
     }
 
-    private void wdgMap_Resize(object sender, EventArgs e)
+    private void WdgMap_Resize(object sender, EventArgs e)
     {
       if (((Form)wdgMap.TopLevelControl).WindowState == FormWindowState.Minimized)
       { return; }
@@ -386,36 +385,36 @@ namespace TMapWin
       Redraw();
     }
 
-    private void mnuRefresh_Click(object sender, EventArgs e)
+    private void MnuRefresh_Click(object sender, EventArgs e)
     {
       Redraw();
     }
 
-    private void optZoomIn_Click(object sender, EventArgs e)
+    private void OptZoomIn_Click(object sender, EventArgs e)
     {
       wdgMap.ToolMove = wdgMap.ToolDownHandler(MouseDownStyle.Box);
-      wdgMap.ToolEnd = optZoomIn_SelectionEnd;
+      wdgMap.ToolEnd = OptZoomIn_SelectionEnd;
     }
 
-    private void optZoomOut_Click(object sender, EventArgs e)
+    private void OptZoomOut_Click(object sender, EventArgs e)
     {
       wdgMap.ToolMove = wdgMap.ToolDownHandler(MouseDownStyle.Box);
-      wdgMap.ToolEnd = optZoomOut_SelectionEnd;
+      wdgMap.ToolEnd = OptZoomOut_SelectionEnd;
     }
 
-    private void optMove_Click(object sender, EventArgs e)
+    private void OptMove_Click(object sender, EventArgs e)
     {
       wdgMap.ToolMove = wdgMap.ToolMovePanelHandler();
-      wdgMap.ToolEnd = optMove_SelectionEnd;
+      wdgMap.ToolEnd = OptMove_SelectionEnd;
     }
 
-    private void optSelect_Click(object sender, EventArgs e)
+    private void OptSelect_Click(object sender, EventArgs e)
     {
       wdgMap.ToolMove = wdgMap.ToolDownHandler(MouseDownStyle.Box);
-      wdgMap.ToolEnd = optSelect_SelectionEnd;
+      wdgMap.ToolEnd = OptSelect_SelectionEnd;
     }
 
-    private void wdgMap_MouseMove(object sender, MouseEventArgs e)
+    private void WdgMap_MouseMove(object sender, MouseEventArgs e)
     {
       if (wdgMap.Extent == null)
       {
@@ -428,7 +427,7 @@ namespace TMapWin
       txtPosition.Text = string.Format("{0:N2};{1:N2}", pos.X, pos.Y);
     }
 
-    private void data_DragDrop(object sender, DragEventArgs e)
+    private void Data_DragDrop(object sender, DragEventArgs e)
     {
       if (e.Data.GetDataPresent(DataFormats.FileDrop))
       {
@@ -441,7 +440,7 @@ namespace TMapWin
       }
     }
 
-    private void data_DragEnter(object sender, DragEventArgs e)
+    private void Data_DragEnter(object sender, DragEventArgs e)
     {
       if (e.Data.GetDataPresent(DataFormats.FileDrop))
       { e.Effect = DragDropEffects.Copy; }
@@ -449,12 +448,12 @@ namespace TMapWin
       { e.Effect = DragDropEffects.None; }
     }
 
-    private void wdgToc_ListChanged(object sender, EventArgs e)
+    private void WdgToc_ListChanged(object sender, EventArgs e)
     {
       Redraw();
     }
 
-    private void mnuNew_Click(object sender, EventArgs e)
+    private void MnuNew_Click(object sender, EventArgs e)
     {
       WdgCustom wdgCustom = new WdgCustom();
       if (wdgCustom.ShowDialog(this) != DialogResult.OK)

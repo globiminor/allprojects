@@ -50,7 +50,7 @@ namespace OcadScratch
       }
     }
 
-    private void btnAddClick(object sender, RoutedEventArgs e)
+    private void BtnAddClick(object sender, RoutedEventArgs e)
     {
       OpenFileDialog dlg = new OpenFileDialog();
       dlg.Filter = "*.jpg | *.jpg";

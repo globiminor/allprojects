@@ -40,8 +40,7 @@ namespace Basics.Geom
 
     public static Polyline GetContour(IMeshLine line, double fraction, IComparer<IMeshLine> comparer)
     {
-      bool complete;
-      Polyline start = GetContour(line, fraction, comparer, out complete);
+      Polyline start = GetContour(line, fraction, comparer, out bool complete);
       if (complete)
       { return start; }
 

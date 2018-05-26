@@ -114,8 +114,7 @@ namespace TMapWin.Browse
     }
     protected void OnAddingItem(ItemArgs args)
     {
-      if (AddingItem != null)
-      { AddingItem(this, args); }
+      AddingItem?.Invoke(this, args);
     }
 
     protected void AddItem(string item, object dsName, DataType dataType)
@@ -364,7 +363,7 @@ namespace TMapWin.Browse
       txtNew.Text = itemList.ToString();
     }
 
-    private void btnOpen_Click(object sender, EventArgs e)
+    private void BtnOpen_Click(object sender, EventArgs e)
     {
       if (ListData.SelectedItems != null && ListData.SelectedItems.Count == 1)
       {

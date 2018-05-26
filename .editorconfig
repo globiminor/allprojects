@@ -1,0 +1,3 @@
+[*.{cs,vb}]
+dotnet_style_object_initializer = false:none
+dotnet_style_collection_initializer = false:none

@@ -44,7 +44,7 @@ namespace TMapWin
       this.pgrSymbol.Name = "pgrSymbol";
       this.pgrSymbol.Size = new System.Drawing.Size(285, 179);
       this.pgrSymbol.TabIndex = 0;
-      this.pgrSymbol.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.pgrSymbol_PropertyValueChanged);
+      this.pgrSymbol.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.PgrSymbol_PropertyValueChanged);
       // 
       // pnlSymbol
       // 
@@ -53,7 +53,7 @@ namespace TMapWin
       this.pnlSymbol.Name = "pnlSymbol";
       this.pnlSymbol.Size = new System.Drawing.Size(161, 32);
       this.pnlSymbol.TabIndex = 3;
-      this.pnlSymbol.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlSymbol_Paint);
+      this.pnlSymbol.Paint += new System.Windows.Forms.PaintEventHandler(this.PnlSymbol_Paint);
       // 
       // grdSymbolPart
       // 
@@ -62,7 +62,7 @@ namespace TMapWin
       this.grdSymbolPart.Location = new System.Drawing.Point(0, 41);
       this.grdSymbolPart.Name = "grdSymbolPart";
       this.grdSymbolPart.Size = new System.Drawing.Size(285, 80);
-      this.grdSymbolPart.SelectionChanged += new System.EventHandler(grdSymbolPart_SelectionChanged);
+      this.grdSymbolPart.SelectionChanged += new System.EventHandler(GrdSymbolPart_SelectionChanged);
       this.grdSymbolPart.TabIndex = 2;
       // 
       // btnApply
@@ -74,7 +74,7 @@ namespace TMapWin
       this.btnApply.TabIndex = 25;
       this.btnApply.Text = "Apply";
       this.btnApply.UseVisualStyleBackColor = true;
-      this.btnApply.Click += new System.EventHandler(this.btnApply_Click);
+      this.btnApply.Click += new System.EventHandler(this.BtnApply_Click);
       // 
       // WdgSymbol_
       // 

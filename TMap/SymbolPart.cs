@@ -163,11 +163,11 @@ namespace TMap
   [TypeConverter(typeof(TTTExpandableObjectConverter))]
   public class TTT
   {
-    private int x, y, z, u, v;
-    public int X { get { return x; } set { x = value; } }
-    public int Y { get { return y; } set { y = value; } }
-    public int Z { get { return z; } set { z = value; } }
-    public int U { get { return u; } set { u = value; } }
-    public int V { get { return v; } set { v = value; } }
+    private int _x, _y, _z, _u, _v;
+    public int X { get { return _x; } set { _x = value; } }
+    public int Y { get { return _y; } set { _y = value; } }
+    public int Z { get { return _z; } set { _z = value; } }
+    public int U { get { return _u; } set { _u = value; } }
+    public int V { get { return _v; } set { _v = value; } }
   }
 }

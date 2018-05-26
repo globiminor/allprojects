@@ -57,7 +57,7 @@ namespace TMapWin
       return row;
     }
 
-    private void btnOpen_Click(object sender, EventArgs e)
+    private void BtnOpen_Click(object sender, EventArgs e)
     {
       dlgOpenAssembly.Filter = "Assembly (*.dll,*.exe) | *.dll;*.exe";
       if (dlgOpenAssembly.ShowDialog() == DialogResult.OK)
@@ -80,8 +80,8 @@ namespace TMapWin
       }
     }
 
-    private Rectangle dragBoxFromMouseDown;
-    private void dgCustom_MouseDown(object sender, MouseEventArgs e)
+    private Rectangle _dragBoxFromMouseDown;
+    private void DgCustom_MouseDown(object sender, MouseEventArgs e)
     {
       // Get the index of the item the mouse is below.
       int iDown = dgCustom.HitTest(e.X, e.Y).RowIndex;
@@ -95,24 +95,24 @@ namespace TMapWin
 
         // Create a rectangle using the DragSize, with the mouse position being
         // at the center of the rectangle.
-        dragBoxFromMouseDown = new Rectangle(new Point(e.X - (dragSize.Width / 2),
+        _dragBoxFromMouseDown = new Rectangle(new Point(e.X - (dragSize.Width / 2),
                                                        e.Y - (dragSize.Height / 2)), dragSize);
       }
       else
       {
         // Reset the rectangle if the mouse is not over an item in the ListBox.
-        dragBoxFromMouseDown = Rectangle.Empty;
+        _dragBoxFromMouseDown = Rectangle.Empty;
       }
     }
 
-    private void dgCustom_MouseMove(object sender, MouseEventArgs e)
+    private void DgCustom_MouseMove(object sender, MouseEventArgs e)
     {
       if ((e.Button & MouseButtons.Left) != MouseButtons.Left)
       { return; }
 
       // If the mouse moves outside the rectangle, start the drag.
-      if (dragBoxFromMouseDown == Rectangle.Empty ||
-            dragBoxFromMouseDown.Contains(e.X, e.Y))
+      if (_dragBoxFromMouseDown == Rectangle.Empty ||
+            _dragBoxFromMouseDown.Contains(e.X, e.Y))
       { return; }
 
       // Proceed with the drag-and-drop, passing in the list item.                    
@@ -125,12 +125,12 @@ namespace TMapWin
       }
     }
 
-    private void dgCustom_MouseUp(object sender, MouseEventArgs e)
+    private void DgCustom_MouseUp(object sender, MouseEventArgs e)
     {
-      dragBoxFromMouseDown = Rectangle.Empty;
+      _dragBoxFromMouseDown = Rectangle.Empty;
     }
 
-    private void dgCustom_SelectionChanged(object sender, EventArgs e)
+    private void DgCustom_SelectionChanged(object sender, EventArgs e)
     {
       if (dgCustom.SelectedRows == null)
       {
@@ -145,13 +145,13 @@ namespace TMapWin
       btnOk.Enabled = true;
     }
 
-    private void btnOk_Click(object sender, EventArgs e)
+    private void BtnOk_Click(object sender, EventArgs e)
     {
       DialogResult = DialogResult.OK;
       Close();
     }
 
-    private void btnCancel_Click(object sender, EventArgs e)
+    private void BtnCancel_Click(object sender, EventArgs e)
     {
       DialogResult = DialogResult.Cancel;
       Close();

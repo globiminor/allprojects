@@ -62,7 +62,7 @@ namespace ArcSde
     }
     private void Check(int rc)
     {
-      ErrorHandling.checkRC(_conn.Conn, _ptr, rc);
+      ErrorHandling.CheckRC(_conn.Conn, _ptr, rc);
     }
 
     public class FetchEnum : IEnumerator, IDisposable
@@ -139,31 +139,27 @@ namespace ArcSde
           short colIdx = (short)(index + 1);
           if (type == typeof(int))
           {
-            int i;
-            int rc = CApi.SE_stream_get_integer(_stream._ptr, colIdx, out i);
+            int rc = CApi.SE_stream_get_integer(_stream._ptr, colIdx, out int i);
             if (rc == SdeErrNo.SE_NULL_VALUE) return DBNull.Value;
             return i;
           }
           else if (type == typeof(Int16))
           {
-            Int16 i;
-            int rc = CApi.SE_stream_get_smallint(_stream._ptr, colIdx, out i);
+            int rc = CApi.SE_stream_get_smallint(_stream._ptr, colIdx, out short i);
             if (rc == SdeErrNo.SE_NULL_VALUE) return DBNull.Value;
             _stream.Check(rc);
             return i;
           }
           else if (type == typeof(double))
           {
-            double d;
-            int rc = CApi.SE_stream_get_double(_stream._ptr, colIdx, out d);
+            int rc = CApi.SE_stream_get_double(_stream._ptr, colIdx, out double d);
             if (rc == SdeErrNo.SE_NULL_VALUE) return DBNull.Value;
             _stream.Check(rc);
             return d;
           }
           else if (type == typeof(DateTime))
           {
-            tm d;
-            int rc = CApi.SE_stream_get_date(_stream._ptr, colIdx, out d);
+            int rc = CApi.SE_stream_get_date(_stream._ptr, colIdx, out Tm d);
             if (rc == SdeErrNo.SE_NULL_VALUE) return DBNull.Value;
             _stream.Check(rc);
             return d.GetDate();

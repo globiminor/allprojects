@@ -419,8 +419,7 @@ namespace Basics.Geom
 
       public bool OptionChangeDiag(int rec)
       {
-        bool isReverse;
-        if (GetTag(out isReverse) != null)
+        if (GetTag(out bool isReverse) != null)
         { return false; }
 
         Tri lTri = LeftTri;

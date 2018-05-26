@@ -31,7 +31,7 @@ namespace LeastCostPathUI
       MessageBox.Show(msg);
     }
 
-    private void btnOpen_Click(object sender, EventArgs e)
+    private void BtnOpen_Click(object sender, EventArgs e)
     {
       OpenFileDialog dlg = new OpenFileDialog();
       if (dlg.ShowDialog(this) != DialogResult.OK)
@@ -48,7 +48,7 @@ namespace LeastCostPathUI
       _colors = null;
     }
 
-    private void btnAnalyze_Click(object sender, EventArgs e)
+    private void BtnAnalyze_Click(object sender, EventArgs e)
     {
       if (_img == null)
       {

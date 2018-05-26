@@ -113,8 +113,7 @@ namespace Basics.Geom
     public virtual IList<ParamGeometryRelation> CreateRelations(IParamGeometry other,
       TrackOperatorProgress trackProgress)
     {
-      Curve o = other as Curve;
-      if (o != null)
+      if (other is Curve o)
       {
         return o.CreateRelations(this, trackProgress);
       }

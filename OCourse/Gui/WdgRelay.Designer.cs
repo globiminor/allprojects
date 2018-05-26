@@ -64,7 +64,7 @@
       this.btnCourseXml.TabIndex = 11;
       this.btnCourseXml.Text = "...";
       this.btnCourseXml.UseVisualStyleBackColor = true;
-      this.btnCourseXml.Click += new System.EventHandler(this.btnCourseXml_Click);
+      this.btnCourseXml.Click += new System.EventHandler(this.BtnCourseXml_Click);
       // 
       // txtCourseOcd
       // 
@@ -111,7 +111,7 @@
       this.btnVerify.TabIndex = 14;
       this.btnVerify.Text = "Verify From/To";
       this.btnVerify.UseVisualStyleBackColor = true;
-      this.btnVerify.Click += new System.EventHandler(this.btnVerify_Click);
+      this.btnVerify.Click += new System.EventHandler(this.BtnVerify_Click);
       // 
       // btnEstimate
       // 
@@ -121,7 +121,7 @@
       this.btnEstimate.TabIndex = 15;
       this.btnEstimate.Text = "Estimate From/To";
       this.btnEstimate.UseVisualStyleBackColor = true;
-      this.btnEstimate.Click += new System.EventHandler(this.btnEstimate_Click);
+      this.btnEstimate.Click += new System.EventHandler(this.BtnEstimate_Click);
       // 
       // grpExport
       // 
@@ -146,7 +146,7 @@
       this.btnExportTxtV8.TabIndex = 19;
       this.btnExportTxtV8.Text = "Create Txt V8 File";
       this.btnExportTxtV8.UseVisualStyleBackColor = true;
-      this.btnExportTxtV8.Click += new System.EventHandler(this.btnExportTxtV8_Click);
+      this.btnExportTxtV8.Click += new System.EventHandler(this.BtnExportTxtV8_Click);
       // 
       // btnCreateCsv
       // 
@@ -156,7 +156,7 @@
       this.btnCreateCsv.TabIndex = 18;
       this.btnCreateCsv.Text = "Create Csv File";
       this.btnCreateCsv.UseVisualStyleBackColor = true;
-      this.btnCreateCsv.Click += new System.EventHandler(this.btnCreateCsv_Click);
+      this.btnCreateCsv.Click += new System.EventHandler(this.BtnCreateCsv_Click);
       // 
       // btnCombinations
       // 
@@ -166,7 +166,7 @@
       this.btnCombinations.TabIndex = 17;
       this.btnCombinations.Text = "Combinations ( txt)";
       this.btnCombinations.UseVisualStyleBackColor = true;
-      this.btnCombinations.Click += new System.EventHandler(this.btnCombinations_Click);
+      this.btnCombinations.Click += new System.EventHandler(this.BtnCombinations_Click);
       // 
       // btnAdaptMaps
       // 
@@ -176,7 +176,7 @@
       this.btnAdaptMaps.TabIndex = 20;
       this.btnAdaptMaps.Text = "Adapt Map Files";
       this.btnAdaptMaps.UseVisualStyleBackColor = true;
-      this.btnAdaptMaps.Click += new System.EventHandler(this.btnAdaptMaps_Click);
+      this.btnAdaptMaps.Click += new System.EventHandler(this.BtnAdaptMaps_Click);
       // 
       // dlgFolder
       // 
@@ -200,7 +200,7 @@
       this.btnGrafics.TabIndex = 22;
       this.btnGrafics.Text = "...";
       this.btnGrafics.UseVisualStyleBackColor = true;
-      this.btnGrafics.Click += new System.EventHandler(this.btnGrafics_Click);
+      this.btnGrafics.Click += new System.EventHandler(this.BtnGrafics_Click);
       // 
       // lblGrafics
       // 
@@ -229,7 +229,7 @@
       this.bntMapFolder.TabIndex = 25;
       this.bntMapFolder.Text = "...";
       this.bntMapFolder.UseVisualStyleBackColor = true;
-      this.bntMapFolder.Click += new System.EventHandler(this.bntMapFolder_Click);
+      this.bntMapFolder.Click += new System.EventHandler(this.BntMapFolder_Click);
       // 
       // lblMapFolder
       // 

@@ -195,8 +195,7 @@ namespace Basics.Views
       }
       else if (propertyType == typeof(DateTime))
       {
-        DateTime dt;
-        if (DateTime.TryParse(filterText, out dt))
+        if (DateTime.TryParse(filterText, out DateTime dt))
         {
           if (string.IsNullOrEmpty(fullOp))
           {

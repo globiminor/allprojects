@@ -60,8 +60,7 @@ namespace Cards.Vm
     {
       get
       {
-        IHasInfo hasInfo = _solve as IHasInfo;
-        if (hasInfo != null)
+        if (_solve is IHasInfo hasInfo)
         { return hasInfo.Info; }
         else
         { return null; }
