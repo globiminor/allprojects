@@ -18,9 +18,13 @@ namespace Grid.Lcp
     private ConfigMode _configMode;
     private string _heightPath;
     private string _veloPath;
+    private string _teleportPath;
     private double _resolution;
     private Steps _steps;
     private IDoubleGrid _grdHeight;
+
+    private BindingListView<ConfigVm> _modelLevels;
+    public BindingListView<ConfigVm> ModelLevels => _modelLevels ?? (_modelLevels = new BindingListView<ConfigVm>());
 
     public ConfigVm()
     {
@@ -69,6 +73,10 @@ namespace Grid.Lcp
       }
     }
 
+    public void AddLevel()
+    {
+      ModelLevels.Add(new ConfigVm { Resolution = Resolution, StepsMode = StepsMode});
+    }
 
     public string HeightPath
     {
@@ -94,6 +102,17 @@ namespace Grid.Lcp
     }
     public string VeloFileFilter
     { get { return $"{_veloExt} | {_veloExt}"; } }
+
+    public string TeleportPath
+    {
+      get { return _teleportPath; }
+      set
+      {
+        using (Changing())
+        { _teleportPath = value; }
+      }
+    }
+
 
     public double Resolution
     {

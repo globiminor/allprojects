@@ -181,12 +181,17 @@
     <Content Include="Help\rv_5_8c.png" />
     <Content Include="Help\S2_254r.tif" />
     <Content Include="Help\Velocity.png" />
+    <Content Include="Images\Add.png" />
     <Content Include="Images\OpenFile.ico" />
     <Content Include="Images\Step16.png" />
     <Content Include="Images\Step4.png" />
     <Content Include="Images\Step8.png" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Basics.Forms\Basics.Forms.csproj">
+      <Project>{ac9a4c35-757c-4237-8721-24b607116188}</Project>
+      <Name>Basics.Forms</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Basics\Basics.csproj">
       <Project>{200e9400-2771-4ace-a172-78ebd405b67e}</Project>
       <Name>Basics</Name>

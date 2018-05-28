@@ -43,7 +43,6 @@
       this.btnBackCalc = new System.Windows.Forms.Button();
       this.chkOnTop = new System.Windows.Forms.CheckBox();
       this.pnlCourse = new System.Windows.Forms.Panel();
-      this._cntSection = new OCourse.Gui.CntSection();
       this.btnExport = new System.Windows.Forms.Button();
       this.btnImport = new System.Windows.Forms.Button();
       this.dlgSave = new System.Windows.Forms.SaveFileDialog();
@@ -71,11 +70,9 @@
       this.btnCreateScripts = new System.Windows.Forms.Button();
       this.btnCalcSelection = new System.Windows.Forms.Button();
       this._lstVelo = new System.Windows.Forms.ComboBox();
-      this.lblVelo = new System.Windows.Forms.Label();
       this.btnRelay = new System.Windows.Forms.Button();
       this.btnTrack = new System.Windows.Forms.Button();
       this.btnPermutations = new System.Windows.Forms.Button();
-      this._cntConfig = new LeastCostPathUI.CntConfigView();
       this.btnCancel = new System.Windows.Forms.Button();
       this._lstDisplayType = new System.Windows.Forms.ComboBox();
       this.mnuAll = new System.Windows.Forms.MenuStrip();
@@ -83,6 +80,9 @@
       this.mniOpen = new System.Windows.Forms.ToolStripMenuItem();
       this.mniSave = new System.Windows.Forms.ToolStripMenuItem();
       this.mniSaveAs = new System.Windows.Forms.ToolStripMenuItem();
+      this._cntConfig = new LeastCostPathUI.CntConfigView();
+      this.splModelCourse = new System.Windows.Forms.SplitContainer();
+      this._cntSection = new OCourse.Gui.CntSection();
       this.pnlCourse.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.splCourse)).BeginInit();
       this.splCourse.Panel1.SuspendLayout();
@@ -95,6 +95,10 @@
       ((System.ComponentModel.ISupportInitialize)(this.dgvInfo)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.dgvPermut)).BeginInit();
       this.mnuAll.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.splModelCourse)).BeginInit();
+      this.splModelCourse.Panel1.SuspendLayout();
+      this.splModelCourse.Panel2.SuspendLayout();
+      this.splModelCourse.SuspendLayout();
       this.SuspendLayout();
       // 
       // btnCourse
@@ -130,7 +134,7 @@
       // 
       this._lstCourses.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
       this._lstCourses.FormattingEnabled = true;
-      this._lstCourses.Location = new System.Drawing.Point(3, 3);
+      this._lstCourses.Location = new System.Drawing.Point(83, 5);
       this._lstCourses.Name = "_lstCourses";
       this._lstCourses.Size = new System.Drawing.Size(103, 21);
       this._lstCourses.TabIndex = 9;
@@ -138,7 +142,7 @@
       // label4
       // 
       this.label4.AutoSize = true;
-      this.label4.Location = new System.Drawing.Point(12, 160);
+      this.label4.Location = new System.Drawing.Point(3, 8);
       this.label4.Name = "label4";
       this.label4.Size = new System.Drawing.Size(40, 13);
       this.label4.TabIndex = 10;
@@ -188,19 +192,8 @@
       this.pnlCourse.Controls.Add(this._cntSection);
       this.pnlCourse.Location = new System.Drawing.Point(0, 30);
       this.pnlCourse.Name = "pnlCourse";
-      this.pnlCourse.Size = new System.Drawing.Size(172, 236);
+      this.pnlCourse.Size = new System.Drawing.Size(236, 218);
       this.pnlCourse.TabIndex = 19;
-      // 
-      // _cntSection
-      // 
-      this._cntSection.BackColor = System.Drawing.SystemColors.Window;
-      this._cntSection.BoldCombination = null;
-      this._cntSection.Course = null;
-      this._cntSection.Location = new System.Drawing.Point(1, 1);
-      this._cntSection.Name = "_cntSection";
-      this._cntSection.Size = new System.Drawing.Size(160, 271);
-      this._cntSection.TabIndex = 18;
-      this._cntSection.Vm = null;
       // 
       // btnExport
       // 
@@ -226,23 +219,22 @@
       // 
       // splCourse
       // 
-      this.splCourse.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-      this.splCourse.FixedPanel = System.Windows.Forms.FixedPanel.Panel2;
-      this.splCourse.Location = new System.Drawing.Point(88, 154);
+      this.splCourse.Dock = System.Windows.Forms.DockStyle.Fill;
+      this.splCourse.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
+      this.splCourse.Location = new System.Drawing.Point(0, 0);
       this.splCourse.Name = "splCourse";
       // 
       // splCourse.Panel1
       // 
       this.splCourse.Panel1.Controls.Add(this.pnlCourse);
       this.splCourse.Panel1.Controls.Add(this._lstCourses);
+      this.splCourse.Panel1.Controls.Add(this.label4);
       // 
       // splCourse.Panel2
       // 
       this.splCourse.Panel2.Controls.Add(this.splVars);
-      this.splCourse.Size = new System.Drawing.Size(550, 266);
-      this.splCourse.SplitterDistance = 172;
+      this.splCourse.Size = new System.Drawing.Size(549, 248);
+      this.splCourse.SplitterDistance = 236;
       this.splCourse.TabIndex = 22;
       // 
       // splVars
@@ -275,8 +267,8 @@
       this.splVars.Panel2.Controls.Add(this.lblPermuts);
       this.splVars.Panel2.Controls.Add(this.btnCalcPermut);
       this.splVars.Panel2.Controls.Add(this.dgvPermut);
-      this.splVars.Size = new System.Drawing.Size(374, 266);
-      this.splVars.SplitterDistance = 152;
+      this.splVars.Size = new System.Drawing.Size(309, 248);
+      this.splVars.SplitterDistance = 141;
       this.splVars.TabIndex = 1;
       // 
       // btnRefreshSection
@@ -368,7 +360,7 @@
       this.dgvInfo.RowHeadersDefaultCellStyle = dataGridViewCellStyle3;
       this.dgvInfo.RowHeadersVisible = false;
       this.dgvInfo.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-      this.dgvInfo.Size = new System.Drawing.Size(374, 119);
+      this.dgvInfo.Size = new System.Drawing.Size(309, 108);
       this.dgvInfo.TabIndex = 0;
       this.dgvInfo.CurrentCellChanged += new System.EventHandler(this.DgvInfo_CurrentCellChanged);
       // 
@@ -479,7 +471,7 @@
       this.dgvPermut.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
       this.dgvPermut.Location = new System.Drawing.Point(0, 51);
       this.dgvPermut.Name = "dgvPermut";
-      this.dgvPermut.Size = new System.Drawing.Size(374, 59);
+      this.dgvPermut.Size = new System.Drawing.Size(309, 52);
       this.dgvPermut.TabIndex = 0;
       this.ttp.SetToolTip(this.dgvPermut, "Select combinations to be shown in map");
       this.dgvPermut.SelectionChanged += new System.EventHandler(this.DgvVars_SelectionChanged);
@@ -517,15 +509,6 @@
       this._lstVelo.TabIndex = 27;
       this._lstVelo.Visible = false;
       // 
-      // lblVelo
-      // 
-      this.lblVelo.AutoSize = true;
-      this.lblVelo.Location = new System.Drawing.Point(422, 133);
-      this.lblVelo.Name = "lblVelo";
-      this.lblVelo.Size = new System.Drawing.Size(67, 13);
-      this.lblVelo.TabIndex = 28;
-      this.lblVelo.Text = "Velocity type";
-      // 
       // btnRelay
       // 
       this.btnRelay.Location = new System.Drawing.Point(644, 202);
@@ -558,14 +541,6 @@
       this.btnPermutations.UseVisualStyleBackColor = true;
       this.btnPermutations.Visible = false;
       this.btnPermutations.Click += new System.EventHandler(this.BtnPermutations_Click);
-      // 
-      // _cntConfig
-      // 
-      this._cntConfig.ConfigVm = null;
-      this._cntConfig.Location = new System.Drawing.Point(88, 46);
-      this._cntConfig.Name = "_cntConfig";
-      this._cntConfig.Size = new System.Drawing.Size(550, 100);
-      this._cntConfig.TabIndex = 33;
       // 
       // btnCancel
       // 
@@ -629,11 +604,53 @@
       this.mniSaveAs.Text = "Save As";
       this.mniSaveAs.Click += new System.EventHandler(this.MniSaveAs_Click);
       // 
+      // _cntConfig
+      // 
+      this._cntConfig.ConfigVm = null;
+      this._cntConfig.Dock = System.Windows.Forms.DockStyle.Fill;
+      this._cntConfig.Location = new System.Drawing.Point(0, 0);
+      this._cntConfig.Name = "_cntConfig";
+      this._cntConfig.Size = new System.Drawing.Size(549, 115);
+      this._cntConfig.TabIndex = 33;
+      // 
+      // splModelCourse
+      // 
+      this.splModelCourse.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.splModelCourse.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
+      this.splModelCourse.Location = new System.Drawing.Point(88, 53);
+      this.splModelCourse.Name = "splModelCourse";
+      this.splModelCourse.Orientation = System.Windows.Forms.Orientation.Horizontal;
+      // 
+      // splModelCourse.Panel1
+      // 
+      this.splModelCourse.Panel1.Controls.Add(this._cntConfig);
+      // 
+      // splModelCourse.Panel2
+      // 
+      this.splModelCourse.Panel2.Controls.Add(this.splCourse);
+      this.splModelCourse.Size = new System.Drawing.Size(549, 367);
+      this.splModelCourse.SplitterDistance = 115;
+      this.splModelCourse.TabIndex = 37;
+      // 
+      // _cntSection
+      // 
+      this._cntSection.BackColor = System.Drawing.SystemColors.Window;
+      this._cntSection.BoldCombination = null;
+      this._cntSection.Course = null;
+      this._cntSection.Location = new System.Drawing.Point(1, 1);
+      this._cntSection.Name = "_cntSection";
+      this._cntSection.Size = new System.Drawing.Size(160, 271);
+      this._cntSection.TabIndex = 18;
+      this._cntSection.Vm = null;
+      // 
       // WdgOCourse
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.ClientSize = new System.Drawing.Size(682, 449);
+      this.Controls.Add(this.splModelCourse);
       this.Controls.Add(this.btnCourse);
       this.Controls.Add(this._txtCourse);
       this.Controls.Add(this.label3);
@@ -643,17 +660,13 @@
       this.Controls.Add(this.btnPermutations);
       this.Controls.Add(this.btnTrack);
       this.Controls.Add(this.btnRelay);
-      this.Controls.Add(this.lblVelo);
       this.Controls.Add(this._lstVelo);
       this.Controls.Add(this.btnCalcSelection);
-      this.Controls.Add(this.splCourse);
       this.Controls.Add(this.btnImport);
       this.Controls.Add(this.btnExport);
       this.Controls.Add(this.chkOnTop);
       this.Controls.Add(this.btnBackCalc);
       this.Controls.Add(this._lblProgress);
-      this.Controls.Add(this.label4);
-      this.Controls.Add(this._cntConfig);
       this.Controls.Add(this.mnuAll);
       this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
       this.MainMenuStrip = this.mnuAll;
@@ -662,6 +675,7 @@
       this.Load += new System.EventHandler(this.WdgOCourse_Load);
       this.pnlCourse.ResumeLayout(false);
       this.splCourse.Panel1.ResumeLayout(false);
+      this.splCourse.Panel1.PerformLayout();
       this.splCourse.Panel2.ResumeLayout(false);
       ((System.ComponentModel.ISupportInitialize)(this.splCourse)).EndInit();
       this.splCourse.ResumeLayout(false);
@@ -675,6 +689,10 @@
       ((System.ComponentModel.ISupportInitialize)(this.dgvPermut)).EndInit();
       this.mnuAll.ResumeLayout(false);
       this.mnuAll.PerformLayout();
+      this.splModelCourse.Panel1.ResumeLayout(false);
+      this.splModelCourse.Panel2.ResumeLayout(false);
+      ((System.ComponentModel.ISupportInitialize)(this.splModelCourse)).EndInit();
+      this.splModelCourse.ResumeLayout(false);
       this.ResumeLayout(false);
       this.PerformLayout();
 
@@ -703,7 +721,6 @@
     private System.Windows.Forms.ToolTip ttp;
     private System.Windows.Forms.Button btnCalcSelection;
     private System.Windows.Forms.ComboBox _lstVelo;
-    private System.Windows.Forms.Label lblVelo;
     private System.Windows.Forms.Button btnRelay;
     private System.Windows.Forms.Button btnTrack;
     private System.Windows.Forms.Button btnPermutations;
@@ -732,6 +749,7 @@
     private System.Windows.Forms.ToolStripMenuItem mniSave;
     private System.Windows.Forms.ToolStripMenuItem mniSaveAs;
     private System.Windows.Forms.Button btnRefreshSection;
+    private System.Windows.Forms.SplitContainer splModelCourse;
   }
 }
 

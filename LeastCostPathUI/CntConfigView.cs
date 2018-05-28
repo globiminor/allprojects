@@ -6,6 +6,8 @@ using Basics;
 using System.Collections.Generic;
 using Grid.Lcp;
 using GuiUtils;
+using Basics.Forms;
+using System.ComponentModel;
 
 namespace LeastCostPathUI
 {
@@ -32,6 +34,16 @@ namespace LeastCostPathUI
       _bindingSource = new BindingSource(components);
     }
 
+    public static Image GetImage(Steps steps)
+    {
+      Image img = null;
+      if (steps.Count == Steps.Step16.Count) { img = Images.Step16; }
+      else if (steps.Count == Steps.Step8.Count) { img = Images.Step8; }
+      else if (steps.Count == Steps.Step4.Count) { img = Images.Step4; }
+
+      return img;
+    }
+
     public ConfigVm ConfigVm
     {
       get { return _vm; }
@@ -48,23 +60,23 @@ namespace LeastCostPathUI
         List<StepImage> steps = new List<StepImage>();
         foreach (Steps step in _vm.StepsModes)
         {
-          Image add = null;
-          if (step.Count == Steps.Step16.Count) { add = Images.Step16; }
-          else if (step.Count == Steps.Step8.Count) { add = Images.Step8; }
-          else if (step.Count == Steps.Step4.Count) { add = Images.Step4; }
-
-          steps.Add(new StepImage(step, add));
+          steps.Add(new StepImage(step, GetImage(step)));
         }
+        grdLevels.DataSource = _vm.ModelLevels;
 
         if (notBound)
         {
+          InitGridLayout();
+
           optHeightVelo.Bind(x => x.Checked, _bindingSource, nameof(_vm.TerrainVeloModel),
             false, DataSourceUpdateMode.OnPropertyChanged);
-          pnlTerrainVelo.Bind(x => x.Visible, _bindingSource, nameof(_vm.TerrainVeloModel), 
+          pnlTerrainVelo.Bind(x => x.Visible, _bindingSource, nameof(_vm.TerrainVeloModel),
             false, DataSourceUpdateMode.Never);
 
           optMultiLayer.Bind(x => x.Checked, _bindingSource, nameof(_vm.MultiLayerModel),
             false, DataSourceUpdateMode.OnPropertyChanged);
+          pnlMulti.Bind(x => x.Visible, _bindingSource, nameof(_vm.MultiLayerModel),
+            false, DataSourceUpdateMode.Never);
 
           txtHeight.Bind(x => x.Text, _bindingSource, nameof(_vm.HeightPath),
             true, DataSourceUpdateMode.OnPropertyChanged);
@@ -84,6 +96,99 @@ namespace LeastCostPathUI
           _lstStep.Bind(x => x.SelectedValue, _bindingSource, nameof(_vm.StepsMode),
             true, DataSourceUpdateMode.OnPropertyChanged);
         }
+      }
+    }
+
+    private void InitGridLayout()
+    {
+      try
+      {
+        grdLevels.SuspendLayout();
+        grdLevels.Columns.Clear();
+        grdLevels.AutoGenerateColumns = false;
+        grdLevels.RowHeadersVisible = true;
+        grdLevels.RowHeadersWidth = 20;
+
+        grdLevels.AllowUserToAddRows = false;
+
+        ConfigVm c = null;
+
+        {
+          DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn
+          {
+            DataPropertyName = nameof(c.HeightPath),
+            HeaderText = "Terrain",
+            ReadOnly = true,
+            Width = 80
+          };
+          FilterHeaderCell.CreateCore(col);
+
+          grdLevels.Columns.Add(col);
+        }
+        {
+          DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn
+          {
+            DataPropertyName = nameof(c.VeloPath),
+            HeaderText = "Velocity",
+            ReadOnly = true,
+            Width = 80
+          };
+          FilterHeaderCell.CreateCore(col);
+
+          grdLevels.Columns.Add(col);
+        }
+        {
+          DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn
+          {
+            DataPropertyName = nameof(c.TeleportPath),
+            HeaderText = "Teleports",
+            ReadOnly = true,
+            Width = 80
+          };
+          FilterHeaderCell.CreateCore(col);
+
+          grdLevels.Columns.Add(col);
+        }
+        {
+          DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn
+          {
+            DataPropertyName = nameof(c.Resolution),
+            HeaderText = "Resol.",
+            ReadOnly = true,
+            Width = 40
+          };
+          col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+          col.DefaultCellStyle.Format = "N1";
+          FilterHeaderCell.CreateCore(col);
+
+          grdLevels.Columns.Add(col);
+        }
+        {
+          DataGridViewImageColumn col = new DataGridViewImageColumn
+          {
+            CellTemplate = new StepImageCell(),
+            DataPropertyName = nameof(c.StepsMode),
+            HeaderText = "Steps",
+            ReadOnly = true,
+            Width = 40,
+          };
+          FilterHeaderCell.CreateCore(col);
+
+          grdLevels.Columns.Add(col);
+        }
+      }
+      finally
+      {
+        grdLevels.ResumeLayout();
+      }
+    }
+    private class StepImageCell : DataGridViewImageCell
+    {
+      protected override object GetFormattedValue(object value, int rowIndex, ref DataGridViewCellStyle cellStyle, TypeConverter valueTypeConverter, TypeConverter formattedValueTypeConverter, DataGridViewDataErrorContexts context)
+      {
+        if (value is Steps steps)
+        { value = GetImage(steps); }
+        return base.GetFormattedValue(value, rowIndex, ref cellStyle, valueTypeConverter, formattedValueTypeConverter, context);
       }
     }
 
@@ -143,6 +248,16 @@ namespace LeastCostPathUI
       }
       catch (Exception exp)
       { MessageBox.Show(exp.Message + "\n" + exp.StackTrace); }
+    }
+
+    private void BtnAddLevel_Click(object sender, EventArgs e)
+    {
+      _vm.AddLevel();
+    }
+
+    private void btnAddLevel_Click(object sender, EventArgs e)
+    {
+
     }
   }
 }
