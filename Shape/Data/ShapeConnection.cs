@@ -7,6 +7,7 @@ using Basics.Data;
 
 namespace Shape.Data
 {
+  [System.ComponentModel.ToolboxItem(false)]
   public class ShapeConnection : DbBaseConnection
   {
     public event CancelEventHandler StartingOperation;

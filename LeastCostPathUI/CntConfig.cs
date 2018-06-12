@@ -1,10 +1,10 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
-using Grid;
+using System.Collections.Generic;
 using Grid.Lcp;
+using GuiUtils;
 
 namespace LeastCostPathUI
 {
@@ -12,8 +12,8 @@ namespace LeastCostPathUI
   {
     private class StepImage
     {
-      public Image Image;
-      public Steps Step;
+      public Image Image { get; set; }
+      public Steps Step { get; set; }
       public StepImage(Steps step, Image img)
       {
         Step = step;
@@ -21,109 +21,98 @@ namespace LeastCostPathUI
       }
     }
 
-    private const string _dhmExt = "*.asc";
-    private const string _veloExt = "*.tif";
+    private readonly BindingSource _bindingSource;
+    private ConfigVm _vm;
+
     public CntConfig()
     {
       InitializeComponent();
 
-      txtHeight.Text = _dhmExt;
-      txtVelo.Text = _veloExt;
-      txtResol.Text = string.Format("{0:N1}", 4.0);
-      lstStep.Items.AddRange(new object[]{
-        new StepImage(Steps.Step16, Images.Step16),
-        new StepImage(Steps.Step8, Images.Step8),
-        new StepImage(Steps.Step4, Images.Step4),
-        });
-      lstStep.SelectedIndex = 0;
-
-      SetTerrainVeloCostType(new TvmCalc());
+      _bindingSource = new BindingSource(components);
     }
 
-    private void SetTerrainVeloCostType(ITvmCalc tvmCalc)
+    public static Image GetImage(Steps steps)
     {
-      _tvmCalc  = tvmCalc;
-      Type type = _tvmCalc.GetType();
-      txtCost.Text = type.Name;
-      ttp.SetToolTip(txtCost, type.AssemblyQualifiedName);
+      Image img = null;
+      if (steps.Count == Steps.Step16.Count) { img = Images.Step16; }
+      else if (steps.Count == Steps.Step8.Count) { img = Images.Step8; }
+      else if (steps.Count == Steps.Step4.Count) { img = Images.Step4; }
+
+      return img;
     }
 
-    public string HeightName
-    { get { return txtHeight.Text; } }
-    public IDoubleGrid HeightGrid
+    public ConfigVm ConfigVm
     {
-      get
+      get { return _vm; }
+      set
       {
-        if (_grdHeight == null)
+        _vm = value;
+        bool notBound = _bindingSource.DataSource == null;
+
+        _bindingSource.DataSource = _vm;
+
+        if (value == null)
+        { return; }
+
+        List<StepImage> steps = new List<StepImage>();
+        foreach (Steps step in _vm.StepsModes)
         {
-          if (File.Exists(txtHeight.Text))
-          {
-            _grdHeight = DataDoubleGrid.FromAsciiFile(txtHeight.Text, 0, 0.01, typeof(double));
-          }
+          steps.Add(new StepImage(step, GetImage(step)));
         }
-        return _grdHeight;
+
+        if (notBound)
+        {
+          txtHeight.Bind(x => x.Text, _bindingSource, nameof(_vm.HeightPath),
+            true, DataSourceUpdateMode.OnPropertyChanged);
+
+          txtVelo.Bind(x => x.Text, _bindingSource, nameof(_vm.VeloPath),
+            true, DataSourceUpdateMode.OnPropertyChanged);
+
+          txtResol.Bind(x => x.Text, _bindingSource, nameof(_vm.Resolution),
+            true, DataSourceUpdateMode.OnPropertyChanged).FormatString = "N1";
+
+          txtCost.Bind(x => x.Text, _bindingSource, nameof(_vm.CostTypeName),
+            true, DataSourceUpdateMode.Never);
+
+          _lstStep.DataSource = steps;
+          _lstStep.ValueMember = nameof(StepImage.Step);
+          _lstStep.DisplayMember = nameof(StepImage.Image);
+          _lstStep.Bind(x => x.SelectedValue, _bindingSource, nameof(_vm.StepsMode),
+            true, DataSourceUpdateMode.OnPropertyChanged);
+        }
       }
-    }
-
-    public string VelocityName
-    { get { return txtVelo.Text; } }
-
-    public double Resolution
-    {
-      get { return double.Parse(txtResol.Text); }
-      set { txtResol.Text = string.Format("{0:N1}", value); }
-    }
-
-    public Steps Step
-    {
-      get
-      {
-        StepImage step = (StepImage)lstStep.SelectedItem;
-        return step.Step;
-      }
-    }
-    private IDoubleGrid _grdHeight;
-
-    private ITvmCalc _tvmCalc;
-
-    private void TxtResol_Validating(object sender, CancelEventArgs e)
-    {
-      try
-      {
-        double d = Convert.ToDouble(txtResol.Text);
-        if (d < 0)
-        { e.Cancel = true; }
-      }
-      catch
-      { e.Cancel = true; }
     }
 
     private void LstStep_DrawItem(object sender, DrawItemEventArgs e)
     {
-      StepImage step = (StepImage)lstStep.Items[e.Index];
-      e.Graphics.DrawImage(step.Image, 4, 2 + e.Bounds.Y);
+      if (_lstStep.DataSource is IList<StepImage> steps && e.Index >= 0 && e.Index < steps.Count)
+      {
+        StepImage step = steps[e.Index];
+        e.Graphics.DrawImage(step.Image, 4, 2 + e.Bounds.Y);
+      }
     }
 
     private void BtnStepCost_Click(object sender, EventArgs e)
     {
+      if (_vm == null)
+      { return; }
+
       WdgCustom wdg = new WdgCustom();
       if (wdg.ShowDialog(this) != DialogResult.OK)
       { return; }
 
-      ITvmCalc calc = wdg.TvmCalc;
-      //      SetStepCost((StepCostHandler<double>)Delegate.CreateDelegate(typeof(StepCostHandler<double>), type));
-      SetTerrainVeloCostType(calc);
+      _vm.TvmCalc = wdg.TvmCalc;
     }
 
     private void BtnHeight_Click(object sender, EventArgs e)
     {
+      if (_vm == null)
+      { return; }
       try
       {
         dlgOpen.Filter = "height grid files|*.asc;*.agr;*.grd;*.txt|*.asc|*.asc|*.agr|*.agr|*.grd|*.grd|All Files|*.*";
         if (dlgOpen.ShowDialog() == DialogResult.OK)
-        {
-          txtHeight.Text = dlgOpen.FileName;
-        }
+        { _vm.HeightPath = dlgOpen.FileName; }
       }
       catch (Exception exp)
       { MessageBox.Show(exp.Message + "\n" + exp.StackTrace); }
@@ -131,52 +120,25 @@ namespace LeastCostPathUI
 
     private void BtnVelo_Click(object sender, EventArgs e)
     {
+      if (_vm == null)
+      { return; }
       try
       {
         string velocityName;
         using (OpenFileDialog dlg = new OpenFileDialog())
         {
-          dlg.InitialDirectory = Path.GetDirectoryName(txtVelo.Text);
-          dlg.Filter = "*.tif | *.tif";
+          dlg.InitialDirectory = Path.GetDirectoryName(_vm.VeloPath);
+          dlg.Filter = _vm.VeloFileFilter;
           if (dlg.ShowDialog() != DialogResult.OK)
           { return; }
           velocityName = dlg.FileName;
         }
 
         if (velocityName != null)
-        {
-          txtVelo.Text = velocityName;
-        }
+        { _vm.VeloPath = velocityName; }
       }
       catch (Exception exp)
       { MessageBox.Show(exp.Message + "\n" + exp.StackTrace); }
-    }
-
-    private void TxtHeight_TextChanged(object sender, EventArgs e)
-    {
-      _grdHeight = null;
-    }
-
-    private void TxtVelo_TextChanged(object sender, EventArgs e)
-    {
-    }
-
-    public void SetConfig(string dir, Config config)
-    {
-      if (config == null) return;
-      bool setResol = false;
-      if (!File.Exists(txtHeight.Text) && !string.IsNullOrEmpty(config.Dhm))
-      {
-        txtHeight.Text = Config.GetFullPath(dir, config.Dhm);
-        setResol = true;
-      }
-      if (!File.Exists(txtVelo.Text) && !string.IsNullOrEmpty(config.Velo))
-      {
-        txtVelo.Text = Config.GetFullPath(dir, config.Velo);
-        setResol = true;
-      }
-      if (setResol && config.Resolution > 0)
-      { Resolution = config.Resolution; }
     }
   }
 }

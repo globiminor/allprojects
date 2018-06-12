@@ -20,6 +20,7 @@ namespace BasicsTest
     }
   }
 
+  [System.ComponentModel.ToolboxItem(false)]
   public class DataSetConnection : DbBaseConnection
   {
     private readonly DataSet _ds;
@@ -93,6 +94,7 @@ namespace BasicsTest
     }
   }
 
+  [System.ComponentModel.ToolboxItem(false)]
   public class DataSetCommand : DbBaseCommand
   {
     public DataSetCommand(DbBaseConnection connection) : base(connection)

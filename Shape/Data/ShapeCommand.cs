@@ -6,6 +6,7 @@ using Basics.Data;
 
 namespace Shape.Data
 {
+  [System.ComponentModel.ToolboxItem(false)]
   public sealed class ShapeCommand : DbBaseCommand
   {
     public ShapeCommand(ShapeConnection connection)

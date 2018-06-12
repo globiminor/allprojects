@@ -3,6 +3,7 @@ using System.Data.Common;
 
 namespace Basics.Data
 {
+  [System.ComponentModel.ToolboxItem(false)]
   public class DbBaseAdapter : DbDataAdapter
   {
     private bool _adaptColumnStringLength;

@@ -39,7 +39,7 @@
       this.mniSaveAs = new System.Windows.Forms.MenuItem();
       this.btnOK = new System.Windows.Forms.Button();
       this.btnClose = new System.Windows.Forms.Button();
-      this.cntConfig = new LeastCostPathUI.CntConfigView();
+      this.cntConfig = new LeastCostPathUI.CntConfig();
       this.cntOutput = new LeastCostPathUI.CntOutput();
       this.SuspendLayout();
       // 
@@ -133,7 +133,7 @@
     private System.Windows.Forms.Button btnOK;
     private System.Windows.Forms.Button btnClose;
     private CntOutput cntOutput;
-    private CntConfigView cntConfig;
+    private CntConfig cntConfig;
 
     #endregion
   }

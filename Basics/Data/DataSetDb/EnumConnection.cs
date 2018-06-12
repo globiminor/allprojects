@@ -7,6 +7,7 @@ using System.Collections;
 
 namespace Basics.Data.DataSetDb
 {
+  [System.ComponentModel.ToolboxItem(false)]
   public class EnumConnection : DbBaseConnection
   {
     private EnumTransaction _trans;

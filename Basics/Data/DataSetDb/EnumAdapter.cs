@@ -1,5 +1,6 @@
 namespace Basics.Data.DataSetDb
 {
+  [System.ComponentModel.ToolboxItem(false)]
   public class EnumAdapter : DbBaseAdapter
   {
     private EnumConnection _connection;

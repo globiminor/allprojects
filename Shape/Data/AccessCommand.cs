@@ -5,6 +5,7 @@ using Basics.Data;
 
 namespace Shape.Data
 {
+  [System.ComponentModel.ToolboxItem(false)]
   public sealed class AccessCommand : DbBaseCommand
   {
     public AccessCommand(AccessConnection connection)

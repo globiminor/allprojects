@@ -3,6 +3,7 @@ using System.Data;
 
 namespace TennisStat.Data
 {
+  [System.ComponentModel.ToolboxItem(false)]
   public class TennisDataset : DataSet
   {
     private static object _lock = new object();

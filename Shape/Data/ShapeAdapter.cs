@@ -2,6 +2,7 @@ using Basics.Data;
 
 namespace Shape.Data
 {
+  [System.ComponentModel.ToolboxItem(false)]
   public class ShapeAdapter : DbBaseAdapter
   {
     private ShapeConnection _connection;

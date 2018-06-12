@@ -73,9 +73,11 @@ namespace Grid.Lcp
       }
     }
 
-    public void AddLevel()
+    public ConfigVm AddLevel()
     {
-      ModelLevels.Add(new ConfigVm { Resolution = Resolution, StepsMode = StepsMode});
+      ConfigVm vm = new ConfigVm { Resolution = Resolution, StepsMode = StepsMode };
+      ModelLevels.Add(vm);
+      return vm;
     }
 
     public string HeightPath

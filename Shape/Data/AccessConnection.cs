@@ -8,6 +8,7 @@ using Basics.Geom;
 
 namespace Shape.Data
 {
+  [System.ComponentModel.ToolboxItem(false)]
   public class AccessConnection : DbBaseConnection
   {
     public event CancelEventHandler StartingOperation;

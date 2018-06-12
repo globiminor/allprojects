@@ -50,9 +50,12 @@ namespace LeastCostPathUI
       set
       {
         _vm = value;
+        cntConfigSimple.ConfigVm = value;
+
         bool notBound = _bindingSource.DataSource == null;
 
         _bindingSource.DataSource = _vm;
+
 
         if (value == null)
         { return; }
@@ -77,24 +80,6 @@ namespace LeastCostPathUI
             false, DataSourceUpdateMode.OnPropertyChanged);
           pnlMulti.Bind(x => x.Visible, _bindingSource, nameof(_vm.MultiLayerModel),
             false, DataSourceUpdateMode.Never);
-
-          txtHeight.Bind(x => x.Text, _bindingSource, nameof(_vm.HeightPath),
-            true, DataSourceUpdateMode.OnPropertyChanged);
-
-          txtVelo.Bind(x => x.Text, _bindingSource, nameof(_vm.VeloPath),
-            true, DataSourceUpdateMode.OnPropertyChanged);
-
-          txtResol.Bind(x => x.Text, _bindingSource, nameof(_vm.Resolution),
-            true, DataSourceUpdateMode.OnPropertyChanged).FormatString = "N1";
-
-          txtCost.Bind(x => x.Text, _bindingSource, nameof(_vm.CostTypeName),
-            true, DataSourceUpdateMode.Never);
-
-          _lstStep.DataSource = steps;
-          _lstStep.ValueMember = nameof(StepImage.Step);
-          _lstStep.DisplayMember = nameof(StepImage.Image);
-          _lstStep.Bind(x => x.SelectedValue, _bindingSource, nameof(_vm.StepsMode),
-            true, DataSourceUpdateMode.OnPropertyChanged);
         }
       }
     }
@@ -192,72 +177,17 @@ namespace LeastCostPathUI
       }
     }
 
-    private void LstStep_DrawItem(object sender, DrawItemEventArgs e)
-    {
-      if (_lstStep.DataSource is IList<StepImage> steps && e.Index >= 0 && e.Index < steps.Count)
-      {
-        StepImage step = steps[e.Index];
-        e.Graphics.DrawImage(step.Image, 4, 2 + e.Bounds.Y);
-      }
-    }
-
-    private void BtnStepCost_Click(object sender, EventArgs e)
-    {
-      if (_vm == null)
-      { return; }
-
-      WdgCustom wdg = new WdgCustom();
-      if (wdg.ShowDialog(this) != DialogResult.OK)
-      { return; }
-
-      _vm.TvmCalc = wdg.TvmCalc;
-    }
-
-    private void BtnHeight_Click(object sender, EventArgs e)
-    {
-      if (_vm == null)
-      { return; }
-      try
-      {
-        dlgOpen.Filter = "height grid files|*.asc;*.agr;*.grd;*.txt|*.asc|*.asc|*.agr|*.agr|*.grd|*.grd|All Files|*.*";
-        if (dlgOpen.ShowDialog() == DialogResult.OK)
-        { _vm.HeightPath = dlgOpen.FileName; }
-      }
-      catch (Exception exp)
-      { MessageBox.Show(exp.Message + "\n" + exp.StackTrace); }
-    }
-
-    private void BtnVelo_Click(object sender, EventArgs e)
-    {
-      if (_vm == null)
-      { return; }
-      try
-      {
-        string velocityName;
-        using (OpenFileDialog dlg = new OpenFileDialog())
-        {
-          dlg.InitialDirectory = Path.GetDirectoryName(_vm.VeloPath);
-          dlg.Filter = _vm.VeloFileFilter;
-          if (dlg.ShowDialog() != DialogResult.OK)
-          { return; }
-          velocityName = dlg.FileName;
-        }
-
-        if (velocityName != null)
-        { _vm.VeloPath = velocityName; }
-      }
-      catch (Exception exp)
-      { MessageBox.Show(exp.Message + "\n" + exp.StackTrace); }
-    }
-
     private void BtnAddLevel_Click(object sender, EventArgs e)
     {
-      _vm.AddLevel();
+      ConfigVm detail = _vm.AddLevel();
+      EditDetail(detail);
     }
 
-    private void btnAddLevel_Click(object sender, EventArgs e)
+    private void EditDetail(ConfigVm detail)
     {
-
+      Form wdgEdit = new Form();
+      wdgEdit.Controls.Add(new CntConfig());
+      wdgEdit.Show();
     }
   }
 }

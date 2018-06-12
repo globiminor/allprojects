@@ -7,6 +7,7 @@ using Basics.Data;
 
 namespace Ocad.Data
 {
+  [System.ComponentModel.ToolboxItem(false)]
   public sealed class OcadCommand : DbBaseCommand
   {
     public OcadCommand(OcadConnection connection)

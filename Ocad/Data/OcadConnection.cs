@@ -8,6 +8,7 @@ using Basics.Geom;
 
 namespace Ocad.Data
 {
+  [System.ComponentModel.ToolboxItem(false)]
   public class OcadConnection : DbBaseConnection
   {
     public event CancelEventHandler StartingOperation;

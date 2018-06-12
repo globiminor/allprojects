@@ -94,6 +94,12 @@
     <Compile Include="WdgAnalyzeImg.Designer.cs">
       <DependentUpon>WdgAnalyzeImg.cs</DependentUpon>
     </Compile>
+    <Compile Include="WdgCostDetail.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WdgCostDetail.Designer.cs">
+      <DependentUpon>WdgCostDetail.cs</DependentUpon>
+    </Compile>
     <Compile Include="WdgCustom.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -145,6 +151,9 @@
       <DependentUpon>WdgAnalyzeImg.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="WdgCostDetail.resx">
+      <DependentUpon>WdgCostDetail.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="WdgCustom.resx">
       <DependentUpon>WdgCustom.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -181,6 +190,7 @@
     <Content Include="Help\rv_5_8c.png" />
     <Content Include="Help\S2_254r.tif" />
     <Content Include="Help\Velocity.png" />
+    <Content Include="Images\Edit.png" />
     <Content Include="Images\Add.png" />
     <Content Include="Images\OpenFile.ico" />
     <Content Include="Images\Step16.png" />

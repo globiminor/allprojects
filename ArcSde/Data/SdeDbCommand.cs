@@ -9,6 +9,7 @@ using Basics.Geom;
 
 namespace ArcSde.Data
 {
+  [System.ComponentModel.ToolboxItem(false)]
   public sealed class SdeDbCommand : DbBaseCommand
   {
     public SdeDbCommand(SdeDbConnection connection)

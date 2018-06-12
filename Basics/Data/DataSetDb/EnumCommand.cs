@@ -1,5 +1,6 @@
 namespace Basics.Data.DataSetDb
 {
+  [System.ComponentModel.ToolboxItem(false)]
   public sealed class EnumCommand : DbBaseCommand
   {
     public EnumCommand(EnumConnection connection)

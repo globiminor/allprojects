@@ -3,6 +3,7 @@ using Basics.Data;
 
 namespace Ocad.Data
 {
+  [System.ComponentModel.ToolboxItem(false)]
   public class OcadAdapter : DbBaseAdapter
   {
     private OcadConnection _connection;
