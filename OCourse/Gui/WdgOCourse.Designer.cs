@@ -43,6 +43,7 @@
       this.btnBackCalc = new System.Windows.Forms.Button();
       this.chkOnTop = new System.Windows.Forms.CheckBox();
       this.pnlCourse = new System.Windows.Forms.Panel();
+      this._cntSection = new OCourse.Gui.CntSection();
       this.btnExport = new System.Windows.Forms.Button();
       this.btnImport = new System.Windows.Forms.Button();
       this.dlgSave = new System.Windows.Forms.SaveFileDialog();
@@ -82,7 +83,6 @@
       this.mniSaveAs = new System.Windows.Forms.ToolStripMenuItem();
       this._cntConfig = new LeastCostPathUI.CntConfigView();
       this.splModelCourse = new System.Windows.Forms.SplitContainer();
-      this._cntSection = new OCourse.Gui.CntSection();
       this.pnlCourse.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.splCourse)).BeginInit();
       this.splCourse.Panel1.SuspendLayout();
@@ -104,7 +104,7 @@
       // btnCourse
       // 
       this.btnCourse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-      this.btnCourse.Location = new System.Drawing.Point(644, 25);
+      this.btnCourse.Location = new System.Drawing.Point(707, 25);
       this.btnCourse.Name = "btnCourse";
       this.btnCourse.Size = new System.Drawing.Size(26, 23);
       this.btnCourse.TabIndex = 8;
@@ -118,7 +118,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
       this._txtCourse.Location = new System.Drawing.Point(88, 27);
       this._txtCourse.Name = "_txtCourse";
-      this._txtCourse.Size = new System.Drawing.Size(550, 20);
+      this._txtCourse.Size = new System.Drawing.Size(613, 20);
       this._txtCourse.TabIndex = 7;
       // 
       // label3
@@ -195,6 +195,17 @@
       this.pnlCourse.Size = new System.Drawing.Size(236, 218);
       this.pnlCourse.TabIndex = 19;
       // 
+      // _cntSection
+      // 
+      this._cntSection.BackColor = System.Drawing.SystemColors.Window;
+      this._cntSection.BoldCombination = null;
+      this._cntSection.Course = null;
+      this._cntSection.Location = new System.Drawing.Point(1, 1);
+      this._cntSection.Name = "_cntSection";
+      this._cntSection.Size = new System.Drawing.Size(160, 271);
+      this._cntSection.TabIndex = 18;
+      this._cntSection.Vm = null;
+      // 
       // btnExport
       // 
       this.btnExport.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
@@ -233,7 +244,7 @@
       // splCourse.Panel2
       // 
       this.splCourse.Panel2.Controls.Add(this.splVars);
-      this.splCourse.Size = new System.Drawing.Size(549, 248);
+      this.splCourse.Size = new System.Drawing.Size(612, 248);
       this.splCourse.SplitterDistance = 236;
       this.splCourse.TabIndex = 22;
       // 
@@ -267,12 +278,13 @@
       this.splVars.Panel2.Controls.Add(this.lblPermuts);
       this.splVars.Panel2.Controls.Add(this.btnCalcPermut);
       this.splVars.Panel2.Controls.Add(this.dgvPermut);
-      this.splVars.Size = new System.Drawing.Size(309, 248);
+      this.splVars.Size = new System.Drawing.Size(372, 248);
       this.splVars.SplitterDistance = 141;
       this.splVars.TabIndex = 1;
       // 
       // btnRefreshSection
       // 
+      this.btnRefreshSection.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
       this.btnRefreshSection.Enabled = false;
       this.btnRefreshSection.Image = global::OCourse.Properties.Resources.calc_recalc;
       this.btnRefreshSection.Location = new System.Drawing.Point(349, 3);
@@ -360,7 +372,7 @@
       this.dgvInfo.RowHeadersDefaultCellStyle = dataGridViewCellStyle3;
       this.dgvInfo.RowHeadersVisible = false;
       this.dgvInfo.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-      this.dgvInfo.Size = new System.Drawing.Size(309, 108);
+      this.dgvInfo.Size = new System.Drawing.Size(372, 108);
       this.dgvInfo.TabIndex = 0;
       this.dgvInfo.CurrentCellChanged += new System.EventHandler(this.DgvInfo_CurrentCellChanged);
       // 
@@ -471,7 +483,7 @@
       this.dgvPermut.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
       this.dgvPermut.Location = new System.Drawing.Point(0, 51);
       this.dgvPermut.Name = "dgvPermut";
-      this.dgvPermut.Size = new System.Drawing.Size(309, 52);
+      this.dgvPermut.Size = new System.Drawing.Size(372, 52);
       this.dgvPermut.TabIndex = 0;
       this.ttp.SetToolTip(this.dgvPermut, "Select combinations to be shown in map");
       this.dgvPermut.SelectionChanged += new System.EventHandler(this.DgvVars_SelectionChanged);
@@ -544,8 +556,8 @@
       // 
       // btnCancel
       // 
-      this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-      this.btnCancel.Location = new System.Drawing.Point(525, 422);
+      this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+      this.btnCancel.Location = new System.Drawing.Point(587, 422);
       this.btnCancel.Name = "btnCancel";
       this.btnCancel.Size = new System.Drawing.Size(113, 23);
       this.btnCancel.TabIndex = 34;
@@ -569,7 +581,7 @@
             this.mniSettings});
       this.mnuAll.Location = new System.Drawing.Point(0, 0);
       this.mnuAll.Name = "mnuAll";
-      this.mnuAll.Size = new System.Drawing.Size(682, 24);
+      this.mnuAll.Size = new System.Drawing.Size(745, 24);
       this.mnuAll.TabIndex = 36;
       this.mnuAll.Text = "menuStrip1";
       // 
@@ -610,7 +622,7 @@
       this._cntConfig.Dock = System.Windows.Forms.DockStyle.Fill;
       this._cntConfig.Location = new System.Drawing.Point(0, 0);
       this._cntConfig.Name = "_cntConfig";
-      this._cntConfig.Size = new System.Drawing.Size(549, 115);
+      this._cntConfig.Size = new System.Drawing.Size(612, 115);
       this._cntConfig.TabIndex = 33;
       // 
       // splModelCourse
@@ -630,26 +642,15 @@
       // splModelCourse.Panel2
       // 
       this.splModelCourse.Panel2.Controls.Add(this.splCourse);
-      this.splModelCourse.Size = new System.Drawing.Size(549, 367);
+      this.splModelCourse.Size = new System.Drawing.Size(612, 367);
       this.splModelCourse.SplitterDistance = 115;
       this.splModelCourse.TabIndex = 37;
-      // 
-      // _cntSection
-      // 
-      this._cntSection.BackColor = System.Drawing.SystemColors.Window;
-      this._cntSection.BoldCombination = null;
-      this._cntSection.Course = null;
-      this._cntSection.Location = new System.Drawing.Point(1, 1);
-      this._cntSection.Name = "_cntSection";
-      this._cntSection.Size = new System.Drawing.Size(160, 271);
-      this._cntSection.TabIndex = 18;
-      this._cntSection.Vm = null;
       // 
       // WdgOCourse
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-      this.ClientSize = new System.Drawing.Size(682, 449);
+      this.ClientSize = new System.Drawing.Size(745, 449);
       this.Controls.Add(this.splModelCourse);
       this.Controls.Add(this.btnCourse);
       this.Controls.Add(this._txtCourse);

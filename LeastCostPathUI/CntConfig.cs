@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using System.Collections.Generic;
 using Grid.Lcp;
 using GuiUtils;
+using LeastCostPathUI.Properties;
 
 namespace LeastCostPathUI
 {
@@ -29,6 +30,20 @@ namespace LeastCostPathUI
       InitializeComponent();
 
       _bindingSource = new BindingSource(components);
+
+      Msg.Culture = System.Globalization.CultureInfo.CreateSpecificCulture("de-CH");
+
+      SetText();
+    }
+
+    private void SetText()
+    {
+      lblHeight.Text = Msg.HeightModel;
+      lblVelo.Text = Msg.VeloModel;
+      lblResol.Text = Msg.Resolution;
+      lblCost.Text = Msg.CostModel;
+      lblSteps.Text = Msg.Steps;
+      lblVelotyp.Text = Msg.VeloType;
     }
 
     public static Image GetImage(Steps steps)

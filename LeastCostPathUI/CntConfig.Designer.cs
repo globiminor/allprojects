@@ -32,7 +32,7 @@
       System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CntConfig));
       this.txtCost = new System.Windows.Forms.TextBox();
       this.lblCost = new System.Windows.Forms.Label();
-      this.label1 = new System.Windows.Forms.Label();
+      this.lblSteps = new System.Windows.Forms.Label();
       this._lstStep = new System.Windows.Forms.ComboBox();
       this.txtResol = new System.Windows.Forms.TextBox();
       this.lblResol = new System.Windows.Forms.Label();
@@ -42,7 +42,7 @@
       this.lblVelo = new System.Windows.Forms.Label();
       this.lblHeight = new System.Windows.Forms.Label();
       this.dlgOpen = new System.Windows.Forms.OpenFileDialog();
-      this.label2 = new System.Windows.Forms.Label();
+      this.lblVelotyp = new System.Windows.Forms.Label();
       this.btnStepCost = new System.Windows.Forms.Button();
       this.btnHeight = new System.Windows.Forms.Button();
       this.btnVelo = new System.Windows.Forms.Button();
@@ -52,10 +52,10 @@
       // 
       this.txtCost.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-      this.txtCost.Location = new System.Drawing.Point(275, 67);
+      this.txtCost.Location = new System.Drawing.Point(318, 67);
       this.txtCost.Name = "txtCost";
       this.txtCost.ReadOnly = true;
-      this.txtCost.Size = new System.Drawing.Size(119, 20);
+      this.txtCost.Size = new System.Drawing.Size(76, 20);
       this.txtCost.TabIndex = 18;
       // 
       // lblCost
@@ -63,18 +63,19 @@
       this.lblCost.AutoSize = true;
       this.lblCost.Location = new System.Drawing.Point(241, 70);
       this.lblCost.Name = "lblCost";
-      this.lblCost.Size = new System.Drawing.Size(28, 13);
+      this.lblCost.Size = new System.Drawing.Size(56, 13);
       this.lblCost.TabIndex = 17;
-      this.lblCost.Text = "Cost";
+      this.lblCost.Text = "Costmodel";
       // 
-      // label1
+      // lblSteps
       // 
-      this.label1.AutoSize = true;
-      this.label1.Location = new System.Drawing.Point(148, 70);
-      this.label1.Name = "label1";
-      this.label1.Size = new System.Drawing.Size(34, 13);
-      this.label1.TabIndex = 16;
-      this.label1.Text = "Steps";
+      this.lblSteps.AutoSize = true;
+      this.lblSteps.Location = new System.Drawing.Point(138, 71);
+      this.lblSteps.Name = "lblSteps";
+      this.lblSteps.Size = new System.Drawing.Size(34, 13);
+      this.lblSteps.TabIndex = 16;
+      this.lblSteps.Text = "Steps";
+      this.lblSteps.TextAlign = System.Drawing.ContentAlignment.TopRight;
       // 
       // _lstStep
       // 
@@ -144,14 +145,14 @@
       this.lblHeight.TabIndex = 21;
       this.lblHeight.Text = "Terrain Grid";
       // 
-      // label2
+      // lblVelotyp
       // 
-      this.label2.AutoSize = true;
-      this.label2.Location = new System.Drawing.Point(81, 51);
-      this.label2.Name = "label2";
-      this.label2.Size = new System.Drawing.Size(67, 13);
-      this.label2.TabIndex = 29;
-      this.label2.Text = "Velocity type";
+      this.lblVelotyp.AutoSize = true;
+      this.lblVelotyp.Location = new System.Drawing.Point(81, 51);
+      this.lblVelotyp.Name = "lblVelotyp";
+      this.lblVelotyp.Size = new System.Drawing.Size(67, 13);
+      this.lblVelotyp.TabIndex = 29;
+      this.lblVelotyp.Text = "Velocity type";
       // 
       // btnStepCost
       // 
@@ -187,7 +188,7 @@
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-      this.Controls.Add(this.label2);
+      this.Controls.Add(this.lblVelotyp);
       this.Controls.Add(this.btnStepCost);
       this.Controls.Add(this.lblHeight);
       this.Controls.Add(this.txtCost);
@@ -199,7 +200,7 @@
       this.Controls.Add(this.txtResol);
       this.Controls.Add(this.txtHeight);
       this.Controls.Add(this.btnVelo);
-      this.Controls.Add(this.label1);
+      this.Controls.Add(this.lblSteps);
       this.Controls.Add(this._lstStep);
       this.Name = "CntConfig";
       this.Size = new System.Drawing.Size(422, 96);
@@ -215,7 +216,7 @@
     private System.Windows.Forms.ComboBox _lstStep;
     private System.Windows.Forms.TextBox txtCost;
     private System.Windows.Forms.Label lblCost;
-    private System.Windows.Forms.Label label1;
+    private System.Windows.Forms.Label lblSteps;
     private System.Windows.Forms.Button btnStepCost;
     private System.Windows.Forms.ToolTip ttp;
     private System.Windows.Forms.TextBox txtVelo;
@@ -225,6 +226,6 @@
     private System.Windows.Forms.Label lblVelo;
     private System.Windows.Forms.Label lblHeight;
     private System.Windows.Forms.OpenFileDialog dlgOpen;
-    private System.Windows.Forms.Label label2;
+    private System.Windows.Forms.Label lblVelotyp;
   }
 }

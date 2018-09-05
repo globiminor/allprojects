@@ -184,6 +184,9 @@ namespace Ocad
       }
 
       Element match = null;
+      string search = control.Name;
+      while (search.Length < 3) search = $"0{search}";
+
       foreach (Element e in _controlElements)
       {
         if (e.ObjectStringType != ObjectStringType.CsObject)
@@ -191,14 +194,18 @@ namespace Ocad
 
         string key = new ControlPar(e.ObjectString).Name;
 
-        if (key == $"10{control.Name}"         // Control
-         || key == $"00{control.Name}"        // Start
-         || key == $"30{control.Name}")        // Finish
+        if (key == $"1{search}"         // Control
+         || key == $"0{search}"         // Start
+         || key == $"2{search}"         // Must
+         || key == $"3{search}")        // Finish
         {
           match = e;
           break;
         }
       }
+
+      if (match == null)
+      { }
 
       control.Element = match;
       return match;

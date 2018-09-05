@@ -884,25 +884,33 @@ namespace OCourse.ViewModels
 
     internal void PermutationsInit()
     {
-      Working = true;
-
-      Course course;
-      using (OcadReader reader = OcadReader.Open(CourseFile))
+      PermutationBuilder pb;
+      try
       {
-        _setup = reader.ReadSetup();
-        course = reader.ReadCourse(CourseName);
+        Working = true;
+
+        Course course;
+        using (OcadReader reader = OcadReader.Open(CourseFile))
+        {
+          _setup = reader.ReadSetup();
+          course = reader.ReadCourse(CourseName);
+        }
+
+        course = AdaptCourse(course, _varBuilderType);
+
+        int min = StartNrMin;
+        int max = StartNrMax;
+        if (min > max) throw new ArgumentException("Min.StartNr > Max.StartNr");
+
+        VariationBuilder builder = new VariationBuilder();
+        builder.VariationAdded += Builder_VariationAdded;
+        pb = new PermutationBuilder(this, builder, course, min, max);
       }
-
-      course = AdaptCourse(course, _varBuilderType);
-
-      int min = StartNrMin;
-      int max = StartNrMax;
-      if (min > max) throw new ArgumentException("Min.StartNr > Max.StartNr");
-
-      VariationBuilder builder = new VariationBuilder();
-      builder.VariationAdded += Builder_VariationAdded;
-      PermutationBuilder pb = new PermutationBuilder(this, builder, course, min, max);
-
+      catch
+      {
+        Working = false;
+        throw;
+      }
       RunAsync(pb);
     }
 

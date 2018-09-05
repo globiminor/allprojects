@@ -79,6 +79,10 @@ namespace OCourse.Ext
       {
         _state = state;
       }
+      public override string ToString()
+      {
+        return $"{_parsed} : {_state}";
+      }
 
       public State GetState(SectionList sections)
       {
@@ -729,7 +733,6 @@ namespace OCourse.Ext
       private class Statistics
       {
         private List<SectionList> _current;
-        private Dictionary<Control, object> _fullStat;
         private object _currentStat;
         public void AddNext(SectionList permutation, NextWhere nextWhere, List<SectionList> permuts)
         {
@@ -857,11 +860,13 @@ namespace OCourse.Ext
 
       public List<SectionList> Analyze()
       {
-        SectionList permut = new SectionList(StartControl);
         List<SectionList> validList = new List<SectionList>();
 
+        SectionList permut = new SectionList(StartControl);
         for (int i = 1; i < _leg; i++)
-        { permut.Add(StartNext); }
+        {
+          permut.Add(StartNext);
+        }
 
         GetVariations(permut, StartControl, false, false, validList);
 
@@ -1149,6 +1154,8 @@ namespace OCourse.Ext
         do
         {
           variation.Add(current);
+          if (currentWhere == null && current.Where != null)
+          { currentWhere = new WhereInfo(current.Where, variation); }
           variation.Add(currentWhere);
           WhereInfo.State state = variation.GetState();
           if (state == WhereInfo.State.Failed)
@@ -1170,7 +1177,13 @@ namespace OCourse.Ext
           }
 
           Control split = current != null ? current.Control : StartControl;
-          Dictionary<char, NextWhere> nextsDict = GetPossibleNexts(variation, split, nextList.List, false);
+          SectionList nextVariation = variation;
+          if (current == null)
+          {
+            nextVariation = nextVariation.Clone();
+            nextVariation.Add(StartNext);
+          }
+          Dictionary<char, NextWhere> nextsDict = GetPossibleNexts(nextVariation, split, nextList.List, false);
 
           bool finished = true;
           List<NextWhere> nexts = Sort(variation, split, nextsDict.Values);

@@ -8,6 +8,7 @@ using Grid.Lcp;
 using GuiUtils;
 using Basics.Forms;
 using System.ComponentModel;
+using LeastCostPathUI.Properties;
 
 namespace LeastCostPathUI
 {
@@ -32,6 +33,12 @@ namespace LeastCostPathUI
       InitializeComponent();
 
       _bindingSource = new BindingSource(components);
+      SetText();
+    }
+    private void SetText()
+    {
+      optHeightVelo.Text = Msg.HeightVeloModel;
+      optMultiLayer.Text = Msg.MultiLeyelModel;
     }
 
     public static Image GetImage(Steps steps)
@@ -102,7 +109,7 @@ namespace LeastCostPathUI
           DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn
           {
             DataPropertyName = nameof(c.HeightPath),
-            HeaderText = "Terrain",
+            HeaderText = Msg.HeightModel,
             ReadOnly = true,
             Width = 80
           };
@@ -114,7 +121,7 @@ namespace LeastCostPathUI
           DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn
           {
             DataPropertyName = nameof(c.VeloPath),
-            HeaderText = "Velocity",
+            HeaderText = Msg.VeloModel,
             ReadOnly = true,
             Width = 80
           };
@@ -138,7 +145,7 @@ namespace LeastCostPathUI
           DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn
           {
             DataPropertyName = nameof(c.Resolution),
-            HeaderText = "Resol.",
+            HeaderText = Msg.Resolution,
             ReadOnly = true,
             Width = 40
           };

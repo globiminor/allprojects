@@ -87,6 +87,16 @@
       <DependentUpon>Images.resx</DependentUpon>
     </Compile>
     <Compile Include="LeastCostPathIO.cs" />
+    <Compile Include="Properties\Msg.de.Designer.cs">
+      <DependentUpon>Msg.de.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Properties\Msg.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Msg.resx</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WdgAnalyzeImg.cs">
       <SubType>Form</SubType>
@@ -137,6 +147,15 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Images.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Msg.de.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Msg.de.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Msg.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Msg.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

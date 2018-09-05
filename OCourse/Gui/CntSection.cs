@@ -125,6 +125,11 @@ namespace OCourse.Gui
       foreach (KeyValuePair<NextControl, NextControlList> pair in _nextDict)
       {
         NextControl fc = pair.Key;
+
+        // TODO
+        if (!_lblDict.ContainsKey(fc))
+        { continue; }
+
         ControlLabel fg = _lblDict[fc];
         Label fl = fg.Lbl;
         foreach (NextControl nextControl in pair.Value.List)
@@ -372,19 +377,19 @@ namespace OCourse.Gui
       PartChanged?.Invoke(this, part);
     }
 
-    private Dictionary<NextControl, NextControlList> AssembleNextSections(SectionCollection _course)
+    private Dictionary<NextControl, NextControlList> AssembleNextSections(SectionCollection course)
     {
-      SectionCollection course = _course.Clone();
+      SectionCollection clone = course.Clone();
 
       SectionsBuilder secBuilder = new SectionsBuilder();
       secBuilder.AddingBranch += SecBuilder_AddingBranch;
-      List<SimpleSection> simples = secBuilder.GetSections(course);
+      List<SimpleSection> simples = secBuilder.GetSections(clone);
 
       Dictionary<string, Control> uniqueDict = new Dictionary<string, Control>();
       Dictionary<Control, Control> oldNew = new Dictionary<Control, Control>();
-      AddControl(simples[0].From, null, uniqueDict, oldNew);
       foreach (SimpleSection section in simples)
       {
+        AddControl(section.From, null, uniqueDict, oldNew);
         AddControl(section.To, section.Where, uniqueDict, oldNew);
       }
 
@@ -476,7 +481,7 @@ namespace OCourse.Gui
         list.AddFirst(s);
       }
 
-      Dictionary<NextControl, NextControlList> next = AssembleNextSections(course);
+      Dictionary<NextControl, NextControlList> next = AssembleNextSections(list);
 
       NextControl start = null;
       foreach (NextControl key in next.Keys)

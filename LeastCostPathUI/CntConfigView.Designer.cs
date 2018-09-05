@@ -34,9 +34,9 @@
       this.optHeightVelo = new System.Windows.Forms.RadioButton();
       this.optMultiLayer = new System.Windows.Forms.RadioButton();
       this.pnlTerrainVelo = new System.Windows.Forms.Panel();
+      this.cntConfigSimple = new LeastCostPathUI.CntConfig();
       this.grdLevels = new System.Windows.Forms.DataGridView();
       this.pnlMulti = new System.Windows.Forms.Panel();
-      this.cntConfigSimple = new LeastCostPathUI.CntConfig();
       this.btnEdit = new System.Windows.Forms.Button();
       this.btnAddLevel = new System.Windows.Forms.Button();
       this.pnlTerrainVelo.SuspendLayout();
@@ -77,6 +77,17 @@
       this.pnlTerrainVelo.Size = new System.Drawing.Size(419, 96);
       this.pnlTerrainVelo.TabIndex = 28;
       // 
+      // cntConfigSimple
+      // 
+      this.cntConfigSimple.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.cntConfigSimple.ConfigVm = null;
+      this.cntConfigSimple.Location = new System.Drawing.Point(0, 0);
+      this.cntConfigSimple.Name = "cntConfigSimple";
+      this.cntConfigSimple.Size = new System.Drawing.Size(422, 95);
+      this.cntConfigSimple.TabIndex = 0;
+      // 
       // grdLevels
       // 
       this.grdLevels.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -100,17 +111,6 @@
       this.pnlMulti.Name = "pnlMulti";
       this.pnlMulti.Size = new System.Drawing.Size(419, 96);
       this.pnlMulti.TabIndex = 30;
-      // 
-      // cntConfigSimple
-      // 
-      this.cntConfigSimple.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-      this.cntConfigSimple.ConfigVm = null;
-      this.cntConfigSimple.Location = new System.Drawing.Point(0, 0);
-      this.cntConfigSimple.Name = "cntConfigSimple";
-      this.cntConfigSimple.Size = new System.Drawing.Size(422, 95);
-      this.cntConfigSimple.TabIndex = 0;
       // 
       // btnEdit
       // 
@@ -137,8 +137,8 @@
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.Controls.Add(this.optMultiLayer);
       this.Controls.Add(this.optHeightVelo);
-      this.Controls.Add(this.pnlMulti);
       this.Controls.Add(this.pnlTerrainVelo);
+      this.Controls.Add(this.pnlMulti);
       this.Name = "CntConfigView";
       this.Size = new System.Drawing.Size(422, 122);
       this.pnlTerrainVelo.ResumeLayout(false);

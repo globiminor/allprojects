@@ -135,7 +135,17 @@ namespace OCourse.Route
     {
       if (course == null)
       { return null; }
-      int legs = course.LegCount();
+      SectionCollection copy = new SectionCollection();
+      copy.AddLast(course);
+      if (copy.Count > 0 && copy.First.Value as Control == null)
+      {
+        copy.AddFirst(new Control("--S", Ocad.StringParams.ControlPar.TextDescKey));
+      }
+      if (copy.Count > 0 && copy.Last.Value as Control == null)
+      {
+        copy.AddLast(new Control("--Z", Ocad.StringParams.ControlPar.TextDescKey));
+      }
+      int legs = copy.LegCount();
       VariationBuilder builder = new VariationBuilder();
       builder.VariationAdded += Builder_VariationAdded;
       List<SectionList> allPermuts = new List<SectionList>();
@@ -143,12 +153,12 @@ namespace OCourse.Route
       {
         for (int i = 1; i <= legs; i++)
         {
-          allPermuts.AddRange(builder.AnalyzeLeg(course, i));
+          allPermuts.AddRange(builder.AnalyzeLeg(copy, i));
         }
       }
       else
       {
-        IList<SectionList> permuts = builder.Analyze(course);
+        IList<SectionList> permuts = builder.Analyze(copy);
         if (permuts.Count > 1)
         {
           int nStarts = 0;

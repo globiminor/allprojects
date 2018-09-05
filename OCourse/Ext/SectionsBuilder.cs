@@ -50,10 +50,14 @@ namespace OCourse.Ext
       }
       else if (section is Fork fork)
       {
-        List<Control> tos = new List<Control>(fork.Branches.Count);
-        foreach (Fork.Branch branch in fork.Branches)
+        int nBranches = fork.Branches.Count;
+        List<Control> tos = new List<Control>(nBranches);
+        for (int iBranch = 0; iBranch < nBranches; iBranch++)
         {
-          IList<Control> forksTo = AppendSections(leg, branch, fromControls, sections, where);
+          Fork.Branch branch = (Fork.Branch)fork.Branches[iBranch];
+          Control fromControl = fromControls.Count > 1 ? fromControls[iBranch] : fromControls[0];
+
+          IList<Control> forksTo = AppendSections(leg, branch, new[] { fromControl }, sections, where);
           tos.AddRange(forksTo);
         }
         toControls = tos;
@@ -69,13 +73,35 @@ namespace OCourse.Ext
       else if (section is Variation var)
       {
         List<Control> tos = new List<Control>();
+        int iVar = 0;
         foreach (Variation.Branch branch in var.Branches)
         {
-          if (leg < 0 || branch.Legs.Contains(leg))
+          IList<Control> branchFroms;
+          if (fromControls.Count > 1)
           {
-            IList<Control> varTos = AppendSections(leg, branch, fromControls, sections, where);
-            tos.AddRange(varTos);
+            branchFroms = new List<Control>();
+            foreach (int iLeg in branch.Legs)
+            {
+              branchFroms.Add(fromControls[iVar]);
+              iVar++;
+            }
           }
+          else
+          {
+            branchFroms = fromControls;
+          }
+          List<SimpleSection> addSections = (leg < 0 || branch.Legs.Contains(leg)) ?
+            sections : new List<SimpleSection>();
+
+          IList<Control> varTos = AppendSections(leg, branch, branchFroms, addSections, where);
+          if (varTos.Count < branch.Legs.Count)
+          {
+            if (varTos.Count != 1) throw new ArgumentException($"expected 1, got {varTos.Count}");
+            for (int iLeg = 0; iLeg < branch.Legs.Count; iLeg++)
+            { tos.Add(varTos[0]); }
+          }
+          else
+          { tos.AddRange(varTos); }
         }
         toControls = tos;
       }
