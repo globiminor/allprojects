@@ -442,7 +442,7 @@ namespace OCourse.Gui
       { oldNew.Add(ctr, uniqueCtr); }
     }
 
-    IList<Control> SecBuilder_AddingBranch(int leg, ISection section, IList<Control> fromControls,
+    IList<SectionsBuilder.IDisplayControl> SecBuilder_AddingBranch(int leg, ISection section, IList<SectionsBuilder.IDisplayControl> fromControls,
       List<SimpleSection> sections, string where)
     {
       Variation.Branch branch = (Variation.Branch)section;
@@ -450,11 +450,23 @@ namespace OCourse.Gui
       Control ctr = new Control(legs, ControlPar.TextDescKey);
       ctr.Text = string.Format("where {0}", where);
 
-      foreach (Control fromControl in fromControls)
+      List<SectionsBuilder.IDisplayControl> result = new List<SectionsBuilder.IDisplayControl>();
+      foreach (SectionsBuilder.IDisplayControl fromControl in fromControls)
       {
-        sections.Add(new SimpleSection(fromControl, ctr));
+        sections.Add(new SimpleSection(fromControl.Control, ctr));
+        result.Add(new FromControl(fromControl.Control, ctr));
       }
-      return new Control[] { ctr };
+      return result;
+    }
+    private class FromControl : SectionsBuilder.IDisplayControl
+    {
+      public FromControl(Control control, Control display)
+      {
+        Control = control;
+        Display = display;
+      }
+      public Control Control { get; }
+      public Control Display { get; }
     }
 
     public void SetCourse(Course course)

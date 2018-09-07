@@ -1,63 +1,107 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Ocad;
 
 namespace OCourse.Ext
 {
   public class SectionsBuilder
   {
-    public delegate IList<Control> AddEventHandler(int leg, ISection section,
-                                                   IList<Control> fromControls, List<SimpleSection> sections, string where);
+    public interface IDisplayControl
+    {
+      Control Control { get; }
+      Control Display { get; }
+    }
+    private class FromControl : IDisplayControl
+    {
+      public FromControl(Control control)
+      { Control = control; }
+      public Control Control { get; }
+      Control IDisplayControl.Display { get { return Control; } }
+    }
+
+    public delegate IList<IDisplayControl> AddEventHandler(int leg, ISection section,
+      IList<IDisplayControl> fromControls, List<SimpleSection> sections, string where);
+
     public event AddEventHandler AddingBranch;
 
     public List<SimpleSection> GetSections(SectionCollection course)
     {
       List<SimpleSection> sections = new List<SimpleSection>();
-      IList<Control> lastControls = new List<Control>();
+      IList<IDisplayControl> lastControls = new List<IDisplayControl>();
+
+      Dictionary<SimpleSection, List<SimpleSection>> uniqueSections = GetUniqueSections(course);
 
       foreach (ISection section in course)
       {
-        lastControls = AppendSections(-1, section, lastControls, sections, null);
+        lastControls = AppendSections(-1, section, lastControls, sections, null, uniqueSections);
       }
       return sections;
+    }
+
+    private Dictionary<SimpleSection, List<SimpleSection>> GetUniqueSections(SectionCollection course)
+    {
+      VariationBuilder v = new VariationBuilder();
+      IReadOnlyList<SimpleSection> allSections = v.GetSimpleSections(course);
+      return GetUniqueSections(allSections);
+    }
+    private Dictionary<SimpleSection, List<SimpleSection>> GetUniqueSections(IEnumerable<SimpleSection> sections)
+    {
+      Dictionary<SimpleSection, List<SimpleSection>> unique = new Dictionary<SimpleSection, List<SimpleSection>>(new SimpleSection.EqualFullComparer());
+      foreach (SimpleSection section in sections)
+      {
+        if (!unique.TryGetValue(section, out List<SimpleSection> equals))
+        {
+          equals = new List<SimpleSection>();
+          unique.Add(section, equals);
+        }
+        equals.Add(section);
+      }
+      return unique;
     }
 
     public List<SimpleSection> GetSections(SectionCollection course, int leg)
     {
       List<SimpleSection> sections = new List<SimpleSection>();
-      IList<Control> lastControls = new List<Control>();
+      IList<IDisplayControl> lastControls = new List<IDisplayControl>();
+      Dictionary<SimpleSection, List<SimpleSection>> uniqueSections = GetUniqueSections(course);
 
       foreach (ISection section in course)
       {
-        lastControls = AppendSections(leg, section, lastControls, sections, null);
+        lastControls = AppendSections(leg, section, lastControls, sections, null, uniqueSections);
       }
       return sections;
     }
 
-    private IList<Control> AppendSections(int leg, ISection section,
-      IList<Control> fromControls, List<SimpleSection> sections, string where)
+    private IList<IDisplayControl> AppendSections(int leg, ISection section,
+      IList<IDisplayControl> fromControls, List<SimpleSection> sections, string where,
+      Dictionary<SimpleSection, List<SimpleSection>> uniqueAllSections)
     {
-      IList<Control> toControls;
+      IList<IDisplayControl> toControls;
       if (section is Control to)
       {
-        foreach (Control from in fromControls)
+        foreach (IDisplayControl from in fromControls)
         {
-          SimpleSection simple = new SimpleSection(from, to);
+          SimpleSection simple = new SimpleSection(from.Control, to);
           simple.AndWhere(where);
-          sections.Add(simple);
+          if (uniqueAllSections.ContainsKey(simple))
+          {
+            simple.From = from.Display;
+            sections.Add(simple);
+          }
         }
-        toControls = new Control[] { to };
+        toControls = new IDisplayControl[] { new FromControl(to) };
       }
       else if (section is Fork fork)
       {
         int nBranches = fork.Branches.Count;
-        List<Control> tos = new List<Control>(nBranches);
+        List<IDisplayControl> tos = new List<IDisplayControl>(nBranches);
         for (int iBranch = 0; iBranch < nBranches; iBranch++)
         {
           Fork.Branch branch = (Fork.Branch)fork.Branches[iBranch];
-          Control fromControl = fromControls.Count > 1 ? fromControls[iBranch] : fromControls[0];
+          IDisplayControl fromControl = fromControls.Count > 1 ? fromControls[iBranch] : fromControls[0];
 
-          IList<Control> forksTo = AppendSections(leg, branch, new[] { fromControl }, sections, where);
+          IList<IDisplayControl> forksTo = AppendSections(leg, branch, fromControls, sections, where, uniqueAllSections);
           tos.AddRange(forksTo);
         }
         toControls = tos;
@@ -66,20 +110,20 @@ namespace OCourse.Ext
       {
         foreach (ISection control in forkBranch)
         {
-          fromControls = AppendSections(leg, control, fromControls, sections, where);
+          fromControls = AppendSections(leg, control, fromControls, sections, where, uniqueAllSections);
         }
         toControls = fromControls;
       }
       else if (section is Variation var)
       {
-        List<Control> tos = new List<Control>();
+        List<IDisplayControl> tos = new List<IDisplayControl>();
         int iVar = 0;
         foreach (Variation.Branch branch in var.Branches)
         {
-          IList<Control> branchFroms;
+          IList<IDisplayControl> branchFroms;
           if (fromControls.Count > 1)
           {
-            branchFroms = new List<Control>();
+            branchFroms = new List<IDisplayControl>();
             foreach (int iLeg in branch.Legs)
             {
               branchFroms.Add(fromControls[iVar]);
@@ -93,7 +137,7 @@ namespace OCourse.Ext
           List<SimpleSection> addSections = (leg < 0 || branch.Legs.Contains(leg)) ?
             sections : new List<SimpleSection>();
 
-          IList<Control> varTos = AppendSections(leg, branch, branchFroms, addSections, where);
+          IList<IDisplayControl> varTos = AppendSections(leg, branch, branchFroms, addSections, where, uniqueAllSections);
           if (varTos.Count < branch.Legs.Count)
           {
             if (varTos.Count != 1) throw new ArgumentException($"expected 1, got {varTos.Count}");
@@ -108,11 +152,13 @@ namespace OCourse.Ext
       else if (section is Variation.Branch varBranch)
       {
         if (AddingBranch != null)
-        { fromControls = AddingBranch(leg, varBranch, fromControls, sections, varBranch.GetWhere()); }
+        {
+          fromControls = AddingBranch(leg, varBranch, fromControls, sections, varBranch.GetWhere());
+        }
 
         foreach (ISection control in varBranch)
         {
-          fromControls = AppendSections(leg, control, fromControls, sections, varBranch.GetWhere());
+          fromControls = AppendSections(leg, control, fromControls, sections, varBranch.GetWhere(), uniqueAllSections);
         }
         toControls = fromControls;
       }
@@ -127,54 +173,54 @@ namespace OCourse.Ext
     public List<SimpleSection> GetParts(SectionCollection course, int leg)
     {
       List<SimpleSection> sections = new List<SimpleSection>();
-      IList<Control> lastControls = new List<Control>();
+      IList<IDisplayControl> lastControls = new List<IDisplayControl>();
 
-      List<Control> inter = new List<Control>();
-      Control lastControl = null;
+      List<IDisplayControl> inter = new List<IDisplayControl>();
+      IDisplayControl lastControl = null;
       foreach (ISection section in course)
       {
         if (section is Control)
         {
-          lastControl = (Control)section;
+          lastControl = new FromControl((Control)section);
           inter.Add(lastControl);
         }
         else
         {
           if (lastControl != null)
           {
-            lastControls = AppendParts(leg, lastControl, inter, lastControls, sections, null);
+            lastControls = AppendParts(leg, lastControl.Control, inter, lastControls, sections, null);
             lastControl = null;
-            inter = new List<Control>();
+            inter = new List<IDisplayControl>();
           }
           lastControls = AppendParts(leg, section, inter, lastControls, sections, null);
         }
       }
       if (lastControl != null)
       {
-        AppendParts(leg, lastControl, inter, lastControls, sections, null);
+        AppendParts(leg, lastControl.Control, inter, lastControls, sections, null);
       }
 
       return sections;
     }
 
-    private IList<Control> AppendParts(int leg, ISection section, List<Control> inter,
-      IList<Control> fromControls, List<SimpleSection> sections, string where)
+    private IList<IDisplayControl> AppendParts(int leg, ISection section, List<IDisplayControl> inter,
+      IList<IDisplayControl> fromControls, List<SimpleSection> sections, string where)
     {
-      IList<Control> toControls;
+      IList<IDisplayControl> toControls;
       if (section is Control to)
       {
-        foreach (Control from in fromControls)
+        foreach (IDisplayControl from in fromControls)
         {
-          MultiSection simple = new MultiSection(from, to);
-          simple.Inter.AddRange(inter);
+          MultiSection simple = new MultiSection(from.Control, to);
+          simple.Inter.AddRange(inter.Select(x => x.Control));
           simple.AndWhere(where);
           sections.Add(simple);
         }
-        toControls = new Control[] { to };
+        toControls = new IDisplayControl[] { new FromControl(to) };
       }
       else if (section is Fork fork)
       {
-        List<Control> tos = new List<Control>(fork.Branches.Count);
+        List<IDisplayControl> tos = new List<IDisplayControl>(fork.Branches.Count);
         char code = 'A';
         foreach (Fork.Branch branch in fork.Branches)
         {
@@ -183,7 +229,7 @@ namespace OCourse.Ext
           {
             w = string.Format("({0}) AND {1}", where, w);
           }
-          IList<Control> forksTo = AppendParts(leg, branch, null, fromControls, sections, w);
+          IList<IDisplayControl> forksTo = AppendParts(leg, branch, null, fromControls, sections, w);
           tos.AddRange(forksTo);
 
           code++;
@@ -192,14 +238,14 @@ namespace OCourse.Ext
       }
       else if (section is Fork.Branch forkBranch)
       {
-        List<Control> interBranch = new List<Control>();
+        List<IDisplayControl> interBranch = new List<IDisplayControl>();
         Control lastControl = null;
         foreach (ISection control in forkBranch)
         {
           if (control is Control)
           {
             lastControl = (Control)control;
-            interBranch.Add(lastControl);
+            interBranch.Add(new FromControl(lastControl));
           }
           else
           {
@@ -207,7 +253,7 @@ namespace OCourse.Ext
             {
               fromControls = AppendParts(leg, lastControl, interBranch, fromControls, sections, where);
               lastControl = null;
-              interBranch = new List<Control>();
+              interBranch = new List<IDisplayControl>();
             }
             fromControls = AppendParts(leg, control, interBranch, fromControls, sections, where);
           }
@@ -220,12 +266,12 @@ namespace OCourse.Ext
       }
       else if (section is Variation var)
       {
-        List<Control> tos = new List<Control>();
+        List<IDisplayControl> tos = new List<IDisplayControl>();
         foreach (Variation.Branch branch in var.Branches)
         {
           if (leg < 0 || branch.Legs.Contains(leg))
           {
-            IList<Control> varTos = AppendParts(leg, branch, null, fromControls, sections, where);
+            IList<IDisplayControl> varTos = AppendParts(leg, branch, null, fromControls, sections, where);
             tos.AddRange(varTos);
           }
         }
@@ -236,14 +282,14 @@ namespace OCourse.Ext
         if (AddingBranch != null)
         { fromControls = AddingBranch(leg, varBranch, fromControls, sections, varBranch.GetWhere()); }
 
-        List<Control> interBranch = new List<Control>();
+        List<IDisplayControl> interBranch = new List<IDisplayControl>();
         Control lastControl = null;
         foreach (ISection control in varBranch)
         {
           if (control is Control)
           {
             lastControl = (Control)control;
-            interBranch.Add(lastControl);
+            interBranch.Add(new FromControl(lastControl));
           }
           else
           {
@@ -251,7 +297,7 @@ namespace OCourse.Ext
             {
               fromControls = AppendParts(leg, lastControl, interBranch, fromControls, sections, varBranch.GetWhere());
               lastControl = null;
-              interBranch = new List<Control>();
+              interBranch = new List<IDisplayControl>();
             }
             fromControls = AppendParts(leg, control, interBranch, fromControls, sections, varBranch.GetWhere());
           }

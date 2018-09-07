@@ -20,6 +20,12 @@ namespace OCourse.Ext
       return permutations;
     }
 
+    public IReadOnlyList<SimpleSection> GetSimpleSections(SectionCollection course)
+    {
+      PermutationBuilder builder = new PermutationBuilder(course);
+      return builder.SimpleSections;
+    }
+
     public List<SectionList> AnalyzeLeg(SectionCollection course, int leg)
     {
       LegBuilder builder = new LegBuilder(course, leg);
@@ -766,9 +772,9 @@ namespace OCourse.Ext
 
       private Index _index;
 
-      protected override IList<SimpleSection> GetSections()
+      protected override List<SimpleSection> GetSections()
       {
-        IList<SimpleSection> sections = _course.GetAllSections();
+        List<SimpleSection> sections = _course.GetAllSections();
         sections = MakeUniqueControls(sections);
 
         return sections;
@@ -878,9 +884,9 @@ namespace OCourse.Ext
 
       }
 
-      protected override IList<SimpleSection> GetSections()
+      protected override List<SimpleSection> GetSections()
       {
-        IList<SimpleSection> sections = GetSections(_course, _leg);
+        List<SimpleSection> sections = GetSections(_course, _leg);
         return sections;
       }
       private static List<SimpleSection> GetSections(SectionCollection course, int leg)
@@ -944,9 +950,9 @@ namespace OCourse.Ext
 
       }
 
-      protected override IList<SimpleSection> GetSections()
+      protected override List<SimpleSection> GetSections()
       {
-        IList<SimpleSection> sections = GetSections(_course);
+        List<SimpleSection> sections = GetSections(_course);
         return sections;
       }
       private static List<SimpleSection> GetSections(SectionCollection course)
@@ -972,15 +978,17 @@ namespace OCourse.Ext
     {
       public event VariationEventHandler VariationAdded;
 
-      private IList<SimpleSection> _sections;
+      private List<SimpleSection> _sections;
       private Dictionary<Control, NextControlList> _nextControls;
       private Dictionary<SimpleSection, int> _sectionCount;
       private NextControl _startNext;
 
       protected abstract Control StartControl { get; }
       protected abstract Control EndControl { get; }
-      protected abstract IList<SimpleSection> GetSections();
-      protected IList<SimpleSection> Sections
+      protected abstract List<SimpleSection> GetSections();
+
+      public IReadOnlyList<SimpleSection> SimpleSections { get { return Sections; } }
+      protected IReadOnlyList<SimpleSection> Sections
       {
         get
         {
@@ -997,7 +1005,7 @@ namespace OCourse.Ext
         {
           if (_nextControls == null)
           {
-            IList<SimpleSection> sections = Sections;
+            IReadOnlyList<SimpleSection> sections = Sections;
             Dictionary<Control, NextControlList> nextInfos = AssembleSections(sections);
             foreach (NextControlList nextInfo in nextInfos.Values)
             { nextInfo.AssureCodes(); }
@@ -1269,7 +1277,7 @@ namespace OCourse.Ext
         return where;
       }
 
-      private static Dictionary<Control, NextControlList> AssembleSections(IList<SimpleSection> sections)
+      private static Dictionary<Control, NextControlList> AssembleSections(IReadOnlyList<SimpleSection> sections)
       {
         Dictionary<Control, NextControlList> dict = new Dictionary<Control, NextControlList>();
         foreach (SimpleSection section in sections)
@@ -1286,7 +1294,7 @@ namespace OCourse.Ext
         return dict;
       }
 
-      protected static IList<SimpleSection> MakeUniqueControls(IList<SimpleSection> sections)
+      protected static List<SimpleSection> MakeUniqueControls(IList<SimpleSection> sections)
       {
         Dictionary<string, Control> controls = new Dictionary<string, Control>();
         List<SimpleSection> unique = new List<SimpleSection>(sections.Count);

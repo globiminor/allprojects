@@ -14,6 +14,26 @@ namespace Ocad
 
   public class SimpleSection
   {
+    public class EqualFullComparer : IEqualityComparer<SimpleSection>
+    {
+      public bool Equals(SimpleSection x, SimpleSection y)
+      {
+        bool equals = x.From.Name == y.From.Name 
+          && x.To?.Name == y.To?.Name 
+          && x.Where == y.Where;
+        return equals;
+      }
+      public int GetHashCode(SimpleSection t)
+      {
+        int code = t.From.Name.GetHashCode();
+        if (t.To != null)
+        {
+          code += 3 * t.To.Name.GetHashCode();
+        }
+        return code;
+      }
+    }
+
     public class EqualControlsComparer : IEqualityComparer<SimpleSection>
     {
       public bool Equals(SimpleSection x, SimpleSection y)
