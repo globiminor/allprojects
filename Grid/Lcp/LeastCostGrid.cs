@@ -190,29 +190,30 @@ namespace Grid.Lcp
 
       public ICostField AddStart(IPoint start, double cost = 0)
       {
-        ICostField startField = _parent.InitField(GetField(start));
+        Field startField = GetField(start);
         if (_dirGrid[startField.X, startField.Y] != 0)
         {
           return null;
         }
 
-        startField.SetCost(null, cost, idDir: -2);
-
-        _costOptimizer?.Init(startField);
-
         if (_fieldList.TryGetValue(startField, out ICostField existingField))
         {
-          if (existingField.Cost <= startField.Cost)
+          if (existingField.Cost <= cost)
           {
             return existingField;
           }
           _fieldList.Remove(existingField);
           _costList.Remove(existingField);
         }
-        _costList.Add(startField, startField);
-        _fieldList.Add(startField, startField);
 
-        return startField;
+        ICostField startCostField = _parent.InitField(startField);
+        startCostField.SetCost(null, cost, idDir: -2);
+        _costOptimizer?.Init(startField);
+
+        _costList.Add(startCostField, startCostField);
+        _fieldList.Add(startCostField, startCostField);
+
+        return startCostField;
       }
 
       public void Process()

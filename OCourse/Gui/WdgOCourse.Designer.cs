@@ -422,6 +422,7 @@
       this.btnExportPermut.TabIndex = 16;
       this.ttp.SetToolTip(this.btnExportPermut, "Export selected permutations");
       this.btnExportPermut.UseVisualStyleBackColor = true;
+      this.btnExportPermut.Click += new System.EventHandler(this.btnExportPermut_Click);
       // 
       // _txtMax
       // 

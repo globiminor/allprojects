@@ -1173,7 +1173,7 @@ namespace OCourse.Ext
           {
             if (allLegs == false)
             {
-              if (state == WhereInfo.State.Fulfilled)
+              if (state == WhereInfo.State.Fulfilled && current.Control == EndControl)
               {
                 valids.Add(variation);
                 OnVariationAdded(variation);

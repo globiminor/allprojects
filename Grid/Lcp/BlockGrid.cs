@@ -297,6 +297,8 @@ namespace Grid.Lcp
             block += b;
           }
         }
+        if (block > 0 && block < ushort.MaxValue)
+        { }
         return new Block { BlockValue = (ushort)block };
       }
       int s_2 = size / 2;

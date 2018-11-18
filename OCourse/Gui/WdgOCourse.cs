@@ -820,6 +820,15 @@ namespace OCourse.Gui
       { dgvPermut.ResumeLayout(); }
     }
 
+    private void btnExportPermut_Click(object sender, EventArgs e)
+    {
+      if (_vm == null)
+      { return; }
+
+      _vm.PermutationsExport();
+    }
+
+
     private void WdgOCourse_Load(object sender, EventArgs e)
     {
       if (_vm == null)

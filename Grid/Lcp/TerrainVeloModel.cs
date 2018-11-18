@@ -132,4 +132,43 @@ namespace Grid.Lcp
       Slope2 = heightGrid.Slope2(tx, ty);
     }
   }
+
+  [System.Obsolete("Move")]
+  public class BlockModell: IDirCostModel<BlockCell>
+  {
+    public BlockGrid BlockGrid { get; }
+    public BlockModell(BlockGrid grid)
+    {
+      BlockGrid = grid;
+    }
+
+    Basics.Geom.IBox IDirCostModel.Extent { get { return BlockGrid.Extent.Extent; } }
+    double IDirCostModel.MinUnitCost => 1;
+
+    double IDirCostModel.GetCost(IList<double> x, IList<double> y, IList<double> w,
+      double cellSize, double distance, bool inverse)
+    {
+      List<BlockCell> pts = new List<BlockCell>(x.Count);
+      for (int i = 0; i < x.Count; i++)
+      {
+        pts.Add(InitCell(x[i], y[i], cellSize));
+      }
+      return GetCost(pts, w, distance, inverse);
+    }
+
+    public double GetCost(IList<BlockCell> pts, IList<double> ws, double distance, bool inverse)
+    {
+      throw new System.NotImplementedException();
+    }
+
+    public BlockCell InitCell(double x, double y, double cellSize)
+    {
+      return new BlockCell();
+    }
+  }
+  [System.Obsolete("Move")]
+  public class BlockCell
+  {
+
+  }
 }

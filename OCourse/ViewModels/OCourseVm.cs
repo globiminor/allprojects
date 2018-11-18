@@ -3,14 +3,13 @@ using Basics.Views;
 using Grid;
 using Grid.Lcp;
 using Ocad;
+using Ocad.StringParams;
 using OCourse.Ext;
 using OCourse.Route;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using System.Reflection;
-using Ocad.StringParams;
 
 namespace OCourse.ViewModels
 {
@@ -542,7 +541,7 @@ namespace OCourse.ViewModels
       try
       {
         _info.RaiseListChangedEvents = false;
-        Dictionary<CostFromTo, CostFromTo> costDict = 
+        Dictionary<CostFromTo, CostFromTo> costDict =
           new Dictionary<CostFromTo, CostFromTo>(new CostFromTo.SectionComparer());
         foreach (ICost cost in routes)
         {
@@ -912,6 +911,79 @@ namespace OCourse.ViewModels
         throw;
       }
       RunAsync(pb);
+    }
+
+    internal void PermutationsExport()
+    {
+      double length = -1;
+      foreach (DataRowView vRow in Permutations)
+      {
+        object x = vRow.Row["All"];
+        IList<SectionList> sections = (IList<SectionList>)x;
+        int startNr = (int)vRow.Row[_startNrName];
+
+        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+
+        double full = 0;
+        {
+          Control pre = null;
+          double part = 0;
+          foreach (SectionList section in sections)
+          {
+            foreach (Control c in section.Controls)
+            {
+              IPoint p0 = null;
+              if (pre != null)
+              {
+                IGeometry geom = pre.Element.Geometry.Project(_setup.Map2Prj);
+                p0 = geom as IPoint;
+                if (p0 == null)
+                {
+                  Polyline l = geom as Polyline;
+                  p0 = l.Points.Last.Value;
+                }
+                if (p0 == null)
+                {
+
+                }
+              }
+              if (c.Element != null)
+              {
+                IGeometry geom = c.Element.Geometry.Project(_setup.Map2Prj);
+                IPoint p1 = geom as IPoint;
+                if (p1 == null)
+                {
+                  Polyline l = geom as Polyline;
+                  p1 = l.Points.First.Value;
+                  double d = l.Length();
+                  full += d;
+                  part += d;
+                }
+                if (p1 == null)
+                { }
+
+                if (p0 != null)
+                {
+                  double d = Math.Sqrt(PointOperator.Dist2(p0, p1));
+                  full += d;
+                  part += d;
+                }
+                if (geom is IPoint)
+                {
+                  if (part > 0)
+                  { sb.Append($"{part / 1000.0:N3};"); }
+                  sb.Append($"{c.Name};");
+                  part = 0;
+                }
+
+                pre = c;
+              }
+            }
+          }
+        }
+
+        string line = $";{Course.Name};{startNr};{Math.Round(full / 1000.0, 1):N3};{sb}";
+      }
     }
 
     private class CourseCalculator : IWorker
