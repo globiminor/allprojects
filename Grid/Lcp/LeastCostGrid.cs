@@ -8,14 +8,14 @@ namespace Grid.Lcp
 
   public class StatusEventArgs
   {
-    private IGrid<double> _costGrid;
-    private IGrid<int> _dirGrid;
+    private readonly IGrid<double> _costGrid;
+    private readonly IGrid<int> _dirGrid;
 
-    private int _currentStep;
-    private int _totalStep;
+    private readonly int _currentStep;
+    private readonly int _totalStep;
 
-    private int _currentX;
-    private int _currentY;
+    private readonly int _currentX;
+    private readonly int _currentY;
 
     public StatusEventArgs(IGrid<double> costGrid, IGrid<int> dirGrid,
       int ix, int iy, int currentStep, int totalStep)
@@ -405,6 +405,8 @@ namespace Grid.Lcp
       public Dictionary<IField, IList<Teleport<T>>> Teleports { get; set; }
     }
     private Dictionary<IDirCostModel<T>, Layer> _layerDict;
+    private Dictionary<IDirCostModel<T>, Layer> LayerDict => _layerDict ?? (_layerDict = new Dictionary<IDirCostModel<T>, Layer>());
+
     public object CalcCost(bool invers = false, double stopFactor = 1)
     {
       ICostOptimizer calcAdapter = null;
@@ -429,7 +431,7 @@ namespace Grid.Lcp
         ICostField minCostField = null;
         Layer minLayer = null;
 
-        foreach (Layer layer in _layerDict.Values)
+        foreach (Layer layer in LayerDict.Values)
         {
           ICostField costField = layer.Calc.InitNextProcessField(remove: false);
           if (costField != null && (minCostField == null || costField.Cost < minCostField.Cost))
@@ -465,7 +467,7 @@ namespace Grid.Lcp
 
     private Layer GetLayer(IDirCostModel<T> costModel, bool invers, ICostOptimizer calcAdapter)
     {
-      if (!_layerDict.TryGetValue(costModel, out Layer layer))
+      if (!LayerDict.TryGetValue(costModel, out Layer layer))
       {
         LeastCostGrid<T> lcg = new LeastCostGrid<T>(costModel, _dx, _userBox, _steps);
         Calc calc = new Calc(lcg, invers, calcAdapter);
@@ -495,7 +497,7 @@ namespace Grid.Lcp
         }
 
         layer = new Layer { Lcg = lcg, Calc = calc, Teleports = layerPorts };
-        _layerDict.Add(costModel, layer);
+        LayerDict.Add(costModel, layer);
       }
       return layer;
     }
@@ -1117,8 +1119,7 @@ namespace Grid.Lcp
 
     protected bool EqualSettingsCore(LeastCostGrid o)
     {
-      LeastCostGrid other = o as LeastCostGrid;
-      if (other == null)
+      if (!(o is LeastCostGrid other))
       { return false; }
 
       if (Steps.Count != other.Steps.Count)
@@ -1146,8 +1147,7 @@ namespace Grid.Lcp
 
     public override ICostField InitField(IField position)
     {
-      RestCostField<T> init = position as RestCostField<T>;
-      if (init == null)
+      if (!(position is RestCostField<T> init))
       {
         GetXy(position, out double tx, out double ty);
         T cellInfo = DirCostModel.InitCell(tx, ty, Dx);

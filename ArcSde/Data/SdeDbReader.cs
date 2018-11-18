@@ -10,7 +10,7 @@ namespace ArcSde.Data
   {
 
     private SdeDbCommand _command;
-    private CommandBehavior _behavior;
+    private readonly CommandBehavior _behavior;
 
     private SeStream.FetchEnum _enum;
     private bool _closed;
@@ -27,6 +27,8 @@ namespace ArcSde.Data
     protected override void Dispose(bool disposing)
     {
       IDisposable disp = _enum;
+      if (_closed)
+      { }
       if (disp != null)
       {
         disp.Dispose();

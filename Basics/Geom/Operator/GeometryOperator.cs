@@ -255,8 +255,8 @@ namespace Basics.Geom
         }
       }
 
-      private ParamInfo _geometry;
-      private IPoint _center;
+      private readonly ParamInfo _geometry;
+      private readonly IPoint _center;
 
       private SortedList<IPoint, CornerInfo> _corners;
 
@@ -328,7 +328,7 @@ namespace Basics.Geom
       private List<IPoint> _axes;
       private OrthogonalSystem _orthoSystem;
 
-      private ParamPartList _parentList;
+      private readonly ParamPartList _parentList;
       private double _maxOffset = -1;
 
       public static IList<ParamPart> CreateParts(ParamInfo x)
@@ -596,7 +596,7 @@ namespace Basics.Geom
     {
       private ParamPart _x;
       private ParamPart _y;
-      private List<ParamsRelation> _parentList;
+      private readonly List<ParamsRelation> _parentList;
 
       private LinearIntersect _linearIntersect;
       private ParamRelate _rel;
@@ -987,8 +987,7 @@ namespace Basics.Geom
         IMultipartGeometry xMulti = (IMultipartGeometry)g;
         return ClosestPoint(p, xMulti);
       }
-      IRelParamGeometry pg = g as IRelParamGeometry;
-      if (pg == null)
+      if (!(g is IRelParamGeometry pg))
       { throw new InvalidOperationException("IGeometry is not of type " + typeof(IRelParamGeometry)); }
 
       if (pg.IsWithin(p))
@@ -1478,7 +1477,7 @@ namespace Basics.Geom
     private class Gaga
     {
       private readonly IRelParamGeometry _geom;
-      private IBox _paramRange;
+      private readonly IBox _paramRange;
       private IBox _extent;
 
       private OrthogonalSystem _orthoSys;
@@ -1641,8 +1640,8 @@ namespace Basics.Geom
       }
       private class GagaBuilder
       {
-        private int _dim;
-        private int[] _pos;
+        private readonly int _dim;
+        private readonly int[] _pos;
         public Box GeomExtent;
         public Box ParamExtent;
         public GagaBuilder(int[] pos, Box paramExtent)

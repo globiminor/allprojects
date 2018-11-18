@@ -110,7 +110,7 @@ namespace OCourse.Ext
     private IList<Condition> GetConditions()
     {
       Condition cond = new Condition();
-      cond.Code = _condition[0];
+      cond.Code = (ControlCode)_condition[0];
       cond.Name = _condition.Substring(1);
       return new Condition[] { cond };
     }
@@ -126,7 +126,7 @@ namespace OCourse.Ext
 
     private class Condition
     {
-      public char Code;
+      public ControlCode Code;
       public string Name;
 
       public bool IsTrue(Course course, List<Control> controls)

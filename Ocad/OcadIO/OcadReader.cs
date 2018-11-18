@@ -14,14 +14,14 @@ namespace Ocad
     public class ElementEnumerator : IEnumerator<Element>
     {
       private OcadReader _reader;
-      private bool _disposable;
+      private readonly bool _disposable;
       private Setup _setup;
       private Element _current;
 
       private IList<ElementIndex> _indexList; // List of ElementIndex
 
       private IBox _extent;
-      private bool _projected;
+      private readonly bool _projected;
       private int _iRecord;
 
       public ElementEnumerator(OcadElemsInfo ocad, IBox extentIntersect, bool projected)
@@ -810,26 +810,26 @@ namespace Ocad
         part[0] != CoursePar.ForkStartKey && part[0] != CoursePar.VarStartKey &&
         part[0] != CoursePar.ForkEndKey && part[0] != CoursePar.VarEndKey)
       {
-        if (part[0] == CoursePar.StartKey)
+        if (part[0] == (char)ControlCode.Start)
         { // start
           Control start = new Control();
           sectionList.AddLast(start);
           start.Name = part.Substring(1);
-          start.Code = part[0];
+          start.Code = (ControlCode)part[0];
         }
-        else if (part[0] == CoursePar.ControlKey)
+        else if (part[0] == (char)ControlCode.Control)
         { // control
           Control control = new Control();
           sectionList.AddLast(control);
           control.Name = part.Substring(1);
-          control.Code = part[0];
+          control.Code = (ControlCode)part[0];
         }
-        else if (part[0] == CoursePar.FinishKey)
+        else if (part[0] == (char)ControlCode.Finish)
         { // finish
           Control finish = new Control();
           sectionList.AddLast(finish);
           finish.Name = part.Substring(1);
-          finish.Code = part[0];
+          finish.Code = (ControlCode)part[0];
         }
         else if (part[0] == CoursePar.VariationKey)
         { // variations
@@ -876,26 +876,26 @@ namespace Ocad
           Debug.Assert(nForks < 0 || (nForks == fork.Branches.Count),
             string.Format("Expected {0} branches, got {1}", nForks, fork.Branches.Count));
         }
-        else if (part[0] == CoursePar.MarkedRouteKey) // Pflichtstrecke
+        else if (part[0] == (char)ControlCode.MarkedRoute) // Pflichtstrecke
         {
           Control pflicht = new Control();
           sectionList.AddLast(pflicht);
           pflicht.Name = part.Substring(1);
-          pflicht.Code = part[0];
+          pflicht.Code = (ControlCode)part[0];
         }
-        else if (part[0] == CoursePar.TextBlockKey)
+        else if (part[0] == (char)ControlCode.TextBlock)
         {
           Control textBlock = new Control();
           sectionList.AddLast(textBlock);
           textBlock.Name = part.Substring(1);
-          textBlock.Code = part[0];
+          textBlock.Code = (ControlCode)part[0];
         }
-        else if (part[0] == CoursePar.MapChangeKey)
+        else if (part[0] == (char)ControlCode.MapChange)
         {
           Control mapExc = new Control();
           sectionList.AddLast(mapExc);
           mapExc.Name = part.Substring(1);
-          mapExc.Code = part[0];
+          mapExc.Code = (ControlCode)part[0];
         }
         else if (part[0] == CoursePar.ClimbKey)
         { }

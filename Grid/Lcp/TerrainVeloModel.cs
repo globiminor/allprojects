@@ -8,7 +8,7 @@ namespace Grid.Lcp
     public IDoubleGrid HeightGrid { get; }
     public IGrid<double> VelocityGrid { get; }
 
-    private List<Teleport> _teleports;
+    private readonly List<Teleport> _teleports;
 
     public TerrainVeloModel(IDoubleGrid heightGrid, IGrid<double> velocityGrid)
     {
@@ -133,7 +133,6 @@ namespace Grid.Lcp
     }
   }
 
-  [System.Obsolete("Move")]
   public class BlockModell: IDirCostModel<BlockCell>
   {
     public BlockGrid BlockGrid { get; }
@@ -166,7 +165,7 @@ namespace Grid.Lcp
       return new BlockCell();
     }
   }
-  [System.Obsolete("Move")]
+
   public class BlockCell
   {
 

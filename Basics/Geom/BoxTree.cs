@@ -809,7 +809,7 @@ namespace Basics.Geom
         int origCount = Count;
 
         _count = 0;
-        const bool splitting = true;
+
         foreach (TileEntry entry in InitSplit())
         {
           double dMin = entry.Box.Min[splitDim];

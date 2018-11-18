@@ -9,14 +9,10 @@ namespace Ocad.Data
   {
 
     private OcadConnection _connection;
-    private IsolationLevel _level;
+    private readonly IsolationLevel _level;
     private string _transFile;
     private Ocad9Writer _writer;
     private OcadCommand.DeleteIndices _deletes;
-
-    private bool _inEdit;
-    private bool _startedOperation;
-    private bool _inOperation;
 
     public static OcadTransaction Start(OcadConnection connection,
       IsolationLevel isolationLevel)

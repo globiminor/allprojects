@@ -192,8 +192,7 @@ namespace OCourse.Gui
     {
       foreach (System.Windows.Forms.Control l in Controls)
       {
-        CLabel ll = l as CLabel;
-        if (ll == null)
+        if (!(l is CLabel ll))
         { continue; }
         ll.Clear();
       }
@@ -266,8 +265,7 @@ namespace OCourse.Gui
       }
       _screenPointLast = Point.Empty;
 
-      CLabel end = GetChildAtPoint(e.Location) as CLabel;
-      if (end == null)
+      if (!(GetChildAtPoint(e.Location) is CLabel end))
       {
         _startControl.Clear();
         _startControl = null;
@@ -447,7 +445,7 @@ namespace OCourse.Gui
     {
       Variation.Branch branch = (Variation.Branch)section;
       string legs = branch.GetLegsListToString();
-      Control ctr = new Control(legs, ControlPar.TextDescKey);
+      Control ctr = new Control(legs, ControlCode.TextBlock);
       ctr.Text = string.Format("where {0}", where);
 
       List<SectionsBuilder.IDisplayControl> result = new List<SectionsBuilder.IDisplayControl>();
@@ -469,6 +467,7 @@ namespace OCourse.Gui
       public Control Display { get; }
     }
 
+    [Obsolete("refactor --")]
     public void SetCourse(Course course)
     {
       Controls.Clear();
@@ -486,10 +485,9 @@ namespace OCourse.Gui
 
       SectionCollection list = new SectionCollection();
       list.AddLast(course);
-      Control s = course.First.Value as Control;
-      if (s == null)
+      if (!(course.First.Value is Control s))
       {
-        s = new Control("--", ControlPar.TextDescKey);
+        s = new Control("--", ControlCode.TextBlock);
         list.AddFirst(s);
       }
 
@@ -692,7 +690,7 @@ namespace OCourse.Gui
         base.AutoSize = true;
         SetFont(false);
 
-        if (ctr.Code == ControlPar.TextDescKey)
+        if (ctr.Code == ControlCode.TextBlock)
         {
           if (ctr.Text != null &&
             ctr.Text.StartsWith("where ", StringComparison.InvariantCultureIgnoreCase))
@@ -721,7 +719,7 @@ namespace OCourse.Gui
           Font = new Font(Font, baseStyle | FontStyle.Italic);
           ForeColor = System.Drawing.Color.Blue;
         }
-        else if (Control.Code == ControlPar.TextDescKey)
+        else if (Control.Code == ControlCode.TextBlock)
         {
           Font = new Font(Font, baseStyle | FontStyle.Regular);
           base.ForeColor = System.Drawing.Color.Blue;

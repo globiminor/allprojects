@@ -12,13 +12,6 @@ namespace Ocad.StringParams
     public const char ToStartNumberKey = 'T';
     public const char CourseTypeKey = 'Y';
 
-    public const char StartKey = 's';
-    public const char ControlKey = 'c';
-    public const char FinishKey = 'f';
-    public const char MarkedRouteKey = 'm';
-    public const char TextBlockKey = 't';
-    public const char MapChangeKey = 'g';
-
     public const char ForkKey = 'r';
     public const char ForkStartKey = 'v';
     public const char ForkEndKey = 'q';
@@ -81,7 +74,7 @@ namespace Ocad.StringParams
     {
       if (section is Control cntr)
       {
-        Add(cntr.Code, cntr.Name);
+        Add((char)cntr.Code, cntr.Name);
       }
       else
       {

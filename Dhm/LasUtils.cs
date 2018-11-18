@@ -133,6 +133,8 @@ namespace Dhm
         else
         { forest = true; }
       }
+      if (forest)
+      { }
       if (vegHs.Count > 0)
       {
         double max = 0;

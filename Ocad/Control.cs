@@ -1,10 +1,27 @@
 
+using Basics.Geom;
 using System;
 using System.Collections.Generic;
-using Basics.Geom;
 
 namespace Ocad
 {
+  /// <summary>
+  /// Start: s
+  /// Control: c
+  /// Finish: f
+  /// Pflicht: m
+  /// TextDescription: t
+  /// </summary>
+  public enum ControlCode
+  {
+    Start = 's',
+    Control = 'c',
+    Finish = 'f',
+    MarkedRoute = 'm',
+    TextBlock = 't',
+    MapChange = 'g'
+  }
+
   /// <summary>
   /// Summary description for Control.
   /// </summary>
@@ -22,7 +39,7 @@ namespace Ocad
         string value = values[iValue];
         if (value[0] == 'Y')
         {
-          control.Code = value[1];
+          control.Code = (ControlCode)value[1];
         }
       }
       return control;
@@ -33,7 +50,7 @@ namespace Ocad
       Name = name;
     }
 
-    public Control(string name, char code)
+    public Control(string name, ControlCode code)
     {
       Name = name;
       Code = code;
@@ -60,13 +77,7 @@ namespace Ocad
     }
 
     public string Name { get; set; }
-    /// <summary>
-    /// Start: s
-    /// Control: c
-    /// Finish: f
-    /// Pflicht: m
-    /// </summary>
-    public char Code { get; set; }
+    public ControlCode Code { get; set; }
 
     public int Symbol { get; set; }
 

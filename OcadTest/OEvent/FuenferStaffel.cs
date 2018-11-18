@@ -14,8 +14,6 @@ namespace OcadTest.OEvent
   {
     private class FuenferSettings
     {
-      public string FrontOcdPath;
-      public string RueckOcdPath;
       public string PdfRoot;
       public string OutRoot;
       public string FrontBackground;
@@ -91,37 +89,37 @@ namespace OcadTest.OEvent
           settings.FrontBackground, settings.RueckBackgroud);
       }
       return;
-      {
-        string root = Path.GetDirectoryName(pdfRoot);
-        string exp = string.Format("{0}\\Comb_Kids_2.pdf", root);
-        PdfText.OverprintFrontBack(exp, new string[] {
-          Path.Combine(root, "Kids.2.Front.pdf"),
-          Path.Combine(root, "Kids.2.Rueck.pdf")},
-          settings.FrontBackground, settings.RueckBackgroud);
-      }
-      {
-        string root = Path.GetDirectoryName(pdfRoot);
-        string exp = string.Format("{0}\\Comb_Kids_3.pdf", root);
-        PdfText.OverprintFrontBack(exp, new string[] {
-          Path.Combine(root, "Kids.3.Front.pdf"),
-          Path.Combine(root, "Kids.3.Rueck.pdf")},
-          settings.FrontBackground, settings.RueckBackgroud);
-      }
+      //{
+      //  string root = Path.GetDirectoryName(pdfRoot);
+      //  string exp = string.Format("{0}\\Comb_Kids_2.pdf", root);
+      //  PdfText.OverprintFrontBack(exp, new string[] {
+      //    Path.Combine(root, "Kids.2.Front.pdf"),
+      //    Path.Combine(root, "Kids.2.Rueck.pdf")},
+      //    settings.FrontBackground, settings.RueckBackgroud);
+      //}
+      //{
+      //  string root = Path.GetDirectoryName(pdfRoot);
+      //  string exp = string.Format("{0}\\Comb_Kids_3.pdf", root);
+      //  PdfText.OverprintFrontBack(exp, new string[] {
+      //    Path.Combine(root, "Kids.3.Front.pdf"),
+      //    Path.Combine(root, "Kids.3.Rueck.pdf")},
+      //    settings.FrontBackground, settings.RueckBackgroud);
+      //}
 
-      {
-        string root = Path.GetDirectoryName(pdfRoot);
-        string exp = string.Format("{0}\\Comb_Posten.pdf", root);
-        PdfText.Overprint(null, new string[] {
-          settings.FrontBackground,
-          Path.Combine(root, "PostenNetzFront.pdf")
-          }, exp);
-      }
+      //{
+      //  string root = Path.GetDirectoryName(pdfRoot);
+      //  string exp = string.Format("{0}\\Comb_Posten.pdf", root);
+      //  PdfText.Overprint(null, new string[] {
+      //    settings.FrontBackground,
+      //    Path.Combine(root, "PostenNetzFront.pdf")
+      //    }, exp);
+      //}
 
-      {
-        string root = Path.GetDirectoryName(pdfRoot);
-        string exp = string.Format("{0}\\Comb_Hardwald.pdf", root);
-        PdfText.Overprint(null, new string[] { settings.FrontBackground }, exp);
-      }
+      //{
+      //  string root = Path.GetDirectoryName(pdfRoot);
+      //  string exp = string.Format("{0}\\Comb_Hardwald.pdf", root);
+      //  PdfText.Overprint(null, new string[] { settings.FrontBackground }, exp);
+      //}
     }
 
     [TestMethod]
@@ -164,56 +162,56 @@ namespace OcadTest.OEvent
 
       return;
 
-      List<int[]> pairs = new List<int[]> { new[] { 201, 210 }, new[] { 211, 220 }, new[] { 221, 230 } };
-      foreach (int[] pair in pairs)
-      {
-        List<string> files = new List<string>();
-        for (int n = pair[0]; n <= pair[1]; n++)
-        {
-          files.Add(Path.Combine(pdfRoot, string.Format("Kids.Front_1.pdf", n)));
-          files.Add(Path.Combine(pdfRoot, string.Format("Rueck.Kids-Staffel.{0}.1.pdf", n)));
-          files.Add(Path.Combine(pdfRoot, string.Format("Kids.Front_2.pdf", n)));
-          files.Add(Path.Combine(pdfRoot, string.Format("Rueck.Kids-Staffel.{0}.2.pdf", n)));
-          files.Add(Path.Combine(pdfRoot, string.Format("Kids.Front_3.pdf", n)));
-          files.Add(Path.Combine(pdfRoot, string.Format("Rueck.Kids-Staffel.{0}.3.pdf", n)));
-        }
-        string root = Path.GetDirectoryName(pdfRoot);
-        string exp = Path.Combine(pdfRoot, "Druck", string.Format("Kids_{0}_{1}.pdf", pair[0], pair[1]));
-        PdfText.OverprintFrontBack(exp, files,
-          settings.FrontBackground, settings.RueckBackgroud);
-      }
-      return;
-      {
-        string root = Path.GetDirectoryName(pdfRoot);
-        string exp = string.Format("{0}\\Comb_Kids_2.pdf", root);
-        PdfText.OverprintFrontBack(exp, new string[] {
-          Path.Combine(root, "Kids.2.Front.pdf"),
-          Path.Combine(root, "Kids.2.Rueck.pdf")},
-          settings.FrontBackground, settings.RueckBackgroud);
-      }
-      {
-        string root = Path.GetDirectoryName(pdfRoot);
-        string exp = string.Format("{0}\\Comb_Kids_3.pdf", root);
-        PdfText.OverprintFrontBack(exp, new string[] {
-          Path.Combine(root, "Kids.3.Front.pdf"),
-          Path.Combine(root, "Kids.3.Rueck.pdf")},
-          settings.FrontBackground, settings.RueckBackgroud);
-      }
+      //List<int[]> pairs = new List<int[]> { new[] { 201, 210 }, new[] { 211, 220 }, new[] { 221, 230 } };
+      //foreach (int[] pair in pairs)
+      //{
+      //  List<string> files = new List<string>();
+      //  for (int n = pair[0]; n <= pair[1]; n++)
+      //  {
+      //    files.Add(Path.Combine(pdfRoot, string.Format("Kids.Front_1.pdf", n)));
+      //    files.Add(Path.Combine(pdfRoot, string.Format("Rueck.Kids-Staffel.{0}.1.pdf", n)));
+      //    files.Add(Path.Combine(pdfRoot, string.Format("Kids.Front_2.pdf", n)));
+      //    files.Add(Path.Combine(pdfRoot, string.Format("Rueck.Kids-Staffel.{0}.2.pdf", n)));
+      //    files.Add(Path.Combine(pdfRoot, string.Format("Kids.Front_3.pdf", n)));
+      //    files.Add(Path.Combine(pdfRoot, string.Format("Rueck.Kids-Staffel.{0}.3.pdf", n)));
+      //  }
+      //  string root = Path.GetDirectoryName(pdfRoot);
+      //  string exp = Path.Combine(pdfRoot, "Druck", string.Format("Kids_{0}_{1}.pdf", pair[0], pair[1]));
+      //  PdfText.OverprintFrontBack(exp, files,
+      //    settings.FrontBackground, settings.RueckBackgroud);
+      //}
+      //return;
+      //{
+      //  string root = Path.GetDirectoryName(pdfRoot);
+      //  string exp = string.Format("{0}\\Comb_Kids_2.pdf", root);
+      //  PdfText.OverprintFrontBack(exp, new string[] {
+      //    Path.Combine(root, "Kids.2.Front.pdf"),
+      //    Path.Combine(root, "Kids.2.Rueck.pdf")},
+      //    settings.FrontBackground, settings.RueckBackgroud);
+      //}
+      //{
+      //  string root = Path.GetDirectoryName(pdfRoot);
+      //  string exp = string.Format("{0}\\Comb_Kids_3.pdf", root);
+      //  PdfText.OverprintFrontBack(exp, new string[] {
+      //    Path.Combine(root, "Kids.3.Front.pdf"),
+      //    Path.Combine(root, "Kids.3.Rueck.pdf")},
+      //    settings.FrontBackground, settings.RueckBackgroud);
+      //}
 
-      {
-        string root = Path.GetDirectoryName(pdfRoot);
-        string exp = string.Format("{0}\\Comb_Posten.pdf", root);
-        PdfText.Overprint(null, new string[] {
-          settings.FrontBackground,
-          Path.Combine(root, "PostenNetzFront.pdf")
-          }, exp);
-      }
+      //{
+      //  string root = Path.GetDirectoryName(pdfRoot);
+      //  string exp = string.Format("{0}\\Comb_Posten.pdf", root);
+      //  PdfText.Overprint(null, new string[] {
+      //    settings.FrontBackground,
+      //    Path.Combine(root, "PostenNetzFront.pdf")
+      //    }, exp);
+      //}
 
-      {
-        string root = Path.GetDirectoryName(pdfRoot);
-        string exp = string.Format("{0}\\Comb_Hardwald.pdf", root);
-        PdfText.Overprint(null, new string[] { settings.FrontBackground }, exp);
-      }
+      //{
+      //  string root = Path.GetDirectoryName(pdfRoot);
+      //  string exp = string.Format("{0}\\Comb_Hardwald.pdf", root);
+      //  PdfText.Overprint(null, new string[] { settings.FrontBackground }, exp);
+      //}
     }
 
     private void CreatePdfs2015()
@@ -348,7 +346,6 @@ namespace OcadTest.OEvent
         IList<ElementIndex> indices = w.Reader.GetIndices();
 
         ElementIndex delIndex = null;
-        ElementIndex controlIndex = null;
         Element replaceElem = null;
         foreach (ElementIndex e in indices)
         {

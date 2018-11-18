@@ -410,9 +410,9 @@ namespace OCourse.Ext
             lastControl = control;
           }
 
-          if (control.Code != CoursePar.ControlKey && control.Code != CoursePar.FinishKey)
+          if (control.Code != ControlCode.Control && control.Code != ControlCode.Finish)
           {
-            if ((export & ExportType.Start) == 0 || control.Code != CoursePar.StartKey)
+            if ((export & ExportType.Start) == 0 || control.Code != ControlCode.Start)
             {
               continue;
             }
@@ -587,7 +587,6 @@ namespace OCourse.Ext
     {
       public string Par;
       public StringParamIndex ParIndex;
-      public Element Element;
       public int ElementIndex;
     }
 
@@ -599,7 +598,7 @@ namespace OCourse.Ext
       int variationSymbol = 17010;
 
       Dictionary<string, Element> controlNames = new Dictionary<string, Element>();
-      Dictionary<char, GeometryCollection> symbols = new Dictionary<char, GeometryCollection>();
+      Dictionary<ControlCode, GeometryCollection> symbols = new Dictionary<ControlCode, GeometryCollection>();
       List<Element> titleElements = new List<Element>();
       List<Element> variElements = new List<Element>();
       Element startElem = null;
@@ -633,16 +632,15 @@ namespace OCourse.Ext
         symSetup.PrjTrans.Y = 0;
         foreach (Ocad.Symbol.BaseSymbol symbol in reader.ReadSymbols())
         {
-          Ocad.Symbol.PointSymbol pntSym = symbol as Ocad.Symbol.PointSymbol;
-          if (pntSym == null) continue;
+          if (!(symbol is Ocad.Symbol.PointSymbol pntSym)) continue;
 
           if (symbol.Number == 702000) // Postenkreis
           {
-            symbols.Add(CoursePar.ControlKey, pntSym.GetSymbolGeometry(symSetup));
+            symbols.Add(ControlCode.Control, pntSym.GetSymbolGeometry(symSetup));
           }
           if (symbol.Number == 701000) // Start
           {
-            symbols.Add(CoursePar.StartKey, pntSym.GetSymbolGeometry(symSetup));
+            symbols.Add(ControlCode.Start, pntSym.GetSymbolGeometry(symSetup));
           }
         }
       }
@@ -653,18 +651,17 @@ namespace OCourse.Ext
 
       foreach (ISection section in course)
       {
-        Control control = section as Control;
-        if (control == null) continue;
+        if (!(section is Control control)) continue;
 
         if (startElem != null &&
-          control.Code == CoursePar.StartKey &&
+          control.Code == ControlCode.Start &&
           ((Point)control.Element.Geometry).Dist2((IPoint)startElem.Geometry) < 1)
         {
           control.Element = startElem;
         }
 
         controls.Add(control);
-        if (control.Code != CoursePar.ControlKey) continue;
+        if (control.Code != ControlCode.Control) continue;
 
         controlIdx++;
 
@@ -698,8 +695,7 @@ namespace OCourse.Ext
       List<Grafics> applicableList = new List<Grafics>();
       foreach (ISection section in course)
       {
-        Control control = section as Control;
-        if (control == null) continue;
+        if (!(section is Control control)) continue;
 
         if (pre != null)
         {
@@ -720,7 +716,7 @@ namespace OCourse.Ext
         pre = control;
       }
 
-      Polyline clippedStart = ClipStart(controls[0], controls[controls.Count - 2], setup, symbols[CoursePar.StartKey], symbols[CoursePar.ControlKey]);
+      Polyline clippedStart = ClipStart(controls[0], controls[controls.Count - 2], setup, symbols[ControlCode.Start], symbols[ControlCode.Control]);
 
       File.Copy(fileName, cleanName, true);
       using (Ocad9Writer writer = Ocad9Writer.AppendTo(cleanName))
@@ -771,9 +767,9 @@ namespace OCourse.Ext
     private static Polyline ClipStart(Control startControl, Control lastControl, Setup setup,
       GeometryCollection startSymbol, GeometryCollection controlSymbol)
     {
-      if (lastControl.Code == CoursePar.FinishKey)
+      if (lastControl.Code == ControlCode.Finish)
       { return null; }
-      if (lastControl.Code == CoursePar.MarkedRouteKey)
+      if (lastControl.Code == ControlCode.MarkedRoute)
       { return null; }
 
       Element startElem = startControl.Element;
@@ -993,10 +989,10 @@ namespace OCourse.Ext
           while (current != null)
           {
             Control c = (Control)current.Value;
-            if (c.Code == CoursePar.StartKey)
+            if (c.Code == ControlCode.Start)
             {
               LinkedListNode<ISection> preNode = current.Previous;
-              while (preNode != null && ((Control)preNode.Value).Code != CoursePar.ControlKey)
+              while (preNode != null && ((Control)preNode.Value).Code != ControlCode.Control)
               {
                 preNode = preNode.Previous;
               }
@@ -1088,10 +1084,10 @@ namespace OCourse.Ext
           while (current != null)
           {
             Control c = (Control)current.Value;
-            if (c.Code == CoursePar.StartKey)
+            if (c.Code == ControlCode.Start)
             {
               LinkedListNode<ISection> preNode = current.Previous;
-              while (preNode != null && ((Control)preNode.Value).Code != CoursePar.ControlKey)
+              while (preNode != null && ((Control)preNode.Value).Code != ControlCode.Control)
               {
                 preNode = preNode.Previous;
               }
@@ -1160,19 +1156,19 @@ namespace OCourse.Ext
           SectionTime last = null;
           foreach (Control control in course)
           {
-            if (control.Code == CoursePar.MarkedRouteKey ||
-              control.Code == CoursePar.TextBlockKey)
+            if (control.Code == ControlCode.MarkedRoute ||
+              control.Code == ControlCode.TextBlock)
             {
               continue;
             }
             if (last != null)
             {
               last.ToName = control.Name;
-              if (control.Code == CoursePar.StartKey)
+              if (control.Code == ControlCode.Start)
               {
                 last.IsStart = true;
               }
-              if (control.Code == CoursePar.TextBlockKey)
+              if (control.Code == ControlCode.TextBlock)
               {
                 last.IsPassage = true;
               }
@@ -1285,7 +1281,7 @@ namespace OCourse.Ext
         {
           continue;
         }
-        if (to.Code != CoursePar.ControlKey && to.Code != CoursePar.StartKey && to.Code != CoursePar.FinishKey)
+        if (to.Code != ControlCode.Control && to.Code != ControlCode.Start && to.Code != ControlCode.Finish)
         {
           to = from;
           continue;

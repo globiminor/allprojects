@@ -22,9 +22,6 @@ namespace OCourse.Commands
 
     private bool _disposed;
 
-    private int _customConnectSymId = 704002;
-    private int _connectSymId = 704000;
-
     public CmdCourseTransfer(string exportFile, string templateFile, string origFile)
     {
       _exportFile = exportFile;
@@ -234,7 +231,6 @@ namespace OCourse.Commands
     {
       public string Par;
       public StringParamIndex ParIndex;
-      public Element Element;
       public int ElementIndex;
     }
   }

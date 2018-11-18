@@ -11,7 +11,7 @@ namespace Macro
   public class Processor
   {
     public event ProgressEventHandler Progress;
-    private int _sleep = 200;
+    private readonly int _sleep = 200;
     private Process _currentProc = null;
 
     public static Process InitProcess(string workDir, string execName)
@@ -249,6 +249,7 @@ namespace Macro
 
     private IntPtr WaitNewWindow(string text)
     {
+      DateTime t0 = DateTime.Now;
       for (IntPtr hWnd = Ui.GetForegroundWindow(); true;
         hWnd = Ui.GetForegroundWindow())
       {
@@ -259,6 +260,8 @@ namespace Macro
           return hWnd;
         }
         System.Threading.Thread.Sleep(_sleep);
+        if ((DateTime.Now - t0).TotalSeconds > 60)
+        { break; }
       }
       return IntPtr.Zero;
     }

@@ -39,8 +39,7 @@ namespace Ocad
 
         if (x is Control cx)
         {
-          Control cy = y as Control;
-          if (cy == null)
+          if (!(y is Control cy))
           { return false; }
 
           bool equal = cx.Name == cy.Name;
@@ -544,8 +543,6 @@ namespace Ocad
             int index = 0;
             foreach (Fork.Branch branch in fork.Branches)
             {
-              bool doComb = false;
-
               Control to = (Control)branch.First.Value;
 
               if (validTos.Contains(to.Name))

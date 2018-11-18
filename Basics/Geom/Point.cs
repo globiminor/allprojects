@@ -216,8 +216,7 @@ namespace Basics.Geom
       if (this == other)
       { return true; }
 
-      IPoint o = other as IPoint;
-      if (o == null)
+      if (!(other is IPoint o))
       { return false; }
 
       if (Dimension != o.Dimension)
@@ -345,8 +344,7 @@ namespace Basics.Geom
 
     public override bool Equals(object obj)
     {
-      IPoint cmpr = obj as IPoint;
-      if (cmpr == null)
+      if (!(obj is IPoint cmpr))
       { return false; }
       if (cmpr.Dimension != Dimension)
       { return false; }
@@ -423,8 +421,7 @@ namespace Basics.Geom
 
     public override bool Equals(object obj)
     {
-      Point3D cmpr = obj as Point3D;
-      if (cmpr == null)
+      if (!(obj is Point3D cmpr))
       { return false; }
       if (cmpr.Dimension != Dimension)
       { return false; }
@@ -481,8 +478,7 @@ namespace Basics.Geom
     }
     public override bool Equals(object obj)
     {
-      IPoint cmpr = obj as IPoint;
-      if (cmpr == null)
+      if (!(obj is IPoint cmpr))
       { return false; }
       if (cmpr.Dimension != _dimension)
       { return false; }

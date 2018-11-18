@@ -130,6 +130,7 @@ namespace OCourse.Route
       extent.Max.Y = Math.Ceiling(extent.Max.Y / resolution) * resolution;
     }
 
+    [Obsolete("refactor --")]
     public List<CostSectionlist> CalcCourse(SectionCollection course,
       double resol, Setup setup)
     {
@@ -139,11 +140,11 @@ namespace OCourse.Route
       copy.AddLast(course);
       if (copy.Count > 0 && copy.First.Value as Control == null)
       {
-        copy.AddFirst(new Control("--S", Ocad.StringParams.ControlPar.TextDescKey));
+        copy.AddFirst(new Control("--S", ControlCode.TextBlock));
       }
       if (copy.Count > 0 && copy.Last.Value as Control == null)
       {
-        copy.AddLast(new Control("--Z", Ocad.StringParams.ControlPar.TextDescKey));
+        copy.AddLast(new Control("--Z", ControlCode.TextBlock));
       }
       int legs = copy.LegCount();
       VariationBuilder builder = new VariationBuilder();
@@ -164,7 +165,7 @@ namespace OCourse.Route
           int nStarts = 0;
           foreach (Control ctr in permuts[0].Controls)
           {
-            if (ctr.Code == Ocad.StringParams.ControlPar.TypeStart)
+            if (ctr.Code == ControlCode.Start)
             { nStarts++; }
           }
           if (nStarts == 1)
@@ -218,8 +219,8 @@ namespace OCourse.Route
       {
         IPoint fromP = toP;
 
-        if (to.Code == Ocad.StringParams.CoursePar.TextBlockKey
-          || to.Code == Ocad.StringParams.CoursePar.MapChangeKey)
+        if (to.Code == ControlCode.TextBlock
+          || to.Code == ControlCode.MapChange)
         { continue; }
 
         IPoint point = to.GetPoint();
@@ -376,7 +377,7 @@ namespace OCourse.Route
     }
 
     private List<CostFromTo> _currentCalcList;
-    private object _lock = new object();
+    private readonly object _lock = new object();
     internal void AccessCurrentCalcList(Action<List<CostFromTo>> action)
     {
       lock (_lock)

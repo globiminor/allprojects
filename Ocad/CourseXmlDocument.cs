@@ -340,7 +340,6 @@ namespace Ocad
         //{ continue; }
         //if (legNo == "5")
         //{ legNo = "4"; }
-        const string s = ";";
         string line = GetLineV8(course.Name, string.Format("{0}.{1}", iStartNo, legNo),
           CourseLength(variation), CourseClimb(variation), listWithDummies);
 

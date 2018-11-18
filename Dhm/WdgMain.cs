@@ -22,8 +22,6 @@ namespace Dhm
     private readonly List<int> _ocadFallDirSymbols;
     private Info _infoRow;
 
-    private string _origFile;
-
     private bool _pause = false;
     private bool _break = true;
 

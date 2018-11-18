@@ -26,34 +26,34 @@ namespace OCourse.Gui
       //WdgOCourseBck.SetCourseList(courseFile, lstCourse);
       throw new NotImplementedException();
 
-      string courseDir = Path.GetDirectoryName(courseFile);
-      {
-        string rawDir = Path.Combine(courseDir, RawSubdir);
-        if (Directory.Exists(rawDir))
-        { txtRawDir.Text = rawDir; }
-        else
-        { txtRawDir.Text = ""; }
-      }
-      {
-        string varDir = Path.Combine(courseDir, PartSubdir);
-        if (Directory.Exists(varDir))
-        { txtClean.Text = varDir; }
-        else
-        { txtClean.Text = ""; }
-      }
-      {
-        string comb = Combine(courseFile, "_comb_");
-        txtCleanTemplates.Text = comb;
-      }
-      {
-        string varDir = Path.Combine(courseDir, CatSubdir);
-        if (Directory.Exists(varDir))
-        { txtCategory.Text = varDir; }
-        else
-        { txtCategory.Text = ""; }
-      }
+      //string courseDir = Path.GetDirectoryName(courseFile);
+      //{
+      //  string rawDir = Path.Combine(courseDir, RawSubdir);
+      //  if (Directory.Exists(rawDir))
+      //  { txtRawDir.Text = rawDir; }
+      //  else
+      //  { txtRawDir.Text = ""; }
+      //}
+      //{
+      //  string varDir = Path.Combine(courseDir, PartSubdir);
+      //  if (Directory.Exists(varDir))
+      //  { txtClean.Text = varDir; }
+      //  else
+      //  { txtClean.Text = ""; }
+      //}
+      //{
+      //  string comb = Combine(courseFile, "_comb_");
+      //  txtCleanTemplates.Text = comb;
+      //}
+      //{
+      //  string varDir = Path.Combine(courseDir, CatSubdir);
+      //  if (Directory.Exists(varDir))
+      //  { txtCategory.Text = varDir; }
+      //  else
+      //  { txtCategory.Text = ""; }
+      //}
 
-      SetRawParent();
+      //SetRawParent();
     }
 
     private void SetRawParent()

@@ -11,7 +11,6 @@ namespace Grid.Processors
   public class SchartenhoeheInit : ContainerProcessor
   {
     private readonly IDoubleGrid _grid;
-    private GridTable _gridTable;
 
     public SchartenhoeheInit(IDoubleGrid grid)
     {
@@ -110,7 +109,7 @@ namespace Grid.Processors
     }
     private class CulmPoint : ICulmPoint
     {
-      private IMeshLine _start;
+      private readonly IMeshLine _start;
 
       public CulmPoint(IMeshLine start)
       { _start = start; }
@@ -130,7 +129,7 @@ namespace Grid.Processors
     }
     private class FlatArea : ITopoGeometry
     {
-      private IMeshLine _init;
+      private readonly IMeshLine _init;
       public FlatArea(IMeshLine init)
       {
         _init = init;
@@ -178,7 +177,9 @@ namespace Grid.Processors
         _topoPoints = new Dictionary<IPoint, ITopoPoint>(new PointComparer());
       }
 
-      private RingGrower _ringGrower;
+      private RingGrower _ringGrower_;
+      private RingGrower _ringGrower => _ringGrower_ ?? (_ringGrower_ = new RingGrower(new Geometry.Comparer(new[] { 0, 1 })));
+
       public void ProcessPoints()
       {
         List<ITopoPoint> topoPoints = new List<ITopoPoint>();

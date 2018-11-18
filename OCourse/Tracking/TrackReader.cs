@@ -62,6 +62,7 @@ namespace OCourse.Tracking
         double sec = double.Parse(time[2]);
 
         pnt.Time = new DateTime(year, month, day, hour, min, (int)sec, (int)(sec - (int)sec) * 1000);
+        pnt.Puls = 0;
 
         pntList.Add(pnt);
       }

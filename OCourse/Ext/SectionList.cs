@@ -109,7 +109,9 @@ namespace OCourse.Ext
       sb.AppendFormat("{0}", _preName);
       foreach (NextControl next in _nextControls)
       {
-        if (next.Code != 0)
+        if (next.Control.Code == ControlCode.Start)
+        { sb.Append($";{next.Control.Name}:"); }
+        else if (next.Code != 0)
         { sb.Append(next.Code); }
       }
       return sb.ToString();
@@ -135,7 +137,7 @@ namespace OCourse.Ext
       SectionList current = null;
       foreach (NextControl next in NextControls)
       {
-        if (next.Control.Code == ControlPar.TypeStart)
+        if (next.Control.Code == ControlCode.TextBlock)
         {
           if (current != null)
           {

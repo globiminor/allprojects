@@ -72,8 +72,8 @@ namespace OCourse.Ext
       private int _max;
       public int MaxControl { get { return _max; } }
 
-      private State _state;
-      private string _parsed;
+      private readonly State _state;
+      private readonly string _parsed;
 
       public WhereInfo(string where, SectionList permut)
       {
@@ -832,18 +832,19 @@ namespace OCourse.Ext
         return variation;
       }
 
+      [Obsolete("rebuild ++,--")]
       public PermutationBuilder(SectionCollection course)
       {
         SectionCollection init = course;
         if (!(init.First.Value is Control))
         {
           init = course.Clone();
-          init.AddFirst(new Control("++", ControlPar.TextDescKey));
+          init.AddFirst(new Control("++", ControlCode.TextBlock));
         }
         if (!(init.Last.Value is Control))
         {
           init = course.Clone();
-          init.AddLast(new Control("--", ControlPar.TextDescKey));
+          init.AddLast(new Control("--", ControlCode.TextBlock));
         }
 
         _course = init;
@@ -853,7 +854,7 @@ namespace OCourse.Ext
     private class LegBuilder : Builder
     {
       private SectionCollection _course;
-      private int _leg;
+      private readonly int _leg;
 
       protected override Control StartControl { get { return (Control)_course.First.Value; } }
       protected override Control EndControl { get { return (Control)_course.Last.Value; } }

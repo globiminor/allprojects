@@ -390,8 +390,7 @@ namespace OCourse.Gui
       if (col.DataPropertyName != nameof(item.Name))
       { return; }
 
-      IInfo info = item as IInfo;
-      if (info == null)
+      if (!(item is IInfo info))
       { return; }
 
       string toolTip = info.GetInfo();
@@ -513,16 +512,13 @@ namespace OCourse.Gui
     {
       if (cell == null)
       { return null; }
-      DataView v = cell.DataGridView.DataSource as DataView;
-      if (v == null)
+      if (!(cell.DataGridView.DataSource is DataView v))
       { return null; }
       if (cell.RowIndex > v.Count || cell.RowIndex < 0)
       { return null; }
-      DataRowView vRow = cell.DataGridView.Rows[cell.RowIndex].DataBoundItem as DataRowView;
-      if (vRow == null)
+      if (!(cell.DataGridView.Rows[cell.RowIndex].DataBoundItem is DataRowView vRow))
       { return null; }
-      IList<SectionList> parts = vRow[0] as IList<SectionList>;
-      if (parts == null)
+      if (!(vRow[0] is IList<SectionList> parts))
       { return null; }
       int idx = cell.ColumnIndex - 2; // startNrCol und indexCol
       if (idx < 0)
@@ -553,9 +549,7 @@ namespace OCourse.Gui
       SectionList.EqualControlNamesComparer cmp = new SectionList.EqualControlNamesComparer();
       foreach (DataGridViewRow gRow in dgvInfo.Rows)
       {
-        CostSectionlist comb = gRow.DataBoundItem as CostSectionlist;
-
-        if (comb == null)
+        if (!(gRow.DataBoundItem is CostSectionlist comb))
         { continue; }
 
 
@@ -678,8 +672,7 @@ namespace OCourse.Gui
       {
         if (control.Element == null)
         { continue; }
-        IPoint p = control.Element.Geometry as IPoint;
-        if (p == null)
+        if (!(control.Element.Geometry is IPoint p))
         { continue; }
 
         control.Element.Geometry = control.Element.Geometry.Project(setup.Map2Prj);
@@ -797,8 +790,7 @@ namespace OCourse.Gui
       {
         if (!row.Selected)
         { continue; }
-        ICost comb = row.DataBoundItem as ICost;
-        if (comb == null)
+        if (!(row.DataBoundItem is ICost comb))
         { continue; }
 
         yield return comb;
@@ -820,7 +812,7 @@ namespace OCourse.Gui
       { dgvPermut.ResumeLayout(); }
     }
 
-    private void btnExportPermut_Click(object sender, EventArgs e)
+    private void BtnExportPermut_Click(object sender, EventArgs e)
     {
       if (_vm == null)
       { return; }

@@ -446,7 +446,7 @@ namespace Grid.Lcp
         }
 
         throw new NotImplementedException();
-        hasBlocks = true;
+        //hasBlocks = true;
       }
 
       return next;

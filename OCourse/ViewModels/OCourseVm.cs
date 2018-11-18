@@ -472,8 +472,7 @@ namespace OCourse.ViewModels
 
     public bool SetSelectionedComb(object selection)
     {
-      CostSectionlist vRow = selection as CostSectionlist;
-      if (vRow == null)
+      if (!(selection is CostSectionlist vRow))
       { return false; }
 
       SectionList comb = vRow.Sections;
@@ -915,7 +914,6 @@ namespace OCourse.ViewModels
 
     internal void PermutationsExport()
     {
-      double length = -1;
       foreach (DataRowView vRow in Permutations)
       {
         object x = vRow.Row["All"];
@@ -950,8 +948,7 @@ namespace OCourse.ViewModels
               if (c.Element != null)
               {
                 IGeometry geom = c.Element.Geometry.Project(_setup.Map2Prj);
-                IPoint p1 = geom as IPoint;
-                if (p1 == null)
+                if (!(geom is IPoint p1))
                 {
                   Polyline l = geom as Polyline;
                   p1 = l.Points.First.Value;

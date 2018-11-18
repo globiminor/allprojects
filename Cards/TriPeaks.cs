@@ -84,7 +84,6 @@ namespace Cards
 
       public override IEnumerable<Move> GetPossibleMoves()
       {
-        int freeCols = 0;
         TriPeaks stand = GetCurrent(this);
         List<Move> moves = new List<Move>();
 
@@ -244,15 +243,6 @@ namespace Cards
       private readonly Move _lastMove;
       private TriPeaks _triPeaks;
 
-      private bool? _straitInterrupt;
-      private bool? _equalSuite;
-      private bool? _enlargeStrait;
-      private bool? _nearInvariant;
-
-      private Card _fromCard;
-      private Card _toCard;
-      private Card _remainCard;
-
       public MoveQuality(Stand<Move> stand)
       {
         _stand = stand;
@@ -307,8 +297,7 @@ namespace Cards
         if (obj == this)
         { return true; }
 
-        Position o = obj as Position;
-        if (o == null)
+        if (!(obj is Position o))
         { return false; }
 
         return Col == o.Col && Row == o.Row;

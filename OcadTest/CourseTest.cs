@@ -86,11 +86,11 @@ namespace OcadTest
     {
       Course course = new Course("Test");
 
-      course.AddLast(new Control("S1", CoursePar.StartKey));
-      course.AddLast(new Control("31", CoursePar.ControlKey));
-      course.AddLast(new Control("32", CoursePar.ControlKey));
-      course.AddLast(new Control("33", CoursePar.ControlKey));
-      course.AddLast(new Control("Z1", CoursePar.FinishKey));
+      course.AddLast(new Control("S1", ControlCode.Start));
+      course.AddLast(new Control("31", ControlCode.Control));
+      course.AddLast(new Control("32", ControlCode.Control));
+      course.AddLast(new Control("33", ControlCode.Control));
+      course.AddLast(new Control("Z1", ControlCode.Finish));
 
       List<SimpleSection> sects = course.GetAllSections();
       Assert.IsNotNull(sects);
@@ -102,17 +102,17 @@ namespace OcadTest
     {
       Course course = new Course("Test");
 
-      course.AddLast(new Control("S1", CoursePar.StartKey));
+      course.AddLast(new Control("S1", ControlCode.Start));
       Variation var = new Variation();
-      Control c31 = new Control("31", CoursePar.ControlKey);
-      Control c32 = new Control("32", CoursePar.ControlKey);
-      Control c33 = new Control("33", CoursePar.ControlKey);
+      Control c31 = new Control("31", ControlCode.Control);
+      Control c32 = new Control("32", ControlCode.Control);
+      Control c33 = new Control("33", ControlCode.Control);
       Variation.Branch var1 = new Variation.Branch(new int[] { 1 }, new Control[] { c31 });
       Variation.Branch var2 = new Variation.Branch(new int[] { 2 }, new Control[] { c32, c33 });
       var.Branches.Add(var1);
       var.Branches.Add(var2);
       course.AddLast(var);
-      course.AddLast(new Control("Z1", CoursePar.FinishKey));
+      course.AddLast(new Control("Z1", ControlCode.Finish));
 
       List<SimpleSection> sects = course.GetAllSections();
       Assert.AreEqual(5, sects.Count);
