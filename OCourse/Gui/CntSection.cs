@@ -281,13 +281,13 @@ namespace OCourse.Gui
 
       Dictionary<NextControl, NextControlList> nextDict = Clone(_nextDict);
       List<SectionList> permuts = new List<SectionList>();
-      SectionList permut = new SectionList(_startControl.Control);
+      SectionList permut = new SectionList(new  NextControl(_startControl.Control));
       NextControl startNext = new NextControl(_startControl.Control);
       NextControl endNext = new NextControl(_endControl.Control);
       GetPermuts(permut, nextDict, startNext, endNext, permuts);
       if (permuts.Count == 0)
       {
-        permut = new SectionList(_startControl.Control);
+        permut = new SectionList(new NextControl(_startControl.Control));
         permut.Add(new NextControl(_endControl.Control));
         permuts.Add(permut);
       }

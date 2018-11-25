@@ -1,8 +1,7 @@
+using Ocad;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Ocad;
-using Ocad.StringParams;
 
 namespace OCourse.Ext
 {
@@ -25,10 +24,6 @@ namespace OCourse.Ext
         {
           return false;
         }
-        if (x._start.Name != y._start.Name)
-        {
-          return false;
-        }
         for (int i = 0; i < n; i++)
         {
           if (x._nextControls[i].Control.Name != y._nextControls[i].Control.Name)
@@ -41,41 +36,35 @@ namespace OCourse.Ext
 
       public int GetHashCode(SectionList obj)
       {
-        return obj._start.Name.GetHashCode();
+        return obj._nextControls[0].Control.Name.GetHashCode();
       }
     }
 
-    private Control _start;
     private readonly List<VariationBuilder.WhereInfo> _wheres = new List<VariationBuilder.WhereInfo>();
     private readonly List<NextControl> _nextControls = new List<NextControl>();
 
     private string _preName;
 
-    public SectionList(Control start)
+    public SectionList(NextControl start)
     {
-      _start = start;
+      _nextControls.Add(start);
     }
-    public Control Start
-    { get { return _start; } }
 
     public int ControlsCount
     {
-      get { return 1 + _nextControls.Count; }
+      get { return _nextControls.Count; }
     }
 
     public IEnumerable<Control> Controls
     {
       get
       {
-        yield return _start;
+        foreach (NextControl next in _nextControls)
         {
-          foreach (NextControl next in _nextControls)
-          {
-            int nInter = next.Inter.Count - 1;
-            for (int i = 0; i < nInter; i++)
-            { yield return next.Inter[i]; }
-            yield return next.Control;
-          }
+          int nInter = next.Inter.Count - 1;
+          for (int i = 0; i < nInter; i++)
+          { yield return next.Inter[i]; }
+          yield return next.Control;
         }
       }
     }
@@ -84,11 +73,8 @@ namespace OCourse.Ext
     {
       get
       {
-        yield return new NextControl(_start);
-        {
-          foreach (NextControl next in _nextControls)
-          { yield return next; }
-        }
+        foreach (NextControl next in _nextControls)
+        { yield return next; }
       }
     }
 
@@ -109,9 +95,7 @@ namespace OCourse.Ext
       sb.AppendFormat("{0}", _preName);
       foreach (NextControl next in _nextControls)
       {
-        if (next.Control.Code == ControlCode.Start)
-        { sb.Append($";{next.Control.Name}:"); }
-        else if (next.Code != 0)
+        if (next.Code != 0)
         { sb.Append(next.Code); }
       }
       return sb.ToString();
@@ -137,13 +121,13 @@ namespace OCourse.Ext
       SectionList current = null;
       foreach (NextControl next in NextControls)
       {
-        if (next.Control.Code == ControlCode.TextBlock)
+        if (next.Control.Code == ControlCode.Start)
         {
           if (current != null)
           {
             parts.Add(current);
           }
-          current = new SectionList(next.Control);
+          current = new SectionList(next);
         }
         else
         {
@@ -153,7 +137,7 @@ namespace OCourse.Ext
           }
           else
           { // funny course !?!
-            current = new SectionList(next.Control);
+            current = new SectionList(next);
           }
         }
       }
@@ -163,7 +147,9 @@ namespace OCourse.Ext
 
     public SectionList Clone()
     {
-      SectionList clone = new SectionList(_start);
+      SectionList clone = new SectionList(_nextControls[0]);
+      clone._nextControls.Clear();
+
       clone._nextControls.AddRange(_nextControls);
       clone._wheres.AddRange(_wheres);
       return clone;
@@ -212,7 +198,7 @@ namespace OCourse.Ext
         }
         if (course.Last == null || ((Control)course.Last.Value).Name != add.Name)
         {
-          course.AddLast(add);          
+          course.AddLast(add);
         }
       }
       return course;
@@ -226,10 +212,9 @@ namespace OCourse.Ext
     public Control GetControl(int i)
     {
       if (i < 0)
-      { i = _nextControls.Count + 1 + i; }
+      { i = _nextControls.Count + i; }
 
-      if (i == 0) return Start;
-      return _nextControls[i - 1].Control;
+      return _nextControls[i].Control;
     }
     public NextControl Add(NextControl nextControl)
     {
@@ -253,7 +238,7 @@ namespace OCourse.Ext
     public int CountExisting(Control from, Control to)
     {
       int count = 0;
-      Control c1 = Start;
+      Control c1 = null;
       foreach (NextControl nextControl in _nextControls)
       {
         Control c0 = c1;

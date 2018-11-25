@@ -1,9 +1,8 @@
+using Ocad;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Text;
-using Ocad;
-using Ocad.StringParams;
 
 namespace OCourse.Ext
 {
@@ -124,7 +123,7 @@ namespace OCourse.Ext
         if (where.Contains("leg"))
         {
           int leg = 0;
-          Control start = sections.Start;
+          Control start = sections.GetControl(0);
           foreach (Control ctr in sections.Controls)
           {
             if (ctr == start)
@@ -533,7 +532,7 @@ namespace OCourse.Ext
         public PermutInfo(PermutationBuilder parent)
         {
           _parent = parent;
-          _sections = new SectionList(parent.StartControl);
+          _sections = new SectionList(new NextControl(parent.StartControl));
         }
 
         public SectionList Sections { get { return _sections; } }
@@ -553,7 +552,7 @@ namespace OCourse.Ext
 
         public NextControl AddBestNext(Control last, IList<NextControl> nexts)
         {
-          _parent.EvaluateNexts(_sections, last, nexts, false, 
+          _parent.EvaluateNexts(_sections, last, nexts, false,
             out Dictionary<char, List<NextWhere>> variations, out Dictionary<char, InvalidType> invalids);
 
           if (_parent._stats == null)
@@ -629,10 +628,10 @@ namespace OCourse.Ext
         if (_course.Count == 0)
         { return 0; }
 
-        SectionList permut = new SectionList(StartControl);
+        SectionList permut = new SectionList(new NextControl(StartControl));
         List<SectionList> validList = new List<SectionList>();
 
-        GetVariations(permut, StartControl, true, true, validList);
+        GetVariations(permut, true, true, validList);
 
         if (validList.Count == 0)
         { return 0; }
@@ -640,7 +639,7 @@ namespace OCourse.Ext
         SectionList def = validList[0];
 
         int nEstimate = 1;
-        SectionList estimate = new SectionList(def.GetControl(0));
+        SectionList estimate = new SectionList(new NextControl(def.GetControl(0)));
         int iCtr = 0;
         while (iCtr < def.ControlsCount)
         {
@@ -816,13 +815,13 @@ namespace OCourse.Ext
 
       private SectionList GetVariation()
       {
-        SectionList permut = new SectionList(StartControl);
+        SectionList permut = new SectionList(new NextControl(StartControl));
         string countExpr = GetCountExpression(_course);
         WhereInfo countWhere = new WhereInfo(countExpr, permut);
         permut.Add(countWhere);
         List<SectionList> variations = new List<SectionList>();
 
-        GetVariations(permut, StartControl, true, true, variations);
+        GetVariations(permut, true, true, variations);
 
         SectionList variation;
         if (variations.Count == 1)
@@ -869,13 +868,13 @@ namespace OCourse.Ext
       {
         List<SectionList> validList = new List<SectionList>();
 
-        SectionList permut = new SectionList(StartControl);
+        SectionList permut = new SectionList(new NextControl(StartControl));
         for (int i = 1; i < _leg; i++)
         {
           permut.Add(StartNext);
         }
 
-        GetVariations(permut, StartControl, false, false, validList);
+        GetVariations(permut, false, false, validList);
 
         foreach (SectionList permutation in validList)
         {
@@ -939,13 +938,13 @@ namespace OCourse.Ext
         if (_course.Count == 0)
         { return new List<SectionList>(); }
 
-        SectionList permut = new SectionList(StartControl);
+        SectionList permut = new SectionList(new NextControl(StartControl));
         string countExpr = GetCountExpression(_course);
         WhereInfo countWhere = new WhereInfo(countExpr, permut);
         permut.Add(countWhere);
         List<SectionList> validList = new List<SectionList>();
 
-        GetVariations(permut, StartControl, true, false, validList);
+        GetVariations(permut, true, false, validList);
 
         return validList;
 
@@ -1061,7 +1060,7 @@ namespace OCourse.Ext
       protected Dictionary<char, NextWhere> GetPossibleNexts(SectionList pre,
         Control from, IList<NextControl> nexts, bool verifyFull)
       {
-        EvaluateNexts(pre, from, nexts, verifyFull, 
+        EvaluateNexts(pre, from, nexts, verifyFull,
           out Dictionary<char, List<NextWhere>> variations, out Dictionary<char, InvalidType> invalids);
 
         foreach (char code in invalids.Keys)
@@ -1134,11 +1133,12 @@ namespace OCourse.Ext
         return exists;
       }
 
-      protected void GetVariations(SectionList variation, Control start,
+      protected void GetVariations(SectionList variation,
         bool allLegs, bool oneOnly, List<SectionList> valids)
       {
+        Control start = variation.GetControl(variation.ControlsCount - 1);
         Dictionary<char, NextWhere> variations = GetPossibleNexts(variation,
-          start, NextControls[start].List, false);
+          start, NextControls[start].List, verifyFull: false);
 
         List<NextWhere> sorted = Sort(variation, start, variations.Values);
         foreach (NextWhere next in sorted)
@@ -1269,7 +1269,7 @@ namespace OCourse.Ext
           if (state == WhereInfo.State.Failed)
           { return where; }
         }
-        if (from == null) from = sections.Start;
+        if (from == null) from = sections.GetControl(0);
         SimpleSection newSection = new SimpleSection(from, next.Control);
         if (sections.CountExisting(from, next.Control) >= SectionCount[newSection])
         {
