@@ -130,7 +130,6 @@ namespace OCourse.Route
       extent.Max.Y = Math.Ceiling(extent.Max.Y / resolution) * resolution;
     }
 
-    [Obsolete("refactor --")]
     public List<CostSectionlist> CalcCourse(SectionCollection course,
       double resol, Setup setup)
     {
@@ -138,23 +137,15 @@ namespace OCourse.Route
       { return null; }
       SectionCollection copy = new SectionCollection();
       copy.AddLast(course);
-      if (copy.Count > 0 && copy.First.Value as Control == null)
-      {
-        copy.AddFirst(new Control("--S", ControlCode.TextBlock));
-      }
-      if (copy.Count > 0 && copy.Last.Value as Control == null)
-      {
-        copy.AddLast(new Control("--Z", ControlCode.TextBlock));
-      }
       int legs = copy.LegCount();
-      VariationBuilder builder = new VariationBuilder();
+      VariationBuilder builder = new VariationBuilder(course);
       builder.VariationAdded += Builder_VariationAdded;
       List<SectionList> allPermuts = new List<SectionList>();
       if (legs > 1)
       {
         for (int i = 1; i <= legs; i++)
         {
-          allPermuts.AddRange(builder.AnalyzeLeg(copy, i));
+          allPermuts.AddRange(builder.AnalyzeLeg(i));
         }
       }
       else

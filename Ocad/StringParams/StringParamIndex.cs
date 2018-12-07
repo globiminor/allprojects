@@ -5,12 +5,15 @@ namespace Ocad.StringParams
     Control = 1,
     Course = 2,
     Class = 3,
+    // TextBlock = 31,
 
     CourseView = 7,
     Template = 8,
     Color = 9,
 
     LayoutObject = 27,
+
+    TextBlock = 31,
 
     DisplayPar = 1024,
     PrintPar = 1026,

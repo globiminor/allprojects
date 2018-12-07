@@ -2,7 +2,9 @@ using Ocad;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace OCourse.Ext
 {
@@ -10,27 +12,102 @@ namespace OCourse.Ext
   {
     public delegate void VariationEventHandler(object sender, SectionList variation);
     public event VariationEventHandler VariationAdded;
-    public List<SectionList> BuildPermutations(SectionCollection course, int nPermutations)
+
+    private readonly SectionCollection _origCourse;
+
+    private readonly SectionCollection _course;
+    private readonly Control _startWrapper;
+    private readonly Control _endWrapper;
+
+    public VariationBuilder(SectionCollection course)
     {
-      PermutationBuilder builder = new PermutationBuilder(course);
+      _origCourse = course;
+
+      SectionCollection init = course;
+      if (!(init.First.Value is Control))
+      {
+        init = init.Clone();
+        _startWrapper = GetWrapperControl("++", init);
+        init.AddFirst(_startWrapper);
+      }
+      if (!(init.Last.Value is Control))
+      {
+        init = init.Clone();
+        _endWrapper = GetWrapperControl("--", init);
+        init.AddLast(_endWrapper);
+      }
+
+      _course = init;
+    }
+    public List<SectionList> BuildPermutations(int nPermutations)
+    {
+      PermutationBuilder builder = new PermutationBuilder(_course);
       builder.VariationAdded += Builder_VariationAdded;
       List<SectionList> permutations = builder.BuildPermutations(nPermutations);
+
+      permutations = GetReduced(permutations);
 
       return permutations;
     }
 
-    public IReadOnlyList<SimpleSection> GetSimpleSections(SectionCollection course)
+    private List<SectionList> GetReduced(List<SectionList> permutations)
     {
-      PermutationBuilder builder = new PermutationBuilder(course);
+      if (_startWrapper == null && _endWrapper == null)
+      { return permutations; }
+
+      List<SectionList> reduceds = new List<SectionList>();
+      IList<Control> toRemove = new[] { _startWrapper, _endWrapper };
+      foreach (var variation in permutations)
+      {
+        SectionList reduced = RemoveControls(variation, toRemove);
+        reduceds.Add(reduced);
+      }
+
+      return reduceds;
+    }
+
+
+    private Control GetWrapperControl(string template, SectionCollection course)
+    {
+      string key = template;
+
+      List<SimpleSection> sections = course.GetAllSections();
+      Dictionary<string, Control> controls = new Dictionary<string, Control>();
+      foreach (SimpleSection section in sections)
+      {
+        controls[section.From.Name] = section.From;
+        controls[section.To.Name] = section.To;
+      }
+
+      int i = 0;
+      while (controls.ContainsKey(key))
+      {
+        key = $"{template}_{i}";
+        i++;
+      }
+
+      return new Control(key, ControlCode.TextBlock);
+    }
+
+    public IReadOnlyList<SimpleSection> GetSimpleSections()
+    {
+      PermutationBuilder builder = new PermutationBuilder(_course);
       return builder.SimpleSections;
     }
 
-    public List<SectionList> AnalyzeLeg(SectionCollection course, int leg)
+    public List<SectionList> AnalyzeLeg(int leg)
     {
-      LegBuilder builder = new LegBuilder(course, leg);
+      LegBuilder builder = new LegBuilder(_course, leg);
       builder.VariationAdded += Builder_VariationAdded;
 
       List<SectionList> permuts = builder.Analyze();
+
+      permuts = GetReduced(permuts);
+      foreach (SectionList permutation in permuts)
+      {
+        permutation.SetLeg(leg);
+      }
+
       return permuts;
     }
     public List<SectionList> Analyze(SectionCollection course)
@@ -42,9 +119,9 @@ namespace OCourse.Ext
       return permuts;
     }
 
-    public int EstimatePermutations(SectionCollection course)
+    public int EstimatePermutations()
     {
-      PermutationBuilder builder = new PermutationBuilder(course);
+      PermutationBuilder builder = new PermutationBuilder(_course);
 
       int permuts = builder.Estimate();
       return permuts;
@@ -55,7 +132,32 @@ namespace OCourse.Ext
       VariationAdded?.Invoke(this, variation);
     }
 
-    public class WhereInfo
+    private static SectionList RemoveControls(SectionList variation, IList<Control> removes)
+    {
+      SectionList reduced = null;
+      foreach (NextControl control in variation.NextControls)
+      {
+        if (removes.Contains(control.Control))
+        { continue; }
+
+        if (reduced == null)
+        { reduced = new SectionList(control); }
+        else
+        { reduced.Add(control); }
+      }
+      return reduced;
+    }
+
+    internal interface ILegController
+    {
+      bool IsPartStart(NextControl ctr);
+      bool IsPartEnd(NextControl ctr);
+
+      bool IsLegEnd(NextControl ctr);
+      bool IsLegStart(NextControl ctr);
+    }
+
+    internal class WhereInfo
     {
       public static WhereInfo Failed = new WhereInfo(State.Failed);
       public static WhereInfo FulFilled = new WhereInfo(State.Fulfilled);
@@ -71,11 +173,15 @@ namespace OCourse.Ext
       private int _max;
       public int MaxControl { get { return _max; } }
 
+      private readonly NextControl _nextControl;
       private readonly State _state;
       private readonly string _parsed;
+      private readonly ILegController _legController;
 
-      public WhereInfo(string where, SectionList permut)
+      public WhereInfo(ILegController legController, string where, SectionList permut)
       {
+        _legController = legController;
+        _nextControl = permut.GetNextControl(permut.ControlsCount - 1);
         _state = GetState(where, permut, out string parsed);
 
         _parsed = parsed;
@@ -104,6 +210,18 @@ namespace OCourse.Ext
         return state;
       }
 
+      private string Replace(string s, Match match, string replace)
+      {
+        return $"{s.Substring(0, match.Index)}{replace}{s.Substring(match.Index + match.Length)}";
+      }
+
+      public const string Leg = "Leg";
+      public const string PartControls = "PartControls";
+      public const string LegControls = "LegControls";
+
+      private static readonly List<string> _keys = new List<string> { Leg, PartControls, LegControls };
+      public static IReadOnlyList<string> Keywords => _keys;
+
       private State GetState(string where, SectionList sections, out string parse)
       {
         parse = where;
@@ -120,17 +238,51 @@ namespace OCourse.Ext
           _whereView = new DataView(whereTbl);
         }
 
-        if (where.Contains("leg"))
+        RegexOptions opts = RegexOptions.IgnoreCase;
+
         {
-          int leg = 0;
-          Control start = sections.GetControl(0);
-          foreach (Control ctr in sections.Controls)
+          string sLeg = null;
+          while (true)
           {
-            if (ctr == start)
-            { leg++; }
+            Match match = Regex.Match(where, $@"\b({Leg})\b", opts);
+            if (!match.Success) break;
+            if (sLeg == null)
+            {
+              int leg = 0;
+              Control start = sections.GetControl(0);
+              foreach (Control ctr in sections.Controls)
+              {
+                if (ctr == start)
+                { leg++; }
+              }
+              sLeg = leg.ToString();
+            }
+            where = Replace(where, match, sLeg);
           }
-          where = where.Replace("leg", leg.ToString());
         }
+        {
+          string partControls = null;
+          while (true)
+          {
+            Match match = Regex.Match(where, $@"\b({PartControls})\b", opts);
+            if (!match.Success) break;
+            if (partControls == null && !GetPartControls(sections, _nextControl, out partControls)) break;
+
+            where = Replace(where, match, partControls);
+          }
+        }
+        {
+          string legControls = null;
+          while (true)
+          {
+            Match match = Regex.Match(where, $@"\b({LegControls})\b", opts);
+            if (!match.Success) break;
+            if (legControls == null && !GetLegControls(sections, _nextControl, out legControls)) break;
+
+            where = Replace(where, match, legControls);
+          }
+        }
+
         StringBuilder parsed = new StringBuilder();
         for (int idx = where.IndexOf("["); idx >= 0; idx = where.IndexOf("["))
         {
@@ -177,6 +329,14 @@ namespace OCourse.Ext
         {
           return State.Unknown;
         }
+        if (Regex.Match(where, $@"\b({PartControls})\b", opts).Success)
+        {
+          return State.Unknown;
+        }
+        if (Regex.Match(where, $@"\b({LegControls})\b", opts).Success)
+        {
+          return State.Unknown;
+        }
         _whereView.RowFilter = parse;
         if (_whereView.Count == 1)
         {
@@ -186,6 +346,71 @@ namespace OCourse.Ext
         {
           return State.Failed;
         }
+      }
+
+      private bool GetPartControls(SectionList sections, NextControl control, out string partControls)
+      {
+        List<Control> currentPart = null;
+        bool isControlInCurrentPart = false;
+        foreach (NextControl ctr in sections.NextControls)
+        {
+          if (_legController.IsPartStart(ctr))
+          {
+            if (isControlInCurrentPart) { return GetControlsInList(currentPart, out partControls); }
+            currentPart = null;
+          }
+          currentPart = currentPart ?? new List<Control>();
+          currentPart.Add(ctr.Control);
+          if (ctr == control)
+          {
+            isControlInCurrentPart = true;
+          }
+
+          if (_legController.IsPartEnd(ctr))
+          {
+            if (isControlInCurrentPart) { return GetControlsInList(currentPart, out partControls); }
+            currentPart = null;
+          }
+        }
+        partControls = null;
+        return false;
+      }
+      private bool GetLegControls(SectionList sections, NextControl control, out string legControls)
+      {
+        List<Control> currentLeg = null;
+        bool isControlInCurrentPart = false;
+        foreach (NextControl ctr in sections.NextControls)
+        {
+          if (_legController.IsLegStart(ctr))
+          {
+            if (isControlInCurrentPart) { return GetControlsInList(currentLeg, out legControls); }
+            currentLeg = null;
+          }
+          currentLeg = currentLeg ?? new List<Control>();
+          currentLeg.Add(ctr.Control);
+          if (ctr == control)
+          {
+            isControlInCurrentPart = true;
+          }
+
+          if (_legController.IsLegEnd(ctr))
+          {
+            if (isControlInCurrentPart) { return GetControlsInList(currentLeg, out legControls); }
+            currentLeg = null;
+          }
+        }
+        legControls = null;
+        return false;
+      }
+      private bool GetControlsInList(List<Control> controls, out string partControls)
+      {
+        StringBuilder sb = new StringBuilder("(");
+        foreach (Control control in controls)
+        { sb.Append($"'{control.Name}',"); }
+        sb.Remove(sb.Length - 1, 1);
+        sb.Append(")");
+        partControls = sb.ToString();
+        return true;
       }
     }
 
@@ -207,7 +432,7 @@ namespace OCourse.Ext
           StringBuilder sb = new StringBuilder();
 
           sb.Append(Sections.GetControl(0).Name);
-          for (int i = 0; i < Position; i++)
+          for (int i = 1; i <= Position; i++)
           {
             sb.AppendFormat(" {0}", Sections.GetNextControl(i).Control.Name);
           }
@@ -216,8 +441,8 @@ namespace OCourse.Ext
 
         private int GetPreviousSplit(int start)
         {
-          int i = start - 1;
-          while (i >= 0)
+          int i = start;
+          while (i > 0)
           {
             NextControl next = Sections.GetNextControl(i);
             if (next.Code != 0)
@@ -236,8 +461,8 @@ namespace OCourse.Ext
 
           while (posX >= 0 && posY >= 0)
           {
-            NextControl x = Sections.GetNextControl(posX);
-            NextControl y = other.Sections.GetNextControl(posY);
+            NextControl x = Sections.GetNextControl(posX + 1);
+            NextControl y = other.Sections.GetNextControl(posY + 1);
 
             int d = x.Control.Name.CompareTo(y.Control.Name);
             if (d != 0)
@@ -254,7 +479,7 @@ namespace OCourse.Ext
 
         public NextControl GetNextControl()
         {
-          return Sections.GetNextControl(Position - 1);
+          return Sections.GetNextControl(Position);
         }
       }
       private class Index
@@ -444,19 +669,77 @@ namespace OCourse.Ext
           if (nexts.Count < 2)
           { return; }
 
-          List<CommonInfo> commons = GetCommons(variation, iSplit, nexts);
-          commons.Sort(new CommonCpr(variation, split, _controlDict));
-          nexts.Clear();
-          foreach (CommonInfo common in commons)
+          int iPermut = 0;
+          foreach (var val in _controlDict.Values)
           {
-            nexts.Add(common.Next);
+            iPermut = val.Count;
+            break;
+          }
+          int splitSize = _controlDict[split][0].Count;
+          List<int> order = GetEvalOrder(splitSize, iPermut);
+          order.Reverse();
+
+          Dictionary<NextWhere, NextWhere> evalNexts = new Dictionary<NextWhere, NextWhere>();
+          foreach (NextWhere next in nexts)
+          { evalNexts.Add(next, next); }
+          List<NextWhere> sorted = new List<NextWhere>();
+          foreach (int iEval in order)
+          {
+            if (evalNexts.Count <= 1)
+            { break; }
+            if (iEval <= iSplit)
+            { continue; }
+            if (iEval - 1 == iSplit)
+            { break; }
+
+            List<CommonInfo> evalCommons = GetCommons(variation, iEval - 1, evalNexts.Keys);
+            evalCommons.Sort(new CommonCpr(variation, split, _controlDict));
+
+            sorted.Add(evalCommons[0].Next);
+            evalNexts.Remove(evalCommons[0].Next);
+          }
+
+          if (evalNexts.Count > 1)
+          {
+            List<CommonInfo> commons = GetCommons(variation, iSplit, evalNexts.Keys);
+            commons.Sort(new CommonCpr(variation, split, _controlDict));
+            commons.Reverse();
+
+            sorted.AddRange(commons.Select(x => x.Next));
+          }
+          else
+          { sorted.Add(evalNexts.Keys.First()); }
+          sorted.Reverse();
+
+          nexts.Clear();
+          nexts.AddRange(sorted);
+        }
+
+        private static List<int> GetEvalOrder(int splitSize, int iPermut)
+        {
+          int x = iPermut / splitSize;
+          int y = iPermut % splitSize;
+
+          if (splitSize > 1)
+          {
+            List<int> inner = GetEvalOrder(splitSize - 1, x);
+            for (int i = 0; i < inner.Count; i++)
+            {
+              inner[i] = (inner[i] + y) % splitSize + 1;
+            }
+            inner.Add(y + 1);
+            return inner;
+          }
+          else
+          {
+            return new List<int> { 1 };
           }
         }
 
         private List<CommonInfo> GetCommons(SectionList variation, int iSplit,
-          List<NextWhere> nexts)
+          IEnumerable<NextWhere> nexts)
         {
-          List<CommonInfo> commons = new List<CommonInfo>(nexts.Count);
+          List<CommonInfo> commons = new List<CommonInfo>();
           foreach (NextWhere next in nexts)
           {
             List<SplitInfo> existing = GetExisting(next.Next);
@@ -474,8 +757,8 @@ namespace OCourse.Ext
 
               while (posVar >= 0 && posExist >= 0)
               {
-                NextControl nextVar = variation.GetNextControl(posVar);
-                NextControl nextExits = secExist.GetNextControl(posExist);
+                NextControl nextVar = variation.GetNextControl(posVar + 1);
+                NextControl nextExits = secExist.GetNextControl(posExist + 1);
 
                 if (nextVar.Control != nextExits.Control)
                 { break; }
@@ -582,7 +865,6 @@ namespace OCourse.Ext
         }
       }
       private SectionCollection _course;
-
       private class Stat
       {
         private readonly Dictionary<char, List<NextWhere>> _fullVariations;
@@ -618,6 +900,36 @@ namespace OCourse.Ext
             }
           }
           throw new InvalidOperationException("No valid variation found");
+        }
+      }
+      private class Statistics
+      {
+        private List<SectionList> _current;
+        private object _currentStat;
+        public void AddNext(SectionList permutation, NextWhere nextWhere, List<SectionList> permuts)
+        {
+          Init(permuts);
+          permutation.Add(nextWhere.Next);
+        }
+
+        public List<NextWhere> Sort(List<SectionList> permuts, Control last, IEnumerable<NextWhere> values)
+        {
+          Init(permuts);
+
+          List<NextWhere> nexts = new List<NextWhere>(values);
+          if (nexts.Count <= 1)
+          { return nexts; }
+
+          return nexts;
+        }
+
+        private void Init(List<SectionList> permuts)
+        {
+          if (_current != permuts)
+          {
+            _currentStat = new object();
+            _current = permuts;
+          }
         }
       }
 
@@ -665,7 +977,7 @@ namespace OCourse.Ext
           }
 
           if (iCtr < def.ControlsCount - 1)
-          { estimate.Add(def.GetNextControl(iCtr)); }
+          { estimate.Add(def.GetNextControl(iCtr + 1)); }
           iCtr++;
         }
 
@@ -735,37 +1047,6 @@ namespace OCourse.Ext
         return fullSections;
       }
 
-      private class Statistics
-      {
-        private List<SectionList> _current;
-        private object _currentStat;
-        public void AddNext(SectionList permutation, NextWhere nextWhere, List<SectionList> permuts)
-        {
-          Init(permuts);
-          permutation.Add(nextWhere.Next);
-        }
-
-        public List<NextWhere> Sort(List<SectionList> permuts, Control last, IEnumerable<NextWhere> values)
-        {
-          Init(permuts);
-
-          List<NextWhere> nexts = new List<NextWhere>(values);
-          if (nexts.Count <= 1)
-          { return nexts; }
-
-          return nexts;
-        }
-
-        private void Init(List<SectionList> permuts)
-        {
-          if (_current != permuts)
-          {
-            _currentStat = new object();
-            _current = permuts;
-          }
-        }
-      }
-
       protected override Control StartControl { get { return (Control)_course.First.Value; } }
       protected override Control EndControl { get { return (Control)_course.Last.Value; } }
 
@@ -810,6 +1091,7 @@ namespace OCourse.Ext
           variations.Add(variation);
           _index.Add(variation);
         }
+
         return variations;
       }
 
@@ -817,7 +1099,7 @@ namespace OCourse.Ext
       {
         SectionList permut = new SectionList(new NextControl(StartControl));
         string countExpr = GetCountExpression(_course);
-        WhereInfo countWhere = new WhereInfo(countExpr, permut);
+        WhereInfo countWhere = new WhereInfo(this, countExpr, permut);
         permut.Add(countWhere);
         List<SectionList> variations = new List<SectionList>();
 
@@ -831,22 +1113,9 @@ namespace OCourse.Ext
         return variation;
       }
 
-      [Obsolete("rebuild ++,--")]
       public PermutationBuilder(SectionCollection course)
       {
-        SectionCollection init = course;
-        if (!(init.First.Value is Control))
-        {
-          init = course.Clone();
-          init.AddFirst(new Control("++", ControlCode.TextBlock));
-        }
-        if (!(init.Last.Value is Control))
-        {
-          init = course.Clone();
-          init.AddLast(new Control("--", ControlCode.TextBlock));
-        }
-
-        _course = init;
+        _course = course;
       }
     }
 
@@ -871,17 +1140,12 @@ namespace OCourse.Ext
         SectionList permut = new SectionList(new NextControl(StartControl));
         for (int i = 1; i < _leg; i++)
         {
-          permut.Add(StartNext);
+          permut.Add(new NextControl(StartControl));
         }
 
         GetVariations(permut, false, false, validList);
 
-        foreach (SectionList permutation in validList)
-        {
-          permutation.SetLeg(_leg);
-        }
         return validList;
-
       }
 
       protected override List<SimpleSection> GetSections()
@@ -940,7 +1204,7 @@ namespace OCourse.Ext
 
         SectionList permut = new SectionList(new NextControl(StartControl));
         string countExpr = GetCountExpression(_course);
-        WhereInfo countWhere = new WhereInfo(countExpr, permut);
+        WhereInfo countWhere = new WhereInfo(this, countExpr, permut);
         permut.Add(countWhere);
         List<SectionList> validList = new List<SectionList>();
 
@@ -974,14 +1238,13 @@ namespace OCourse.Ext
       }
     }
 
-    private abstract class Builder
+    private abstract class Builder : ILegController
     {
       public event VariationEventHandler VariationAdded;
 
       private List<SimpleSection> _sections;
       private Dictionary<Control, NextControlList> _nextControls;
       private Dictionary<SimpleSection, int> _sectionCount;
-      private NextControl _startNext;
 
       protected abstract Control StartControl { get; }
       protected abstract Control EndControl { get; }
@@ -1038,15 +1301,12 @@ namespace OCourse.Ext
           return _sectionCount;
         }
       }
-      protected NextControl StartNext
-      {
-        get
-        {
-          if (_startNext == null)
-          { _startNext = new NextControl(StartControl); }
-          return _startNext;
-        }
-      }
+
+      bool ILegController.IsPartStart(NextControl ctr) { return ctr.Control.Code == ControlCode.Start; }
+      bool ILegController.IsPartEnd(NextControl ctr) { return ctr.Control.Code == ControlCode.Finish || ctr.Control.Code == ControlCode.MapChange; }
+
+      bool ILegController.IsLegStart(NextControl ctr) { return ctr.Control == StartControl; }
+      bool ILegController.IsLegEnd(NextControl ctr) { return ctr.Control == EndControl; }
 
       protected string GetCountExpression(SectionCollection course)
       {
@@ -1164,7 +1424,7 @@ namespace OCourse.Ext
         {
           variation.Add(current);
           if (currentWhere == null && current.Where != null)
-          { currentWhere = new WhereInfo(current.Where, variation); }
+          { currentWhere = new WhereInfo(this, current.Where, variation); }
           variation.Add(currentWhere);
           WhereInfo.State state = variation.GetState();
           if (state == WhereInfo.State.Failed)
@@ -1190,7 +1450,7 @@ namespace OCourse.Ext
           if (current == null)
           {
             nextVariation = nextVariation.Clone();
-            nextVariation.Add(StartNext);
+            nextVariation.Add(new NextControl(StartControl));
           }
           Dictionary<char, NextWhere> nextsDict = GetPossibleNexts(nextVariation, split, nextList.List, false);
 
@@ -1209,7 +1469,7 @@ namespace OCourse.Ext
 
             if (current == null)
             {
-              current = StartNext;
+              current = new NextControl(StartControl);
               variation.Add(current);
             }
 
@@ -1264,7 +1524,7 @@ namespace OCourse.Ext
         WhereInfo where = WhereInfo.FulFilled;
         if (next.Where != null)
         {
-          where = new WhereInfo(next.Where, sections);
+          where = new WhereInfo(this, next.Where, sections);
           WhereInfo.State state = where.GetState(sections);
           if (state == WhereInfo.State.Failed)
           { return where; }

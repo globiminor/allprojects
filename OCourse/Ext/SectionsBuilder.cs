@@ -41,8 +41,8 @@ namespace OCourse.Ext
 
     private Dictionary<SimpleSection, List<SimpleSection>> GetUniqueSections(SectionCollection course)
     {
-      VariationBuilder v = new VariationBuilder();
-      IReadOnlyList<SimpleSection> allSections = v.GetSimpleSections(course);
+      VariationBuilder v = new VariationBuilder(course);
+      IReadOnlyList<SimpleSection> allSections = v.GetSimpleSections();
       return GetUniqueSections(allSections);
     }
     private Dictionary<SimpleSection, List<SimpleSection>> GetUniqueSections(IEnumerable<SimpleSection> sections)

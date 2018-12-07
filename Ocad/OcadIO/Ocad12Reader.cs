@@ -207,6 +207,22 @@ namespace Ocad
       if (match == null)
       { }
 
+      if (control.Code == ControlCode.TextBlock)
+      {
+        foreach (StringParamIndex idx in settingIndexList)
+        {
+          if (idx.Type == StringType.TextBlock)
+          {
+            TextBlockPar par = new TextBlockPar(ReadStringParam(idx));
+            if (par.Code == control.Name)
+            {
+              control.Text = par.TextDesc;
+              break;
+            }
+          }
+        }
+      }
+
       control.Element = match;
       return match;
     }

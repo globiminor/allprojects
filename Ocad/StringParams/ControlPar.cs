@@ -42,4 +42,27 @@ namespace Ocad.StringParams
     }
 
   }
+
+  public class TextBlockPar : MultiParam
+  {
+    public const char CodeKey = 'a';
+    public const char TextKey = 't';
+
+    public TextBlockPar(string para)
+      : base(para)
+    { }
+
+    public string Code
+    {
+      get { return GetString(CodeKey); }
+      set { SetParam(CodeKey, value); }
+    }
+
+    public string TextDesc
+    {
+      get { return GetString(TextKey); }
+      set { SetParam(TextKey, value); }
+    }
+
+  }
 }

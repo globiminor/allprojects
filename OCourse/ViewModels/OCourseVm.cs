@@ -194,8 +194,8 @@ namespace OCourse.ViewModels
           if (_course != null)
           {
             InitHeightVelo();
-            VariationBuilder v = new VariationBuilder();
-            PermutEstimate = v.EstimatePermutations(_course);
+            VariationBuilder v = new VariationBuilder(_course);
+            PermutEstimate = v.EstimatePermutations();
           }
           else
           {
@@ -900,9 +900,9 @@ namespace OCourse.ViewModels
         int max = StartNrMax;
         if (min > max) throw new ArgumentException("Min.StartNr > Max.StartNr");
 
-        VariationBuilder builder = new VariationBuilder();
+        VariationBuilder builder = new VariationBuilder(course);
         builder.VariationAdded += Builder_VariationAdded;
-        pb = new PermutationBuilder(this, builder, course, min, max);
+        pb = new PermutationBuilder(this, builder, min, max);
       }
       catch
       {
@@ -1132,24 +1132,22 @@ namespace OCourse.ViewModels
     {
       private readonly OCourseVm _parent;
       private readonly VariationBuilder _builder;
-      private readonly Course _course;
       private readonly int _min;
       private readonly int _max;
 
       private IList<SectionList> _permuts;
 
-      public PermutationBuilder(OCourseVm parent, VariationBuilder builder, Course course, int min, int max)
+      public PermutationBuilder(OCourseVm parent, VariationBuilder builder, int min, int max)
       {
         _parent = parent;
         _builder = builder;
-        _course = course;
         _min = min;
         _max = max;
       }
 
       public bool Start()
       {
-        _permuts = _builder.BuildPermutations(_course, _max - _min + 1);
+        _permuts = _builder.BuildPermutations(_max - _min + 1);
         return true;
       }
 

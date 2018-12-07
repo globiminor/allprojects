@@ -155,7 +155,7 @@ namespace OCourse.Ext
       return clone;
     }
 
-    public VariationBuilder.WhereInfo.State GetState()
+    internal VariationBuilder.WhereInfo.State GetState()
     {
       if (_wheres.Count == 0)
       { return VariationBuilder.WhereInfo.State.Fulfilled; }
@@ -212,7 +212,9 @@ namespace OCourse.Ext
     public Control GetControl(int i)
     {
       if (i < 0)
-      { i = _nextControls.Count + i; }
+      {
+        i = _nextControls.Count - (-i % _nextControls.Count);
+      }
 
       return _nextControls[i].Control;
     }
@@ -222,7 +224,7 @@ namespace OCourse.Ext
       return nextControl;
     }
 
-    public VariationBuilder.WhereInfo Add(VariationBuilder.WhereInfo where)
+    internal VariationBuilder.WhereInfo Add(VariationBuilder.WhereInfo where)
     {
       if (where == null)
       { return null; }

@@ -1,12 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using Grid;
 using Basics.Geom;
+using Grid;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Ocad;
-using Ocad.StringParams;
 using OCourse.Ext;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Diagnostics;
 
 namespace OcadTest
 {
@@ -48,7 +48,7 @@ namespace OcadTest
       byte[] r = new byte[256];
       byte[] g = new byte[256];
       byte[] b = new byte[256];
-      for (int i = 0; i < 256;i++)
+      for (int i = 0; i < 256; i++)
       { r[i] = (byte)i; g[i] = (byte)i; b[i] = (byte)i; }
 
       string dir = @"D:\daten\felix\kapreolo\karten\chaeferberg\2012\GlattalOL2012\";
@@ -121,6 +121,29 @@ namespace OcadTest
     }
 
     [TestMethod]
+    public void WhereTests()
+    {
+      DataTable tbl = new DataTable();
+      tbl.Columns.Add("Control");
+      tbl.Columns.Add("Where");
+
+      tbl.Rows.Add(new[] { "57", "('57','58')" });
+      tbl.AcceptChanges();
+
+      DataView view = new DataView(tbl);
+      view.RowFilter = "Control NOT IN ('57','58')";
+      bool success;
+      try
+      {
+        view.RowFilter = "Control NOT IN WHERE";
+        success = true;
+      }
+      catch
+      { success = false; }
+      Assert.IsFalse(success);
+    }
+
+    [TestMethod]
     public void PerformanceTest()
     {
       Course course;
@@ -129,10 +152,10 @@ namespace OcadTest
       {
         course = reader.ReadCourse("Staffel4");
       }
-      VariationBuilder b = new VariationBuilder();
+      VariationBuilder b = new VariationBuilder(course);
       Stopwatch w = new Stopwatch();
       w.Start();
-      b.BuildPermutations(course, 200);
+      b.BuildPermutations(200);
       w.Stop();
       Console.WriteLine(w.Elapsed.TotalSeconds);
     }
