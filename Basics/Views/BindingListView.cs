@@ -17,18 +17,28 @@ namespace Basics.Views
 
     void BindingListView_ListChanged(object sender, ListChangedEventArgs e)
     {
-      if (_originalListValue == null || _originalListValue.Count == 0)
+      if (_originalList == null || _originalList.Count == 0)
       {
-        _originalListValue = new List<T>(Items);
+        _originalList = new List<T>(Items);
       }
     }
 
-    private List<T> _originalListValue = new List<T>();
-    public List<T> OriginalList
+    private List<T> _originalList = new List<T>();
+    public List<T> OriginalList => _originalList;
+
+    public List<PropertyDescriptor> GetItemPropertiesCore()
     {
-      get
-      { return _originalListValue; }
+      PropertyDescriptorCollection properties =
+          TypeDescriptor.GetProperties(typeof(T));
+      List<PropertyDescriptor> descriptors = new List<PropertyDescriptor>();
+
+      foreach (PropertyDescriptor prop in properties)
+      {
+        descriptors.Add(prop);
+      }
+      return descriptors;
     }
+
     #region Searching
 
     protected override bool SupportsSearchingCore
@@ -117,12 +127,15 @@ namespace Basics.Views
           IComparer<object> cmp = null;
 
           PropertyDescriptor prop = propDir.PropertyDescriptor;
-          foreach (Attribute attr in prop.Attributes)
+          if (prop.Attributes != null)
           {
-            if (attr is SortAttribute sortAttr && sortAttr.ComparerType != null)
+            foreach (Attribute attr in prop.Attributes)
             {
-              object oCmp = Activator.CreateInstance(sortAttr.ComparerType);
-              cmp = oCmp as IComparer<object>;
+              if (attr is SortAttribute sortAttr && sortAttr.ComparerType != null)
+              {
+                object oCmp = Activator.CreateInstance(sortAttr.ComparerType);
+                cmp = oCmp as IComparer<object>;
+              }
             }
           }
 
@@ -285,7 +298,7 @@ namespace Basics.Views
 
         if (_sorts != null && _sorts.Count > 0)
         {
-          if (filtered == _originalListValue)
+          if (filtered == _originalList)
           {
             filtered = new List<T>(filtered); // To avoid override of _originalListValue
           }
@@ -311,7 +324,7 @@ namespace Basics.Views
     private List<T> GetFiltered(string filterValue)
     {
       if (string.IsNullOrEmpty(filterValue))
-      { return _originalListValue; }
+      { return _originalList; }
 
       List<PropertyInfo> filterProperties = new List<PropertyInfo>();
       foreach (PropertyInfo prop in typeof(T).GetProperties())
@@ -321,7 +334,7 @@ namespace Basics.Views
           filterProperties.Add(prop);
         }
       }
-      List<T> filtered = new List<T>(_originalListValue.Count);
+      List<T> filtered = new List<T>(_originalList.Count);
       using (DataTable filterTable = new DataTable())
       {
         foreach (PropertyInfo prop in filterProperties)
@@ -340,7 +353,7 @@ namespace Basics.Views
         {
           filterView.RowFilter = filterValue;
 
-          foreach (T item in _originalListValue)
+          foreach (T item in _originalList)
           {
             foreach (PropertyInfo prop in filterProperties)
             {
@@ -411,14 +424,10 @@ namespace Basics.Views
 
   public class SortAttribute : Attribute
   {
-    private readonly Type _comparerType;
     public SortAttribute(Type comparerType)
     {
-      _comparerType = comparerType;
+      ComparerType = comparerType;
     }
-    public Type ComparerType
-    {
-      get { return _comparerType; }
-    }
+    public Type ComparerType { get; }
   }
 }

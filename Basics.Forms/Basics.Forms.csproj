@@ -48,6 +48,7 @@
     <Compile Include="CntCustomFilter.Designer.cs">
       <DependentUpon>CntCustomFilter.cs</DependentUpon>
     </Compile>
+    <Compile Include="DataGridViewUtils.cs" />
     <Compile Include="FilterHeaderCell.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

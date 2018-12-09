@@ -7,8 +7,18 @@ namespace OCourse.Ext
 {
   public class SectionList
   {
-    public class NameComparer : IComparer<SectionList>
+    public class NameComparer : IComparer<SectionList>, IComparer<object>
     {
+      int IComparer<object>.Compare(object x, object y)
+      {
+        SectionList sx = x as SectionList;
+        SectionList sy = y as SectionList;
+        if (sx == sy) return 0;
+        if (sx == null) return 1;
+        if (sy == null) return -1;
+
+        return Compare(sx, sy);
+      }
       public int Compare(SectionList x, SectionList y)
       {
         return x.GetName().CompareTo(y.GetName());
@@ -69,14 +79,7 @@ namespace OCourse.Ext
       }
     }
 
-    public IEnumerable<NextControl> NextControls
-    {
-      get
-      {
-        foreach (NextControl next in _nextControls)
-        { yield return next; }
-      }
-    }
+    public IReadOnlyList<NextControl> NextControls => _nextControls;
 
     public string PreName
     {
@@ -115,7 +118,7 @@ namespace OCourse.Ext
       return full;
     }
 
-    public IList<SectionList> GetParts()
+    public List<SectionList> GetParts()
     {
       List<SectionList> parts = new List<SectionList>();
       SectionList current = null;

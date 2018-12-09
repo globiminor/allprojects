@@ -211,7 +211,8 @@ namespace Ocad
       int heightMM = BaseReader.ReadInt32();
       elem.Height = heightMM / 1000.0;
 
-      elem.Geometry = ReadGeometry(elem.Type, nPoint);
+      List<Coord> coords = ReadCoords(nPoint);
+      elem.Geometry = GetGeometry(elem.Type, coords);
       if (nText > 0)
       { elem.Text = BaseReader.ReadUnicodeString(); }
 
@@ -436,35 +437,36 @@ namespace Ocad
     {
       Symbol.SymbolGraphics elem = new Symbol.SymbolGraphics
       { Type = (Symbol.SymbolGraphicsType)BaseReader.ReadInt16() };
-      int iFlags = BaseReader.ReadInt16();
-      elem.RoundEnds = ((iFlags & 1) == 1);
+      int flags = BaseReader.ReadInt16();
+      elem.RoundEnds = ((flags & 1) == 1);
       elem.Color = BaseReader.ReadInt16();
       elem.LineWidth = BaseReader.ReadInt16();
 
-      int iDiameter = BaseReader.ReadInt16();
-      int iNPoints = BaseReader.ReadInt16();
+      int diameter = BaseReader.ReadInt16();
+      int nPoints = BaseReader.ReadInt16();
 
       BaseReader.ReadInt16(); // Reserved
       BaseReader.ReadInt16(); // Reserved
 
-      nData = 2 + iNPoints;
+      nData = 2 + nPoints;
+
+      List<Coord> coords = ReadCoords(nPoints);
 
       if (elem.Type == Symbol.SymbolGraphicsType.Line)
-      { elem.Geometry = ReadGeometry(GeomType.line, iNPoints); }
+      { elem.Geometry = GetGeometry(GeomType.line, coords); }
       else if (elem.Type == Symbol.SymbolGraphicsType.Area)
-      { elem.Geometry = ReadGeometry(GeomType.area, iNPoints); }
+      { elem.Geometry = GetGeometry(GeomType.area, coords); }
       else if (elem.Type == Symbol.SymbolGraphicsType.Circle ||
         elem.Type == Symbol.SymbolGraphicsType.Dot)
       {
-        Debug.Assert(iNPoints == 1);
-        Point pCenter = (Point)ReadGeometry(GeomType.point, iNPoints);
-        Arc pArc = new Arc(pCenter, 0.5 * iDiameter, 0, 2 * Math.PI);
-        Polyline pCircle = new Polyline();
-        pCircle.Add(pArc);
+        Point center = (Point)GetGeometry(GeomType.point, coords);
+        Arc arc = new Arc(center, 0.5 * diameter, 0, 2 * Math.PI);
+        Polyline circle = new Polyline();
+        circle.Add(arc);
         if (elem.Type == Symbol.SymbolGraphicsType.Circle)
-        { elem.Geometry = pCircle; }
+        { elem.Geometry = circle; }
         else if (elem.Type == Symbol.SymbolGraphicsType.Dot)
-        { elem.Geometry = new Area(pCircle); }
+        { elem.Geometry = new Area(circle); }
         else
         { throw new NotImplementedException(elem.Type.ToString()); }
       }

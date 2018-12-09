@@ -163,8 +163,8 @@ namespace OCourse.Gui
       }
     }
 
-    private DataView _permutations;
-    public DataView Permutations
+    private PermutationVms _permutations;
+    public PermutationVms Permutations
     {
       get { return _permutations; }
       set
@@ -182,41 +182,43 @@ namespace OCourse.Gui
           if (_permutations == null)
           { return; }
 
-          DataTable permutTbl = _permutations.Table;
           {
             DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn
             {
-              DataPropertyName = OCourseVm._startNrName,
+              DataPropertyName = nameof(PermutationVm.StartNr),
               HeaderText = "StartNr"
             };
             col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             col.Width = 50;
+            FilterHeaderCell.CreateCore(col);
             dgvPermut.Columns.Add(col);
           }
           {
             DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn
             {
-              DataPropertyName = OCourseVm._indexName,
+              DataPropertyName = nameof(PermutationVm.Index),
               HeaderText = "Index",
               Width = 50
             };
             col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            FilterHeaderCell.CreateCore(col);
             dgvPermut.Columns.Add(col);
           }
 
-          int nPartName = OCourseVm._partName.Length;
-          foreach (DataColumn column in permutTbl.Columns)
+          if (_permutations.Count > 0)
           {
-            if (!column.ColumnName.StartsWith(OCourseVm._partName))
+            int iPart = 0;
+            foreach (SectionList part in _permutations[0].Parts)
             {
-              continue;
+              DataGridViewColumn col = new DataGridViewTextBoxColumn
+              {
+                DataPropertyName = PermutationVms.GetPartPropertyName(iPart),
+                HeaderText = $"Part {iPart + 1}"
+              };
+              FilterHeaderCell.CreateCore(col);
+              dgvPermut.Columns.Add(col);
+              iPart++;
             }
-            DataGridViewColumn col = new DataGridViewTextBoxColumn
-            {
-              DataPropertyName = column.ColumnName,
-              HeaderText = string.Format("{0} {1}", "Part", column.ColumnName.Substring(nPartName))
-            };
-            dgvPermut.Columns.Add(col);
           }
         }
         finally
@@ -510,24 +512,7 @@ namespace OCourse.Gui
 
     private SectionList GetPart(DataGridViewCell cell)
     {
-      if (cell == null)
-      { return null; }
-      if (!(cell.DataGridView.DataSource is DataView v))
-      { return null; }
-      if (cell.RowIndex > v.Count || cell.RowIndex < 0)
-      { return null; }
-      if (!(cell.DataGridView.Rows[cell.RowIndex].DataBoundItem is DataRowView vRow))
-      { return null; }
-      if (!(vRow[0] is IList<SectionList> parts))
-      { return null; }
-      int idx = cell.ColumnIndex - 2; // startNrCol und indexCol
-      if (idx < 0)
-      { return null; }
-      if (parts.Count <= idx)
-      { return null; }
-
-      SectionList part = parts[idx];
-      return part;
+      return cell?.Value as SectionList;
     }
 
     void DgvPermut_CellToolTipTextNeeded(object sender, DataGridViewCellToolTipTextNeededEventArgs e)
@@ -817,7 +802,18 @@ namespace OCourse.Gui
       if (_vm == null)
       { return; }
 
-      _vm.PermutationsExport();
+      string exportFile;
+      using (SaveFileDialog dlg = new SaveFileDialog())
+      {
+        dlg.Title = "Append to File";
+        dlg.OverwritePrompt = false;
+        if (dlg.ShowDialog(this) != DialogResult.OK)
+        { return; }
+
+        exportFile = dlg.FileName;
+      }
+
+        _vm.PermutationsExport(DataGridViewUtils.GetSelectedItems(dgvPermut), exportFile);
     }
 
 

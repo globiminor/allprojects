@@ -41,7 +41,8 @@ namespace Ocad
 
       BaseReader.ReadByte();
 
-      elem.Geometry = ReadGeometry(elem.Type, nPoint);
+      List<Coord> coords = ReadCoords(nPoint);
+      elem.Geometry = GetGeometry(elem.Type, coords);
       if (nText > 0)
       { elem.Text = BaseReader.ReadUnicodeString(); }
       if (nObjectString > 0)

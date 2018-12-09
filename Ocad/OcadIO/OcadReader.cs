@@ -417,97 +417,111 @@ namespace Ocad
 
     public abstract Element ReadElement();
 
-    protected IGeometry ReadGeometry(GeomType type, int nPoint)
+    protected List<Coord> ReadCoords(int nPoints)
     {
-      Coord pCoord = ReadCoord();
+      List<Coord> coords = new List<Coord>(nPoints);
+      for (int iPoint = 0; iPoint < nPoints; iPoint++)
+      {
+        coords.Add(ReadCoord());
+      }
+      return coords;
+    }
 
+    public static IGeometry GetGeometry(GeomType type, IList<Coord> coords)
+    {
       if (type == GeomType.point || type == GeomType.unformattedText ||
         type == GeomType.formattedText)
       {
-        if (nPoint == 1)
-        { return pCoord.GetPoint(); }
+        if (coords.Count == 1)
+        { return coords[0].GetPoint(); }
         else
         {
-          PointCollection pPoints = new PointCollection
-          { pCoord.GetPoint() };
-          for (int iPoint = 1; iPoint < nPoint; iPoint++)
-          { pPoints.Add(ReadCoord().GetPoint()); }
-          return pPoints;
+          PointCollection points = new PointCollection();
+          foreach (Coord coord in coords)
+          { points.Add(coord.GetPoint()); }
+          return points;
         }
       }
       else if (type == GeomType.line || type == GeomType.lineText)
       {
-        Polyline pLine = ReadPolyline(ref pCoord, ref nPoint);
-        Debug.Assert(nPoint == 0);
-        return pLine;
+        Polyline line = GetPolyline(coords);
+        return line;
       }
       else if (type == GeomType.rectangle)
       {
-        Polyline pLine = ReadPolyline(ref pCoord, ref nPoint);
-        Debug.Assert(nPoint == 0);
-        return pLine;
+        Polyline line = GetPolyline(coords);
+        return line;
       }
       else if (type == GeomType.area)
       {
-        Area pArea = new Area(ReadPolyline(ref pCoord, ref nPoint));
-        while (nPoint > 0) // read holes / inner rings
-        { pArea.Border.Add(ReadPolyline(ref pCoord, ref nPoint)); }
+        Area pArea = GetArea(coords);
         return pArea;
       }
       else
       { // unknown geometry type
-        for (int iPoint = 1; iPoint < nPoint; iPoint++)
-        { ReadCoord(); }
         return null;
       }
     }
 
-    protected Polyline ReadPolyline(ref Coord pCoord, ref int nPoint)
+    public static Area GetArea(IList<Coord> coords)
     {
-      int iPoint = 1;
-      Point p0;
-      Polyline pLine = new Polyline();
+      int iPoint = 0;
+      Area pArea = new Area(GetPolylineCore(coords, ref iPoint));
+      while (iPoint < coords.Count) // read holes / inner rings
+      { pArea.Border.Add(GetPolylineCore(coords, ref iPoint)); }
+      return pArea;
+    }
+    public static Polyline GetPolyline(IList<Coord> coords)
+    {
+      int iPoint = 0;
+      Polyline line = GetPolylineCore(coords, ref iPoint);
 
-      p0 = pCoord.GetPoint();
-      while (iPoint < nPoint)
+      if (coords.Count != iPoint)
+      { throw new InvalidOperationException($"Expected Points {coords.Count} <> {iPoint}"); }
+
+      return line;
+    }
+    private static Polyline GetPolylineCore(IList<Coord> coords, ref int iPoint)
+    {
+      int nPoints = coords.Count;
+      Point p0;
+      Polyline line = new Polyline();
+
+      p0 = coords[iPoint].GetPoint();
+      iPoint++;
+      while (iPoint < nPoints)
       {
-        Curve pSeg;
+        Curve seg;
         Point p1;
 
-        Coord pCoord1 = ReadCoord();
-        if (pCoord1.IsNewRing)
+        Coord coord1 = coords[iPoint];
+        if (coord1.IsNewRing)
         {
-          pCoord = pCoord1;
           break;
         }
 
         iPoint++;
-        if (pCoord1.IsBezier)
+        if (coord1.IsBezier)
         {
-          Coord pCoord2 = ReadCoord();
+          Coord coord2 = coords[iPoint];
           iPoint++;
-          Coord pCoord3 = ReadCoord();
+          Coord coord3 = coords[iPoint];
           iPoint++;
-          p1 = pCoord3.GetPoint();
-          pSeg = new Bezier(p0, pCoord1.GetPoint(),
-            pCoord2.GetPoint(), p1);
-
-          pCoord = pCoord3;
+          p1 = coord3.GetPoint();
+          seg = new Bezier(p0, coord1.GetPoint(),
+            coord2.GetPoint(), p1);
         }
         else
         {
-          p1 = pCoord1.GetPoint();
-          pSeg = new Line(p0, p1);
-
-          pCoord = pCoord1;
+          p1 = coord1.GetPoint();
+          seg = new Line(p0, p1);
         }
-        pLine.Add(pSeg);
+        line.Add(seg);
 
         p0 = p1;
       }
 
-      nPoint -= iPoint;
-      return pLine;
+      return line;
     }
 
     protected Coord ReadCoord()

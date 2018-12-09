@@ -4,11 +4,13 @@ using Grid;
 using Grid.Lcp;
 using Ocad;
 using Ocad.StringParams;
+using OCourse.Commands;
 using OCourse.Ext;
 using OCourse.Route;
 using System;
 using System.Collections.Generic;
-using System.Data;
+using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 
 namespace OCourse.ViewModels
@@ -20,6 +22,10 @@ namespace OCourse.ViewModels
 
   public class OCourseVm : NotifyListener
   {
+    private class DataView { }
+    private class DataRow { }
+    private class DataTable { }
+
     public delegate void ShowGridInContext(LeastCostGrid path, StatusEventArgs args);
     public delegate void DrawCourseHandler();
 
@@ -28,11 +34,6 @@ namespace OCourse.ViewModels
     public event DrawCourseHandler DrawingCourse;
 
     internal const string _meanPrefix = "_Mean ";
-
-    internal const string _indexName = "Index";
-    internal const string _startNrName = "StartNr";
-    internal const string _partName = "Part";
-
 
     private readonly BindingListView<string> _courseNames;
     private readonly List<EnumText<VelocityType>> _veloTypes;
@@ -63,7 +64,7 @@ namespace OCourse.ViewModels
     private SectionList _selectedComb;
     private readonly BindingListView<ICost> _selectedRoute;
     private readonly BindingListView<ICost> _info;
-    private DataView _permutations;
+    private PermutationVms _permutations;
 
     public OCourseVm()
     {
@@ -250,7 +251,7 @@ namespace OCourse.ViewModels
       }
     }
 
-    public DataView Permutations
+    public PermutationVms Permutations
     {
       get { return _permutations; }
       set
@@ -569,7 +570,7 @@ namespace OCourse.ViewModels
 
       using (Shape.ShapeReader reader = new Shape.ShapeReader(shapeName))
       {
-        foreach (DataRow row in reader)
+        foreach (System.Data.DataRow row in reader)
         {
           Polyline route = (Polyline)row["Shape"];
           string from = (string)row["From"];
@@ -912,74 +913,19 @@ namespace OCourse.ViewModels
       RunAsync(pb);
     }
 
-    internal void PermutationsExport()
+    internal void PermutationsExport(System.Collections.IEnumerable selectedRows, string file)
     {
-      foreach (DataRowView vRow in Permutations)
+      List<PermutationVm> permutations = new List<PermutationVm>();
+
+      foreach (PermutationVm permutation in selectedRows)
       {
-        object x = vRow.Row["All"];
-        IList<SectionList> sections = (IList<SectionList>)x;
-        int startNr = (int)vRow.Row[_startNrName];
+        permutations.Add(permutation);
+      }
 
-        System.Text.StringBuilder sb = new System.Text.StringBuilder();
-
-        double full = 0;
-        {
-          Control pre = null;
-          double part = 0;
-          foreach (SectionList section in sections)
-          {
-            foreach (Control c in section.Controls)
-            {
-              IPoint p0 = null;
-              if (pre != null)
-              {
-                IGeometry geom = pre.Element.Geometry.Project(_setup.Map2Prj);
-                p0 = geom as IPoint;
-                if (p0 == null)
-                {
-                  Polyline l = geom as Polyline;
-                  p0 = l.Points.Last.Value;
-                }
-                if (p0 == null)
-                {
-
-                }
-              }
-              if (c.Element != null)
-              {
-                IGeometry geom = c.Element.Geometry.Project(_setup.Map2Prj);
-                if (!(geom is IPoint p1))
-                {
-                  Polyline l = geom as Polyline;
-                  p1 = l.Points.First.Value;
-                  double d = l.Length();
-                  full += d;
-                  part += d;
-                }
-                if (p1 == null)
-                { }
-
-                if (p0 != null)
-                {
-                  double d = Math.Sqrt(PointOperator.Dist2(p0, p1));
-                  full += d;
-                  part += d;
-                }
-                if (geom is IPoint)
-                {
-                  if (part > 0)
-                  { sb.Append($"{part / 1000.0:N3};"); }
-                  sb.Append($"{c.Name};");
-                  part = 0;
-                }
-
-                pre = c;
-              }
-            }
-          }
-        }
-
-        string line = $";{Course.Name};{startNr};{Math.Round(full / 1000.0, 1):N3};{sb}";
+      using (TextWriter writer = new StreamWriter(file, append: true))
+      {
+        CmdExportCourseV8 cmd = new CmdExportCourseV8(_course, permutations, _setup, writer);
+        cmd.Execute();
       }
     }
 
@@ -1165,7 +1111,7 @@ namespace OCourse.ViewModels
         {
           startPos.Add(i);
         }
-        DataTable permutTbl = new DataTable();
+        PermutationVms permutations = new PermutationVms();
         int idx = 0;
         Random r = new Random(_min);
 
@@ -1177,42 +1123,18 @@ namespace OCourse.ViewModels
           int startNr = startPos[pos];
           startPos.RemoveAt(pos);
 
-          IList<SectionList> parts = permut.GetParts();
-          int iPart = 1;
-          if (permutTbl.Columns.Count == 0)
-          {
-            permutTbl.Columns.Add("All", typeof(IList<SectionList>));
-            permutTbl.Columns.Add(_indexName, typeof(int));
-            permutTbl.Columns.Add(_startNrName, typeof(int));
-            foreach (SectionList part in parts)
-            {
-              permutTbl.Columns.Add(string.Format("{0}{1}", _partName, iPart), typeof(string));
-              iPart++;
-            }
-          }
-
-          DataRow row = permutTbl.NewRow();
-          row[0] = parts;
-          row[_indexName] = index;
-          row[_startNrName] = startNr;
-          iPart = 3;
-          foreach (SectionList part in parts)
-          {
-            row[iPart] = part.GetName();
-            iPart++;
-          }
-          permutTbl.Rows.Add(row);
+          PermutationVm p = new PermutationVm(permut);
+          p.Index = index;
+          p.StartNr = startNr;
+          permutations.Add(p);
         }
-        permutTbl.AcceptChanges();
-        DataView permutView = new DataView(permutTbl)
-        {
-          AllowDelete = false,
-          AllowNew = false,
-          AllowEdit = false,
-          Sort = _startNrName
-        };
 
-        _parent.Permutations = permutView;
+        permutations.AllowEdit = false;
+        permutations.AllowNew = false;
+        permutations.AllowRemove = false;
+        permutations.ApplySort(nameof(PermutationVm.StartNr), ListSortDirection.Ascending);
+
+        _parent.Permutations = permutations;
       }
     }
   }

@@ -63,7 +63,7 @@ namespace OCourse.Ext
     }
     public Control Control { get; set; }
     public char Code { get; set; }
-    public List<Control> Inter { get; private set; }
+    public List<Control> Inter { get; }
 
     public NextControl()
     { }

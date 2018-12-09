@@ -158,7 +158,8 @@ namespace Ocad
       elem.ReservedHeight = BaseReader.ReadInt32();
       BaseReader.ReadChars(16); // reserve ID
 
-      elem.Geometry = ReadGeometry(elem.Type, nPoint);
+      List<Coord> coords = ReadCoords(nPoint);
+      elem.Geometry = GetGeometry(elem.Type, coords);
       if (nText > 0)
       {
         if (elem.UnicodeText)

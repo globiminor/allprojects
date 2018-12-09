@@ -142,6 +142,7 @@
     <Compile Include="Views\ListViewUtils.cs" />
     <Compile Include="Views\NotifyListener.cs" />
     <Compile Include="Views\PartialListView.cs" />
+    <Compile Include="Views\PropertyDescriptorBase.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

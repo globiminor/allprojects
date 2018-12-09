@@ -91,10 +91,14 @@ namespace Basics.Views
       }
       if (!propSortExists)
       {
-        PropertyDescriptorCollection properties =
-          TypeDescriptor.GetProperties(listType);
-        PropertyDescriptor prop = properties.Find(property, true);
+        PropertyDescriptorCollection properties;
 
+        if (view is ITypedList typedList)
+          properties = typedList.GetItemProperties(null);
+        else
+          properties = TypeDescriptor.GetProperties(listType);
+
+        PropertyDescriptor prop = properties.Find(property, true);
         newSorts.Add(new ListSortDescription(prop, ListSortDirection.Ascending));
       }
 

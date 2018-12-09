@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\CmdCourseTransfer.cs" />
+    <Compile Include="Commands\CmdExportCourseV8.cs" />
     <Compile Include="Commands\CmdShapeExport.cs" />
     <Compile Include="Common.cs" />
     <Compile Include="Ext\Category.cs" />
@@ -106,6 +107,7 @@
     <Compile Include="Utils.cs" />
     <Compile Include="ViewModels\OCourseSettings.cs" />
     <Compile Include="ViewModels\OCourseVm.cs" />
+    <Compile Include="ViewModels\PermutationVm.cs" />
     <EmbeddedResource Include="Gui\CntSection.resx">
       <DependentUpon>CntSection.cs</DependentUpon>
       <SubType>Designer</SubType>
