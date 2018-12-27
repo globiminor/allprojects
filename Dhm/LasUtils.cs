@@ -30,7 +30,7 @@ namespace Dhm
       public static List<Vector> GetVectors(double x0, double y0, List<LasPoint> pts)
       {
         List<Vector> vectors = new List<Vector>(pts.Count);
-        foreach (LasPoint pt in pts)
+        foreach (var pt in pts)
         { vectors.Add(pt.ToVector(x0, y0)); }
         return vectors;
       }
@@ -141,7 +141,7 @@ namespace Dhm
         double sum = 0;
         double sum2 = 0;
         int nDens = vegHs.Count;
-        foreach (double d in vegHs)
+        foreach (var d in vegHs)
         {
           max = Math.Max(d, max);
           sum += d;
@@ -178,7 +178,7 @@ namespace Dhm
 
       {
         int sumIntens = 0;
-        foreach (int inten in intens)
+        foreach (var inten in intens)
         {
           sumIntens += inten;
         }
@@ -391,7 +391,7 @@ namespace Dhm
 
       int xMin = int.MaxValue, xMax = int.MinValue;
       int yMin = int.MaxValue, yMax = int.MinValue;
-      foreach (Cell cell in ptsDict.Keys)
+      foreach (var cell in ptsDict.Keys)
       {
         xMin = Math.Min(cell.IX, xMin);
         yMin = Math.Min(cell.IY, yMin);

@@ -59,7 +59,7 @@ namespace TMap
         {
           ret = false;
           System.Type geomType = dataRow[geomColumn.ColumnName].GetType();
-          foreach (System.Type t in _geomTypes)
+          foreach (var t in _geomTypes)
           {
             if (t.IsAssignableFrom(geomType) || t == geomType)
             {
@@ -75,17 +75,17 @@ namespace TMap
       {
         _geomTypes = null;
         string[] bracketExpressions = condition.Split('(', ')');
-        foreach (string bracketExpression in bracketExpressions)
+        foreach (var bracketExpression in bracketExpressions)
         {
           string[] expressions = bracketExpression.Replace(" AND ", "|").Replace(" OR ", "|").Split('|');
-          foreach (string expression in expressions)
+          foreach (var expression in expressions)
           {
             List<System.Type> geomType = null;
 
             string[] geomTerms = expression.Split();
             int i = 0;
             bool geomCondition = true;
-            foreach (string geomTerm in geomTerms)
+            foreach (var geomTerm in geomTerms)
             {
               if (string.IsNullOrEmpty(geomTerm))
               {

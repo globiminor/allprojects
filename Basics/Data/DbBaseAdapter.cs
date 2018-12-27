@@ -37,8 +37,9 @@ namespace Basics.Data
     {
       bool first = true;
       DataTable schemaTable = null;
-      foreach (DataColumn dataColumn in dataTable.Columns)
+      foreach (var o in dataTable.Columns)
       {
+        DataColumn dataColumn = (DataColumn)o;
         if (dataColumn.DataType == typeof(string) && dataColumn.MaxLength < 0)
         {
           if (first)

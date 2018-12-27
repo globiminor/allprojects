@@ -47,7 +47,7 @@ namespace OcadScratch.Commands
 
       WorkElemVm next = null;
       double minD2 = double.MaxValue;
-      foreach (WorkElemVm candidate in _mapVm.Elems)
+      foreach (var candidate in _mapVm.Elems)
       {
         if (candidate.Handled || candidate == _elemVm)
         { continue; }

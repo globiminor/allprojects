@@ -265,13 +265,13 @@ namespace Cards.Vm
       if (stand == null)
       { yield break; }
 
-      foreach (CardPosition card in stand.GetCardPositions())
+      foreach (var card in stand.GetCardPositions())
       { yield return card; }
     }
 
     public CardPosition GetUnknownCard(double fx, double fy)
     {
-      foreach (CardPosition pos in GetCardPositions())
+      foreach (var pos in GetCardPositions())
       {
         if (!pos.Visible)
         { continue; }

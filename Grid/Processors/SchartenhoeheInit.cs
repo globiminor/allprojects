@@ -61,7 +61,7 @@ namespace Grid.Processors
       public static TopoPoint Create(LineDzNodes isoLineNodes)
       {
         List<TopoLine> lines = new List<TopoLine>(isoLineNodes.Count);
-        foreach (LinkedListNode<LineDz> node in isoLineNodes)
+        foreach (var node in isoLineNodes)
         {
           TopoLine line;
           if (node.Value.DzSign != 0)
@@ -183,7 +183,7 @@ namespace Grid.Processors
       public void ProcessPoints()
       {
         List<ITopoPoint> topoPoints = new List<ITopoPoint>();
-        foreach (IMeshLine start in _mesh.Points)
+        foreach (var start in _mesh.Points)
         {
           ITopoPoint topoPt;
 
@@ -196,10 +196,10 @@ namespace Grid.Processors
           _topoPoints.Add(start.Start, topoPt);
         }
 
-        foreach (ITopoPoint topo in topoPoints)
+        foreach (var topo in topoPoints)
         {
           List<DirectedRow> dirRows = new List<DirectedRow>();
-          foreach (TopoLine line in topo.IsoLines)
+          foreach (var line in topo.IsoLines)
           {
             DirectedRow r;
             if (line.IsFlat)
@@ -222,7 +222,7 @@ namespace Grid.Processors
           }
 
           DirectedRow pre = dirRows.Last();
-          foreach (DirectedRow line in dirRows)
+          foreach (var line in dirRows)
           {
             _ringGrower.Add(pre.Reverse(), line);
             pre = line;
@@ -236,7 +236,7 @@ namespace Grid.Processors
         if (topoPt.IsoLines != null && topoPt.IsoLines.Count > 0)
         {
           List<DirectedRow> dirRows = new List<DirectedRow>(topoPt.IsoLines.Count);
-          foreach (TopoLine line in topoPt.IsoLines)
+          foreach (var line in topoPt.IsoLines)
           {
             DirectedRow r;
             if (line.IsFlat)
@@ -259,7 +259,7 @@ namespace Grid.Processors
           }
 
           DirectedRow pre = dirRows.Last();
-          foreach (DirectedRow line in dirRows)
+          foreach (var line in dirRows)
           {
             _ringGrower.Add(pre.Reverse(), line);
             pre = line;
@@ -271,7 +271,7 @@ namespace Grid.Processors
       {
         List<IMeshLine> lines = MeshUtils.GetPointLines(start, _mesh.LineComparer);
         LinkedList<LineDz> dzLines = new LinkedList<LineDz>();
-        foreach (IMeshLine line in lines)
+        foreach (var line in lines)
         {
           dzLines.AddLast(new LineDz(line));
         }
@@ -356,7 +356,7 @@ namespace Grid.Processors
       {
         List<IMeshLine> lines = MeshUtils.GetPointLines(start, _mesh.LineComparer);
         LinkedList<LineDz> dzLines = new LinkedList<LineDz>();
-        foreach (IMeshLine line in lines)
+        foreach (var line in lines)
         {
           dzLines.AddLast(new LineDz(line));
         }
@@ -410,7 +410,7 @@ namespace Grid.Processors
         }
         else if (changes.Count > 2)
         {
-          foreach (LinkedListNode<LineDz> change in changes)
+          foreach (var change in changes)
           {
             if (change.Value.DzSign == LineDz.NullSign)
             { continue; }
@@ -495,7 +495,7 @@ namespace Grid.Processors
 
       private LinkedListNode<LineDz> GetFlatBorderNode(List<LinkedListNode<LineDz>> line0s)
       {
-        foreach (LinkedListNode<LineDz> line0Node in line0s)
+        foreach (var line0Node in line0s)
         {
           LinkedListNode<LineDz> pre = line0Node.Previous ?? line0Node.List.Last;
           LinkedListNode<LineDz> next = line0Node.Next ?? line0Node.List.First;
@@ -676,7 +676,7 @@ namespace Grid.Processors
       }
       private bool T(double h0, int ix, int iy)
       {
-        foreach (Dir dir in Dir.MeshDirs)
+        foreach (var dir in Dir.MeshDirs)
         {
           int tx = ix + dir.Dx;
           if (tx < 0 || tx >= _extent.Nx)
@@ -750,7 +750,7 @@ namespace Grid.Processors
 
         LinkedListNode<LineDz> pre = this[n - 1];
         StringBuilder s = new StringBuilder();
-        foreach (LinkedListNode<LineDz> node in this)
+        foreach (var node in this)
         {
           if (pre == node.Previous)
           { s.Append(";"); }

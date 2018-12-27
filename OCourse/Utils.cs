@@ -25,7 +25,7 @@ namespace OCourse
     public static List<string> GetCourseList(OcadReader courseReader, IList<StringParamIndex> idxList)
     {
       List<string> courseList = new List<string>();
-      foreach (StringParamIndex index in idxList)
+      foreach (var index in idxList)
       {
         if (index.Type == StringType.Course)
         {
@@ -38,7 +38,7 @@ namespace OCourse
 
     public static Config GetConfig(OcadReader courseReader, IList<StringParamIndex> idxList)
     {
-      foreach (StringParamIndex index in idxList)
+      foreach (var index in idxList)
       {
         if (index.Type == StringType.MapNotes)
         {
@@ -106,8 +106,7 @@ namespace OCourse
       if (setup != null)
       { fromGeom = fromGeom.Project(setup.Map2Prj); }
 
-      IPoint fromPoint = fromGeom as IPoint;
-      if (fromPoint == null)
+      if (!(fromGeom is IPoint fromPoint))
       {
         fromPoint = ((Polyline)fromGeom).Points.Last.Value;
       }

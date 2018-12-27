@@ -83,7 +83,7 @@ namespace OcadScratch
 
       using (Ocad9Writer w = Ocad9Writer.AppendTo(_ocdFile))
       {
-        foreach (WorkElemVm elem in _elems)
+        foreach (var elem in _elems)
         {
           Transfer(elem.Elem, w);
         }
@@ -172,7 +172,7 @@ namespace OcadScratch
     private static List<SymbolCurve> GetGeom(params string[] parts)
     {
       List<SymbolCurve> curves = new List<SymbolCurve>();
-      foreach (string part in parts)
+      foreach (var part in parts)
       {
         SymbolCurve curve = new SymbolCurve { Curve = (Curve)DrawableUtils.GetGeometry(part), LineWidth = 1, Stroke = true };
         curves.Add(curve);
@@ -183,7 +183,7 @@ namespace OcadScratch
 
     private void TransferLine(Basics.Geom.Polyline line, IEnumerable<SymbolCurve> symParts, int color, Ocad9Writer w)
     {
-      foreach (SymbolCurve sym in symParts)
+      foreach (var sym in symParts)
       {
         if (sym.Curve == null)
         {
@@ -204,7 +204,7 @@ namespace OcadScratch
             double lScaled = lUnscaled / _symbolScale;
             double pre = -1;
             int i = 0;
-            foreach (double posScaled in sym.Dash.GetPositions(lScaled))
+            foreach (var posScaled in sym.Dash.GetPositions(lScaled))
             {
               i++;
               double posUnscaled = posScaled * _symbolScale;
@@ -231,7 +231,7 @@ namespace OcadScratch
         {
           double lUnscaled = line.Length();
           double lScaled = lUnscaled / _symbolScale;
-          foreach (float posScaled in sym.Dash.GetPositions(lScaled))
+          foreach (var posScaled in sym.Dash.GetPositions(lScaled))
           {
             double posUnscaled = posScaled * _symbolScale;
             if (posUnscaled > lUnscaled)
@@ -252,7 +252,7 @@ namespace OcadScratch
     {
       MyPrjRotate rotate = null;
       if (azimuth != null) { rotate = new MyPrjRotate(azimuth.Value); }
-      foreach (SymbolCurve curve in symParts)
+      foreach (var curve in symParts)
       {
         IDrawable lin = curve.Curve;
         Basics.Geom.Polyline localLine = (Basics.Geom.Polyline)lin.GetGeometry();

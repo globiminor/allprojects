@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Text;
+using Basics.Data;
 using Basics.Geom;
 
 namespace TData
@@ -233,7 +234,7 @@ namespace TData
 
     public static DataColumn GetShapeColumn(DataTable table)
     {
-      foreach (DataColumn column in table.Columns)
+      foreach (var column in table.Columns.Enum())
       {
         if (typeof(IGeometry).IsAssignableFrom(column.DataType))
         {
@@ -264,7 +265,7 @@ namespace TData
       DbDataReader reader = cmd.ExecuteReader();
       DataTable schema = reader.GetSchemaTable();
       reader.Dispose();
-      foreach (DataColumn column in schema.Columns)
+      foreach (var column in schema.Columns.Enum())
       {
         if (typeof(IGeometry).IsAssignableFrom(column.DataType))
         {
@@ -291,7 +292,7 @@ namespace TData
     //  DataTable schema = reader.GetSchemaTable();
     //  reader.Dispose();
 
-    //  foreach (DataColumn column in schema.Columns)
+    //  foreach (var column in schema.Columns)
     //  {
     //    if (typeof(IGeometry).IsAssignableFrom(column.DataType))
     //    {
@@ -309,7 +310,7 @@ namespace TData
       int n;
       bool bHasChanges = false;
 
-      foreach (DataTable tbl in dataset.Tables)
+      foreach (var tbl in dataset.Tables.Enum())
       {
         if (tbl.GetChanges() != null)
         {
@@ -321,7 +322,7 @@ namespace TData
       { return 0; }
 
       List<DataTable> tables = new List<DataTable>(dataset.Tables.Count);
-      foreach (DataTable table in dataset.Tables)
+      foreach (var table in dataset.Tables.Enum())
       { tables.Add(table); }
 
       n = UpdateDB(transaction, tables, false);
@@ -358,7 +359,7 @@ namespace TData
 
       try
       {
-        foreach (DataTable table in tableList)
+        foreach (var table in tableList)
         {
           n += Delete(t, table, cascade) +
             UpdateInsert(t, table, cascade);
@@ -381,7 +382,7 @@ namespace TData
       {
         if (cascade)
         {
-          foreach (DataTable table in tableList)
+          foreach (var table in tableList)
           {
             ClearKey(table, DeleteDone);
             ClearKey(table, UpdateDone);
@@ -391,7 +392,7 @@ namespace TData
 
       if (transaction == null)
       {
-        foreach (DataTable table in tableList)
+        foreach (var table in tableList)
         { AcceptChanges(table, cascade); }
       }
       return n;
@@ -443,7 +444,7 @@ namespace TData
 
       if (cascade)
       {
-        foreach (DataRelation rel in table.ChildRelations)
+        foreach (var rel in table.ChildRelations.Enum())
         { n += Delete(t, rel.ChildTable, cascade); }
       }
 
@@ -457,7 +458,7 @@ namespace TData
     private static string Where(DataTable table)
     {
       StringBuilder where = new StringBuilder();
-      foreach (DataColumn column in table.PrimaryKey)
+      foreach (var column in table.PrimaryKey)
       {
         if (where.Length > 0)
         { where.Append(" AND "); }
@@ -473,7 +474,7 @@ namespace TData
       bool keyFix = (formatMode & CommandFormatMode.KeyVariable) == 0;
 
       StringBuilder set = new StringBuilder();
-      foreach (DataColumn column in table.Columns)
+      foreach (var column in table.Columns.Enum())
       {
         if (keyFix && keys.Contains(column))
         { continue; }
@@ -491,7 +492,7 @@ namespace TData
     private static void AppendKeyParameters(DbCommand command, DataTable table,
       DataRowVersion sourceVersion, ParameterDirection direction)
     {
-      foreach (DataColumn column in table.PrimaryKey)
+      foreach (var column in table.PrimaryKey)
       {
         DbParameter p = command.CreateParameter();
         p.ParameterName = column.ColumnName;
@@ -510,7 +511,7 @@ namespace TData
 
       bool keyFix = (formatMode & CommandFormatMode.KeyVariable) == 0;
 
-      foreach (DataColumn column in table.Columns)
+      foreach (var column in table.Columns.Enum())
       {
         if (keyFix && keys.Contains(column))
         { continue; }
@@ -610,7 +611,7 @@ namespace TData
 
         bool autoIncrement = true;
         bool match = false;
-        foreach (DataColumn keyCol in row.Table.PrimaryKey)
+        foreach (var keyCol in row.Table.PrimaryKey)
         {
           if (keyCol.AutoIncrement == false)
           {
@@ -664,7 +665,7 @@ namespace TData
 
       if (cascade)
       {
-        foreach (DataRelation rel in table.ChildRelations)
+        foreach (var rel in table.ChildRelations.Enum())
         { UpdateInsert(transaction, rel.ChildTable, cascade); }
       }
 
@@ -682,7 +683,7 @@ namespace TData
 
       StringBuilder attrs = new StringBuilder();
       StringBuilder values = new StringBuilder();
-      foreach (DataColumn column in table.Columns)
+      foreach (var column in table.Columns.Enum())
       {
         if (autoKeys && keys.Contains(column))
         { continue; }
@@ -712,7 +713,7 @@ namespace TData
       StringBuilder keys = new StringBuilder();
 
       first = true;
-      foreach (DataColumn column in table.PrimaryKey)
+      foreach (var column in table.PrimaryKey)
       {
         if (first == false)
         { keys.Append(", "); }
@@ -723,7 +724,7 @@ namespace TData
       }
 
       first = true;
-      foreach (DataColumn column in table.PrimaryKey)
+      foreach (var column in table.PrimaryKey)
       {
         if (first == false)
         { keys.Append(", "); }
@@ -742,7 +743,7 @@ namespace TData
       if (table.ExtendedProperties.ContainsKey(key))
       { table.ExtendedProperties.Remove(key); }
 
-      foreach (DataRelation rel in table.ChildRelations)
+      foreach (var rel in table.ChildRelations.Enum())
       { ClearKey(rel.ChildTable, key); }
     }
 
@@ -754,7 +755,7 @@ namespace TData
       }
       if (cascade)
       {
-        foreach (DataRelation rel in table.ChildRelations)
+        foreach (var rel in table.ChildRelations.Enum())
         { AcceptChanges(rel.ChildTable, cascade); }
       }
     }

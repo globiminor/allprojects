@@ -27,7 +27,7 @@ namespace OcadTest
       {
         IPoint pre = null;
         double dist = 0;
-        foreach (Pt p in seg.Points)
+        foreach (var p in seg.Points)
         {
           IPoint pr = prj.Project(new Point2D(p.Lon, p.Lat));
           dist += System.Math.Sqrt(((Point2D)pre)?.Dist2(pr) ?? 0);

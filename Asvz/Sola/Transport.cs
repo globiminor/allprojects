@@ -32,11 +32,11 @@ namespace Asvz.Sola
     private Polyline GetCombined()
     {
       Polyline combined = new Polyline();
-      foreach (Element elem in SortedElements)
+      foreach (var elem in SortedElements)
       {
         Polyline add = (Polyline)elem.Geometry;
         combined.Add(add.Points.First.Value);
-        foreach (Curve seg in add.Segments)
+        foreach (var seg in add.Segments)
         { combined.Add(seg); }
       }
       return combined;
@@ -45,16 +45,16 @@ namespace Asvz.Sola
     private List<Element> SortElements()
     {
       Dictionary<Element, Element> lines = new Dictionary<Element, Element>();
-      foreach (Element elem in Elements)
+      foreach (var elem in Elements)
       { lines.Add(elem, null); }
 
       List<Element> startLines = new List<Element>();
-      foreach (Element elem in Elements)
+      foreach (var elem in Elements)
       {
         Point start = Point.CastOrCreate(((Polyline)elem.Geometry).Points.First.Value);
         double minDist = double.MaxValue;
         Element pre = null;
-        foreach (Element nb in Elements)
+        foreach (var nb in Elements)
         {
           IPoint end = ((Polyline)nb.Geometry).Points.Last.Value;
           double d2 = start.Dist2(end);
@@ -305,7 +305,7 @@ namespace Asvz.Sola
     {
       string karte = Ddx.Uebergabe[_strecke].Karte;
 
-      foreach (Uebergabe.Info uebergabe in Ddx.Uebergabe)
+      foreach (var uebergabe in Ddx.Uebergabe)
       {
         if (uebergabe.Karte == karte)
         {
@@ -503,18 +503,18 @@ namespace Asvz.Sola
       IBox full = transportBox.Extent;
       Point center = 0.5 * PointOperator.Add(full.Max, full.Min);
       Polyline border = new Polyline();
-      foreach (IPoint point in transportBox.Points)
+      foreach (var point in transportBox.Points)
       { border.Add(center + 1.5 * (point - center)); }
       Area box = new Area(border);
 
       if (_transFrom != null)
       {
-        foreach (Element elem in _transFrom.Elements)
+        foreach (var elem in _transFrom.Elements)
         {
           GeometryCollection col = GeometryOperator.Intersection(elem.Geometry, box);
           if (col == null)
           { continue; }
-          foreach (Polyline part in col)
+          foreach (var part in col)
           {
             pElem = new ElementV9(true);
             pElem.Geometry = part;
@@ -533,12 +533,12 @@ namespace Asvz.Sola
       }
       if (_transTo != null)
       {
-        foreach (Element elem in _transTo.Elements)
+        foreach (var elem in _transTo.Elements)
         {
           GeometryCollection col = GeometryOperator.Intersection(elem.Geometry, box);
           if (col == null)
           { continue; }
-          foreach (Polyline part in col)
+          foreach (var part in col)
           {
             pElem = new ElementV9(true);
             pElem.Geometry = part;
@@ -666,7 +666,7 @@ namespace Asvz.Sola
       _legendPos = null;
       _textList = new List<Element>();
 
-      foreach (Element elem in template.Elements(true, pIndexList))
+      foreach (var elem in template.Elements(true, pIndexList))
       {
         if (elem.Symbol == SymD.TrAusschnitt)
         {
@@ -696,7 +696,7 @@ namespace Asvz.Sola
 
       List<Element> list = new List<Element>();
 
-      foreach (Element elem in template.Elements(true, pIndexList))
+      foreach (var elem in template.Elements(true, pIndexList))
       {
         int symbol = elem.Symbol;
         if (symbol == SymD.GepVon || symbol == SymD.GepNach || symbol == SymD.GepBleibt
@@ -718,7 +718,7 @@ namespace Asvz.Sola
     private void GetGepaeck(Dictionary<int, Ocad.Symbol.BaseSymbol> symbols, IList<Element> elements, int symbol)
     {
       Element gepaeck = null;
-      foreach (Element elem in elements)
+      foreach (var elem in elements)
       {
         if (elem.Symbol == symbol)
         {
@@ -736,7 +736,7 @@ namespace Asvz.Sola
       new Box((Point)gepaeck.Geometry + Point.Create(box.Min),
         (Point)gepaeck.Geometry + Point.Create(box.Max));
 
-      foreach (Element elem in elements)
+      foreach (var elem in elements)
       {
         if (elem.Symbol == SymD.IdxSchwarz)
         {
@@ -755,10 +755,9 @@ namespace Asvz.Sola
     {
       Element indexElement = null;
       double x0 = 0;
-      foreach (Element elem in elements)
+      foreach (var elem in elements)
       {
-        Point p = elem.Geometry as Point;
-        if (p == null)
+        if (!(elem.Geometry is Point p))
         { continue; }
 
         Point d = p - p0;
@@ -788,7 +787,7 @@ namespace Asvz.Sola
 
       Dictionary<int, Ocad.Symbol.BaseSymbol> list = new Dictionary<int, Ocad.Symbol.BaseSymbol>();
 
-      foreach (int iPos in pIndexList)
+      foreach (var iPos in pIndexList)
       {
         Ocad.Symbol.BaseSymbol pSymbol = reader.ReadSymbol(iPos);
         if (pSymbol == null)
@@ -823,7 +822,7 @@ namespace Asvz.Sola
       pSetup.PrjTrans.X = 0;
       pSetup.PrjTrans.Y = 0;
 
-      foreach (int iPos in pIndexList)
+      foreach (var iPos in pIndexList)
       {
         Ocad.Symbol.BaseSymbol pSymbol = reader.ReadSymbol(iPos);
         if (pSymbol == null)
@@ -853,7 +852,7 @@ namespace Asvz.Sola
     private void ReadStringParams(Ocad9Reader template)
     {
       IList<StringParamIndex> pStrIdxList = template.ReadStringParamIndices();
-      foreach (StringParamIndex pStrIdx in pStrIdxList)
+      foreach (var pStrIdx in pStrIdxList)
       {
         if (pStrIdx.Type == StringType.Template)
         {
@@ -884,7 +883,7 @@ namespace Asvz.Sola
       double dy1 = pFrame.Top - textSymbol.Size;
       Element pElem = new ElementV9(true);
 
-      foreach (Element pText in textList)
+      foreach (var pText in textList)
       {
         PointCollection pList = (PointCollection)pText.Geometry;
         pList = pList.Project(setup.Prj2Map);
@@ -908,7 +907,7 @@ namespace Asvz.Sola
 
     private void AddLegend(OcadWriter writer, Polyline border, Point rawPosition)
     {
-      Point pEdge = null;
+      IPoint edge = null;
 
       Element pElem = new ElementV9(true);
       pElem.Symbol = SymD.TrMassstab;
@@ -919,17 +918,17 @@ namespace Asvz.Sola
       border = border.Project(_templateSetup.Prj2Map);
       rawPosition = rawPosition.Project(_templateSetup.Prj2Map);
 
-      double dDist = -1;
-      foreach (Point pnt in border.Points)
+      double dist2 = -1;
+      foreach (var pnt in border.Points)
       {
-        double d2 = pnt.Dist2(rawPosition);
-        if (dDist < 0 || dDist > d2)
+        double d2 = Point.Dist2(pnt, rawPosition);
+        if (dist2 < 0 || dist2 > d2)
         {
-          dDist = d2;
-          pEdge = pnt;
+          dist2 = d2;
+          edge = pnt;
         }
       }
-      if (pEdge == null)
+      if (edge == null)
       { return; }
 
       Point pPos0 = new Point2D();
@@ -939,8 +938,8 @@ namespace Asvz.Sola
       double dx = pBxLgd.Max.X - pBxLgd.Min.X;
       double dy = pBxLgd.Max.Y - pBxLgd.Min.Y;
 
-      if (Math.Abs(pEdge.X - border.Extent.Min.X) <
-        Math.Abs(pEdge.X - border.Extent.Max.X))
+      if (Math.Abs(edge.X - border.Extent.Min.X) <
+        Math.Abs(edge.X - border.Extent.Max.X))
       {
         pPos0.X = pBxBord.Min.X - pBxLgd.Min.X;
         pPos1.X = pPos0.X + dx;
@@ -950,8 +949,8 @@ namespace Asvz.Sola
         pPos0.X = pBxBord.Max.X - pBxLgd.Max.X;
         pPos1.X = pPos0.X - dx;
       }
-      if (Math.Abs(pEdge.Y - border.Extent.Min.Y) <
-        Math.Abs(pEdge.Y - border.Extent.Max.Y))
+      if (Math.Abs(edge.Y - border.Extent.Min.Y) <
+        Math.Abs(edge.Y - border.Extent.Max.Y))
       {
         pPos0.Y = pBxBord.Min.Y - pBxLgd.Min.Y;
         pPos1.Y = pPos0.Y;

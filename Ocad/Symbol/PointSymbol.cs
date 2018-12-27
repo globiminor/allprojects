@@ -12,7 +12,7 @@ namespace Ocad.Symbol
     public GeometryCollection GetSymbolGeometry(Setup setup)
     {
       GeometryCollection lst = new GeometryCollection();
-      foreach (SymbolGraphics graphics in Graphics)
+      foreach (var graphics in Graphics)
       {
         IGeometry geom = graphics.Geometry.Project(setup.Map2Prj);
         lst.Add(geom);

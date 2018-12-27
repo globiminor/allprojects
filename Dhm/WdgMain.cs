@@ -214,7 +214,7 @@ Continue?",
 
       IList<Process> procs = Process.GetProcesses();
       Process ocdProc = null;
-      foreach (Process proc in procs)
+      foreach (var proc in procs)
       {
         if (proc.MainWindowHandle.ToInt32() == 0)
         { continue; }
@@ -429,7 +429,7 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
           LineColor = Color.FromArgb(192, 192, 192)
         };
 
-        foreach (Mesh.Tri tri in Calc.Mesh.Tris(draw.Extent))
+        foreach (var tri in Calc.Mesh.Tris(draw.Extent))
         {
           Area poly = new Area(tri.Border);
           draw.DrawArea(poly.Project(draw.Projection),
@@ -450,7 +450,7 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
         TMap.SymbolPart tagSymbol = new TMap.SymbolPartLine(null)
         { LineColor = Color.FromArgb(255, 128, 128) };
 
-        foreach (Mesh.MeshLine line in Calc.Mesh.Lines(draw.Extent))
+        foreach (var line in Calc.Mesh.Lines(draw.Extent))
         {
           Polyline poly = Polyline.Create(new[] { line.Start, line.End });
 
@@ -604,12 +604,12 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
         Basics.Serializer.Deserialize(out cnf, r);
       }
 
-      foreach (ContourSetting row in cnf.Contour)
+      foreach (var row in cnf.Contour)
       {
         _ocadSymbols.Add(row.Symbol, new ContourType(row.Intervall, row.Offset));
       }
 
-      foreach (FallDirSetting row in cnf.FallDir)
+      foreach (var row in cnf.FallDir)
       {
         _ocadFallDirSymbols.Add(row.Symbol);
       }
@@ -650,7 +650,7 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
       TMap.TableMapData mapMesh = null;
       TMap.TableMapData mapContours = null;
 
-      foreach (TMap.MapData mapData in _context.Data.GetAllData())
+      foreach (var mapData in _context.Data.GetAllData())
       {
         if (mapData == _mapGrp)
         { mapGrp = _mapGrp; }
@@ -886,7 +886,7 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
     {
       contours = new List<Contour>();
       fallDirs = new List<FallDir>();
-      foreach (Ocad.Element elem in reader.Elements(true, idxList))
+      foreach (var elem in reader.Elements(true, idxList))
       {
         if (_ocadSymbols.TryGetValue(elem.Symbol, out ContourType type))
         {
@@ -913,7 +913,7 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
         writer = Ocad.Ocad9Writer.AppendTo(file);
         writer.DeleteElements(null);
 
-        foreach (Contour contour in contours)
+        foreach (var contour in contours)
         {
           Polyline line = contour.Polyline;
           if (contour.Orientation == Orientation.RightSideDown)
@@ -944,7 +944,7 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
 
       int h0 = int.MaxValue;
       int h1 = int.MinValue;
-      foreach (Contour contour in contours)
+      foreach (var contour in contours)
       {
         if (contour.HeightIndex != null && contour.HeightIndex < h0)
         { h0 = contour.HeightIndex.Value; }
@@ -980,7 +980,7 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
       try
       {
         writer = new Shape.ShapeWriter(file, Shape.ShapeType.LineZ, schema);
-        foreach (Contour contour in contours)
+        foreach (var contour in contours)
         {
           Polyline line = contour.Polyline;
           if (contour.Orientation == Orientation.LeftSideDown)
@@ -993,7 +993,7 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
           }
 
           Polyline lineZ = new Polyline();
-          foreach (IPoint p in line.Points)
+          foreach (var p in line.Points)
           {
             lineZ.Add(new Point3D(p.X, p.Y, h));
           }
@@ -1009,7 +1009,7 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
     }
     private int Symbol(ContourType type)
     {
-      foreach (KeyValuePair<int, ContourType> pair in _ocadSymbols)
+      foreach (var pair in _ocadSymbols)
       {
         if (pair.Value == type)
         { return pair.Key; }

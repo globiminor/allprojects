@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Collections;
+using Basics.Data;
 
 namespace Basics.Views
 {
@@ -78,7 +79,7 @@ namespace Basics.Views
     public void ApplySort(ListSortDescriptionCollection sorts)
     {
       List<ListSortDescription> clones = new List<ListSortDescription>();
-      foreach (ListSortDescription sort in sorts)
+      foreach (var sort in sorts.Enum())
       {
         clones.Add(new ListSortDescription(sort.PropertyDescriptor, sort.SortDirection));
       }
@@ -114,7 +115,7 @@ namespace Basics.Views
       Func<object, object> getProterty = null;
       if (_objectDict != null)
       {
-        foreach (Cache cache in _objectDict.Values)
+        foreach (var cache in _objectDict.Values)
         {
           if (getProterty == null)
           {
@@ -133,7 +134,7 @@ namespace Basics.Views
       { return dict.Values; }
 
       DistinctValuesLoading?.Invoke(this, null);
-      foreach (object value in LoadDistinctValues(dataProperty, max))
+      foreach (var value in LoadDistinctValues(dataProperty, max))
       {
         dict[$"{value}"] = value;
 
@@ -206,7 +207,7 @@ namespace Basics.Views
 
         DateTime access = DateTime.Now;
         int i = i0;
-        foreach (object value in LoadData(start, end))
+        foreach (var value in LoadData(start, end))
         {
           objectDict[i] = new Cache { LastAccess = access, Value = value };
           i++;

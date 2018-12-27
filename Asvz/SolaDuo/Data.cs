@@ -87,9 +87,9 @@ namespace Asvz
       CreateStyles(doc, dc);
 
 
-      foreach (Strecke strecke in strecken)
+      foreach (var strecke in strecken)
       {
-        foreach (Categorie cat in strecke.Categories)
+        foreach (var cat in strecke.Categories)
         {
           WriteStreckeKml(doc, dc, strecke, cat, prj);
         }
@@ -99,7 +99,7 @@ namespace Asvz
       if (KmlConfig.IncludeMarks)
       {
         SortedList<IPoint, List<int>> marks = new SortedList<IPoint, List<int>>(new PointCmpr(100));
-        foreach (T info in strecken)
+        foreach (var info in strecken)
         {
           int iStrecke = _strecken.IndexOf(info);
           GetStartZiel(iStrecke, marks, info.Categories[0].Strecke);
@@ -129,7 +129,7 @@ namespace Asvz
 
       Trk trk = new Trk { Segments = new List<TrkSeg>() };
       TrkSeg seg = new TrkSeg { Points = new List<Pt>() };
-      foreach (Categorie cat in cats)
+      foreach (var cat in cats)
       {
         TrkSeg catSeg = GpxUtils.GetStreckeGpx(cat.Strecke, prj);
         if (joined)
@@ -183,9 +183,9 @@ namespace Asvz
 
       TransferProjection prj = GpxUtils.GetTransferProjection(new Ch1903());
 
-      foreach (Strecke strecke in strecken)
+      foreach (var strecke in strecken)
       {
-        foreach (Categorie cat in strecke.Categories)
+        foreach (var cat in strecke.Categories)
         {
           WriteStreckeGpx(doc, dc, strecke, cat, prj);
         }
@@ -340,7 +340,7 @@ namespace Asvz
     public List<VerpflegungSym> Verpflegung(Polyline strecke)
     {
       List<VerpflegungSym> list = new List<VerpflegungSym>();
-      foreach (Polyline idx in Index(strecke))
+      foreach (var idx in Index(strecke))
       {
         double t0 = -idx.Segments.First.ParamAt(DistIndex);
         double l1 = idx.Segments.Last.Length();
@@ -349,7 +349,7 @@ namespace Asvz
         cross.AddFirst(idx.Segments.First.PointAt(t0));
         cross.Add(idx.Segments.Last.PointAt(t1));
 
-        foreach (Point verpf in VerpfList)
+        foreach (var verpf in VerpfList)
         {
           Box box = (Box)SymVerpf.Graphics.Extent().Project(Setup.Map2Prj).Extent;
           box = new Box(Point.Create(box.Min) + verpf, Point.Create(box.Max) + verpf);
@@ -364,7 +364,7 @@ namespace Asvz
     {
       List<Polyline> index = new List<Polyline>();
 
-      foreach (Polyline idx in IndexList)
+      foreach (var idx in IndexList)
       {
         IPoint p = idx.Points.First.Value;
         Arc a = new Arc(p, DistIndex, 0, Math.PI * 2);
@@ -401,7 +401,7 @@ namespace Asvz
       Polyline s = line.Linearize(3.0);
       s = s.Project(prj);
 
-      foreach (IPoint p in s.Points)
+      foreach (var p in s.Points)
       {
         XmlElement elem = doc.CreateElement("trkpt");
 

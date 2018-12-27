@@ -10,7 +10,7 @@ namespace Grid
   public class VelocityGrid : DoubleGrid, ILockable
   {
     private ImageGrid _img;
-    private bool _grayscale;
+    private readonly bool _grayscale;
 
     public static VelocityGrid FromImage(string name, bool velocityFromGrayscale)
     {
@@ -43,7 +43,7 @@ namespace Grid
           palette.Entries.Length > 1)
       {
         bool gray = true;
-        foreach (Color color in _img.Image.Palette.Entries)
+        foreach (var color in _img.Image.Palette.Entries)
         {
           if (color.R != color.G || color.R != color.B)
           {

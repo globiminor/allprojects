@@ -98,13 +98,13 @@ namespace Basics.Window.Browse
 
     private static void LoadDevices(BindingListView<ContentVm> devices)
     {
-      foreach (DriveInfo drive in DriveInfo.GetDrives())
+      foreach (var drive in DriveInfo.GetDrives())
       {
         if (Directory.Exists(drive.Name))
         { devices.Add(new DriveContentVm { FullPath = drive.Name }); }
       }
 
-      foreach (string device in PortableDeviceUtils.GetDevices())
+      foreach (var device in PortableDeviceUtils.GetDevices())
       {
         { devices.Add(new DeviceContentVm { FullPath = device }); }
       }
@@ -142,7 +142,7 @@ namespace Basics.Window.Browse
       { return false; }
 
       List<ContentVm> toSort = new List<ContentVm>();
-      foreach (ContentVm child in enumContent)
+      foreach (var child in enumContent)
       {
         if (Filter != null && !child.IsDirectory && !child.Name.EndsWith(Filter, System.StringComparison.InvariantCultureIgnoreCase))
         { continue; }
@@ -168,7 +168,7 @@ namespace Basics.Window.Browse
 
         contents.RaiseListChangedEvents = false;
         contents.Clear();
-        foreach (ContentVm contentVm in toSort)
+        foreach (var contentVm in toSort)
         {
           contents.Add(contentVm);
         }

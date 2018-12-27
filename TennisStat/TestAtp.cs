@@ -69,8 +69,9 @@ namespace TennisStat
 
           DateTime minDate = new DateTime(2014, 1, 1);
           DateTime maxDate = new DateTime(2017, 8, 15);
-          foreach (EventTable.Row evt in ds.EventTable.Rows)
+          foreach (var row in ds.EventTable.Rows)
           {
+            EventTable.Row evt = (EventTable.Row)row;
             if (evt.EndDate < minDate)
             { continue; }
             if (evt.EndDate > maxDate)
@@ -115,8 +116,9 @@ namespace TennisStat
           adapter.Fill(ds.MatchFullTable);
           ds.MatchFullTable.AcceptChanges();
 
-          foreach (MatchFullTable.Row matchPlayer in ds.MatchFullTable.Rows)
+          foreach (var row in ds.MatchFullTable.Rows)
           {
+            MatchFullTable.Row matchPlayer = (MatchFullTable.Row)row;
             if (MatchFullTable.RefYColumn.IsNull(matchPlayer))
             { continue; }
 
@@ -171,8 +173,9 @@ namespace TennisStat
           ds.PlayerTable.AcceptChanges();
           DataView vPlayer = new DataView(ds.PlayerTable) { Sort = PlayerTable.IdPlayerColumn.Name };
 
-          foreach (MatchFullTable.Row matchPlayer in ds.MatchFullTable.Rows)
+          foreach (var row in ds.MatchFullTable.Rows)
           {
+            MatchFullTable.Row matchPlayer = (MatchFullTable.Row)row;
             if (MatchFullTable.RefYColumn.IsNull(matchPlayer))
             { continue; }
 

@@ -16,10 +16,10 @@ namespace DBase
   public class DBaseColumn : DataColumn
   {
     private const string _dbStart = "start";
-    private string _dBaseName;
-    private ColumnType _dBaseType;
-    private int _length;
-    private int _precision;
+    private readonly string _dBaseName;
+    private readonly ColumnType _dBaseType;
+    private readonly int _length;
+    private readonly int _precision;
 
     private int _start;
 
@@ -90,7 +90,7 @@ namespace DBase
     public int IndexOf(string name)
     {
       int i = 0;
-      foreach (DBaseColumn column in this)
+      foreach (var column in this)
       {
         if (column.ColumnName == name)
         { return i; }
@@ -121,13 +121,13 @@ namespace DBase
       if (_schema == null)
       {
         DBaseSchema dbschema = new DBaseSchema();
-        foreach (DBaseColumn col in _columnList)
+        foreach (var col in _columnList)
         {
           dbschema.Add(new DBaseColumn(col.DBaseName,
           col.DBaseType, col.Length, col.Precision));
         }
         _schema = new DataTable();
-        foreach (DBaseColumn col in dbschema._columnList)
+        foreach (var col in dbschema._columnList)
         { _schema.Columns.Add(col); }
       }
       return _schema.NewRow();
@@ -191,7 +191,7 @@ namespace DBase
     {
       private DBaseReader _reader;
       private int _pos;
-      private int _nObj;
+      private readonly int _nObj;
       private DataRow _currentRow;
 
       public Enumerator(DBaseReader reader)
@@ -498,7 +498,7 @@ namespace DBase
       {
         _writer.Write((byte)0);
       }
-      foreach (DBaseColumn col in _schema.Columns)
+      foreach (var col in _schema.Columns)
       {
         Append(col);
       }
@@ -702,7 +702,7 @@ namespace DBase
     {
       WriteHeader(_schema.Columns.Count, _schema.RecLength, _nRec);
 
-      foreach (DBaseColumn column in _schema.Columns)
+      foreach (var column in _schema.Columns)
       {
         WriteItemHead(column.DBaseName, column.DBaseType, column.Length, column.Precision);
       }

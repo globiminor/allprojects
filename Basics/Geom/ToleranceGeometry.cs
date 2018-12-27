@@ -74,8 +74,7 @@ namespace Basics.Geom
     }
     public bool EqualGeometry(IGeometry other)
     {
-      ToleranceGeometry o = other as ToleranceGeometry;
-      if (o == null)
+      if (!(other is ToleranceGeometry o))
       { return false; }
 
       if (o._tolerance != _tolerance)
@@ -90,8 +89,7 @@ namespace Basics.Geom
     {
       get
       {
-        IMultipartGeometry m = _base as IMultipartGeometry;
-        if (m == null)
+        if (!(_base is IMultipartGeometry m))
         { return true; }
 
         return m.IsContinuous;
@@ -102,14 +100,13 @@ namespace Basics.Geom
     { return Subparts(); }
     public IEnumerable<IMultipartGeometry> Subparts()
     {
-      IMultipartGeometry m = _base as IMultipartGeometry;
-      if (m == null)
+      if (!(_base is IMultipartGeometry m))
       {
         yield return this;
         yield break;
       }
 
-      foreach (IGeometry subpart in m.Subparts())
+      foreach (var subpart in m.Subparts())
       {
         ToleranceGeometry part = new ToleranceGeometry(subpart, _tolerance);
         yield return part;
@@ -119,8 +116,7 @@ namespace Basics.Geom
     {
       get
       {
-        IMultipartGeometry m = _base as IMultipartGeometry;
-        if (m == null)
+        if (!(_base is IMultipartGeometry m))
         { return false; }
         return m.HasSubparts;
       }

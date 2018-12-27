@@ -74,7 +74,7 @@ namespace Ocad.Data
       ElementIndex elemIdx = w.Reader.ReadIndex(whereIdx);
       Element elem = w.Reader.ReadElement(elemIdx);
 
-      foreach (ParameterInfo pInfo in update.UpdateParameterInfos)
+      foreach (var pInfo in update.UpdateParameterInfos)
       {
         DbParameter p = pInfo.DbParameter;
         if (p.ParameterName == OcadConnection.FieldId)

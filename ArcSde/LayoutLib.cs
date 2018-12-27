@@ -780,15 +780,15 @@ namespace ArcSde
     /// <summary>
     /// C-Def: LONG num_tables
     /// </summary>
-    private Int32 _numTables;
+    private readonly Int32 _numTables;
     ///// <summary>
     ///// C-Def: CHAR **tables
     ///// </summary>
-    private IntPtr _tables;
+    private readonly IntPtr _tables;
     /// <summary>
     /// C-Def: CHAR *where
     /// </summary>
-    private string _where;
+    private readonly string _where;
 
     public Se_Sql_Construct(string[] tables, string where)
     {
@@ -888,7 +888,7 @@ namespace ArcSde
       column = new char[32];
       {
         int i = 0;
-        foreach (char c in tableName)
+        foreach (var c in tableName)
         {
           table[i] = c;
           i++;
@@ -896,7 +896,7 @@ namespace ArcSde
       }
       {
         int i = 0;
-        foreach (char c in shapeCol)
+        foreach (var c in shapeCol)
         {
           column[i] = c;
           i++;

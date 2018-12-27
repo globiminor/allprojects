@@ -40,11 +40,11 @@ namespace OcadScratch.Commands
       {
         XmlSymbols symbols = new XmlSymbols();
         symbols.Colors = new List<XmlColor>();
-        foreach (ColorRef color in _config.Colors)
+        foreach (var color in _config.Colors)
         { symbols.Colors.Add(XmlColor.Create(color)); }
 
         symbols.Symbols = new List<XmlSymbol>();
-        foreach (Symbol sym in _config.Symbols)
+        foreach (var sym in _config.Symbols)
         { symbols.Symbols.Add(XmlSymbol.Create(sym)); }
 
         using (TextWriter w = new StreamWriter(symbolsFile))
@@ -53,7 +53,7 @@ namespace OcadScratch.Commands
         }
       }
 
-      foreach (ImageVm img in _config.Images)
+      foreach (var img in _config.Images)
       {
         if (string.IsNullOrEmpty(img.CopyFromPath))
         { continue; }

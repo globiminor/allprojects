@@ -24,7 +24,7 @@ namespace Cards.Gui
 
       IComparer<Card> cmpr = new Card.CardComparer();
       cards.Sort(cmpr);
-      foreach (CardPosition pos in cardsVm.Cards.GetCardPositions())
+      foreach (var pos in cardsVm.Cards.GetCardPositions())
       {
         if (pos.Card.Suite == null)
         { continue; }
@@ -34,7 +34,7 @@ namespace Cards.Gui
       }
       Dictionary<string, int> suites = new Dictionary<string, int>();
       int wMax = 0;
-      foreach (Card card in cards)
+      foreach (var card in cards)
       {
         wMax = Math.Max(wMax, card.Height.H);
         if (!suites.ContainsKey(card.Suite.Code))
@@ -64,7 +64,7 @@ namespace Cards.Gui
       if (_availableCards == null)
       { yield break; }
 
-      foreach (Card card in _availableCards)
+      foreach (var card in _availableCards)
       {
         CardPosition pos = new CardPosition();
         pos.Card = card;
@@ -83,7 +83,7 @@ namespace Cards.Gui
       Point p = PointToClient(MousePosition);      
       double x = (double)p.X / _cardWidth;
       double y = (double)p.Y / _cardHeight;
-      foreach (CardPosition pos in GetPositions())
+      foreach (var pos in GetPositions())
       {
         if (pos.Left < x && pos.Left + 1 > x
           && pos.Top < y && pos.Top + 1 > y)

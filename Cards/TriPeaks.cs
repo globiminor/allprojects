@@ -57,7 +57,7 @@ namespace Cards
           if (_positionCode == 0)
           {
             TriPeaks stand = GetCurrent(this);
-            foreach (Card card in stand.Completed)
+            foreach (var card in stand.Completed)
             {
               _positionCode = (41 * _positionCode) ^ card.GetCardCode();
             }
@@ -104,7 +104,7 @@ namespace Cards
           if (c == null || c.Suite == null)
           { continue; }
           bool visible = true;
-          foreach (Position pre in p.Pres)
+          foreach (var pre in p.Pres)
           {
             if (stand.Positions[pre] != null)
             { visible = false; }
@@ -135,7 +135,7 @@ namespace Cards
         if (move == null)
         { return null; }
         bool success = false;
-        foreach (Move possible in GetPossibleMoves())
+        foreach (var possible in GetPossibleMoves())
         {
           if (move.From == possible.From)
           {
@@ -185,7 +185,7 @@ namespace Cards
         Card pre = null;
         double g = 1.3;
         double groups = g;
-        foreach (Card card in cards)
+        foreach (var card in cards)
         {
           if (pre != null)
           {
@@ -329,13 +329,13 @@ namespace Cards
       {
         List<CardPosition> posList = value;
         Dictionary<Position, Position> startDict = new Dictionary<Position, Position>();
-        foreach (Position p in StartPositions)
+        foreach (var p in StartPositions)
         {
           startDict.Add(p, p);
         }
 
         Dictionary<Position, Card> positions = new Dictionary<Position, Card>();
-        foreach (CardPosition cardPos in posList)
+        foreach (var cardPos in posList)
         {
           Position p = new Position(cardPos.Left, cardPos.Top);
           positions.Add(startDict[p], cardPos.Card);
@@ -387,7 +387,7 @@ namespace Cards
     {
       List<Card> cards = new List<Card>();
 
-      foreach (Suite suite in Suite.Suites)
+      foreach (var suite in Suite.Suites)
       {
         cards.AddRange(suite.CreateCards());
       }
@@ -451,11 +451,11 @@ namespace Cards
     protected override void Sort(List<Stand<Move>> stands)
     {
       List<MoveQuality> mqs = new List<MoveQuality>(stands.Count);
-      foreach (Stand<Move> stand in stands)
+      foreach (var stand in stands)
       { mqs.Add(new MoveQuality(stand)); }
       mqs.Sort(MoveQuality.CompareQuality);
       stands.Clear();
-      foreach (MoveQuality mq in mqs)
+      foreach (var mq in mqs)
       { stands.Add(mq.Stand); }
     }
     public override IEnumerable<CardPosition> GetCardPositions(IEnumerable<Move> moves)
@@ -519,7 +519,7 @@ namespace Cards
       if (fx != tx || fy != ty)
       { return null; }
 
-      foreach (MyCardPosition pos in GetCardPositions())
+      foreach (var pos in GetCardPositions())
       {
         if (pos.Index >= 0 && pos.Visible == false)
         { continue; }
@@ -537,7 +537,7 @@ namespace Cards
     private IEnumerable<MyCardPosition> GetCardPositions()
     {
       List<Card> covereds = Stack;
-      foreach (Card stack in Stack)
+      foreach (var stack in Stack)
       {
         MyCardPosition pos = new MyCardPosition { Index = -1, Card = stack, Visible = false, Left = _x0, Top = _yStack };
         yield return pos;
@@ -553,7 +553,7 @@ namespace Cards
         { continue; }
 
         bool visible = true;
-        foreach (Position pre in p.Pres)
+        foreach (var pre in p.Pres)
         {
           if (Positions[pre] != null)
           {
@@ -572,7 +572,7 @@ namespace Cards
         yield return pos;
       }
 
-      foreach (Card completed in Completed)
+      foreach (var completed in Completed)
       {
         MyCardPosition pos = new MyCardPosition { Index = -2, Card = completed, Visible = true, Left = _x0 + 2, Top = _yStack };
         yield return pos;

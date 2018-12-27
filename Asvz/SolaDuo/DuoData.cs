@@ -13,8 +13,8 @@ namespace Asvz.SolaDuo
   {
     internal class Kontrolle
     {
-      private string _id;
-      private string _name;
+      private readonly string _id;
+      private readonly string _name;
 
       public Kontrolle(string id, string name)
       {
@@ -28,7 +28,7 @@ namespace Asvz.SolaDuo
       { get { return _name; } }
     }
 
-    private IList<Kontrolle> _postenLst;
+    private readonly IList<Kontrolle> _postenLst;
 
     private List<IPoint> _ausschnitt;
     private GeometryCollection _symAusschnitt;
@@ -122,7 +122,7 @@ namespace Asvz.SolaDuo
 
       List<Element> streckenTeile = new List<Element>();
 
-      foreach (Element elem in reader.Elements(true, indexList))
+      foreach (var elem in reader.Elements(true, indexList))
       {
         if (elem.Symbol == SymDD.Strecke)
         { streckenTeile.Add(elem); }
@@ -171,7 +171,7 @@ namespace Asvz.SolaDuo
       Setup.PrjTrans.X = 0;
       Setup.PrjTrans.Y = 0;
 
-      foreach (int iPos in indexList)
+      foreach (var iPos in indexList)
       {
         symbol = reader.ReadSymbol(iPos);
 
@@ -348,10 +348,10 @@ namespace Asvz.SolaDuo
           str = Utils.Split(str, _symUebergabe, str.Points.Last.Value, 0)[0];
         }
 
-        foreach (IPoint verzweigung in Verzweigung)
+        foreach (var verzweigung in Verzweigung)
         {
         }
-        foreach (IPoint helfer in Helfer)
+        foreach (var helfer in Helfer)
         {
         }
         element = new ElementV9(true);
@@ -362,7 +362,7 @@ namespace Asvz.SolaDuo
         elements.Add(element);
       }
 
-      foreach (IPoint verzweigung in Verzweigung)
+      foreach (var verzweigung in Verzweigung)
       {
         element = new ElementV9(true);
         element.Geometry = verzweigung;
@@ -372,7 +372,7 @@ namespace Asvz.SolaDuo
         elements.Add(element);
       }
 
-      foreach (IPoint helfer in Helfer)
+      foreach (var helfer in Helfer)
       {
         element = new ElementV9(true);
         element.Geometry = helfer;
@@ -396,7 +396,7 @@ namespace Asvz.SolaDuo
     private void ReadStringParamsCore(OcadReader reader)
     {
       IList<StringParamIndex> strIdxList = reader.ReadStringParamIndices();
-      foreach (StringParamIndex strIdx in strIdxList)
+      foreach (var strIdx in strIdxList)
       {
         if (strIdx.Type == StringType.ViewPar)
         { _viewParam = new ViewPar(reader.ReadStringParam(strIdx)); }
@@ -433,7 +433,7 @@ namespace Asvz.SolaDuo
         SymDD.Strecke, SymDD.Uebergabe, SymDD.Verzweigung, SymDD.Helfer, SymDD.Ziel,
         SymDD.Verpflegung, SymDD.Text}, Ocad.Symbol.SymbolStatus.Protected);
 
-      foreach (Element element in elements)
+      foreach (var element in elements)
       {
         writer.Append(element);
       }
@@ -459,7 +459,7 @@ namespace Asvz.SolaDuo
 
     public static void CreateDtm()
     {
-      IList<Grid.BaseGrid> grids = new Grid.DataDoubleGrid[]
+      IList<Grid.DataDoubleGrid> grids = new Grid.DataDoubleGrid[]
       {
         Grid.DataDoubleGrid.FromAsciiFile("C:\\Daten\\ASVZ\\Daten\\exp00001.agr", 0, 1, typeof(double)),
         //Grid.DoubleGrid.FromAsciiFile("C:\\Daten\\ASVZ\\Daten\\Dhm\\mm1051.agr", 0, 1, typeof(double)),
@@ -482,7 +482,7 @@ namespace Asvz.SolaDuo
       IBox extent = grids[0].Extent.Extent.Clone();
       double dx = grids[0].Extent.Dx;
 
-      foreach (Grid.BaseGrid grid in grids)
+      foreach (var grid in grids)
       {
         double n;
         IBox ext = grid.Extent.Extent;
@@ -519,7 +519,7 @@ namespace Asvz.SolaDuo
 
           int n = 0;
           double sumD = 0;
-          foreach (Grid.IDoubleGrid grid in grids)
+          foreach (var grid in grids)
           {
             bool inside = grid.Extent.GetNearest(p, out int gx, out int gy);
             if (inside == false)

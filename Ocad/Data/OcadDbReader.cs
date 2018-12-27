@@ -23,7 +23,7 @@ namespace Ocad.Data
         _reader = reader;
         IBox extent = null;
 
-        foreach (DbBaseParameter parameter in reader._command.Parameters)
+        foreach (var parameter in reader._command.Parameters.Enum())
         {
           if (parameter.Value is IGeometry)
           {

@@ -264,8 +264,8 @@ namespace Basics.Geom
       {
         get
         {
-          IPoint p0 = Point.Create(_line[0].Start);
-          IPoint p1 = Point.Create(p0);
+          Point p0 = Point.Create(_line[0].Start);
+          Point p1 = Point.Create(p0);
           for (int i = 1; i < 3; i++)
           {
             IPoint p = _line[i].Start;
@@ -596,8 +596,7 @@ namespace Basics.Geom
 
       public override bool HasEqualBaseLine(MeshLine line)
       {
-        MeshLineEx l = line as MeshLineEx;
-        if (l == null)
+        if (!(line is MeshLineEx l))
         { return false; }
         return _baseLine == l.BaseLine;
       }

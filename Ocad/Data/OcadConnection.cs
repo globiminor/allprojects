@@ -1,10 +1,10 @@
+using Basics.Data;
+using Basics.Geom;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
-using Basics.Data;
-using Basics.Geom;
 
 namespace Ocad.Data
 {
@@ -31,7 +31,7 @@ namespace Ocad.Data
 
     internal class Pool
     {
-      private string _connectionString;
+      private readonly string _connectionString;
       public Pool(string connectionString)
       {
         _connectionString = connectionString;
@@ -117,8 +117,11 @@ namespace Ocad.Data
     public override DataTable GetSchema(string collectionName)
     {
       SchemaColumnsTable elements = GetTableSchema(collectionName);
-      foreach (SchemaColumnsTable.Row row in elements.Rows)
-      { row.TableName = "Elements"; }
+      foreach (var o in elements.Rows)
+      {
+        SchemaColumnsTable.Row row = (SchemaColumnsTable.Row)o;
+        row.TableName = "Elements";
+      }
 
       elements.AcceptChanges();
 

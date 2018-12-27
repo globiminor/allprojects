@@ -62,7 +62,7 @@ namespace Ocad
     public override IEnumerable<ColorInfo> ReadColorInfos()
     {
       IList<StringParamIndex> strIdxs = ReadStringParamIndices();
-      foreach (StringParamIndex strIdx in strIdxs)
+      foreach (var strIdx in strIdxs)
       {
         if (strIdx.Type == StringType.Color)
         {
@@ -82,7 +82,7 @@ namespace Ocad
 
       using (new InvariantCulture())
       {
-        foreach (StringParamIndex pIndex in pIndexList)
+        foreach (var pIndex in pIndexList)
         {
           if (pIndex.Type == StringType.ScalePar)
           {
@@ -118,7 +118,7 @@ namespace Ocad
         }
         if (setup.PrjTrans.X == 0 && setup.PrjTrans.Y == 0 && setup.PrjRotation == 0)
         {
-          foreach (StringParamIndex pIndex in pIndexList)
+          foreach (var pIndex in pIndexList)
           {
             if (pIndex.Type == StringType.Template)
             {

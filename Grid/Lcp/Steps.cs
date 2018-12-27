@@ -59,10 +59,10 @@ namespace Grid.Lcp
 
     public static Steps Step4 => new Steps((int[,])_step4.Clone());
 
-    private int _count;
+    private readonly int _count;
     private List<Step> _steps;
     private List<Step> _distSteps;
-    private List<int>[] _cancelIndexes;
+    private readonly List<int>[] _cancelIndexes;
 
     public Step GetStep(int i)
     {
@@ -86,7 +86,7 @@ namespace Grid.Lcp
       _distSteps.Sort(Step.CompareDistance);
 
       _cancelIndexes = new List<int>[_count];
-      foreach (Step step in _steps)
+      foreach (var step in _steps)
       {
         List<int> cancelIndexes = GetCancelIndexes(step);
         _cancelIndexes[step.Index] = cancelIndexes;
@@ -103,7 +103,7 @@ namespace Grid.Lcp
       StepField stepField = StepFields[iField];
       pointInfos = new List<T>(stepField.FieldIndices.Count);
       ws = stepField.Ws;
-      foreach (int idx in stepField.FieldIndices)
+      foreach (var idx in stepField.FieldIndices)
       {
         ICostField field = idx < 0 ? startField as ICostField
           : allNeighbors[idx];
@@ -115,8 +115,7 @@ namespace Grid.Lcp
           return true;
         }
 
-        ICostField<T> costField = field as ICostField<T>;
-        if (costField == null)
+        if (!(field is ICostField<T> costField))
         {
           pointInfos = null;
           return false;
@@ -134,7 +133,7 @@ namespace Grid.Lcp
         if (_stepFields == null)
         {
           List<StepField> stepFields = new List<StepField>();
-          foreach (Step step in _steps)
+          foreach (var step in _steps)
           {
             Dictionary<int,double> fieldWeights = GetFieldWeights(step);
             stepFields.Add(new StepField
@@ -188,7 +187,7 @@ namespace Grid.Lcp
       get
       {
         double[] angles = new double[_count];
-        foreach (Step step in _steps)
+        foreach (var step in _steps)
         { angles[step.Index] = step.Angle; }
         return DoubleGrid.Create(angles, grd);
       }
@@ -305,7 +304,7 @@ namespace Grid.Lcp
 
       public void Initialize(StepInfo step, List<StepInfo> pres, Dictionary<int, StepInfoBuilder> dirs)
       {
-        foreach (StepInfo pre in pres)
+        foreach (var pre in pres)
         {
           int dx = step.Ix - pre.Ix;
           int dy = step.Iy - pre.Iy;
@@ -314,7 +313,7 @@ namespace Grid.Lcp
           { continue; }
 
           bool isAssigned = false;
-          foreach (StepInfoBuilder t in dirs.Values)
+          foreach (var t in dirs.Values)
           {
             if (t.IsAssigned() && t._assigned.Ix == dx && t._assigned.Iy == dy)
             {
@@ -332,7 +331,7 @@ namespace Grid.Lcp
       public StepInfo AssignDirFromMaxCost()
       {
         StepInfo max = null;
-        foreach (StepInfo candidate in Candidates)
+        foreach (var candidate in Candidates)
         {
           if (max == null || candidate.NormedCost() > max.NormedCost())
           { max = candidate; }
@@ -414,7 +413,7 @@ namespace Grid.Lcp
       for (int iCost = 0; iCost < nCost; iCost++)
       {
         IList<StepInfo> steps = costs.Values[iCost];
-        foreach (StepInfo step in steps)
+        foreach (var step in steps)
         {
           StepInfoBuilder dir = dirs[step.Dir];
           if (dir.IsAssigned())
@@ -431,7 +430,7 @@ namespace Grid.Lcp
           dir.TryAssignDir();
         }
 
-        foreach (StepInfo step in steps)
+        foreach (var step in steps)
         {
           pres.Add(step);
         }
@@ -452,7 +451,7 @@ namespace Grid.Lcp
             dir.Analyze(step, costGrid);
             if (dir.TryAssignDir())
             {
-              foreach (StepInfoBuilder other in dirs.Values)
+              foreach (var other in dirs.Values)
               {
                 if (other == dir)
                 { continue; }
@@ -471,7 +470,7 @@ namespace Grid.Lcp
       }
 
       List<int> stepIndices = new List<int>(dirs.Count - 1);
-      foreach (int stepIndex in dirs.Keys)
+      foreach (var stepIndex in dirs.Keys)
       {
         if (stepIndex < 0 || stepIndex > dirs.Count)
         { continue; }
@@ -479,11 +478,11 @@ namespace Grid.Lcp
       }
       stepIndices.Sort();
       List<StepInfoBuilder> sortedSteps = new List<StepInfoBuilder>(stepIndices.Count);
-      foreach (int i in stepIndices)
+      foreach (var i in stepIndices)
       {
         sortedSteps.Add(dirs[i]);
       }
-      foreach (KeyValuePair<int, StepInfoBuilder> pair in dirs)
+      foreach (var pair in dirs)
       {
         StepInfoBuilder dir = pair.Value;
         if (dir.IsAssigned())
@@ -494,7 +493,7 @@ namespace Grid.Lcp
         Steps steps = Step16;
         double min = double.MaxValue;
         Step minStep = null;
-        foreach (Step step in steps._steps)
+        foreach (var step in steps._steps)
         {
           double p = Math.Abs(1 - (step.Dx * mean.Vx + step.Dy * mean.Vy) / (l * step.Distance));
           if (p < min)
@@ -506,7 +505,7 @@ namespace Grid.Lcp
         dir.Assign(minStep, pair.Key);
       }
 
-      foreach (StepInfoBuilder step in sortedSteps)
+      foreach (var step in sortedSteps)
       {
         if (step.IsAssigned())
         { continue; }
@@ -572,7 +571,7 @@ namespace Grid.Lcp
       { cancelFields = new bool[_count]; }
 
       List<int> cancelIndexes = _cancelIndexes[step.Index];
-      foreach (int cancelIndex in cancelIndexes)
+      foreach (var cancelIndex in cancelIndexes)
       {
         cancelFields[cancelIndex] = true;
       }
@@ -586,7 +585,7 @@ namespace Grid.Lcp
       Point2D center = null;
       List<int> cancelSteps = new List<int>(_count / 2);
 
-      foreach (Step s in _steps)
+      foreach (var s in _steps)
       {
         if (s.Distance <= step.Distance)
         { continue; }
@@ -601,7 +600,7 @@ namespace Grid.Lcp
               new Point2D(step.Dx + 0.5, step.Dy - 0.5),
               new Point2D(step.Dx + 0.5, step.Dy + 0.5),
             };
-          foreach (Point2D d in points)
+          foreach (var d in points)
           {
             double dist = Math.Sqrt(d.OrigDist2());
             double angle = center.VectorProduct(d) / dist;

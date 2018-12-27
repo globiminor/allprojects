@@ -19,7 +19,7 @@ namespace Shape.Data
     {
       _command = command;
       _oleDbCmd = new OleDbCommand(command.GetStandardSqlText(), command.Connection.OleDbConnection);
-      foreach (IDbDataParameter parameter in command.Parameters)
+      foreach (var parameter in command.Parameters.Enum())
       {
         if (parameter.Value is IGeometry)
         { continue; }
@@ -110,7 +110,7 @@ namespace Shape.Data
     {
       DataTable accessSchema = _reader.GetSchemaTable();
       SchemaColumnsTable schema = new SchemaColumnsTable();
-      foreach (DataRow aRow in accessSchema.Rows)
+      foreach (var aRow in accessSchema.Rows.Enum())
       {
         SchemaColumnsTable.Row sRow = schema.NewRow();
         sRow.ColumnName = (string)aRow["ColumnName"];

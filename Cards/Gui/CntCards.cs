@@ -39,7 +39,7 @@ namespace Cards.Gui
     public static void PaintCards(Graphics graphics, IEnumerable<CardPosition> cards,
       int cardWidth, int cardHeight, Font font)
     {
-      foreach (CardPosition cardPos in cards)
+      foreach (var cardPos in cards)
       { PaintCard(graphics, cardPos, cardWidth, cardHeight, font); }
     }
     public static void PaintCard(Graphics graphics, CardPosition card, int cardWidth, int cardHeight, Font font)

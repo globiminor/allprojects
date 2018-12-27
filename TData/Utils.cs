@@ -1,4 +1,5 @@
 
+using Basics.Data;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -29,7 +30,7 @@ namespace TData
 
     public static void ClearCascade(DataTable table)
     {
-      foreach (DataRelation rel in table.ChildRelations)
+      foreach (var rel in table.ChildRelations.Enum())
       {
         ClearCascade(rel.ChildTable);
       }
@@ -42,9 +43,9 @@ namespace TData
     // History: FAR 19.05.05 initial coding
     public static void DeleteCascade(DataRow row)
     {
-      foreach (DataRelation rel in row.Table.ChildRelations)
+      foreach (var rel in row.Table.ChildRelations.Enum())
       {
-        foreach (DataRow child in row.GetChildRows(rel))
+        foreach (var child in row.GetChildRows(rel))
         {
           DeleteCascade(child);
         }
@@ -54,9 +55,9 @@ namespace TData
 
     public static void RemoveCascade(DataRow row)
     {
-      foreach (DataRelation rel in row.Table.ChildRelations)
+      foreach (var rel in row.Table.ChildRelations.Enum())
       {
-        foreach (DataRow child in row.GetChildRows(rel))
+        foreach (var child in row.GetChildRows(rel))
         {
           RemoveCascade(child);
         }
@@ -73,12 +74,12 @@ namespace TData
       bool bHasChanges = (row.RowState != DataRowState.Unchanged);
       if (cascade && bHasChanges == false)
       {
-        foreach (DataRelation rel in row.Table.ChildRelations)
+        foreach (var rel in row.Table.ChildRelations.Enum())
         {
           DataRow[] pChildRows = row.GetChildRows(rel);
           if (row.GetChildRows(rel, DataRowVersion.Original).Length != pChildRows.Length)
           { return true; }
-          foreach (DataRow pChildRow in pChildRows)
+          foreach (var pChildRow in pChildRows)
           {
             if (HasChanges(pChildRow, cascade))
             { return true; }
@@ -97,7 +98,7 @@ namespace TData
       bool bHasChanges = (table.GetChanges() != null);
       if (cascade && bHasChanges == false)
       {
-        foreach (DataRelation rel in table.ChildRelations)
+        foreach (var rel in table.ChildRelations.Enum())
         {
           if (HasChanges(rel.ChildTable, cascade))
           { return true; }
@@ -114,7 +115,7 @@ namespace TData
     {
       if (cascade)
       {
-        foreach (DataRelation rel in table.ChildRelations)
+        foreach (var rel in table.ChildRelations.Enum())
         { RejectChanges(rel.ChildTable, cascade); }
       }
       table.RejectChanges();
@@ -129,7 +130,7 @@ namespace TData
     public static DataRelation FindRelation(DataColumn parentCol, DataColumn childCol)
     {
       DataTable tblChild = childCol.Table;
-      foreach (DataRelation rel in tblChild.ParentRelations)
+      foreach (var rel in tblChild.ParentRelations.Enum())
       {
         if (rel.ChildColumns.Length == 1 && rel.ChildColumns[0] == childCol
           && (parentCol == null || rel.ParentColumns[0] == parentCol))
@@ -148,7 +149,7 @@ namespace TData
       if (parentTab == null)
       {
         Type parentTabType = typeof(U);
-        foreach (DataRelation rel in childTab.ParentRelations)
+        foreach (var rel in childTab.ParentRelations.Enum())
         {
           if (rel.ParentTable.GetType() == parentTabType)
           { return rel; }
@@ -157,7 +158,7 @@ namespace TData
       else if (childTab == null)
       {
         Type childTabType = typeof(V);
-        foreach (DataRelation rel in parentTab.ChildRelations)
+        foreach (var rel in parentTab.ChildRelations.Enum())
         {
           if (rel.ChildTable.GetType() == childTabType)
           { return rel; }
@@ -165,7 +166,7 @@ namespace TData
       }
       else
       {
-        foreach (DataRelation rel in parentTab.ChildRelations)
+        foreach (var rel in parentTab.ChildRelations.Enum())
         {
           if (rel.ChildTable == childTab)
           { return rel; }
@@ -207,7 +208,7 @@ namespace TData
       }
 
       StringBuilder inList = new StringBuilder();
-      foreach (DataRow row in rows)
+      foreach (var row in rows)
       {
         if (inList.Length > 0)
         { inList.Append(", "); }
@@ -234,7 +235,7 @@ namespace TData
       DataColumn key = row.Table.PrimaryKey[0];
       string where = string.Format("{0} = {1}", key, row[key]);
       List<DataRelation> relations = new List<DataRelation>();
-      foreach (DataRelation relation in row.Table.ChildRelations)
+      foreach (var relation in row.Table.ChildRelations.Enum())
       { relations.Add(relation); }
 
       return Fill(adapter, row.Table, where, relations);
@@ -258,7 +259,7 @@ namespace TData
         ds.EnforceConstraints = false;
         n = adapter.Fill(parentClone, where);
 
-        foreach (DataRow row in parentClone.Rows)
+        foreach (var row in parentClone.Rows.Enum())
         { table.LoadDataRow(row.ItemArray, true); }
 
         clones.Add(parentClone.TableName, parentClone);
@@ -291,7 +292,7 @@ namespace TData
 
       DataSet ds = topRelations[0].DataSet;
       Dictionary<string, DataTable> clones = new Dictionary<string, DataTable>();
-      foreach (DataRelation relation in topRelations)
+      foreach (var relation in topRelations)
       {
         DataTable tbl = relation.ParentTable;
         if (clones.TryGetValue(tbl.TableName, out DataTable clone) == false)
@@ -345,7 +346,7 @@ namespace TData
         clone = table.Copy();
       }
 
-      foreach (DataRelation rel in table.ParentRelations)
+      foreach (var rel in table.ParentRelations.Enum())
       {
         DataTable parentTable = rel.ParentTable;
         DataColumn parentColumn = rel.ParentColumns[0];
@@ -354,7 +355,7 @@ namespace TData
 
         List<DataRow> missing = new List<DataRow>();
 
-        foreach (DataRow row in clone.Rows)
+        foreach (var row in clone.Rows.Enum())
         {
           object key = row[childColumn.ColumnName];
           if (key == DBNull.Value)
@@ -374,7 +375,7 @@ namespace TData
 
       if (where != null)
       {
-        foreach (DataRow row in clone.Rows)
+        foreach (var row in clone.Rows.Enum())
         { table.LoadDataRow(row.ItemArray, true); }
       }
 
@@ -383,14 +384,14 @@ namespace TData
 
     public static bool ValidateParents(DataSet dataSet, out string error)
     {
-      foreach (DataTable table in dataSet.Tables)
+      foreach (var table in dataSet.Tables.Enum())
       {
-        foreach (DataRelation relation in table.ParentRelations)
+        foreach (var relation in table.ParentRelations.Enum())
         {
           if (relation.ParentColumns.Length != 1)
           { continue; }
 
-          foreach (DataRow row in table.Rows)
+          foreach (var row in table.Rows.Enum())
           {
             if (row[relation.ChildColumns[0]] == DBNull.Value)
             { continue; }
@@ -470,7 +471,7 @@ namespace TData
         tables[table].Relations.Add(parentRelation);
       }
 
-      foreach (DataRelation rel in table.ChildRelations)
+      foreach (var rel in table.ChildRelations.Enum())
       {
         GetTables(rel.ChildTable, rel, tables, hierarchy + 1);
       }
@@ -481,21 +482,21 @@ namespace TData
       int n = 0;
       // Prepare tables
       Dictionary<DataTable, TableInfo> tables = new Dictionary<DataTable, TableInfo>();
-      foreach (DataRelation relation in topRelations)
+      foreach (var relation in topRelations)
       { GetTables(relation.ChildTable, relation, tables, 0); }
 
       List<TableInfo> tableInfos = new List<TableInfo>(tables.Values);
       tableInfos.Sort(TableInfo.Compare);
 
       // get rows cascading
-      foreach (TableInfo info in tableInfos)
+      foreach (var info in tableInfos)
       {
         if (info.Table.Rows.Count > 0)
         { continue; }
 
         DataTable clone = info.Table.Clone();
         StringBuilder childWhere = new StringBuilder();
-        foreach (DataRelation relation in info.Relations)
+        foreach (var relation in info.Relations)
         {
           DataTable parent = clones[relation.ParentTable.TableName];
           string parentCol = relation.ParentColumns[0].ColumnName;
@@ -508,7 +509,7 @@ namespace TData
         }
 
         n += adapter.Fill(clone, childWhere.ToString());
-        foreach (DataRow row in clone.Rows)
+        foreach (var row in clone.Rows.Enum())
         { info.Table.LoadDataRow(row.ItemArray, true); }
 
         clones.Add(clone.TableName, clone);
@@ -519,16 +520,16 @@ namespace TData
     private static string GetRowErrors(DataSet ds)
     {
       StringBuilder error = new StringBuilder();
-      foreach (DataTable tbl in ds.Tables)
+      foreach (var tbl in ds.Tables.Enum())
       {
         if (tbl.HasErrors)
         {
           error.AppendFormat("Table {0} has errors:", tbl.TableName);
           error.AppendLine();
-          foreach (DataRow row in tbl.GetErrors())
+          foreach (var row in tbl.GetErrors())
           {
             error.AppendLine(row.RowError);
-            //foreach (DataColumn column in row.GetColumnsInError())
+            //foreach (var column in row.GetColumnsInError())
             //{
             //  row.GetColumnError(column);
             //}

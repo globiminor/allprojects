@@ -25,11 +25,11 @@ namespace OCourse.Commands
 
     public void Execute()
     {
-      foreach (PermutationVm permutation in _permutations)
+      foreach (var permutation in _permutations)
       {
         List<List<SectionList>> legs = GetLegs(permutation.Parts);
 
-        foreach (List<SectionList> leg in legs)
+        foreach (var leg in legs)
         {
           string controls = GetControls(leg, out double full);
 
@@ -48,7 +48,7 @@ namespace OCourse.Commands
       List<List<SectionList>> legs = new List<List<SectionList>>();
       List<SectionList> leg = null;
 
-      foreach (SectionList part in parts)
+      foreach (var part in parts)
       {
         if (leg == null)
         {
@@ -72,9 +72,9 @@ namespace OCourse.Commands
       double part = 0;
 
       System.Text.StringBuilder sb = new System.Text.StringBuilder();
-      foreach (SectionList section in leg)
+      foreach (var section in leg)
       {
-        foreach (Control c in section.Controls)
+        foreach (var c in section.Controls)
         {
           IPoint p0 = null;
           if (pre != null)

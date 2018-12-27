@@ -48,7 +48,7 @@ namespace OCourse.Commands
         }
 
         double resolution = _vm.LcpConfig.Resolution;
-        foreach (CostFromTo route in rawList.Keys)
+        foreach (var route in rawList.Keys)
         {
           route.Resolution = resolution;
           if (_vm.RouteCalculator.RouteCostDict.TryGetValue(route, out CostFromTo calcRoute))

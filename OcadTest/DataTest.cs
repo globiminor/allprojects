@@ -21,7 +21,7 @@ namespace OcadTest
     {
       using (OcadReader r = OcadReader.Open(@"C:\daten\felix\kapreolo\scool\regensdorf_ruggenacher\test.ocd"))
       {
-        foreach (ElementIndex idx in r.GetIndices())
+        foreach (var idx in r.GetIndices())
         {
           ElementV9 e = (ElementV9)r.ReadElement(idx);
           if (e == null)
@@ -38,7 +38,7 @@ namespace OcadTest
       List<Point3D> pts = new List<Point3D>(15100100);
       using (ShpReader r = new ShpReader(@"C:\daten\felix\kapreolo\karten\hardwald\2017\26870_12535"))
       {
-        foreach (Point3D p in r)
+        foreach (var p in r)
         {
           //pts.Add(p);
           n++;
@@ -54,7 +54,7 @@ namespace OcadTest
       string dir = @"C:\daten\felix\kapreolo\karten\hardwald\2017\lidar";
 
       Dictionary<string, string> tiles = new Dictionary<string, string>();
-      foreach (string path in Directory.EnumerateFiles(dir))
+      foreach (var path in Directory.EnumerateFiles(dir))
       {
         string key = Path.GetFileNameWithoutExtension(path);
         tiles[key] = path;
@@ -67,7 +67,7 @@ namespace OcadTest
       g[0] = 255;
       b[0] = 255;
 
-      foreach (string key in tiles.Keys)
+      foreach (var key in tiles.Keys)
       {
         Export(dir, key, $"obstr{key}", resolution, LasUtils.Obstruction, r, g, b);
       }
@@ -80,7 +80,7 @@ namespace OcadTest
       string dir = @"C:\daten\felix\kapreolo\karten\hardwald\2017\lidar";
 
       Dictionary<string, string> tiles = new Dictionary<string, string>();
-      foreach (string path in Directory.EnumerateFiles(dir))
+      foreach (var path in Directory.EnumerateFiles(dir))
       {
         string key = Path.GetFileNameWithoutExtension(path);
         tiles[key] = path;
@@ -106,7 +106,7 @@ namespace OcadTest
       string dir = @"C:\daten\felix\kapreolo\karten\hardwald\2017\lidar";
 
       Dictionary<string, string> tiles = new Dictionary<string, string>();
-      foreach (string path in Directory.EnumerateFiles(dir))
+      foreach (var path in Directory.EnumerateFiles(dir))
       {
         if (!path.EndsWith(".tif"))
         { continue; }
@@ -124,7 +124,7 @@ namespace OcadTest
       //string dir = @"C:\daten\felix\kapreolo\karten\hardwald\2017\lidar";
 
       Dictionary<string, string> tiles = new Dictionary<string, string>();
-      foreach (string path in Directory.EnumerateFiles(dir))
+      foreach (var path in Directory.EnumerateFiles(dir))
       {
         string key = Path.GetFileNameWithoutExtension(path);
         if (!char.IsDigit(key[0]))
@@ -136,7 +136,7 @@ namespace OcadTest
       byte[] b = new byte[256];
       Grid.Common.InitColors(r, g, b);
       LasUtils.InitStructColors(r, g, b);
-      foreach (string key in tiles.Keys)
+      foreach (var key in tiles.Keys)
       {
         //string key = "26880_12545";
         Export(dir, key, $"strc{key}", resolution, LasUtils.Struct, r, g, b);
@@ -150,7 +150,7 @@ namespace OcadTest
       string dir = @"C:\daten\felix\kapreolo\karten\hardwald\2017\lidar";
 
       Dictionary<string, string> tiles = new Dictionary<string, string>();
-      foreach (string path in Directory.EnumerateFiles(dir))
+      foreach (var path in Directory.EnumerateFiles(dir))
       {
         string key = Path.GetFileNameWithoutExtension(path);
         if (!char.IsDigit(key[0]))
@@ -165,7 +165,7 @@ namespace OcadTest
         byte bb = (byte)(255 - i);
         r[i] = bb; g[i] = bb; b[i] = bb; 
       }
-      foreach (string key in tiles.Keys)
+      foreach (var key in tiles.Keys)
       {
         //string key = "26880_12545"; 
         Export(dir, key, $"dom{key}", resolution, LasUtils.Dom, r, g, b);
@@ -260,7 +260,7 @@ namespace OcadTest
     {
       using (OcadReader r = OcadReader.Open(@"C:\daten\felix\kapreolo\scool\regensdorf_ruggenacher\ruggenacher_2017.ocd"))
       {
-        foreach (ElementIndex idx in r.GetIndices())
+        foreach (var idx in r.GetIndices())
         {
           ElementV9 e = (ElementV9)r.ReadElement(idx);
           if (!string.IsNullOrWhiteSpace(e.Text))
@@ -288,7 +288,7 @@ namespace OcadTest
     {
       using (OcadWriter w = Ocad9Writer.AppendTo(@"C:\daten\felix\kapreolo\karten\hardwald\2016\Hardwald_2016.ocd"))
       {
-        foreach (ElementIndex idx in w.Reader.GetIndices())
+        foreach (var idx in w.Reader.GetIndices())
         {
           ElementV9 elem = (ElementV9)w.Reader.ReadElement(idx);
           if (elem != null && elem.Geometry is Area)
@@ -345,7 +345,7 @@ namespace OcadTest
       Assert.AreEqual(4, t2.GetLeaves().Count);
 
       int nPairs = 0;
-      foreach (BoxTree<Point>.Neighborhood<Point> pair in t1.EnumerateNeighborhoods(t2, 0.2))
+      foreach (var pair in t1.EnumerateNeighborhoods(t2, 0.2))
       {
         nPairs++;
       }
@@ -357,7 +357,7 @@ namespace OcadTest
     {
       using (OcadReader r = OcadReader.Open(@"C:\daten\felix\kapreolo\karten\eigental\test.ocd"))
       {
-        foreach (ElementIndex idx in r.GetIndices())
+        foreach (var idx in r.GetIndices())
         {
           r.ReadElement(idx);
         }
@@ -377,7 +377,7 @@ namespace OcadTest
       }
 
       int nPairs = 0;
-      foreach (BoxTree<Curve>.Neighborhood<Curve> pair in t1.EnumerateNeighborhoods(t2, 120))
+      foreach (var pair in t1.EnumerateNeighborhoods(t2, 120))
       {
         nPairs++;
       }
@@ -390,14 +390,15 @@ namespace OcadTest
       _curves = new BoxTree<CurveInfo>(2, 4, true);
       using (ShpReader reader = new ShpReader(@"C:\daten\felix\test\Export_Output.shp"))
       {
-        foreach (Area geom in reader)
+        foreach (var geom in reader)
         {
+          Area area = (Area)geom;
           _curves.InitSize(new[] { geom });
           int i = 0;
 
-          foreach (Polyline line in geom.Border)
+          foreach (var line in area.Border)
           {
-            foreach (Curve curve in line.Segments)
+            foreach (var curve in line.Segments)
             {
               _curves.Add(curve.Extent, new CurveInfo { Curve = curve, Index = i });
               i++;
@@ -487,7 +488,7 @@ namespace OcadTest
       BoxTree<Curve> t = new BoxTree<Curve>(2, 1, true);
       t.InitSize(new IGeometry[] { line });
 
-      foreach (Curve segment in line.Segments)
+      foreach (var segment in line.Segments)
       {
         //for (int i = 0; i < 50; i++)
         {

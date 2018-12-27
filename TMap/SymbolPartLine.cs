@@ -19,7 +19,7 @@ namespace TMap
     { get { return 1; } }
 
     private Rectangle _rect = new Rectangle();
-    private TTT _test = new TTT();
+    private readonly TTT _test = new TTT();
     private Pen _pen = new Pen(Color.Red);
 
     [TypeConverter(typeof(ExpandableObjectConverter))]
@@ -61,8 +61,7 @@ namespace TMap
       //  int dashI,drawI;
       //  double dashFactor,dash0Diff,scaleF;
       //  int i;
-      Polyline line = geometry as Polyline;
-      if (line == null)
+      if (!(geometry is Polyline line))
       { return; }
       //  if (sp->nDash > 0) {
       //    drawI = SymGetDash0Index(&dashI,&dash0Diff,
@@ -90,7 +89,7 @@ namespace TMap
 
       Curve pLine = null;
       Polyline drawLine = null;
-      foreach (Curve curve in line.Segments)
+      foreach (var curve in line.Segments)
       {
         if (pLine == null)
         {

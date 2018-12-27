@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Basics.Data;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -32,7 +33,7 @@ namespace Basics.Views
           TypeDescriptor.GetProperties(typeof(T));
       List<PropertyDescriptor> descriptors = new List<PropertyDescriptor>();
 
-      foreach (PropertyDescriptor prop in properties)
+      foreach (var prop in properties.Enum())
       {
         descriptors.Add(prop);
       }
@@ -122,14 +123,14 @@ namespace Basics.Views
         _propDirs = propDirs;
 
         _comparers = new Dictionary<ListSortDescription, IComparer<object>>(_propDirs.Count);
-        foreach (ListSortDescription propDir in _propDirs)
+        foreach (var propDir in _propDirs.Enum())
         {
           IComparer<object> cmp = null;
 
           PropertyDescriptor prop = propDir.PropertyDescriptor;
           if (prop.Attributes != null)
           {
-            foreach (Attribute attr in prop.Attributes)
+            foreach (var attr in prop.Attributes)
             {
               if (attr is SortAttribute sortAttr && sortAttr.ComparerType != null)
               {
@@ -195,7 +196,7 @@ namespace Basics.Views
       Clear();
       List<T> items = GetFiltered(Filter);
 
-      foreach (T item in items)
+      foreach (var item in items)
       { Add(item); }
 
       RaiseListChangedEvents = true;
@@ -311,7 +312,7 @@ namespace Basics.Views
 
         ClearItems();
 
-        foreach (T item in filtered)
+        foreach (var item in filtered)
         { Add(item); }
 
         // Set the filter value and turn on list changed events.
@@ -327,7 +328,7 @@ namespace Basics.Views
       { return _originalList; }
 
       List<PropertyInfo> filterProperties = new List<PropertyInfo>();
-      foreach (PropertyInfo prop in typeof(T).GetProperties())
+      foreach (var prop in typeof(T).GetProperties())
       {
         if (filterValue.IndexOf(prop.Name, StringComparison.InvariantCultureIgnoreCase) >= 0)
         {
@@ -337,7 +338,7 @@ namespace Basics.Views
       List<T> filtered = new List<T>(_originalList.Count);
       using (DataTable filterTable = new DataTable())
       {
-        foreach (PropertyInfo prop in filterProperties)
+        foreach (var prop in filterProperties)
         {
           Type propType = prop.PropertyType;
           if (propType.IsGenericType && propType.GetGenericTypeDefinition() == typeof(Nullable<>))
@@ -353,9 +354,9 @@ namespace Basics.Views
         {
           filterView.RowFilter = filterValue;
 
-          foreach (T item in _originalList)
+          foreach (var item in _originalList)
           {
-            foreach (PropertyInfo prop in filterProperties)
+            foreach (var prop in filterProperties)
             {
               object val = prop.GetValue(item, null);
               filterRow[prop.Name] = val ?? DBNull.Value;

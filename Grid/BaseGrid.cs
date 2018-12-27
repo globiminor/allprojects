@@ -284,7 +284,7 @@ namespace Grid
     {
       Polyline gen = line.Linearize(_extent.Dx);
       IPoint p0 = null;
-      foreach (IPoint p1 in gen.Points)
+      foreach (var p1 in gen.Points)
       {
         if (p0 != null)
         {
@@ -304,7 +304,7 @@ namespace Grid
             GetLine(q10, q00)
           };
 
-          foreach (int[] cell in EnumerateCells(lines))
+          foreach (var cell in EnumerateCells(lines))
           {
             yield return cell;
           }
@@ -327,14 +327,14 @@ namespace Grid
     {
       IList<Polyline> borders = area.Border;
       int alloc = 0;
-      foreach (Polyline border in borders)
+      foreach (var border in borders)
       { alloc += border.Points.Count; }
       List<Line> lines = new List<Line>(alloc);
 
-      foreach (Polyline border in borders)
+      foreach (var border in borders)
       {
         Polyline linears = border.Generalize(_extent.Dx);
-        foreach (Line line in linears.Segments)
+        foreach (var line in linears.Segments)
         {
           lines.Add(GetLine(line.Start, line.End));
         }
@@ -343,7 +343,7 @@ namespace Grid
       {
         yield break;
       }
-      foreach (int[] cell in EnumerateCells(lines))
+      foreach (var cell in EnumerateCells(lines))
       {
         yield return cell;
       }
@@ -391,9 +391,9 @@ namespace Grid
         }
 
         xCuts.Clear();
-        foreach (List<Line> cutLines in current.Values)
+        foreach (var cutLines in current.Values)
         {
-          foreach (Line cutLine in cutLines)
+          foreach (var cutLine in cutLines)
           {
             double f = (y0 - cutLine.Start.Y) / (cutLine.End.Y - cutLine.Start.Y);
             double xCut = cutLine.Start.X + f * (cutLine.End.X - cutLine.Start.X);
@@ -493,7 +493,7 @@ namespace Grid
       int yMin = Extent.Ny;
       int yMax = 0;
 
-      foreach (Lcp.Field key in _grids.Keys)
+      foreach (var key in _grids.Keys)
       {
         xMin = Math.Min(xMin, key.X);
         xMax = Math.Max(xMax, key.X);

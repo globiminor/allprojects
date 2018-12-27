@@ -29,7 +29,7 @@ namespace Basics.Geom.Network
       }
     }
 
-    private static double _tolerance = 1e-5;
+    private static readonly double _tolerance = 1e-5;
     private SortedDictionary<DirectedRow, LineList> _startRows;
     private SortedDictionary<DirectedRow, LineList> _endRows;
 
@@ -156,7 +156,7 @@ namespace Basics.Geom.Network
     public IList<LineList> GetAndRemoveCollectionsInside(IBox box)
     {
       List<LineList> insideList = new List<LineList>();
-      foreach (KeyValuePair<DirectedRow, LineList> pair in _startRows)
+      foreach (var pair in _startRows)
       {
         IBox polyEnvelope = pair.Value.Envelope();
         if (box == null ||
@@ -169,7 +169,7 @@ namespace Basics.Geom.Network
         }
       }
 
-      foreach (LineList poly in insideList)
+      foreach (var poly in insideList)
       {
         _startRows.Remove(poly.DirectedRows.First.Value);
         _endRows.Remove(poly.DirectedRows.Last.Value);
@@ -183,7 +183,7 @@ namespace Basics.Geom.Network
       where TCurve : ICurve
     {
       List<TopologicalLine> tList = new List<TopologicalLine>();
-      foreach (ICurve row in intersects)
+      foreach (var row in intersects)
       {
         if (mainRow != null && _comparer.Compare(mainRow, row) > 0)
         { return null; }
@@ -193,7 +193,7 @@ namespace Basics.Geom.Network
       }
 
       List<DirectedRow> dirList = new List<DirectedRow>();
-      foreach (TopologicalLine tLine in tList)
+      foreach (var tLine in tList)
       {
         if (PointOperator.Dist2(point, tLine.FromPoint) == 0)
         { dirList.Add(new DirectedRow(tLine, false)); }

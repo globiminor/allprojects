@@ -17,7 +17,7 @@ namespace Basics.Geom.Network
     private IPoint _rightCentroid;
 
     private MaxCode _maxCode = 0;
-    private double _yMax;
+    private readonly double _yMax;
 
     internal enum MaxCode
     {
@@ -121,7 +121,7 @@ namespace Basics.Geom.Network
       Curve pre = null;
       Curve at = null;
       Curve next = null;
-      foreach (Curve seg in _line.Segments)
+      foreach (var seg in _line.Segments)
       {
         if (at != null)
         {

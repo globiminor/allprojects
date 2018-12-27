@@ -24,7 +24,7 @@ namespace Asvz.Forchlauf
 
       public Kategorie GetKategorie(IList<Element> elements)
       {
-        foreach (int elemIdx in PartIndexList)
+        foreach (var elemIdx in PartIndexList)
         {
           if (elemIdx < 0)
           { continue; }
@@ -81,7 +81,7 @@ namespace Asvz.Forchlauf
 
       List<Element> streckenTeile = new List<Element>();
 
-      foreach (Element elem in reader.Elements(true, pIndexList))
+      foreach (var elem in reader.Elements(true, pIndexList))
       {
         if (elem.Symbol == SymF.StreckeLang)
         { streckenTeile.Add(elem); }
@@ -161,7 +161,7 @@ namespace Asvz.Forchlauf
       List<StreckeInfo> strecken = GetStreckeInfo(init, streckenTeile, toStrecken);
 
       Strecke s = new Strecke();
-      foreach (StreckeInfo strecke in strecken)
+      foreach (var strecke in strecken)
       {
         ForchCategorie cat = new ForchCategorie(strecke.GetKategorie(streckenTeile));
         cat.SetGeometry(strecke.Line, this);
@@ -204,7 +204,7 @@ namespace Asvz.Forchlauf
       if (toStrecken[t] != null)
       {
         List<StreckeInfo> result = new List<StreckeInfo>();
-        foreach (int t1 in toStrecken[t])
+        foreach (var t1 in toStrecken[t])
         {
           StreckeInfo g = start.Clone();
           g.Append(streckenTeile, t1);
@@ -222,7 +222,7 @@ namespace Asvz.Forchlauf
       append = append.Clone();
       append.Points.First.Value.X = line.Points.Last.Value.X;
       append.Points.First.Value.Y = line.Points.Last.Value.Y;
-      foreach (Curve seg in append.Segments)
+      foreach (var seg in append.Segments)
       {
         line.Add(seg);
       }
@@ -232,8 +232,9 @@ namespace Asvz.Forchlauf
     public ForchCategorie GetKategorie(Kategorie kategorie)
     {
       Strecke s = Strecken[0];
-      foreach (ForchCategorie cat in s.Categories)
+      foreach (var o in s.Categories)
       {
+        ForchCategorie cat = (ForchCategorie)o;
         if (cat.Kategorie == kategorie)
         { return cat; }
       }
@@ -254,7 +255,7 @@ namespace Asvz.Forchlauf
       Setup = reader.ReadSetup();
       Setup.PrjTrans.X = 0;
       Setup.PrjTrans.Y = 0;
-      foreach (int iPos in pIndexList)
+      foreach (var iPos in pIndexList)
       {
         Ocad.Symbol.BaseSymbol pSymbol = reader.ReadSymbol(iPos);
 

@@ -19,7 +19,7 @@ namespace Basics.Geom
     {
       OrthogonalSystem system = new OrthogonalSystem(points.Count);
 
-      foreach (IPoint point in points)
+      foreach (var point in points)
       {
         Axis newAxe = system.GetOrthogonal(point);
 
@@ -117,7 +117,7 @@ namespace Basics.Geom
     public OrthogonalSystem Clone()
     {
       OrthogonalSystem clone = new OrthogonalSystem();
-      foreach (Axis axis in _axes)
+      foreach (var axis in _axes)
       { clone.Axes.Add(axis); }
       return clone;
     }

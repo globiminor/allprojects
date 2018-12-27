@@ -31,7 +31,7 @@ namespace OCourse.Ext
 
     public static Settings GetSettings(OcadReader reader, IList<ElementIndex> indexList)
     {
-      foreach (Element element in reader.Elements(false, indexList))
+      foreach (var element in reader.Elements(false, indexList))
       {
         if (element.Symbol == 723000)
         {
@@ -55,7 +55,7 @@ namespace OCourse.Ext
           importDs.ReadXml(read, XmlReadMode.InferSchema);
 
           Settings settings = new Settings();
-          foreach (DataRow row in importDs.Tables[settings.Layout.TableName].Rows)
+          foreach (var row in importDs.Tables[settings.Layout.TableName].Rows.Enum())
           {
             settings.Layout.ImportRow(row);
           }

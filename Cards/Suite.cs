@@ -43,7 +43,7 @@ namespace Cards
         public List<Card> CreateCards(IEnumerable<Height> heights)
         {
             List<Card> cards = new List<Card>();
-            foreach (Height height in heights)
+            foreach (var height in heights)
             {
                 cards.Add(new Card(this, height));
             }

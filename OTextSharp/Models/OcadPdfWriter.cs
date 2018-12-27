@@ -46,7 +46,7 @@ namespace OTextSharp.Models
         IList<CategoryPar> cats = reader.GetCategories(idxs);
 
         Dictionary<string, List<CategoryPar>> courseDict = new Dictionary<string, List<CategoryPar>>();
-        foreach (CategoryPar cat in cats)
+        foreach (var cat in cats)
         {
           string course = cat.CourseName;
           if (!courseDict.TryGetValue(course, out List<CategoryPar> courseCats))
@@ -58,10 +58,10 @@ namespace OTextSharp.Models
         }
         List<string> css = new List<string>(courseDict.Keys);
         css.Sort();
-        foreach (string course in css)
+        foreach (var course in css)
         {
           int runners = 0;
-          foreach (CategoryPar cat in courseDict[course])
+          foreach (var cat in courseDict[course])
           {
             runners += cat.NrRunners.Value;
           }
@@ -74,14 +74,14 @@ namespace OTextSharp.Models
     {
       Dictionary<string, CategoryPar> catsDict = ValidateGroups(startGroups);
       Console.WriteLine("-----");
-      foreach (StartGroup startGroup in startGroups)
+      foreach (var startGroup in startGroups)
       {
         StringBuilder sb = new StringBuilder();
         StringBuilder fb = new StringBuilder();
 
         List<string> fullNames = new List<string>();
         int runners = 0;
-        foreach (string cat in startGroup.Cats)
+        foreach (var cat in startGroup.Cats)
         {
           runners += catsDict[cat].NrRunners.Value;
           if (sb.Length > 0)
@@ -103,7 +103,7 @@ namespace OTextSharp.Models
           if (parts.Length > 1)
           {
             cc = string.Empty;
-            foreach (string part in parts)
+            foreach (var part in parts)
             {
               cc += part[0];
             }
@@ -134,7 +134,7 @@ namespace OTextSharp.Models
 
             w.SetFontSize(32);
             int i = 0;
-            foreach (string f in fullNames)
+            foreach (var f in fullNames)
             {
               w.ShowText(PdfContentByte.ALIGN_CENTER, f, PdfWrite.DefaultWidth / 2, PdfWrite.DefaultHeight / 3 - i * 32, 0);
               i++;
@@ -167,7 +167,7 @@ namespace OTextSharp.Models
 
         Dictionary<string, CategoryPar> catDict = cats.ToDictionary(x => x.Name);
         Dictionary<string, List<CategoryPar>> courseDict = new Dictionary<string, List<CategoryPar>>();
-        foreach (CategoryPar cat in cats)
+        foreach (var cat in cats)
         {
           string course = cat.CourseName;
           if (!courseDict.TryGetValue(course, out List<CategoryPar> courseCats))
@@ -178,9 +178,9 @@ namespace OTextSharp.Models
           courseCats.Add(cat);
         }
 
-        foreach (StartGroup startGroup in startGroups)
+        foreach (var startGroup in startGroups)
         {
-          foreach (string catName in startGroup.Cats)
+          foreach (var catName in startGroup.Cats)
           {
             if (!catDict.ContainsKey(catName))
             {
@@ -188,7 +188,7 @@ namespace OTextSharp.Models
             }
 
             List<CategoryPar> courseCats = courseDict[catDict[catName].CourseName];
-            foreach (CategoryPar catPar in courseCats)
+            foreach (var catPar in courseCats)
             {
               if (!startGroup.Cats.Contains(catPar.Name))
               {
@@ -203,7 +203,7 @@ namespace OTextSharp.Models
         if (catDict.Count > 0)
         {
           StringBuilder sb = new StringBuilder("Missing Category");
-          foreach (string catName in catDict.Keys)
+          foreach (var catName in catDict.Keys)
           {
             sb.AppendFormat("{0}, ", catName);
           }
@@ -224,9 +224,9 @@ namespace OTextSharp.Models
         Dictionary<string, Course> courseDict = reader.ReadCourses().ToDictionary(x => x.Name);
 
         Dictionary<string, string> groupDict = new Dictionary<string, string>();
-        foreach (StartGroup startGroup in startGroups)
+        foreach (var startGroup in startGroups)
         {
-          foreach (string cat in startGroup.Cats)
+          foreach (var cat in startGroup.Cats)
           {
             groupDict.Add(cat, startGroup.Key);
           }
@@ -244,13 +244,13 @@ namespace OTextSharp.Models
           w.ShowText(PdfContentByte.ALIGN_LEFT, title, mx, y0 + 80, 0);
           w.ShowText(PdfContentByte.ALIGN_LEFT, "Startzeitgruppen", mx, y0 + 40, 0);
           w.SetFontSize(fs);
-          foreach (StartGroup catGroup in catGroups)
+          foreach (var catGroup in catGroups)
           {
             float y = y0;
             x += wi;
             w.ShowText(PdfContentByte.ALIGN_LEFT, "Kategorie", x, y0 + 5, 0);
             w.ShowText(PdfContentByte.ALIGN_CENTER, "Gruppe", x + 160, y0 + 5, 0);
-            foreach (string cat in catGroup.Cats)
+            foreach (var cat in catGroup.Cats)
             {
               y -= fs * 1.4f;
               if (string.IsNullOrWhiteSpace(cat))

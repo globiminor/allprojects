@@ -67,7 +67,7 @@ namespace Dhm
 
     private IEnumerable<IGeometry> GetGeometries(IEnumerable<Contour> contours)
     {
-      foreach (Contour contour in contours)
+      foreach (var contour in contours)
       {
         yield return contour.Polyline;
       }
@@ -84,10 +84,10 @@ namespace Dhm
       _contourTypeList = AddElements(mesh, rawContours);
       _contourTypeList.Sort();
 
-      foreach (Mesh.MeshPoint pnt in mesh.Points(null))
+      foreach (var pnt in mesh.Points(null))
       {
         int n = 0;
-        foreach (Mesh.MeshLine line in mesh.GetLinesAt(pnt))
+        foreach (var line in mesh.GetLinesAt(pnt))
         {
           if (line.GetTag(out bool reverse) != null)
           {
@@ -194,9 +194,9 @@ namespace Dhm
       // prepare unassigned contours
       Dictionary<Contour, IList<Nb>> unassigned =
         new Dictionary<Contour, IList<Nb>>();
-      foreach (Contour contour in contours)
+      foreach (var contour in contours)
       {
-        foreach (KeyValuePair<Contour, NeighborInfo> pair in contour.Neighbors)
+        foreach (var pair in contour.Neighbors)
         {
           if (pair.Key.HeightIndex.HasValue == false)
           {
@@ -221,11 +221,11 @@ namespace Dhm
       Contour maxMultiCnt = null;
       double maxMultiW = 0;
       int multiH = 0;
-      foreach (KeyValuePair<Contour, IList<Nb>> pair in unassigned)
+      foreach (var pair in unassigned)
       {
         SortedList<int, double> hList = new SortedList<int, double>();
         Contour ua = pair.Key;
-        foreach (Nb nb in pair.Value)
+        foreach (var nb in pair.Value)
         {
           Contour cn = nb.Neighbor;
           NeighborInfo cn2Ua = nb.Info;
@@ -249,7 +249,7 @@ namespace Dhm
         }
 
         // try find max value
-        foreach (KeyValuePair<int, double> hPair in hList)
+        foreach (var hPair in hList)
         {
           int h = hPair.Key;
           double w = hPair.Value;
@@ -304,7 +304,7 @@ namespace Dhm
 
       HeightComparer cmpr = new HeightComparer();
 
-      foreach (Contour contour in contours)
+      foreach (var contour in contours)
       {
         if (contour.MaxHeightIndex != null &&
           contour.MaxHeightIndex == contour.MinHeightIndex)
@@ -316,7 +316,7 @@ namespace Dhm
         bool incomplete = false;
         List<KeyValuePair<Contour, NeighborInfo>> checkNb = new List<KeyValuePair<Contour, NeighborInfo>>();
 
-        foreach (KeyValuePair<Contour, NeighborInfo> pair in contour.Neighbors)
+        foreach (var pair in contour.Neighbors)
         {
           Contour neighbor = pair.Key;
           if (neighbor.HeightIndex == null)
@@ -343,7 +343,7 @@ namespace Dhm
         int h0 = checkNb[0].Value.Height;
         double w = 0;
 
-        foreach (KeyValuePair<Contour, NeighborInfo> pair in checkNb)
+        foreach (var pair in checkNb)
         {
           if (pair.Value.Height != h0)
           {
@@ -413,7 +413,7 @@ namespace Dhm
           maxSingleH = (int)hList[0][0];
         }
 
-        foreach (double[] pair in hList)
+        foreach (var pair in hList)
         {
           if (pair[1] > maxMultiWeight &&
             pair[0] != contour.HeightIndex)
@@ -444,13 +444,13 @@ namespace Dhm
     {
       Contour maxContour = null;
       double maxWeight = 0;
-      foreach (Contour contour in contours)
+      foreach (var contour in contours)
       {
         if (contour.Orientation == Orientation.Unknown ||
           contour.Type != type)
         { continue; }
 
-        foreach (KeyValuePair<Contour, NeighborInfo> pair in contour.Neighbors)
+        foreach (var pair in contour.Neighbors)
         {
           NeighborInfo info = pair.Value;
 
@@ -466,13 +466,13 @@ namespace Dhm
 
     private int CheckLoops(List<Contour> contours, bool up)
     {
-      foreach (Contour contour in contours)
+      foreach (var contour in contours)
       {
         contour.LoopChecked = Contour.LoopState.Unknown;
       }
 
       int loops = 0;
-      foreach (Contour contour in contours)
+      foreach (var contour in contours)
       {
         if (contour.Orientation == Orientation.Unknown ||
           contour.LoopChecked != Contour.LoopState.Unknown)
@@ -501,7 +501,7 @@ namespace Dhm
 
       contour.LoopChecked = Contour.LoopState.Checking;
       bool checkLeft = ((contour.Orientation == Orientation.LeftSideDown) != up);
-      foreach (KeyValuePair<Contour, NeighborInfo> pair in contour.Neighbors)
+      foreach (var pair in contour.Neighbors)
       {
         Contour neighbor = pair.Key;
         if (neighbor.Orientation == Orientation.Unknown)
@@ -555,14 +555,14 @@ namespace Dhm
       maxLength = 0;
       Contour maxContour = null;
 
-      foreach (Contour contour in contours)
+      foreach (var contour in contours)
       {
         if (contour.Orientation != Orientation.Unknown)
         { continue; }
         double lPos = 0;
         double lNeg = 0;
 
-        foreach (KeyValuePair<Contour, NeighborInfo> pair in contour.Neighbors)
+        foreach (var pair in contour.Neighbors)
         {
           if (pair.Key.Orientation == Orientation.Unknown)
           { continue; }
@@ -590,13 +590,12 @@ namespace Dhm
 
     private void GetNeighborhood(Mesh mesh)
     {
-      foreach (Contour contour in _contours)
+      foreach (var contour in _contours)
       { contour.Neighbors.Clear(); }
 
-      foreach (Mesh.MeshLine line in mesh.Lines(null))
+      foreach (var line in mesh.Lines(null))
       {
-        Contour contour = line.GetTag(out bool isReverse) as Contour;
-        if (contour == null)
+        if (!(line.GetTag(out bool isReverse) is Contour contour))
         { continue; }
 
         if (line.LeftTri == null || line.RightTri == null)
@@ -695,7 +694,7 @@ namespace Dhm
     public List<Contour> LoopContours(IList<Contour> contours)
     {
       List<Contour> selList = new List<Contour>();
-      foreach (Contour contour in contours)
+      foreach (var contour in contours)
       {
         if (contour.Orientation != Orientation.Unknown &&
           contour.LoopChecked == Contour.LoopState.Loop)
@@ -709,7 +708,7 @@ namespace Dhm
     public List<Contour> LeftSideAssignedContours(IList<Contour> contours)
     {
       List<Contour> selList = new List<Contour>();
-      foreach (Contour contour in contours)
+      foreach (var contour in contours)
       {
         if (contour.Orientation != Orientation.Unknown)
         {
@@ -722,7 +721,7 @@ namespace Dhm
     public List<Contour> HeightAssignedContours(IList<Contour> contours)
     {
       List<Contour> selList = new List<Contour>();
-      foreach (Contour contour in contours)
+      foreach (var contour in contours)
       {
         if (contour.HeightIndex != null)
         {
@@ -735,7 +734,7 @@ namespace Dhm
     private List<ContourType> AddElements(Mesh mesh, IList<Contour> contourList)
     {
       List<ContourType> typeList = new List<ContourType>();
-      foreach (Contour contour in contourList)
+      foreach (var contour in contourList)
       {
         if (typeList.Contains(contour.Type) == false)
         { typeList.Add(contour.Type); }
@@ -743,17 +742,17 @@ namespace Dhm
         Polyline line = contour.Polyline;
         mesh.Add(line.Points.First.Value);
       }
-      foreach (Contour contour in contourList)
+      foreach (var contour in contourList)
       {
         Polyline line = contour.Polyline;
         mesh.Add(line.Points.Last.Value);
       }
 
-      foreach (Contour contour in contourList)
+      foreach (var contour in contourList)
       {
         Polyline line = contour.Polyline;
         Mesh.MeshPoint p0 = null;
-        foreach (IPoint p1 in line.Points)
+        foreach (var p1 in line.Points)
         {
           //OnProgressChanged(null);
           p0 = mesh.Add(p1, p0);
@@ -762,7 +761,7 @@ namespace Dhm
 
       //OnProgressChanged(null);
       int i = 0;
-      foreach (Contour contour in contourList)
+      foreach (var contour in contourList)
       {
         Polyline line = contour.Polyline;
         mesh.Add(line, contour, NewPoint);
@@ -776,7 +775,7 @@ namespace Dhm
 
     private void AssignFallDirs(Mesh mesh, List<FallDir> fallDirs)
     {
-      foreach (FallDir fallDir in fallDirs)
+      foreach (var fallDir in fallDirs)
       {
         bool isReverse;
         Contour contour;
@@ -842,7 +841,7 @@ namespace Dhm
 
     private void AssignHills(IList<Contour> contours)
     {
-      foreach (Contour contour in contours)
+      foreach (var contour in contours)
       {
         if (contour.Orientation != Orientation.Unknown)
         { continue; }
@@ -967,7 +966,7 @@ namespace Dhm
       ComparerSymbol cprSymbol = new ComparerSymbol();
 
       int id = 1;
-      foreach (LinkedList<Mesh.MeshLine> lineList in mesh.LineStrings(cprTagged, cprSymbol))
+      foreach (var lineList in mesh.LineStrings(cprTagged, cprSymbol))
       {
         ContourType symbol = ((Contour)lineList.First.Value.GetTag(out bool reverse)).Type;
         Polyline line = Polyline(lineList, reverse);
@@ -986,7 +985,7 @@ namespace Dhm
       Polyline line = new Polyline();
       if (reverse == false)
       {
-        foreach (Mesh.MeshLine l in lineList)
+        foreach (var l in lineList)
         { line.Add(l.Start); }
         line.Add(lineList.Last.Value.End);
       }

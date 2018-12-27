@@ -595,7 +595,7 @@ namespace Asvz
         IDataObject data = Clipboard.GetDataObject();
         string[] sFormats = data.GetFormats();
         int i = 0;
-        foreach (string s in sFormats)
+        foreach (var s in sFormats)
         {
           _lblFormat.Text = string.Format("{0}: {1}", i, s);
           _lblFormat.Refresh();
@@ -688,7 +688,7 @@ namespace Asvz
         MemoryStream memStream = new MemoryStream(size);
         Ocad9Writer pWriter = Ocad9Writer.AppendTo(memStream);
 
-        foreach (Element pElem in pInList)
+        foreach (var pElem in pInList)
         {
           pWriter.Write((Ocad.Symbol.SymbolGraphics)pElem);
         }
@@ -712,7 +712,7 @@ namespace Asvz
         IDataObject data = Clipboard.GetDataObject();
         string sFormat = "OCAD9 Object";
         object pData = data.GetData(sFormat);
-        ArrayList pInList = new ArrayList();
+        List<Element> inList = new List<Element>();
         _lblFormat.Text = "";
 
         if (pData == null)
@@ -731,56 +731,56 @@ namespace Asvz
             _lblFormat.Text = "Kein Flächenelement";
             return;
           }
-          pInList.Add(elem);
+          inList.Add(elem);
           elem = pReader.ReadElement();
         }
 
         // groesste Geometry finden
-        int nElem = pInList.Count;
+        int nElem = inList.Count;
         if (nElem < 2)
         {
           _lblFormat.Text = "Nur eine Fläche";
           return;
         }
 
-        IBox pBoxMax = null;
-        Element pMaxElement = null;
-        foreach (Element pElem in pInList)
+        Box boxMax = null;
+        Element maxElement = null;
+        foreach (var inElem in inList)
         {
-          if (pBoxMax == null)
+          if (boxMax == null)
           {
-            pBoxMax = pElem.Geometry.Extent.Clone();
-            pMaxElement = pElem;
+            boxMax = new Box(inElem.Geometry.Extent);
+            maxElement = inElem;
             continue;
           }
-          IBox pBoxElem = pElem.Geometry.Extent;
-          if (pBoxElem.Min.X < pBoxMax.Min.X &&
-            pBoxElem.Min.Y < pBoxMax.Min.Y &&
-            pBoxElem.Max.X > pBoxMax.Max.X &&
-            pBoxElem.Max.Y > pBoxMax.Max.Y)
+          IBox elemBox = inElem.Geometry.Extent;
+          if (elemBox.Min.X < boxMax.Min.X &&
+            elemBox.Min.Y < boxMax.Min.Y &&
+            elemBox.Max.X > boxMax.Max.X &&
+            elemBox.Max.Y > boxMax.Max.Y)
           {
-            pBoxMax = pBoxElem.Clone();
-            pMaxElement = pElem;
+            boxMax = new Box(elemBox);
+            maxElement = inElem;
           }
-          else if (pBoxElem.Min.X <= pBoxMax.Min.X ||
-            pBoxElem.Min.Y <= pBoxMax.Min.Y ||
-            pBoxElem.Max.X >= pBoxMax.Max.X ||
-            pBoxElem.Max.Y >= pBoxMax.Max.Y)
+          else if (elemBox.Min.X <= boxMax.Min.X ||
+            elemBox.Min.Y <= boxMax.Min.Y ||
+            elemBox.Max.X >= boxMax.Max.X ||
+            elemBox.Max.Y >= boxMax.Max.Y)
           {
-            pBoxMax.Include(pBoxElem);
-            pMaxElement = null;
+            boxMax.Include(elemBox);
+            maxElement = null;
           }
         }
-        if (pMaxElement == null)
+        if (maxElement == null)
         {
           _lblFormat.Text = "Kein grösstes Element gefunden";
           return;
         }
 
-        Area pAreaMax = (Area)pMaxElement.Geometry;
-        foreach (Element pElem in pInList)
+        Area pAreaMax = (Area)maxElement.Geometry;
+        foreach (var pElem in inList)
         {
-          if (pElem == pMaxElement)
+          if (pElem == maxElement)
           { continue; }
 
           Area pArea = (Area)pElem.Geometry;
@@ -793,8 +793,8 @@ namespace Asvz
           pAreaMax.Border.Add(pArea.Border[0]);
         }
 
-        MemoryStream memStream = new MemoryStream(pMaxElement.PointCount() * 8 + 40);
-        Ocad9Writer.Write(pMaxElement, memStream);
+        MemoryStream memStream = new MemoryStream(maxElement.PointCount() * 8 + 40);
+        Ocad9Writer.Write(maxElement, memStream);
         for (int i = 0; i < 40; i++)
         { memStream.WriteByte(0); }
 
@@ -1167,7 +1167,7 @@ namespace Asvz
       using (OcadReader reader = OcadReader.Open(ocdFile))
       {
         Setup setup = reader.ReadSetup();
-        foreach (StringParamIndex si in reader.ReadStringParamIndices())
+        foreach (var si in reader.ReadStringParamIndices())
         {
           if (si.Type != StringType.Template)
           { continue; }

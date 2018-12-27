@@ -204,8 +204,9 @@ namespace Basics.Window
             var setters = lstCol.ElementStyle?.Setters;
             if (setters != null)
             {
-              foreach (Setter setter in setters)
+              foreach (var o in setters)
               {
+                Setter setter = (Setter)o;
                 DependencyProperty prop = setter.Property;
                 if (setter.Value is Binding binding && prop == ComboBox.ItemsSourceProperty)
                 {
@@ -257,7 +258,7 @@ namespace Basics.Window
       UIElement headers = Utils.GetParent<System.Windows.Controls.Primitives.DataGridColumnHeadersPresenter>(this);
       DataGrid grd = Utils.GetParent<DataGrid>(headers);
 
-      foreach (FilterPanel filter in Utils.GetChildren<FilterPanel>(headers))
+      foreach (var filter in Utils.GetChildren<FilterPanel>(headers))
       {
         filter.HideEditFilter(grd);
       }
@@ -325,16 +326,15 @@ namespace Basics.Window
     private void FilterData()
     {
       DataGrid grd = GetDataGrid();
-      IBindingListView data = grd?.ItemsSource as IBindingListView;
 
-      if (data == null)
+      if (!(grd?.ItemsSource is IBindingListView data))
       {
         throw new ArgumentNullException(nameof(data),
           "DataSource is not an IBindingListView or does not support filtering");
       }
 
       StringBuilder filterBuilder = new StringBuilder();
-      foreach (FilterPanel filter in Utils.GetChildren<FilterPanel>(grd))
+      foreach (var filter in Utils.GetChildren<FilterPanel>(grd))
       {
         string colFilter = filter.FilterStatement;
         filter.HideEditFilter(grd);
@@ -373,8 +373,7 @@ namespace Basics.Window
 
     private void UpdateHeader()
     {
-      string column = GetColumn()?.Header as string;
-      if (column == null)
+      if (!(GetColumn()?.Header is string column))
       { return; }
 
       _lblHeader.Text = column;
@@ -382,8 +381,7 @@ namespace Basics.Window
 
     private DataGridColumn GetColumn()
     {
-      ContentPresenter columnPresenter = VisualTreeHelper.GetParent(this) as ContentPresenter;
-      if (columnPresenter == null)
+      if (!(VisualTreeHelper.GetParent(this) is ContentPresenter columnPresenter))
       { return null; }
 
       System.Windows.Controls.Primitives.DataGridColumnHeader header =

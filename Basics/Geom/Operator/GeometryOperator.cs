@@ -47,7 +47,7 @@ namespace Basics.Geom
               if (i != iDim)
               { childDims.Add(_parent._dimensions[i]); }
             }
-            foreach (double d in new double[] { _parent._range.Min[dim], _parent._range.Max[dim] })
+            foreach (var d in new double[] { _parent._range.Min[dim], _parent._range.Max[dim] })
             {
               Point p = Point.Create(c);
               p[dim] = d;
@@ -208,9 +208,9 @@ namespace Basics.Geom
         }
       }
 
-      public IPoint GeometryParamAt(IPoint param)
+      public Point GeometryParamAt(IPoint param)
       {
-        IPoint paramAt = Point.Create(param);
+        Point paramAt = Point.Create(param);
         for (int iDim = 0; iDim < param.Topology; iDim++)
         {
           paramAt[iDim] = Min[iDim] + param[iDim] * Delta[iDim];
@@ -273,7 +273,7 @@ namespace Basics.Geom
           if (_corners == null)
           {
             _corners = new SortedList<IPoint, CornerInfo>(new PointComparer());
-            foreach (ParamPart part in this)
+            foreach (var part in this)
             {
               IPoint corner = part.BoxCorner;
               if (_corners.TryGetValue(corner, out CornerInfo cornerInfo) == false)
@@ -299,7 +299,7 @@ namespace Basics.Geom
           Point.Create(cornerPoint));
 
         List<ParamsRelation> relations = new List<ParamsRelation>();
-        foreach (ParamPart subPart in subParts)
+        foreach (var subPart in subParts)
         {
           ParamsRelation relation = new ParamsRelation(subPart, yPart, parentList);
           parentList.Add(relation);
@@ -360,12 +360,12 @@ namespace Basics.Geom
 
       public static IList<ParamPart> CreateParts(ParamInfo x, IPoint range0, IPoint range1)
       {
-        IBox range = new Box(range0, range1, true);
+        IBox range = new Box(Point.Create(range0), Point.Create(range1), true);
         PartEnumerable enumPoints = new PartEnumerable(range);
         List<IList<IPoint>> parts = new List<IList<IPoint>>(enumPoints);
 
         ParamPartList parentList = new ParamPartList(x, enumPoints.Center);
-        foreach (IList<IPoint> part in parts)
+        foreach (var part in parts)
         {
           ParamPart xPart = new ParamPart(x, part, parentList);
           parentList.Add(xPart);
@@ -503,8 +503,8 @@ namespace Basics.Geom
         {
           if (_paramBox == null)
           {
-            IPoint range0 = Point.Create(_cornerParams[0]);
-            IPoint range1 = Point.Create(BoxCorner);
+            Point range0 = Point.Create(_cornerParams[0]);
+            Point range1 = Point.Create(BoxCorner);
             IBox range = new Box(range0, range1, true);
             _paramBox = range;
           }
@@ -522,8 +522,8 @@ namespace Basics.Geom
 
       public IBox GeometryBox()
       {
-        IPoint min = ParamInfo.GeometryParamAt(ParamBox.Min);
-        IPoint max = ParamInfo.GeometryParamAt(ParamBox.Max);
+        Point min = ParamInfo.GeometryParamAt(ParamBox.Min);
+        Point max = ParamInfo.GeometryParamAt(ParamBox.Max);
         Box box = new Box(min, max);
         return box;
       }
@@ -583,7 +583,7 @@ namespace Basics.Geom
           _axes = new List<IPoint>(part.Axes.Count)
         };
 
-        foreach (IPoint axis in part.Axes)
+        foreach (var axis in part.Axes)
         {
           Point a = PntOp.Add(axis, part.Origin) - center;
           p._axes.Add(a);
@@ -797,7 +797,7 @@ namespace Basics.Geom
         {
           xApprox = xTan.TangentAt(xParam);
           xSys = new OrthogonalSystem(xApprox.Count);
-          foreach (IPoint point in xApprox)
+          foreach (var point in xApprox)
           {
             Axis newAxe = xSys.GetOrthogonal(point);
             if (newAxe.Length2Epsi == 0)
@@ -899,7 +899,7 @@ namespace Basics.Geom
                 {
                   double n2 = _y.MaxOffset;
                   n2 = n2 * n2;
-                  foreach (ParamPart border in _x.Borders)
+                  foreach (var border in _x.Borders)
                   {
                     LinearIntersect near = _y.LinearIntersect(border);
                     if (near.Offset2 < n2 && near.IsInside(!xLinear, !yLinear))
@@ -913,7 +913,7 @@ namespace Basics.Geom
                 {
                   double n2 = _x.MaxOffset;
                   n2 = n2 * n2;
-                  foreach (ParamPart border in _y.Borders)
+                  foreach (var border in _y.Borders)
                   {
                     LinearIntersect near = _x.LinearIntersect(border);
                     if (near.Offset2 < n2 && near.IsInside(!xLinear, !yLinear))
@@ -929,7 +929,7 @@ namespace Basics.Geom
               }
               double m2 = _x.MaxOffset + _y.MaxOffset;
               m2 = m2 * m2;
-              foreach (ParamPart border in _x.Borders)
+              foreach (var border in _x.Borders)
               {
                 LinearIntersect near = _y.LinearIntersect(border);
                 if (near.Offset2 < m2 && near.IsInside(!xLinear, !yLinear))
@@ -938,7 +938,7 @@ namespace Basics.Geom
                   return _rel;
                 }
               }
-              foreach (ParamPart border in _y.Borders)
+              foreach (var border in _y.Borders)
               {
                 LinearIntersect near = _x.LinearIntersect(border);
                 if (near.Offset2 < m2 && near.IsInside(!xLinear, !yLinear))
@@ -1007,7 +1007,7 @@ namespace Basics.Geom
     {
       IPoint pMin = null;
       double d2 = 0;
-      foreach (IGeometry part in xMulti.Subparts())
+      foreach (var part in xMulti.Subparts())
       {
         if (pMin == null)
         {
@@ -1077,7 +1077,7 @@ namespace Basics.Geom
       { return null; }
 
       GeometryCollection result = new GeometryCollection();
-      foreach (ParamGeometryRelation rel in list)
+      foreach (var rel in list)
       { result.Add(rel.Intersection); }
 
       return result;
@@ -1171,7 +1171,7 @@ namespace Basics.Geom
 
       IBox yExtent = y.Extent;
       int iPart = -1;
-      foreach (IGeometry xPart in xMulti.Subparts())
+      foreach (var xPart in xMulti.Subparts())
       {
         iPart++;
         if (track != null && track.Cancel)
@@ -1184,7 +1184,7 @@ namespace Basics.Geom
         {
           if (relations == null)
           { relations = new List<ParamGeometryRelation>(); }
-          foreach (ParamGeometryRelation rel in list)
+          foreach (var rel in list)
           {
             rel.AddParent(x, iPart, xPart);
             relations.Add(rel);
@@ -1265,7 +1265,7 @@ namespace Basics.Geom
       {
         if (p is IMultipartGeometry m && m.HasSubparts)
         {
-          foreach (IGeometry part in m.Subparts())
+          foreach (var part in m.Subparts())
           {
             p = part;
             break;
@@ -1415,9 +1415,9 @@ namespace Basics.Geom
       List<ParamGeometryRelation> result = null;
 
       List<ParamsRelation> relations = new List<ParamsRelation>();
-      foreach (ParamPart xPart in xParts)
+      foreach (var xPart in xParts)
       {
-        foreach (ParamPart yPart in yParts)
+        foreach (var yPart in yParts)
         {
           ParamsRelation rel = new ParamsRelation(xPart, yPart, relations);
           relations.Add(rel);
@@ -1723,14 +1723,14 @@ namespace Basics.Geom
           IPoint paramPt = Point.Create(coords);
           IPoint geomPt = _geom.PointAt(paramPt);
 
-          foreach (GagaBuilder b in builders)
+          foreach (var b in builders)
           { b.TryAdd(code, geomPt); }
         }
 
         List<Gaga> splits = new List<Gaga>(builders.Count);
         double normed = _geom.NormedMaxOffset;
         normed = normed * normed;
-        foreach (GagaBuilder builder in builders)
+        foreach (var builder in builders)
         {
           Box extent = builder.GeomExtent;
           IPoint sMin = extent.Min;
@@ -1868,9 +1868,9 @@ namespace Basics.Geom
         IList<Gaga> xSplits = _x.Split(false);
         IList<Gaga> ySplits = _y.Split(false);
         List<GagaRel> rels = new List<GagaRel>(xSplits.Count * ySplits.Count);
-        foreach (Gaga xSplit in xSplits)
+        foreach (var xSplit in xSplits)
         {
-          foreach (Gaga ySplit in ySplits)
+          foreach (var ySplit in ySplits)
           {
             rels.Add(new GagaRel(xSplit, ySplit));
           }
@@ -1916,7 +1916,7 @@ namespace Basics.Geom
         }
         else if (r == ParamRelate.Near)
         {
-          foreach (GagaRel splitRel in rel.Split())
+          foreach (var splitRel in rel.Split())
           {
             relations.Enqueue(splitRel);
           }

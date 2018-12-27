@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using Basics.Forms;
 using Macro;
 
 namespace MacroUi
@@ -77,7 +78,7 @@ namespace MacroUi
     {
       DataTable tbl = ((DataView)dgvData.DataSource).Table;
       tbl.Clear();
-      foreach (string fileName in fileNames)
+      foreach (var fileName in fileNames)
       {
         tbl.Rows.Add(CheckState.Unchecked, Path.GetFileName(fileName), Path.GetFullPath(fileName));
       }
@@ -301,7 +302,7 @@ namespace MacroUi
       macro.SendCommands('n', Ui.VK_ALT);
       macro.Sleep(100);
 
-      foreach (char c in name)
+      foreach (var c in name)
       { macro.SendKey(c); }
 
       macro.Sleep(100);
@@ -470,7 +471,7 @@ namespace MacroUi
       string[] fileList = Directory.GetFiles(
         @"D:\daten\felix\kapreolo\karten\wangenerwald\2008\5erStaffel2010\Bahnen",
         "*.ocd");
-      foreach (string path in fileList)
+      foreach (var path in fileList)
       {
         string fileName = Path.GetFileName(path);
         if (fileName.StartsWith("__") == false)
@@ -489,14 +490,14 @@ namespace MacroUi
         dgvData.ReadOnly = true;
         dgvData.Enabled = true;
 
-        foreach (DataGridViewRow vRow in dgvData.Rows)
+        foreach (var vRow in dgvData.Rows.Enum())
         {
           DataRowView row = (DataRowView)vRow.DataBoundItem;
           row[_processedColumn] = CheckState.Unchecked;
         }
 
         int iRow = 0;
-        foreach (DataGridViewRow vRow in dgvData.Rows)
+        foreach (var vRow in dgvData.Rows.Enum())
         {
           dgvData.FirstDisplayedScrollingRowIndex = iRow;
           iRow++;
@@ -530,7 +531,7 @@ namespace MacroUi
           //  macro.SetForegroundProcess(OcadProcName);
           //  macro.SendCommands('n', Macro.VK_ALT);
           //  macro.Sleep(200);
-          //  foreach (char c in file)
+          //  foreach (var c in file)
           //  {
           //    macro.SendKey(c);
           //  }

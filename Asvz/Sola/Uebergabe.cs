@@ -1,10 +1,10 @@
+using Basics.Geom;
+using Ocad;
+using Ocad.StringParams;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Basics.Geom;
-using Ocad;
 using System.IO;
-using Ocad.StringParams;
 
 namespace Asvz.Sola
 {
@@ -369,7 +369,7 @@ namespace Asvz.Sola
       _legendPos = null;
       _textList = new List<Element>();
 
-      foreach (Element elem in template.Elements(true, pIndexList))
+      foreach (var elem in template.Elements(true, pIndexList))
       {
         if (elem.Symbol == SymD.Uebergabe)
         {
@@ -402,7 +402,7 @@ namespace Asvz.Sola
       pSetup.PrjTrans.X = 0;
       pSetup.PrjTrans.Y = 0;
 
-      foreach (int iPos in pIndexList)
+      foreach (var iPos in pIndexList)
       {
         Ocad.Symbol.BaseSymbol pSymbol = reader.ReadSymbol(iPos);
         if (pSymbol == null)
@@ -436,7 +436,7 @@ namespace Asvz.Sola
     private void ReadStringParams(Ocad9Reader template)
     {
       IList<StringParamIndex> strIdxList = template.ReadStringParamIndices();
-      foreach (StringParamIndex strIdx in strIdxList)
+      foreach (var strIdx in strIdxList)
       {
         if (strIdx.Type == StringType.Template)
         {
@@ -467,22 +467,22 @@ namespace Asvz.Sola
       double dy1 = pFrame.Top - textSymbol.Size;
       Element pElem = new ElementV9(true);
 
-      foreach (Element pText in textList)
+      foreach (var text in textList)
       {
-        PointCollection pList = (PointCollection)pText.Geometry;
+        PointCollection pList = (PointCollection)text.Geometry;
         pList = pList.Project(setup.Prj2Map);
 
-        Polyline pLine = new Polyline();
+        Polyline line = new Polyline();
 
-        pLine.Add(new Point2D(pList[1].X - dx0, pList[1].Y - dy0));
-        pLine.Add(new Point2D(pList[2].X + dx1, pList[2].Y - dy0));
-        pLine.Add(new Point2D(pList[3].X + dx1, pList[3].Y + dy1));
-        pLine.Add(new Point2D(pList[4].X - dx0, pList[4].Y + dy1));
-        pLine.Add(new Point2D(pList[1].X - dx0, pList[1].Y - dy0));
+        line.Add(new Point2D(pList[1].X - dx0, pList[1].Y - dy0));
+        line.Add(new Point2D(pList[2].X + dx1, pList[2].Y - dy0));
+        line.Add(new Point2D(pList[3].X + dx1, pList[3].Y + dy1));
+        line.Add(new Point2D(pList[4].X - dx0, pList[4].Y + dy1));
+        line.Add(new Point2D(pList[1].X - dx0, pList[1].Y - dy0));
 
-        pLine = pLine.Project(setup.Map2Prj);
+        line = line.Project(setup.Map2Prj);
 
-        pElem.Geometry = pLine;
+        pElem.Geometry = line;
         pElem.Symbol = SymD.BoxText;
         pElem.Type = GeomType.line;
         writer.Append(pElem);
@@ -491,15 +491,15 @@ namespace Asvz.Sola
 
     private void AddLegend(OcadWriter writer, Polyline border, Point rawPosition)
     {
-      Point edge = null;
+      IPoint edge = null;
 
       border = border.Project(_templateSetup.Prj2Map);
       rawPosition = rawPosition.Project(_templateSetup.Prj2Map);
 
       double dDist = -1;
-      foreach (Point pnt in border.Points)
+      foreach (var pnt in border.Points)
       {
-        double d2 = pnt.Dist2(rawPosition);
+        double d2 = Point.Dist2(pnt, rawPosition);
         if (dDist < 0 || dDist > d2)
         {
           dDist = d2;
@@ -568,7 +568,7 @@ namespace Asvz.Sola
       elem = Common.CreateText("50 m", p.X, p.Y, _legendText, _templateSetup);
       writer.Append(elem);
 
-      Polyline pScale = Polyline.Create(new [] { new Point2D(0, 0), new Point2D(50, 0) });
+      Polyline pScale = Polyline.Create(new[] { new Point2D(0, 0), new Point2D(50, 0) });
       pScale = pScale.Project(_templateSetup.Prj2Map);
       dx = pScale.Project(Geometry.ToXY).Length() / 2.0;
 

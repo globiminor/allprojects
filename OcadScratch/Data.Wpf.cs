@@ -114,7 +114,7 @@ namespace OMapScratch
 
   public static class SymbolUtils
   {
-    private static float _fontSize = 12;
+    private static readonly float _fontSize = 12;
 
     public static void DrawSymbol(DrawingContext dc, Symbol symbol, Color color, float width, float height, float scale)
     {
@@ -124,7 +124,7 @@ namespace OMapScratch
       {
         float[] matrix = GetMatrix(width, height, scale);
 
-        foreach (SymbolCurve curve in symbol.Curves)
+        foreach (var curve in symbol.Curves)
         {
           Pen pen = new Pen(br, curve.LineWidth * scale);
           DrawCurve(dc, curve.Curve, matrix, curve.LineWidth * scale, curve.Fill, curve.Stroke, pen);
@@ -138,7 +138,7 @@ namespace OMapScratch
 
       else if (symTyp == SymbolType.Line)
       {
-        foreach (SymbolCurve sym in symbol.Curves)
+        foreach (var sym in symbol.Curves)
         {
           if (sym.Curve == null)
           {
@@ -154,10 +154,10 @@ namespace OMapScratch
             {
               int i = 0;
               float pre = 0;
-              foreach (float pos in sym.Dash.GetPositions(width - 6))
+              foreach (var pos in sym.Dash.GetPositions(width - 6))
               {
                 i++;
-                float current = pos * scale + 3;
+                float current = (float)(pos * scale + 3);
 
                 if (i % 2 == 0)
                 {
@@ -174,12 +174,12 @@ namespace OMapScratch
           {
             float[] matrix = GetMatrix(width, height, scale);
             Pen pen = new Pen(br, sym.LineWidth * scale);
-            foreach (float pos in sym.Dash.GetPositions(width - 6))
+            foreach (var pos in sym.Dash.GetPositions(width - 6))
             {
               if (pos * scale > width - 6)
               { break; }
 
-              matrix[2] = pos * scale + 3;
+              matrix[2] = (float)(pos * scale + 3);
 
               DrawCurve(dc, sym.Curve, matrix, sym.LineWidth * scale, sym.Fill, sym.Stroke, pen);
             }
@@ -191,7 +191,7 @@ namespace OMapScratch
     public static void DrawLine(DrawingContext canvas, Symbol sym, float[] matrix, float symbolScale, Curve line, Pen p)
     {
       float lineScale = matrix?[0] / symbolScale ?? 1;
-      foreach (SymbolCurve curve in sym.Curves)
+      foreach (var curve in sym.Curves)
       { DrawCurve(canvas, line, matrix, curve.LineWidth * lineScale, curve.Fill, curve.Stroke, p); }
     }
 
@@ -204,7 +204,7 @@ namespace OMapScratch
       }
 
       Pnt t = point.Trans(matrix);
-      foreach (SymbolCurve curve in sym.Curves)
+      foreach (var curve in sym.Curves)
       { DrawCurve(canvas, curve.Curve, matrix, curve.LineWidth, curve.Fill, curve.Stroke, p); }
     }
 
@@ -229,7 +229,7 @@ namespace OMapScratch
       PathGeometry geom = new PathGeometry();
       PathFigure path = new PathFigure();
       curve[0].Init(path, matrix);
-      foreach (ISegment segment in curve.Segments)
+      foreach (var segment in curve.Segments)
       { segment.AppendTo(path, matrix); }
 
       p.Thickness = lineWidth;

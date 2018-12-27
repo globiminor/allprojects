@@ -1,3 +1,4 @@
+using Basics.Forms;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -190,7 +191,7 @@ namespace TMapWin.Browse
         if (_dir == "")
         {
           DriveInfo[] allDrives = DriveInfo.GetDrives();
-          foreach (DriveInfo drive in allDrives)
+          foreach (var drive in allDrives)
           {
             AddItem(drive.Name, null, DataType.Folder);
           }
@@ -199,7 +200,7 @@ namespace TMapWin.Browse
 
         List<DatasetInfo> objList = TData.Browse.GetObjects(_dir);
 
-        foreach (DatasetInfo info in objList)
+        foreach (var info in objList)
         {
           AddItem(info.Name, info.DsName, info.DataType);
         }
@@ -269,7 +270,7 @@ namespace TMapWin.Browse
 
         List<string> parents = TData.Browse.GetParents(_dir);
 
-        foreach (string parent in parents)
+        foreach (var parent in parents)
         {
           lstParents.Items.Add(parent);
         }
@@ -354,7 +355,7 @@ namespace TMapWin.Browse
     private void _lstData_SelectedIndexChanged(object sender, EventArgs e)
     {
       StringBuilder itemList = new StringBuilder();
-      foreach (ListViewItem item in ListData.SelectedItems)
+      foreach (var item in ListData.SelectedItems.Enum())
       {
         if (itemList.Length > 0)
         { itemList.Append("; "); }
@@ -399,7 +400,7 @@ namespace TMapWin.Browse
 
     public class ValueCancelEventArgs<T> : CancelEventArgs
     {
-      private T _value;
+      private readonly T _value;
 
       public ValueCancelEventArgs(T value)
       {
@@ -414,8 +415,8 @@ namespace TMapWin.Browse
 
     public class ItemArgs : CancelEventArgs
     {
-      private string _name;
-      private DataType _dataType;
+      private readonly string _name;
+      private readonly DataType _dataType;
 
       public ItemArgs(string name, DataType dataType)
       {

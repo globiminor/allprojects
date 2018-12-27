@@ -88,7 +88,7 @@ namespace OCourse.Ext
     {
       get
       {
-        foreach (NextControl next in _nextControls)
+        foreach (var next in _nextControls)
         {
           int nInter = next.Inter.Count - 1;
           for (int i = 0; i < nInter; i++)
@@ -116,7 +116,7 @@ namespace OCourse.Ext
     {
       string pre = null;
       int iSplit = 0;
-      foreach (Control control in Controls)
+      foreach (var control in Controls)
       {
         if (pre == split.Name)
         { iSplit++; }
@@ -129,7 +129,7 @@ namespace OCourse.Ext
     {
       StringBuilder sb = new StringBuilder();
       sb.AppendFormat("{0}", _preName);
-      foreach (NextControl next in _nextControls)
+      foreach (var next in _nextControls)
       {
         if (next.Code != 0)
         { sb.Append(next.Code); }
@@ -139,7 +139,7 @@ namespace OCourse.Ext
     public override string ToString()
     {
       StringBuilder sb = new StringBuilder();
-      foreach (Control control in Controls)
+      foreach (var control in Controls)
       {
         sb.AppendFormat("{0} ", control.Name);
       }
@@ -155,7 +155,7 @@ namespace OCourse.Ext
     {
       List<SectionList> parts = new List<SectionList>();
       SectionList current = null;
-      foreach (NextControl next in NextControls)
+      foreach (var next in NextControls)
       {
         if (next.Control.Code == ControlCode.Start)
         {
@@ -223,7 +223,7 @@ namespace OCourse.Ext
     public Course ToSimpleCourse()
     {
       Course course = new Course(GetName());
-      foreach (Control control in Controls)
+      foreach (var control in Controls)
       {
         Control add;
         IList<string> nameParts = control.Name.Split('.');
@@ -280,7 +280,7 @@ namespace OCourse.Ext
     {
       int count = 0;
       Control c1 = null;
-      foreach (NextControl nextControl in _nextControls)
+      foreach (var nextControl in _nextControls)
       {
         Control c0 = c1;
         c1 = nextControl.Control;
@@ -302,10 +302,10 @@ namespace OCourse.Ext
       EqualControlNamesComparer cmp = new EqualControlNamesComparer();
       Dictionary<SectionList, SectionList> partsDict = new Dictionary<SectionList, SectionList>(cmp);
 
-      foreach (SectionList list in combined)
+      foreach (var list in combined)
       {
         IList<SectionList> parts = list.GetParts();
-        foreach (SectionList part in parts)
+        foreach (var part in parts)
         {
           TryAdd(partsDict, part);
         }

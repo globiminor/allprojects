@@ -16,7 +16,7 @@ namespace Basics.Geom.Process
 
     public IEnumerable<Action<IRow>> GetActions()
     {
-      foreach (TableAction action in _actions)
+      foreach (var action in _actions)
       {
         if (action.Constraint != null && !action.Constraint(Row))
         { continue; }

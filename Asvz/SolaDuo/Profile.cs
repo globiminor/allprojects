@@ -173,7 +173,7 @@ namespace Asvz
       pLine.Add(new Point2D(pLine.Points.Last.Value.X, 300));
       pLine.Add(new Point2D(pLine.Points.First.Value.X, 300));
       pLine.Add(new Point2D(pLine.Points.First.Value.X, pLine.Points.First.Value.Y));
-      foreach (IPoint p in pLine.Points)
+      foreach (var p in pLine.Points)
       {
         p.X = (p.X + sumDist) / _fHeight;
       }
@@ -238,7 +238,7 @@ namespace Asvz
       int iPoint = 0;
       double dTeerStart = 0;
       double dTeerEnd = dTeerStart - 1;
-      foreach (Curve pSeg in profile.Segments)
+      foreach (var pSeg in profile.Segments)
       {
         double dStart = pSeg.Start.X + sumDist;
         double dEnd = pSeg.End.X + sumDist;
@@ -326,9 +326,9 @@ namespace Asvz
     {
       bool[] inside = new bool[line.Points.Count];
       int iPoint = 0;
-      foreach (IPoint pnt in line.Points)
+      foreach (var pnt in line.Points)
       {
-        foreach (Area poly in polygons)
+        foreach (var poly in polygons)
         {
           if (poly.Extent.Intersects(pnt.Extent) && poly.IsWithin(pnt))
           {
@@ -361,7 +361,7 @@ namespace Asvz
         iIndex++;
       }
 
-      foreach (Element elem in template.Elements(true, indexList))
+      foreach (var elem in template.Elements(true, indexList))
       {
         // nothing needed yet
       }
@@ -379,7 +379,7 @@ namespace Asvz
         iIndex++;
       }
 
-      foreach (int iPos in pIndexList)
+      foreach (var iPos in pIndexList)
       {
         IBox pExtent;
         Ocad.Symbol.BaseSymbol pSymbol = reader.ReadSymbol(iPos);
@@ -414,7 +414,7 @@ namespace Asvz
     {
       Debug.Assert(template != null);
       IList<StringParamIndex> strIdxList = template.ReadStringParamIndices();
-      foreach (StringParamIndex strIdx in strIdxList)
+      foreach (var strIdx in strIdxList)
       {
         if (strIdx.Type == StringType.PrintPar)
         { _printParam = new PrintPar(template.ReadStringParam(strIdx)); }

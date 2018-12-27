@@ -239,7 +239,7 @@ namespace Ocad
       paramList = paramList ?? ReadStringParamIndices();
 
       List<CategoryPar> catNames = new List<CategoryPar>();
-      foreach (StringParamIndex par in paramList)
+      foreach (var par in paramList)
       {
         if (par.Type == StringType.Class)
         {
@@ -254,7 +254,7 @@ namespace Ocad
     {
       paramList = paramList ?? ReadStringParamIndices();
       List<string> catNames = new List<string>();
-      foreach (StringParamIndex par in paramList)
+      foreach (var par in paramList)
       {
         if (par.Type == StringType.Class)
         {
@@ -439,7 +439,7 @@ namespace Ocad
         else
         {
           PointCollection points = new PointCollection();
-          foreach (Coord coord in coords)
+          foreach (var coord in coords)
           { points.Add(coord.GetPoint()); }
           return points;
         }
@@ -607,7 +607,7 @@ namespace Ocad
         iSymbol++;
       }
 
-      foreach (int posIndex in symPos)
+      foreach (var posIndex in symPos)
       {
         Symbol.BaseSymbol symbol = ReadSymbol(posIndex);
         yield return symbol;
@@ -727,7 +727,7 @@ namespace Ocad
     public virtual Element ReadControlGeometry(Control control,
       IList<StringParamIndex> settingIndexList)
     {
-      foreach (StringParamIndex strIdx in settingIndexList)
+      foreach (var strIdx in settingIndexList)
       {
         if (strIdx.Type == StringType.Control)
         {
@@ -756,7 +756,7 @@ namespace Ocad
     {
       Dictionary<Control, StringParamIndex> controls =
         new Dictionary<Control, StringParamIndex>();
-      foreach (StringParamIndex index in indexList)
+      foreach (var index in indexList)
       {
         if (index.Type != StringType.Control)
         { continue; }
@@ -768,7 +768,7 @@ namespace Ocad
         controls.Add(control, index);
       }
 
-      foreach (KeyValuePair<Control, StringParamIndex> pair in controls)
+      foreach (var pair in controls)
       {
         pair.Key.Element = ReadElement(pair.Value.ElemNummer - 1);
       }
@@ -784,7 +784,7 @@ namespace Ocad
       { return null; }
 
       iCourse = 0;
-      foreach (StringParamIndex pIndex in pList)
+      foreach (var pIndex in pList)
       {
         if (pIndex.Type == StringType.Course)
         {
@@ -858,7 +858,7 @@ namespace Ocad
           {
             string sVariations = part.Substring(1);
             List<int> legs = new List<int>();
-            foreach (string sLeg in sVariations.Split('-'))
+            foreach (var sLeg in sVariations.Split('-'))
             {
               legs.Add(Convert.ToInt32(sLeg));
             }
@@ -948,7 +948,7 @@ namespace Ocad
     private void ReadSectionGeometry(SectionCollection sectionList,
       IList<StringParamIndex> indexList)
     {
-      foreach (ISection section in sectionList)
+      foreach (var section in sectionList)
       {
         if (section is Control)
         {
@@ -956,7 +956,7 @@ namespace Ocad
         }
         else if (section is SplitSection fork)
         {
-          foreach (SplitSection.Branch branch in fork.Branches)
+          foreach (var branch in fork.Branches)
           { ReadSectionGeometry(branch, indexList); }
         }
         else
@@ -970,7 +970,7 @@ namespace Ocad
     {
       IList<StringParamIndex> idxList = ReadStringParamIndices();
 
-      foreach (StringParamIndex index in idxList)
+      foreach (var index in idxList)
       {
         if (index.Type == StringType.Course)
         {
@@ -993,7 +993,7 @@ namespace Ocad
 
     public Course ReadCourse(string courseName, IList<StringParamIndex> indexList)
     {
-      foreach (StringParamIndex idx in indexList)
+      foreach (var idx in indexList)
       {
         if (idx.Type == StringType.Course)
         {

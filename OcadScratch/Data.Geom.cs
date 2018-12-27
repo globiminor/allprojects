@@ -75,7 +75,7 @@ namespace OMapScratch
     Basics.Geom.IGeometry IDrawable.GetGeometry()
     {
       Basics.Geom.Polyline line = new Basics.Geom.Polyline();
-      foreach (ISegment seg in Segments)
+      foreach (var seg in Segments)
       {
         line.Add(seg.GetGeometry());
       }

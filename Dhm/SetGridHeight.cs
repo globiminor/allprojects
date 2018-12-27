@@ -63,13 +63,11 @@ namespace Dhm
     private List<DisplayGrid> GetGrids()
     {
       List<DisplayGrid> grids = new List<DisplayGrid>();
-      foreach (MapData part in _context.Data.Subparts)
+      foreach (var part in _context.Data.Subparts)
       {
-        GridMapData gridMapData = part as GridMapData;
-        if (gridMapData == null)
+        if (!(part is GridMapData gridMapData))
         { continue; }
-        IDoubleGrid grd = gridMapData.Data.BaseData as IDoubleGrid;
-        if (grd == null)
+        if (!(gridMapData.Data.BaseData is IDoubleGrid grd))
         { continue; }
         grids.Add(new DisplayGrid(grd, gridMapData.Name));
       }

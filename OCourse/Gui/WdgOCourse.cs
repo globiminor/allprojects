@@ -208,7 +208,7 @@ namespace OCourse.Gui
           if (_permutations.Count > 0)
           {
             int iPart = 0;
-            foreach (SectionList part in _permutations[0].Parts)
+            foreach (var part in _permutations[0].Parts)
             {
               DataGridViewColumn col = new DataGridViewTextBoxColumn
               {
@@ -231,9 +231,9 @@ namespace OCourse.Gui
 
     private void SetLayout(bool calculating)
     {
-      foreach (System.Windows.Forms.Control ctr in Controls)
+      foreach (var ctr in Controls)
       {
-        ctr.Enabled = !calculating;
+        ((System.Windows.Forms.Control)ctr).Enabled = !calculating;
       }
       btnCancel.Enabled = calculating;
       btnCancel.Visible = calculating;
@@ -483,8 +483,9 @@ namespace OCourse.Gui
       _vm.SetSelectionedComb(selected);
 
       btnRefreshSection.Enabled = false;
-      foreach (DataGridViewRow row in dgvInfo.SelectedRows)
+      foreach (var o in dgvInfo.SelectedRows)
       {
+        DataGridViewRow row = (DataGridViewRow)o;
         if (row.DataBoundItem is CostFromTo)
         {
           btnRefreshSection.Enabled = true;
@@ -532,8 +533,9 @@ namespace OCourse.Gui
     private bool TrySelect(SectionList part)
     {
       SectionList.EqualControlNamesComparer cmp = new SectionList.EqualControlNamesComparer();
-      foreach (DataGridViewRow gRow in dgvInfo.Rows)
+      foreach (var o in dgvInfo.Rows)
       {
+        DataGridViewRow gRow = (DataGridViewRow)o;
         if (!(gRow.DataBoundItem is CostSectionlist comb))
         { continue; }
 
@@ -653,7 +655,7 @@ namespace OCourse.Gui
       List<Ocad.Control> controls = course.GetCombination(comb);
       List<Ocad.Control> prjControls = new List<Ocad.Control>(controls.Count);
 
-      foreach (Ocad.Control control in controls)
+      foreach (var control in controls)
       {
         if (control.Element == null)
         { continue; }
@@ -720,14 +722,15 @@ namespace OCourse.Gui
       List<Course> courses = new List<Course>();
       using (TextWriter w = new StreamWriter(fileName))
       {
-        foreach (ICost comb in selectedCombs)
+        foreach (var comb in selectedCombs)
         {
+          ICost cost = comb;
           List<CourseXmlDocument.ControlDist> controlDists = new List<CourseXmlDocument.ControlDist>();
-          //foreach (Ocad.Control c in row.Combination.Controls)
+          //foreach (var c in row.Combination.Controls)
           //{ course.AddLast(c); }
           //courses.Add(course);
 
-          string line = CourseXmlDocument.GetLineV8("Staffel", comb.Name, comb.DirectKm * 1000, comb.Climb, controlDists);
+          string line = CourseXmlDocument.GetLineV8("Staffel", comb.Name, cost.DirectKm * 1000, comb.Climb, controlDists);
           w.WriteLine(line);
         }
 
@@ -737,8 +740,9 @@ namespace OCourse.Gui
         temp.CourseFile = _vm.CourseFile;
 
         List<string> lines = new List<string>();
-        foreach (ICost comb in selectedCombs)
+        foreach (var comb in selectedCombs)
         {
+          ICost cost = comb;
           string courseName = comb.Name.Trim();
           if (!temp.CourseNames.Contains(courseName))
           {
@@ -749,18 +753,18 @@ namespace OCourse.Gui
           List<string> catNames = new List<string>(temp.CategoryNames);
           if (catNames.Count > 1)
           { catNames.RemoveAt(0); } // remove course name
-          foreach (string cat in catNames)
+          foreach (var cat in catNames)
           {
             List<CourseXmlDocument.ControlDist> controlDists = new List<CourseXmlDocument.ControlDist>();
 
             double climb = comb.Climb;
             climb = (int)(climb / 5) * 5;
-            string line = $"{cat}; {temp.Course.Count - 1}; {comb.DirectKm:N1}; {climb:N0}; {comb.DirectLKm:N1}; {comb.OptimalKm:N1}; {comb.OptimalLKm:N1}";
+            string line = $"{cat}; {temp.Course.Count - 1}; {cost.DirectKm:N1}; {climb:N0}; {cost.DirectLKm:N1}; {cost.OptimalKm:N1}; {cost.OptimalLKm:N1}";
             lines.Add(line);
           }
         }
         lines.Sort();
-        foreach (string line in lines)
+        foreach (var line in lines)
         {
           w.WriteLine(line);
         }
@@ -771,8 +775,9 @@ namespace OCourse.Gui
 
     private IEnumerable<ICost> GetSeletedCombs()
     {
-      foreach (DataGridViewRow row in dgvInfo.Rows)
+      foreach (var o in dgvInfo.Rows)
       {
+        DataGridViewRow row = (DataGridViewRow)o;
         if (!row.Selected)
         { continue; }
         if (!(row.DataBoundItem is ICost comb))
@@ -860,8 +865,9 @@ namespace OCourse.Gui
       if (_vm == null)
       { return; }
 
-      foreach (DataGridViewRow row in dgvInfo.SelectedRows)
+      foreach (var o in dgvInfo.SelectedRows)
       {
+        DataGridViewRow row = (DataGridViewRow)o;
         if (row.DataBoundItem is CostFromTo cost)
         {
           _vm.RouteCalculator.RouteCostDict.Remove(cost);

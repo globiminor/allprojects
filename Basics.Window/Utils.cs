@@ -99,7 +99,7 @@ namespace Basics.Window
       int count = VisualTreeHelper.GetChildrenCount(parent);
       for (int i = 0; i < count; i++)
       {
-        foreach (T child in GetChildren<T>(VisualTreeHelper.GetChild(parent, i)))
+        foreach (var child in GetChildren<T>(VisualTreeHelper.GetChild(parent, i)))
         {
           yield return child;
         }

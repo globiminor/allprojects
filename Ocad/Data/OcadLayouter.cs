@@ -35,7 +35,7 @@ namespace Ocad.Data
 
       public IEnumerable<Match> GetAllElements()
       {
-        foreach (TileEntry tileEntry in Search(null))
+        foreach (var tileEntry in Search(null))
         {
           yield return tileEntry.Value;
         }
@@ -55,7 +55,7 @@ namespace Ocad.Data
       BuildMatches(newTree, preTree.GetAllElements(), 0);
       BuildMatches(preTree, GetElements(Path.Combine(dir, name + Layout)), 200);
 
-      foreach (Match match in newTree.GetAllElements())
+      foreach (var match in newTree.GetAllElements())
       {
         if (match.Targets.Count != 1)
         { continue; }
@@ -69,7 +69,7 @@ namespace Ocad.Data
 
         //  Match zMatch = new Match();
         //  zMatch.Targets[0].Delete();
-        //  foreach (Offset offset in layouts)
+        //  foreach (var offset in layouts)
         //  {
         //    zw.Append(offset.Element);
         //  }
@@ -81,7 +81,7 @@ namespace Ocad.Data
       using (OcadReader reader = OcadReader.Open(fileName))
       {
         IList<ElementIndex> idxs = reader.GetIndices();
-        foreach (ElementIndex idx in idxs)
+        foreach (var idx in idxs)
         {
           if (idx.Status == ElementIndex.StatusDeleted)
           { continue; }
@@ -110,7 +110,7 @@ namespace Ocad.Data
 
       Dictionary<Match, List<Offset>> gagas = new Dictionary<Match, List<Offset>>();
       Dictionary<Match, List<Offset>> revers = new Dictionary<Match, List<Offset>>();
-      foreach (Match nb in neighbors)
+      foreach (var nb in neighbors)
       {
         IPoint nbGeom = nb.Element.Geometry as IPoint;
         if (nbGeom == null)
@@ -127,7 +127,7 @@ namespace Ocad.Data
         Point min = extent.Min + off;
         Point max = extent.Max - off;
         Box search = new Box(min, max);
-        foreach (BoxTree<Match>.TileEntry tileEntry in tree.Search(search))
+        foreach (var tileEntry in tree.Search(search))
         {
           Element elem = tileEntry.Value.Element;
           if (elem.Symbol != nb.Element.Symbol)
@@ -176,13 +176,13 @@ namespace Ocad.Data
     private MatchBoxTree CreateBoxTree(string fileName)
     {
       List<Match> matches = new List<Match>();
-      IBox fullBox = null;
-      foreach (Match match in GetElements(fileName))
+      Box fullBox = null;
+      foreach (var match in GetElements(fileName))
       {
         matches.Add(match);
         IBox box = match.Element.Geometry.Extent;
         if (fullBox == null)
-        { fullBox = box.Clone(); }
+        { fullBox = new Box(box); }
         else
         { fullBox.Include(box); }
       }
@@ -190,8 +190,8 @@ namespace Ocad.Data
       MatchBoxTree tree = new MatchBoxTree();
       if (fullBox == null)
       { return tree; }
-      tree.Init(new Box(fullBox.Min, fullBox.Max), 16);
-      foreach (Match match in matches)
+      tree.Init(new Box(fullBox), 16);
+      foreach (var match in matches)
       { tree.Add(match.Element.Geometry.Extent, match); }
       return tree;
     }

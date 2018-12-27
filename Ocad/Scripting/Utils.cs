@@ -52,11 +52,11 @@ namespace Ocad.Scripting
 
     private static void SetAccessControl(string dir)
     {
-      foreach (string path in Directory.GetDirectories(dir))
+      foreach (var path in Directory.GetDirectories(dir))
       {
         SetAccessControl(path);
       }
-      foreach (string path in Directory.GetFiles(dir))
+      foreach (var path in Directory.GetFiles(dir))
       {
         FileSecurity sec = File.GetAccessControl(path);
         FileSystemAccessRule access_rule = new FileSystemAccessRule(@"Benutzer",
@@ -72,7 +72,7 @@ namespace Ocad.Scripting
       string exe = null;
       using (Script expPdf = new Script(script))
       {
-        foreach (string ocdFile in files)
+        foreach (var ocdFile in files)
         {
           if (exe == null)
           {
@@ -112,7 +112,7 @@ namespace Ocad.Scripting
       string exe = null;
       using (Script opt = new Script(script))
       {
-        foreach (string ocdFile in files)
+        foreach (var ocdFile in files)
         {
           if (exe == null)
           {

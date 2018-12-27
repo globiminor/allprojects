@@ -13,8 +13,8 @@ namespace Basics.Geom
     #region nested classes
     private class _InnerCurve : InnerCurve
     {
-      private IPoint _p1;
-      private IPoint _p2;
+      private readonly IPoint _p1;
+      private readonly IPoint _p2;
       private List<double> _parts;
 
       public _InnerCurve(IPoint p1, IPoint p2)
@@ -102,7 +102,7 @@ namespace Basics.Geom
 
     private class _SubpartsEnumerable : IEnumerable<Bezier>
     {
-      private Bezier _bezier;
+      private readonly Bezier _bezier;
 
       public _SubpartsEnumerable(Bezier bezier)
       {
@@ -123,8 +123,8 @@ namespace Basics.Geom
 
     #endregion
 
-    private IPoint _pStart;
-    private IPoint _pEnd;
+    private readonly IPoint _pStart;
+    private readonly IPoint _pEnd;
     private IPoint _p1;
     private IPoint _p2;
     private _InnerCurve _innerCurve;
@@ -219,7 +219,7 @@ namespace Basics.Geom
       { throw new InvalidProgramException(); }
       IList<double> pp = PartParams;
       int i = 0;
-      foreach (Bezier subpart in Subparts())
+      foreach (var subpart in Subparts())
       {
         if (split.CurrentX.EqualGeometry(subpart))
         {
@@ -236,8 +236,7 @@ namespace Basics.Geom
       if (this == other)
       { return true; }
 
-      Bezier o = other as Bezier;
-      if (o == null)
+      if (!(other is Bezier o))
       { return false; }
       bool equal =
         Start.EqualGeometry(o.Start) &&
@@ -295,7 +294,7 @@ namespace Basics.Geom
     private class ParamAtFct
     {
       private Bezier _bezier;
-      private double _distance;
+      private readonly double _distance;
 
       public ParamAtFct(Bezier bezier, double distance)
       {

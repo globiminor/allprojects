@@ -6,7 +6,7 @@ namespace TMapWin
   public class CntToc : System.Windows.Forms.UserControl
   {
     // member variables
-    private TMap.GroupMapData _mapData;
+    private readonly TMap.GroupMapData _mapData;
 
     private System.Windows.Forms.TreeNode _treeData;
     private System.Windows.Forms.TreeNode _dragNode;
@@ -118,7 +118,7 @@ namespace TMapWin
       node.Text = data.Name;
       node.Tag = data;
 
-      foreach (TMap.MapData subpart in data.Subparts)
+      foreach (var subpart in data.Subparts)
       {
         System.Windows.Forms.TreeNode subnode = new System.Windows.Forms.TreeNode(subpart.Name);
         subnode.Tag = subpart;

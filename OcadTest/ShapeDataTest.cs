@@ -15,7 +15,7 @@ namespace OcadTest
       using (ShapeReader reader = new ShapeReader(@"H:\shp\53_59r.shp"))
       {
         reader.ReadShpHeader();
-        foreach (DataRow row in reader)
+        foreach (var row in reader)
         {
           
         }

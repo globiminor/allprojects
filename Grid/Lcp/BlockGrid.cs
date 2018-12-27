@@ -29,7 +29,7 @@ namespace Grid.Lcp
         int IEqualityComparer<Cell>.GetHashCode(Cell obj)
         {
           int hashCode = 1;
-          foreach (BlockIndex idx in obj.Blocks)
+          foreach (var idx in obj.Blocks)
           {
             hashCode = hashCode << 2;
             hashCode += idx.Ix + 2 * idx.Iy;
@@ -172,7 +172,7 @@ namespace Grid.Lcp
         int x0 = _cellX * blockSize;
         int y0 = _cellY * blockSize;
         int size = blockSize;
-        foreach (BlockIndex idx in Blocks)
+        foreach (var idx in Blocks)
         {
           size = size / 2;
           x0 += idx.Ix * size;

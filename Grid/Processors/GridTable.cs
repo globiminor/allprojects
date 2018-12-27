@@ -37,7 +37,7 @@ namespace Grid.Processors
 
     IEnumerable<ISpatialRow> ISpatialTable.Search(IBox extent, string constraint)
     {
-      foreach (ISpatialRow row in Search(extent))
+      foreach (var row in Search(extent))
       { yield return row; }
     }
     protected abstract GridRow CreateRow(Box extent);

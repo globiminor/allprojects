@@ -45,8 +45,9 @@ namespace OTextSharp.Commands
         y0 -= w.DescriptionSize;
         float x = x0;
         float y = y0;
-        foreach (Control ctr in course)
+        foreach (var section in course)
         {
+          Control ctr = (Control)section;
           w.DrawControl(ctr.Name, x, y);
           y -= w.DescriptionSize;
 
@@ -58,8 +59,9 @@ namespace OTextSharp.Commands
         }
 
         w.SetY(1);
-        foreach (Control ctr in course)
+        foreach (var section in course)
         {
+          Control ctr = (Control)section;
           w.AddImage(ctr);
         }
       }

@@ -444,7 +444,7 @@ namespace OMapScratch
       Box box = new Box(new Pnt(x0 - dd, y0 - dd), new Pnt(x0 + dd, y0 + dd));
 
       List<ActionDistance> distActions = new List<ActionDistance>();
-      foreach (Elem elem in _map.Elems)
+      foreach (var elem in _map.Elems)
       {
         if (!box.Intersects(elem.Geometry.Extent))
         { continue; }
@@ -458,7 +458,7 @@ namespace OMapScratch
         int iVertex = 0;
         float? split = null;
         double elemDist = double.MaxValue;
-        foreach (Pnt point in elem.Geometry.GetVertices())
+        foreach (var point in elem.Geometry.GetVertices())
         {
           if (box.Intersects(point))
           {
@@ -563,7 +563,7 @@ namespace OMapScratch
 
       distActions.Sort((x, y) => x.Distance.CompareTo(y.Distance));
       List<ContextActions> allActions = new List<ContextActions>();
-      foreach (ActionDistance distAction in distActions)
+      foreach (var distAction in distActions)
       {
         if (distAction.Actions != null)
         { allActions.Add(distAction.Actions); }
@@ -580,7 +580,7 @@ namespace OMapScratch
         if (_map.Images == null)
         { yield break; }
 
-        foreach (XmlImage img in _map.Images)
+        foreach (var img in _map.Images)
         { yield return img; }
       }
     }
@@ -647,12 +647,12 @@ namespace OMapScratch
         if ((_maxSymbolSize ?? 0) <= 0)
         {
           float maxSymbolSize2 = 0;
-          foreach (Symbol sym in GetSymbols())
+          foreach (var sym in GetSymbols())
           {
             if (sym.Curves == null)
             { continue; }
 
-            foreach (SymbolCurve curve in sym.Curves)
+            foreach (var curve in sym.Curves)
             {
               IBox ext = curve.Curve?.Extent;
               if (ext == null)
@@ -948,7 +948,7 @@ namespace OMapScratch
 
           newCurve.RemoveAt(0);
         }
-        foreach (ISegment seg in newCurve.Segments)
+        foreach (var seg in newCurve.Segments)
         { curve.Add(seg); }
       }
       protected override bool Redo()
@@ -1233,7 +1233,7 @@ namespace OMapScratch
             reshaped.LineTo(p.X, p.Y);
           }
         }
-        foreach (ISegment seg in reshapeGeometry.Segments)
+        foreach (var seg in reshapeGeometry.Segments)
         { reshaped.Add(seg.Clone()); }
 
         if (alongEnd >= baseGeometry.Count)
@@ -1256,7 +1256,7 @@ namespace OMapScratch
         float alongMin = 0;
         float minDist = p.Dist2(curve.From);
         int iSeg = 0;
-        foreach (ISegment seg in curve.Segments)
+        foreach (var seg in curve.Segments)
         {
           float along = seg.GetAlong(p);
           if (along >= 0 && along <= 1)
@@ -1287,10 +1287,10 @@ namespace OMapScratch
 
     private class AddPointOperation : Operation, IMultiOperation
     {
-      private float _x;
-      private float _y;
+      private readonly float _x;
+      private readonly float _y;
       private Elem _currentCurve;
-      private bool _first;
+      private readonly bool _first;
       private Map _map;
       public AddPointOperation(Map map, float x, float y)
       {
@@ -1339,9 +1339,9 @@ namespace OMapScratch
     }
     private class AddElementOperation : Operation
     {
-      private Elem _elem;
+      private readonly Elem _elem;
       private IList<Elem> _elems;
-      private Elem _currentCurve;
+      private readonly Elem _currentCurve;
       public AddElementOperation(Elem elem, IList<Elem> elems, Elem currentCurve)
       {
         _elem = elem;
@@ -1453,7 +1453,7 @@ namespace OMapScratch
         if (_elems == null)
         { yield break; }
 
-        foreach (Elem elem in _elems)
+        foreach (var elem in _elems)
         { yield return elem; }
       }
     }
@@ -1721,7 +1721,7 @@ namespace OMapScratch
       List<Elem> valids = new List<Elem>();
       if (elems != null)
       {
-        foreach (Elem elem in elems)
+        foreach (var elem in elems)
         {
           if (elem?.Symbol == null)
           { continue; }
@@ -1744,15 +1744,15 @@ namespace OMapScratch
       { return null; }
 
       Dictionary<string, ColorRef> colorDict = new Dictionary<string, ColorRef>();
-      foreach (ColorRef c in GetColors())
+      foreach (var c in GetColors())
       { colorDict[c.Id] = c; }
 
       Dictionary<string, Symbol> symbolDict = new Dictionary<string, Symbol>();
-      foreach (Symbol s in GetSymbols())
+      foreach (var s in GetSymbols())
       { symbolDict[s.Id] = s; }
 
       List<Elem> elems = new List<Elem>();
-      foreach (XmlElem xmlElem in xml.Elems)
+      foreach (var xmlElem in xml.Elems)
       {
         Elem elem = xmlElem.GetElem();
         if (symbolDict.TryGetValue(xmlElem.SymbolId ?? "", out Symbol sym))
@@ -1780,7 +1780,7 @@ namespace OMapScratch
       if (xmlSymbols == null)
       { return null; }
       List<Symbol> symbols = new List<Symbol>();
-      foreach (XmlSymbol xml in xmlSymbols)
+      foreach (var xml in xmlSymbols)
       { symbols.Add(xml.GetSymbol()); }
       return symbols;
     }
@@ -1790,7 +1790,7 @@ namespace OMapScratch
       if (xmlColors == null)
       { return null; }
       List<ColorRef> colors = new List<ColorRef>();
-      foreach (XmlColor xml in xmlColors)
+      foreach (var xml in xmlColors)
       { colors.Add(xml.GetColor()); }
       return colors;
     }
@@ -2054,7 +2054,7 @@ namespace OMapScratch
       {
         Elems = new List<XmlElem>()
       };
-      foreach (Elem elem in elems)
+      foreach (var elem in elems)
       { created.Elems.Add(XmlElem.Create(elem)); }
 
       return created;
@@ -2098,7 +2098,7 @@ namespace OMapScratch
     {
       XmlSymbols created = new XmlSymbols
       { Symbols = new List<XmlSymbol>() };
-      foreach (Symbol symbol in symbols)
+      foreach (var symbol in symbols)
       { created.Symbols.Add(XmlSymbol.Create(symbol)); }
 
       return created;
@@ -2155,7 +2155,7 @@ namespace OMapScratch
         Text = symbol.Text,
         Curves = new List<XmlSymbolCurve>()
       };
-      foreach (SymbolCurve curve in symbol.Curves)
+      foreach (var curve in symbol.Curves)
       {
         created.Curves.Add(XmlSymbolCurve.Create(curve));
       }
@@ -2172,7 +2172,7 @@ namespace OMapScratch
       };
       if (Curves != null)
       {
-        foreach (XmlSymbolCurve curve in Curves)
+        foreach (var curve in Curves)
         { sym.Curves.Add(curve.GetCurve()); }
       }
       return sym;
@@ -2202,7 +2202,7 @@ namespace OMapScratch
       if (curve.Dash != null)
       {
         StringBuilder sb = new StringBuilder();
-        foreach (float f in curve.Dash.Intervals)
+        foreach (var f in curve.Dash.Intervals)
         { sb.Append($"{f:f1},"); }
         sb.Remove(sb.Length - 1, 1);
         if (curve.Dash.EndOffset != 0 || curve.Dash.StartOffset != 0)
@@ -2259,7 +2259,7 @@ namespace OMapScratch
       { return null; }
 
       List<float> ints = new List<float>();
-      foreach (string i in intervalls)
+      foreach (var i in intervalls)
       {
         if (!float.TryParse(i, out float intervall))
         { return null; }
@@ -2906,7 +2906,7 @@ namespace OMapScratch
           if (_segments.Count == 0)
           { return null; }
           Box extent = _segments[0].GetExtent();
-          foreach (ISegment seg in _segments)
+          foreach (var seg in _segments)
           { extent.Include(seg.GetExtent()); }
           return extent;
         }
@@ -2960,7 +2960,7 @@ namespace OMapScratch
     public Curve Project(IProjection prj)
     {
       Curve projected = new Curve();
-      foreach (ISegment seg in Segments)
+      foreach (var seg in Segments)
       {
         projected.Add(seg.Project(prj));
       }
@@ -2975,7 +2975,7 @@ namespace OMapScratch
 
       StringBuilder sb = new StringBuilder();
       this[0].InitToText(sb);
-      foreach (ISegment seg in Segments)
+      foreach (var seg in Segments)
       { seg.AppendToText(sb); }
 
       return sb.ToString();
@@ -2985,7 +2985,7 @@ namespace OMapScratch
       if (Count <= 0)
       { yield break; }
       yield return this[0].From;
-      foreach (ISegment seg in Segments)
+      foreach (var seg in Segments)
       { yield return seg.To; }
     }
 
@@ -3010,7 +3010,7 @@ namespace OMapScratch
     public Curve Clone()
     {
       Curve clone = new Curve();
-      foreach (ISegment seg in Segments)
+      foreach (var seg in Segments)
       { clone.Add(seg.Clone()); }
       clone._tx = _tx;
       clone._ty = _ty;
@@ -3022,7 +3022,7 @@ namespace OMapScratch
       Curve flip = new Curve();
       List<ISegment> reverse = new List<ISegment>(Segments);
       reverse.Reverse();
-      foreach (ISegment seg in reverse)
+      foreach (var seg in reverse)
       { flip.Add(seg.Flip()); }
       return flip;
     }
@@ -3057,7 +3057,7 @@ namespace OMapScratch
       if (fullLength > 0 && EndOffset != 0)
       {
         double sum = 0;
-        foreach (double interval in Intervals)
+        foreach (var interval in Intervals)
         { sum += interval; }
 
         double l = fullLength - StartOffset + EndOffset;
@@ -3075,7 +3075,7 @@ namespace OMapScratch
       yield return pos;
       while (true)
       {
-        foreach (double interval in Intervals)
+        foreach (var interval in Intervals)
         {
           pos += f * interval;
           yield return pos;

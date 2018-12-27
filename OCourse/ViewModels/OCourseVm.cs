@@ -280,7 +280,7 @@ namespace OCourse.ViewModels
           try
           {
             _info.RaiseListChangedEvents = false;
-            foreach (CostFromTo cost in updated)
+            foreach (var cost in updated)
             { _info.Add(cost); }
           }
           finally
@@ -490,7 +490,7 @@ namespace OCourse.ViewModels
       {
         Dictionary<int, CostSum> sumList = new Dictionary<int, CostSum>();
         Dictionary<int, List<CostSectionlist>> countList = new Dictionary<int, List<CostSectionlist>>();
-        foreach (CostSectionlist sectionsCost in info)
+        foreach (var sectionsCost in info)
         {
           int.TryParse(sectionsCost.Name.Substring(0, 1), out int leg);
 
@@ -504,7 +504,7 @@ namespace OCourse.ViewModels
           sumList[leg] = sum + sectionsCost;
           countList[leg].Add(sectionsCost);
         }
-        foreach (KeyValuePair<int, CostSum> pair in sumList)
+        foreach (var pair in sumList)
         {
           int leg = pair.Key;
           CostSum sum = pair.Value;
@@ -514,13 +514,13 @@ namespace OCourse.ViewModels
           routes.Add(mean);
         }
       }
-      foreach (CostSectionlist pair in info)
+      foreach (var pair in info)
       {
         routes.Add(pair);
       }
 
       Dictionary<ICost, ICost> singleCosts = new Dictionary<ICost, ICost>();
-      foreach (CostSectionlist costSection in info)
+      foreach (var costSection in info)
       {
         if (costSection.Parts != null)
         {
@@ -543,7 +543,7 @@ namespace OCourse.ViewModels
         _info.RaiseListChangedEvents = false;
         Dictionary<CostFromTo, CostFromTo> costDict =
           new Dictionary<CostFromTo, CostFromTo>(new CostFromTo.SectionComparer());
-        foreach (ICost cost in routes)
+        foreach (var cost in routes)
         {
           if (cost is CostFromTo costFromTo)
           {
@@ -570,7 +570,7 @@ namespace OCourse.ViewModels
 
       using (Shape.ShapeReader reader = new Shape.ShapeReader(shapeName))
       {
-        foreach (System.Data.DataRow row in reader)
+        foreach (var row in reader)
         {
           Polyline route = (Polyline)row["Shape"];
           string from = (string)row["From"];
@@ -618,7 +618,7 @@ namespace OCourse.ViewModels
           _courseNames.Clear();
           _courseNames.Add("");
 
-          foreach (string course in Utils.GetCourseList(reader, pars))
+          foreach (var course in Utils.GetCourseList(reader, pars))
           {
             _courseNames.Add(course);
             if (course == oldCourse)
@@ -667,7 +667,7 @@ namespace OCourse.ViewModels
             {
               CategoryNames.RaiseListChangedEvents = false;
               CategoryNames.Clear();
-              foreach (string catName in catNames)
+              foreach (var catName in catNames)
               { CategoryNames.Add(catName); }
             }
             finally
@@ -746,7 +746,7 @@ namespace OCourse.ViewModels
       if (sections == null)
       { return; }
 
-      foreach (ISection section in sections)
+      foreach (var section in sections)
       {
         if (section is Variation)
         {
@@ -758,10 +758,10 @@ namespace OCourse.ViewModels
         }
         else if (section is Fork fork)
         {
-          foreach (LegForks row in variations)
+          foreach (var row in variations)
           { row.Forks[fork] = "-"; }
           char v = 'A';
-          foreach (int leg in legs)
+          foreach (var leg in legs)
           {
             variations[leg - 1].Forks[fork] = v.ToString();
             v++;
@@ -917,8 +917,9 @@ namespace OCourse.ViewModels
     {
       List<PermutationVm> permutations = new List<PermutationVm>();
 
-      foreach (PermutationVm permutation in selectedRows)
+      foreach (var o in selectedRows)
       {
+        PermutationVm permutation = (PermutationVm)o;
         permutations.Add(permutation);
       }
 
@@ -1041,7 +1042,7 @@ namespace OCourse.ViewModels
           IList<StringParamIndex> idxList = reader.ReadStringParamIndices();
 
           IList<string> courseList = Utils.GetCourseList(reader, idxList);
-          foreach (string courseName in courseList)
+          foreach (var courseName in courseList)
           {
             Course course = reader.ReadCourse(courseName);
 
@@ -1050,7 +1051,7 @@ namespace OCourse.ViewModels
             List<CostSectionlist> courseCosts =
               _calc.CalcCourse(adapted, _resol, setup);
 
-            foreach (CostSectionlist pair in courseCosts)
+            foreach (var pair in courseCosts)
             {
               pair.Name = string.Format("{0} {1}", courseName, pair.Name);
               allCosts.Add(pair);
@@ -1115,7 +1116,7 @@ namespace OCourse.ViewModels
         int idx = 0;
         Random r = new Random(_min);
 
-        foreach (SectionList permut in permuts)
+        foreach (var permut in permuts)
         {
           int index = idx;
           idx++;

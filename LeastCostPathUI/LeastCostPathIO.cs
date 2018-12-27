@@ -442,8 +442,9 @@ namespace LeastCostPathUI
     {
       DataDoubleGrid routeGrid = new DataDoubleGrid(e.Nx, e.Ny, typeof(double), e.X0, e.Y0, e.Dx);
       bool first = true;
-      foreach (RouteTable.Row row in routes.Rows)
+      foreach (var o in routes.Rows)
       {
+        RouteTable.Row row = (RouteTable.Row)o;
         Polyline route = row.Route.Clone();
         if (!first)
         {
@@ -535,11 +536,12 @@ namespace LeastCostPathUI
     internal static void CreateRouteShapes(RouteTable routes, IDoubleGrid sum, IDoubleGrid heightGrd, string fileName)
     {
       RouteTable copy = new RouteTable();
-      foreach (RouteTable.Row row in routes.Rows)
+      foreach (var o in routes.Rows)
       {
+        RouteTable.Row row = (RouteTable.Row)o;
         Polyline grdRoute = row.Route;
         Polyline prjRoute = new Polyline();
-        foreach (IPoint grdPt in grdRoute.Points)
+        foreach (var grdPt in grdRoute.Points)
         {
           IPoint cell = sum.Extent.CellLL((int)grdPt.X, (int)grdPt.Y);
           Vector prjPt = new Vector(4)
@@ -564,8 +566,9 @@ namespace LeastCostPathUI
       schema.Columns.Add(new DBase.DBaseColumn(RouteTable.DelayColumn.Name, DBase.ColumnType.Double, 8, 2));
       using (ShapeWriter writer = new ShapeWriter(fileName, ShapeType.LineZ, schema))
       {
-        foreach (RouteTable.Row row in copy.Rows)
+        foreach (var o in copy.Rows)
         {
+          RouteTable.Row row = (RouteTable.Row)o;
           writer.Write(row.Route, new object[] { row.TotalCost, row.Delay });
         }
       }

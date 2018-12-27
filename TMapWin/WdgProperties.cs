@@ -3,6 +3,8 @@ using System.Data;
 using System.Windows.Forms;
 using TMap;
 using TData;
+using Basics.Data;
+using Basics.Forms;
 
 namespace TMapWin
 {
@@ -295,7 +297,7 @@ namespace TMapWin
       catch (Exception exp)
       {
         string columns = Environment.NewLine;
-        foreach (DataColumn col in geomColumn.Table.Columns)
+        foreach (var col in geomColumn.Table.Columns.Enum())
         {
           columns += string.Format("{0} \t({1})" + Environment.NewLine, col.ColumnName, col.DataType);
         }
@@ -384,7 +386,7 @@ namespace TMapWin
     {
       int nRows = _symbolisation.SymbolList.Count;
       bool[] bSel = new bool[nRows];
-      foreach (DataGridViewRow row in _grdSymbols.SelectedRows)
+      foreach (var row in _grdSymbols.SelectedRows.Enum())
       { bSel[row.Index] = true; }
       return bSel;
     }

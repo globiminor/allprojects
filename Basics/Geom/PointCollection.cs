@@ -38,7 +38,7 @@ namespace Basics.Geom
       get
       {
         int iDim = 0;
-        foreach (IPoint p in this)
+        foreach (var p in this)
         { iDim = Math.Max(iDim,p.Dimension); }
         return iDim;
       }
@@ -53,7 +53,7 @@ namespace Basics.Geom
       get
       {
         Box box = null;
-        foreach (IPoint p in this)
+        foreach (var p in this)
         {
           if (box == null)
           { box = new Box(Point.Create(p), Point.Create(p)); }
@@ -68,7 +68,7 @@ namespace Basics.Geom
     public PointCollection Project(IProjection projection)
     {
       PointCollection pPrjList = new PointCollection();
-      foreach (IPoint p in this)
+      foreach (var p in this)
       { pPrjList.Add(p.Project(projection)); }
 
       return pPrjList;
@@ -84,7 +84,7 @@ namespace Basics.Geom
     public PointCollection Clone()
     {
       PointCollection clone = new PointCollection();
-      foreach (IPoint p in this)
+      foreach (var p in this)
       {
         clone.Add(Point.Create(p));
       }

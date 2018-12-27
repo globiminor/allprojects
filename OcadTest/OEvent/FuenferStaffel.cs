@@ -71,7 +71,7 @@ namespace OcadTest.OEvent
           settings.FrontBackground, settings.RueckBackgroud);
       }
       List<int[]> pairs = new List<int[]> { new[] { 201, 210 }, new[] { 211, 220 }, new[] { 221, 230 } };
-      foreach (int[] pair in pairs)
+      foreach (var pair in pairs)
       {
         List<string> files = new List<string>();
         for (int n = pair[0]; n <= pair[1]; n++)
@@ -163,7 +163,7 @@ namespace OcadTest.OEvent
       return;
 
       //List<int[]> pairs = new List<int[]> { new[] { 201, 210 }, new[] { 211, 220 }, new[] { 221, 230 } };
-      //foreach (int[] pair in pairs)
+      //foreach (var pair in pairs)
       //{
       //  List<string> files = new List<string>();
       //  for (int n = pair[0]; n <= pair[1]; n++)
@@ -218,7 +218,7 @@ namespace OcadTest.OEvent
     {
       string dir = @"C:\daten\felix\kapreolo\karten\chomberg_bruetten\2015\Bahnen";
       List<string> files = new List<string>();
-      foreach (string file in Directory.GetFiles(dir))
+      foreach (var file in Directory.GetFiles(dir))
       {
         string fileName = Path.GetFileName(file);
         if (!fileName.StartsWith("Front.Staffel") &&
@@ -237,7 +237,7 @@ namespace OcadTest.OEvent
       string optScript = Path.Combine(dir, "optScript.xml");
       Ocad.Scripting.Utils.Optimize(files, optScript);
 
-      foreach (string file in files)
+      foreach (var file in files)
       {
         string pdf = Path.ChangeExtension(file, ".pdf");
         if (File.Exists(pdf))
@@ -251,7 +251,7 @@ namespace OcadTest.OEvent
     {
       string dir = @"C:\daten\felix\kapreolo\karten\stadlerberg\2017\Bahnen";
       List<string> files = new List<string>();
-      foreach (string file in Directory.GetFiles(dir))
+      foreach (var file in Directory.GetFiles(dir))
       {
         string fileName = Path.GetFileName(file);
         if (
@@ -271,7 +271,7 @@ namespace OcadTest.OEvent
       string optScript = Path.Combine(dir, "optScript.xml");
       Ocad.Scripting.Utils.Optimize(files, optScript);
 
-      foreach (string file in files)
+      foreach (var file in files)
       {
         string pdf = Path.ChangeExtension(file, ".pdf");
         if (File.Exists(pdf))
@@ -291,7 +291,7 @@ namespace OcadTest.OEvent
         ElementIndex delIndex = null;
         ElementIndex controlIndex = null;
         Element replaceElem = null;
-        foreach (ElementIndex e in indices)
+        foreach (var e in indices)
         {
           Element elem = w.Reader.ReadElement(e);
           if (elem == null)
@@ -347,7 +347,7 @@ namespace OcadTest.OEvent
 
         ElementIndex delIndex = null;
         Element replaceElem = null;
-        foreach (ElementIndex e in indices)
+        foreach (var e in indices)
         {
           Element elem = w.Reader.ReadElement(e);
           if (elem == null)
@@ -391,7 +391,7 @@ namespace OcadTest.OEvent
 
       Dictionary<double, FrontRueck> legs = new Dictionary<double, FrontRueck>();
 
-      foreach (string pdf in pdfs)
+      foreach (var pdf in pdfs)
       {
         string[] parts = pdf.Split('.');
 
@@ -422,7 +422,7 @@ namespace OcadTest.OEvent
       List<string> combs = new List<string>(maxPages);
       int startNr = -1;
       int lastNr = 0;
-      foreach (double key in sorted)
+      foreach (var key in sorted)
       {
         if (combs.Count >= maxPages)
         {

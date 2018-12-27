@@ -8,7 +8,7 @@ namespace ArcSde
   internal abstract class SeGeometry
   {
     protected IntPtr _shpPtr;
-    private bool _bFree = true;
+    private readonly bool _bFree = true;
     private static IntPtr _coordPtr = IntPtr.Zero;
 
     public static void SetCoordRef(double x0, double y0, double resolution)
@@ -147,10 +147,10 @@ namespace ArcSde
     public bool CheckCrosses(SeGeometryCollection intersections)
     {
       SeGeometryCollection pBoundary = Boundary();
-      foreach (SeGeometry pInter in intersections)
+      foreach (var pInter in intersections)
       {
         bool bEqual = false;
-        foreach (SeGeometry pGeom in pBoundary)
+        foreach (var pGeom in pBoundary)
         {
           if (pGeom.Equals(pInter))
           {

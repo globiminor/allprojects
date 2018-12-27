@@ -85,7 +85,7 @@ namespace Asvz.Forchlauf
     private void WriteVerpf(Ocad9Writer writer, Polyline line, Data data)
     {
       List<Data.VerpflegungSym> verpfList = data.Verpflegung(line);
-      foreach (Data.VerpflegungSym verpf in verpfList)
+      foreach (var verpf in verpfList)
       {
         Element elem = new ElementV9(true);
         elem.Geometry = verpf.Symbol;
@@ -121,7 +121,7 @@ namespace Asvz.Forchlauf
       IPoint start = lang.Strecke.Points.First.Value;
       Polyline startClip = InitStart(writer, start);
 
-      foreach (Element dataElement in data.StreckenTeile)
+      foreach (var dataElement in data.StreckenTeile)
       {
         Polyline strecke = (Polyline)dataElement.Geometry;
         strecke = ReducedStrecke(strecke, startClip);
@@ -138,14 +138,14 @@ namespace Asvz.Forchlauf
       Kategorie[] kats = { Kategorie.Lang, Kategorie.Mittel, Kategorie.Kurz };
       IEqualityComparer<KmElem> cmp = new KmComparer();
       Dictionary<KmElem, List<ForchCategorie>> kmElems = new Dictionary<KmElem, List<ForchCategorie>>(cmp);
-      foreach (Kategorie kat in kats)
+      foreach (var kat in kats)
       {
         ForchCategorie cat = data.GetKategorie(kat);
 
         double f = cat.Faktor();
         List<KmElem> elems = GetKm(writer.Setup, cat.Strecke, f, null, false);
 
-        foreach (KmElem elem in elems)
+        foreach (var elem in elems)
         {
           if (!kmElems.TryGetValue(elem, out List<ForchCategorie> cats))
           {
@@ -204,7 +204,7 @@ namespace Asvz.Forchlauf
         iIndex++;
       }
 
-      foreach (Element elem in template.Elements(true, pIndexList))
+      foreach (var elem in template.Elements(true, pIndexList))
       {
         if (elem.Symbol == _txtSchwarz.Number && elem.Text.Contains("Fluntern"))
         { _elemLegende = elem; }
@@ -227,7 +227,7 @@ namespace Asvz.Forchlauf
       setup.PrjTrans.X = 0;
       setup.PrjTrans.Y = 0;
 
-      foreach (int iPos in pIndexList)
+      foreach (var iPos in pIndexList)
       {
         Ocad.Symbol.BaseSymbol symbol = reader.ReadSymbol(iPos);
         if (symbol == null)
@@ -253,7 +253,7 @@ namespace Asvz.Forchlauf
     {
       //IList<StringParamIndex> pStrIdxList = template.ReadStringParamIndices();
       //Template pTpl = new Template();
-      //foreach (StringParamIndex pStrIdx in pStrIdxList)
+      //foreach (var pStrIdx in pStrIdxList)
       //{
       //}
     }
@@ -335,7 +335,7 @@ namespace Asvz.Forchlauf
       writer.Append(elem);
 
       IGeometry max = null;
-      foreach (Ocad.Symbol.SymbolGraphics graphics in _startSymbol.Graphics)
+      foreach (var graphics in _startSymbol.Graphics)
       {
         if (max == null || max.Extent.GetMaxExtent() <
           graphics.Geometry.Extent.GetMaxExtent())
@@ -400,7 +400,7 @@ namespace Asvz.Forchlauf
 
     private class KmComparer : IEqualityComparer<KmElem>
     {
-      double _prec = 10;
+      readonly double _prec = 10;
       public bool Equals(KmElem x, KmElem y)
       {
         int[] ox = GetValues(x);

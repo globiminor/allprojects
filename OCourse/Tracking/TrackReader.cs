@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Xml;
+using Basics.Data;
 using Basics.Geom;
 
 namespace OCourse.Tracking
@@ -39,7 +40,7 @@ namespace OCourse.Tracking
       DataTable tbl = ds.Tables[_trkpt];
 
       List<TrackPoint> pntList = new List<TrackPoint>();
-      foreach (DataRow row in tbl.Rows)
+      foreach (var row in tbl.Rows.Enum())
       {
         TrackPoint pnt = new TrackPoint
         {
@@ -138,7 +139,7 @@ namespace OCourse.Tracking
       tblTrackpoint.PrimaryKey = new DataColumn[] { tblTrackpoint.Columns["Trackpoint_Id"] };
 
       List<TrackPoint> pntList = new List<TrackPoint>();
-      foreach (DataRow rowPosition in tblPosition.Rows)
+      foreach (var rowPosition in tblPosition.Rows.Enum())
       {
         TrackPoint pnt = new TrackPoint
         {

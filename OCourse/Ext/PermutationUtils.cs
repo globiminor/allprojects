@@ -30,7 +30,7 @@ namespace OCourse.Ext
       public void Dispose()
       {
         if (_list == null) { return; }
-        foreach (LayoutHelper helper in _list)
+        foreach (var helper in _list)
         {
           if (helper.Writer != null)
           {
@@ -70,7 +70,7 @@ namespace OCourse.Ext
       }
       private LayoutHelper GetLayoutHelper(string layoutId)
       {
-        foreach (LayoutHelper layout in _list)
+        foreach (var layout in _list)
         {
           if (layout.Id == layoutId)
           {
@@ -92,7 +92,7 @@ namespace OCourse.Ext
     public static string GetLayoutId(string fullName)
     {
       string[] parts = fullName.Split('(');
-      foreach (string part in parts)
+      foreach (var part in parts)
       {
         if (part.StartsWith("l_"))
         {
@@ -108,7 +108,7 @@ namespace OCourse.Ext
     private static void WriteCourseParts(Ocad9Writer writer, IList<Course> courseParts,
       RouteCalculator routeCalc, double resolution, Setup setup)
     {
-      foreach (Course comb in courseParts)
+      foreach (var comb in courseParts)
       {
         CoursePar coursePar = CoursePar.Create(comb);
         coursePar.Climb = GetClimb(comb, routeCalc, resolution, setup);
@@ -125,7 +125,7 @@ namespace OCourse.Ext
       List<CostSectionlist> sections =
         routeCalc.CalcCourse(course, resolution, setup); // replace resolution
       int climb = 0;
-      foreach (CostSectionlist section in sections)
+      foreach (var section in sections)
       {
         climb = (int)Basics.Utils.Round(section.Climb, 5);
         break;
@@ -158,7 +158,7 @@ namespace OCourse.Ext
         reader.ReadSetup();
         Dictionary<string, IList<Grafics>> customLayouts = GetCustomLayouts(reader);
 
-        foreach (string courseName in courseNames)
+        foreach (var courseName in courseNames)
         {
           Course course = reader.ReadCourse(courseName);
           IList<Course> parts = null; // PermutationBuilder.CreateDistinctParts(course);
@@ -172,7 +172,7 @@ namespace OCourse.Ext
           Dictionary<string, IList<Element>> layouts = GetLayouts(courseFileName);
 
           List<string> cleanNames = new List<string>(parts.Count);
-          foreach (Course part in parts)
+          foreach (var part in parts)
           {
             string partName = GetFileName(rawDir, "*" + part.Name + ".ocd");
             string cleanName = Path.Combine(cleanDir, Path.GetFileName(partName));
@@ -187,7 +187,7 @@ namespace OCourse.Ext
           if (combiWriter != null)
           {
             cleanNames.Sort();
-            foreach (string cleanName in cleanNames)
+            foreach (var cleanName in cleanNames)
             {
               TemplatePar tmpl = new TemplatePar(cleanName);
               combiWriter.Append(StringType.Template, -1, tmpl.StringPar);
@@ -208,7 +208,7 @@ namespace OCourse.Ext
         reader.ReadSetup();
       }
 
-      foreach (Category cat in categories)
+      foreach (var cat in categories)
       {
         if (cat.IsSimple())
         {
@@ -230,7 +230,7 @@ namespace OCourse.Ext
           string teamFile = Path.Combine(categoryDir, string.Format("{0}_{1:0000}",
                                                                     course.Name, startNr));
 
-          foreach (Course part in permut.Parts)
+          foreach (var part in permut.Parts)
           {
             string match = string.Format("*.{0}.{1}.ocd", course.Name, part.Name);
             string partFile = GetFileName(cleanDir, match);
@@ -240,7 +240,7 @@ namespace OCourse.Ext
             List<Element> startNrElements = new List<Element>();
             using (OcadReader partReader = OcadReader.Open(teamPartFile))
             {
-              foreach (Element element in partReader.Elements(false, null))
+              foreach (var element in partReader.Elements(false, null))
               {
                 if (element.Symbol == 17011)
                 {
@@ -251,7 +251,7 @@ namespace OCourse.Ext
             using (Ocad9Writer writer = Ocad9Writer.AppendTo(teamPartFile))
             {
               writer.DeleteElements(new int[] { 17011 });
-              foreach (Element element in startNrElements)
+              foreach (var element in startNrElements)
               {
                 element.Text = startNr + "." + leg;
                 writer.Append(element);
@@ -266,7 +266,7 @@ namespace OCourse.Ext
     public static string GetTeamCombinations(List<Category> categories, Setup setup)
     {
       StringBuilder builder = new StringBuilder();
-      foreach (Category cat in categories)
+      foreach (var cat in categories)
       {
         string name = GetCoreCourseName(cat.Course.Name);
         if (cat.IsSimple()) // No PermutationUtils
@@ -276,7 +276,7 @@ namespace OCourse.Ext
         else
         {
           int nr = cat.MinStartNr;
-          foreach (int varIndex in cat.VariationIndexList)
+          foreach (var varIndex in cat.VariationIndexList)
           {
             SectionList permut = cat.GetIdxPermutation(varIndex);
             AppendCourse(builder, name, nr, permut, null, setup, ExportType.Distance);
@@ -291,7 +291,7 @@ namespace OCourse.Ext
     public static string GetTeamIndices(List<Category> categories)
     {
       StringBuilder builder = new StringBuilder();
-      foreach (Category cat in categories)
+      foreach (var cat in categories)
       {
         string name = GetCoreCourseName(cat.Course.Name);
         if (cat.IsSimple()) // No PermutationUtils
@@ -302,12 +302,12 @@ namespace OCourse.Ext
         List<Course> mainSections = cat.GetMainSections();
 
         int nr = cat.MinStartNr;
-        foreach (int varIndex in cat.VariationIndexList)
+        foreach (var varIndex in cat.VariationIndexList)
         {
           SectionList permut = cat.GetIdxPermutation(varIndex);
 
           string mainParts = "";
-          foreach (Course part in permut.Parts)
+          foreach (var part in permut.Parts)
           {
             mainParts += GetMainSection(part, mainSections);
           }
@@ -324,7 +324,7 @@ namespace OCourse.Ext
     public static string GetMainSection(Course part, IList<Course> mainSections)
     {
       string partString = part.ToShortString(1);
-      foreach (Course section in mainSections)
+      foreach (var section in mainSections)
       {
         string sectionString = section.ToShortString(1);
         if (partString.Contains(sectionString))
@@ -345,7 +345,7 @@ namespace OCourse.Ext
       if ((export & ExportType.NoControls) != ExportType.NoControls)
       {
         Course course = new Course(permutation.GetName());
-        foreach (Control control in permutation.Controls)
+        foreach (var control in permutation.Controls)
         {
           course.AddLast(control);
         }
@@ -360,7 +360,7 @@ namespace OCourse.Ext
       { lineBuilder.AppendFormat(";{0};{1};", courseName, 0); }
       if ((export & ExportType.MainSection) == ExportType.MainSection)
       {
-        foreach (Course part in permutation.Parts)
+        foreach (var part in permutation.Parts)
         {
           string code = GetMainSection(part, mainSections);
           lineBuilder.Append(code);
@@ -369,7 +369,7 @@ namespace OCourse.Ext
       }
       if ((export & ExportType.Variation) == ExportType.Variation)
       {
-        foreach (Course part in permutation.Parts)
+        foreach (var part in permutation.Parts)
         {
           lineBuilder.Append(part.Name);
         }
@@ -395,8 +395,9 @@ namespace OCourse.Ext
       double dist = 0;
       distTotal = 0;
       Control lastControl = null;
-      foreach (Control control in course)
+      foreach (var section in course)
       {
+        Control control = (Control)section;
         if (courseBuilder.Length == 0)
         {
           courseBuilder.AppendFormat("{0};", control.Name);
@@ -434,7 +435,7 @@ namespace OCourse.Ext
       using (OcadReader reader = OcadReader.Open(courseFileName))
       {
         Dictionary<string, IList<Element>> dict = new Dictionary<string, IList<Element>>();
-        foreach (Element element in reader.Elements(false, null))
+        foreach (var element in reader.Elements(false, null))
         {
           if (element.Symbol == 703000)
           {
@@ -485,8 +486,9 @@ namespace OCourse.Ext
       {
         if (settings != null)
         {
-          foreach (Settings.LayoutTable.Row layout in settings.Layout.Rows)
+          foreach (var row in settings.Layout.Rows)
           {
+            Settings.LayoutTable.Row layout = (Settings.LayoutTable.Row)row;
             string template = layout.Course;
             string layoutName = TransferCourseSetting(orig, template);
             layoutList.Add(layout, layoutName);
@@ -501,7 +503,7 @@ namespace OCourse.Ext
           Setup setup = reader.ReadSetup();
 
           List<CoursePar> climbs = new List<CoursePar>();
-          foreach (string fullCourseName in courseNames)
+          foreach (var fullCourseName in courseNames)
           {
             Course course = reader.ReadCourse(fullCourseName);
             if (routeCalc != null)
@@ -520,7 +522,7 @@ namespace OCourse.Ext
             if (layoutWriter != null)
             { WriteCourseParts(layoutWriter, parts, routeCalc, resolution, setup); }
           }
-          foreach (CoursePar climb in climbs)
+          foreach (var climb in climbs)
           {
             writer.Append(StringType.Course, -1, climb.StringPar);
           }
@@ -545,7 +547,7 @@ namespace OCourse.Ext
           reader.ReadSetup();
 
           List<ControlHelper> controls = new List<ControlHelper>();
-          foreach (StringParamIndex index in reader.ReadStringParamIndices())
+          foreach (var index in reader.ReadStringParamIndices())
           {
             if (index.Type != StringType.Control)
             { continue; }
@@ -558,20 +560,20 @@ namespace OCourse.Ext
 
             controls.Add(control);
           }
-          foreach (ControlHelper control in controls)
+          foreach (var control in controls)
           {
             Element elem = reader.ReadElement(control.ParIndex.ElemNummer - 1);
             control.ElementIndex = writer.Append(elem);
           }
 
-          foreach (ControlHelper control in controls)
+          foreach (var control in controls)
           {
             writer.Append(StringType.Control, control.ElementIndex + 1, control.Par);
           }
 
 
           IList<int> transferSymbols = new int[] { 709000 };
-          foreach (Element element in reader.Elements(false, null))
+          foreach (var element in reader.Elements(false, null))
           {
             if (transferSymbols.Contains(element.Symbol))
             {
@@ -607,7 +609,7 @@ namespace OCourse.Ext
       using (OcadReader reader = OcadReader.Open(fileName))
       {
         setup = reader.ReadSetup();
-        foreach (Element element in reader.Elements(false, null))
+        foreach (var element in reader.Elements(false, null))
         {
           if (element.Symbol == 703000) // Postennummer
           {
@@ -630,7 +632,7 @@ namespace OCourse.Ext
         Setup symSetup = reader.ReadSetup();
         symSetup.PrjTrans.X = 0;
         symSetup.PrjTrans.Y = 0;
-        foreach (Ocad.Symbol.BaseSymbol symbol in reader.ReadSymbols())
+        foreach (var symbol in reader.ReadSymbols())
         {
           if (!(symbol is Ocad.Symbol.PointSymbol pntSym)) continue;
 
@@ -649,7 +651,7 @@ namespace OCourse.Ext
 
       List<Control> controls = new List<Control>(course.Count);
 
-      foreach (ISection section in course)
+      foreach (var section in course)
       {
         if (!(section is Control control)) continue;
 
@@ -693,7 +695,7 @@ namespace OCourse.Ext
 
       Control pre = null;
       List<Grafics> applicableList = new List<Grafics>();
-      foreach (ISection section in course)
+      foreach (var section in course)
       {
         if (!(section is Control control)) continue;
 
@@ -702,7 +704,7 @@ namespace OCourse.Ext
           string key = pre.Name + "-" + control.Name;
           if (grafics.TryGetValue(key, out IList<Grafics> candidates))
           {
-            foreach (Grafics candi in candidates)
+            foreach (var candi in candidates)
             {
               if (candi.IsApplicable(course, controls))
               {
@@ -733,11 +735,11 @@ namespace OCourse.Ext
           };
           writer.Append(start);
         }
-        foreach (Element element in controlNames.Values)
+        foreach (var element in controlNames.Values)
         {
           writer.Append(element);
         }
-        foreach (Element element in titleElements)
+        foreach (var element in titleElements)
         {
           if (element.Text == course.Name)
           {
@@ -745,13 +747,13 @@ namespace OCourse.Ext
           }
           writer.Append(element);
         }
-        foreach (Element element in variElements)
+        foreach (var element in variElements)
         {
           element.Text = course.Name;
           writer.Append(element);
         }
 
-        foreach (Grafics appl in applicableList)
+        foreach (var appl in applicableList)
         {
           Control from = FindControl(appl.FromName, controls);
           Control to = FindControl(appl.ToName, controls);
@@ -790,7 +792,7 @@ namespace OCourse.Ext
       // dummy implementation
       Polyline clipped = parts[2].Clone();
       clipped.Points.RemoveLast();
-      foreach (IPoint add in parts[0].Points)
+      foreach (var add in parts[0].Points)
       { clipped.Add(Point.Create(add)); }
 
       return clipped;
@@ -798,7 +800,7 @@ namespace OCourse.Ext
 
     private static Control FindControl(string name, IList<Control> controls)
     {
-      foreach (Control control in controls)
+      foreach (var control in controls)
       {
         if (name == control.Name)
         {
@@ -812,7 +814,7 @@ namespace OCourse.Ext
     {
       IList<Control> controlList = reader.ReadControls();
       Dictionary<string, Control> controlDict = new Dictionary<string, Control>();
-      foreach (Control control in controlList)
+      foreach (var control in controlList)
       {
         controlDict.Add(control.Name, control);
       }
@@ -821,7 +823,7 @@ namespace OCourse.Ext
 
       IList<Grafics> graficList = Grafics.GetGrafics(reader, graficSymbols, controlDict);
       Dictionary<string, IList<Grafics>> graficDict = new Dictionary<string, IList<Grafics>>();
-      foreach (Grafics grafics in graficList)
+      foreach (var grafics in graficList)
       {
         string key = grafics.Key;
         if (graficDict.TryGetValue(key, out IList<Grafics> lst) == false)
@@ -870,7 +872,7 @@ namespace OCourse.Ext
       //  Settings settings = Settings.GetSettings(reader, null);
       //  settings.CourseFile = orig;
 
-      //  foreach (string courseName in courseNames)
+      //  foreach (var courseName in courseNames)
       //  {
       //    Course course = reader.ReadCourse(courseName);
       //    string coreName = GetCoreCourseName(courseName);
@@ -909,7 +911,7 @@ namespace OCourse.Ext
       //        { throw new InvalidOperationException("Not found : " + line); }
 
       //        int leg = 1;
-      //        foreach (Course part in permut.Parts)
+      //        foreach (var part in permut.Parts)
       //        {
       //          string match = string.Format("*.{0}.{1}.pdf*.lnk", coreName, part.Name);
       //          string partFile = GetFileName(reinDir, match);
@@ -959,7 +961,7 @@ namespace OCourse.Ext
       Dictionary<string, Course> courses = new Dictionary<string, Course>();
       using (OcadReader reader = Ocad9Reader.Open(courseFile))
       {
-        foreach (Course course in reader.ReadCourses())
+        foreach (var course in reader.ReadCourses())
         {
           courses.Add(GetCoreCourseName(course.Name).ToUpper(), course);
         }
@@ -1045,7 +1047,7 @@ namespace OCourse.Ext
       Dictionary<string, Course> courses = new Dictionary<string, Course>();
       using (OcadReader reader = Ocad9Reader.Open(courseFile))
       {
-        foreach (Course course in reader.ReadCourses())
+        foreach (var course in reader.ReadCourses())
         {
           courses.Add(GetCoreCourseName(course.Name).ToUpper(), course);
         }
@@ -1154,8 +1156,9 @@ namespace OCourse.Ext
 
           LinkedList<SectionTime> reduceds = new LinkedList<SectionTime>();
           SectionTime last = null;
-          foreach (Control control in course)
+          foreach (var section in course)
           {
+            Control control = (Control)section;
             if (control.Code == ControlCode.MarkedRoute ||
               control.Code == ControlCode.TextBlock)
             {
@@ -1180,7 +1183,7 @@ namespace OCourse.Ext
           reduceds.RemoveLast(); // Ziel
 
           List<SectionTime> sorted = new List<SectionTime>();
-          foreach (SectionTime time in reduceds)
+          foreach (var time in reduceds)
           {
             SectionTime sort = FindSections(time, times);
             sorted.Add(sort);
@@ -1193,7 +1196,7 @@ namespace OCourse.Ext
             normalLine.AppendFormat("{0};", parts[i]);
           }
           double t0 = 0;
-          foreach (SectionTime time in sorted)
+          foreach (var time in sorted)
           {
             if (time.ToSecs >= 0)
             {
@@ -1272,10 +1275,10 @@ namespace OCourse.Ext
       List<string> controls = new List<string>();
       List<double> costs = new List<double>();
       List<CostFromTo> tracks = new List<CostFromTo>();
-      foreach (Control control in course)
+      foreach (var control in course)
       {
         Control from = to;
-        to = control;
+        to = (Control)control;
 
         if (from == null)
         {
@@ -1288,7 +1291,7 @@ namespace OCourse.Ext
         }
 
         bool success = false;
-        foreach (CostFromTo info in calculator.RouteCostDict.Keys)
+        foreach (var info in calculator.RouteCostDict.Keys)
         {
           if (info.From.Name == from.Name && info.To.Name == to.Name)
           {
@@ -1308,7 +1311,7 @@ namespace OCourse.Ext
       if (calculator != null)
       {
         Control t = (Control)course.Last.Value;
-        foreach (CostFromTo info in calculator.RouteCostDict.Keys)
+        foreach (var info in calculator.RouteCostDict.Keys)
         {
           if (info.To.Name == t.Name)
           {
@@ -1423,7 +1426,7 @@ namespace OCourse.Ext
 
     private static SectionTime FindSections(SectionTime time, IList<SectionTime> times)
     {
-      foreach (SectionTime t in times)
+      foreach (var t in times)
       {
         if (t.ToName == time.ToName && t.FromName == time.FromName)
         {

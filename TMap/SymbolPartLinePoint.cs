@@ -59,7 +59,7 @@ namespace TMap
       if ((_linePointType & LinePointType.VertexPoint) != 0)
       {
         bool first = false;
-        foreach (Curve curve in line.Segments)
+        foreach (var curve in line.Segments)
         {
           if (first)
           {

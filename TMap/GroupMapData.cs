@@ -26,11 +26,11 @@ namespace TMap
     {
       get
       {
-        Basics.Geom.IBox box = null;
-        foreach (MapData data in _subparts)
+        Basics.Geom.Box box = null;
+        foreach (var data in _subparts)
         {
           if (box == null)
-          { box = data.Extent.Clone(); }
+          { box = new Basics.Geom.Box(data.Extent); }
           else
           { box.Include(data.Extent); }
         }

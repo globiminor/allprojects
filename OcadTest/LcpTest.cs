@@ -26,12 +26,11 @@ namespace OcadTest
         @"D:\daten\felix\kapreolo\karten\ruemlangerwald\2011\Rümlangerwald_Arnet_110619.ocd"))
       {
         Box all = null;
-        foreach (Element element in reader.Elements(true, null))
+        foreach (var element in reader.Elements(true, null))
         {
           if (all == null)
           {
-            IBox box = element.Geometry.Extent;
-            all = new Box(box.Min, box.Max);
+            all = new Box(element.Geometry.Extent);
           }
           else
           { all.Include(element.Geometry.Extent); }
@@ -44,7 +43,7 @@ namespace OcadTest
         BaseGrid<List<int>> symGrid = new SymbolGrid(ext);
 
         Dictionary<int, double> symWidths = new Dictionary<int, double>();
-        foreach (Ocad.Symbol.BaseSymbol ocadSymbol in reader.ReadSymbols())
+        foreach (var ocadSymbol in reader.ReadSymbols())
         {
           if (symWidths.ContainsKey(ocadSymbol.Number) == false)
           {
@@ -57,7 +56,7 @@ namespace OcadTest
         }
 
 
-        foreach (Element element in reader.Elements(true, null))
+        foreach (var element in reader.Elements(true, null))
         {
           IEnumerable<int[]> cells = null;
           if (element.Geometry is Area area)
@@ -77,7 +76,7 @@ namespace OcadTest
           if (cells == null)
           { continue; }
 
-          foreach (int[] cell in cells)
+          foreach (var cell in cells)
           {
             int ix = cell[0];
             int iy = cell[1];

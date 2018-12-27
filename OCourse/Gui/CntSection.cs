@@ -122,7 +122,7 @@ namespace OCourse.Gui
       Pen f = new Pen(System.Drawing.Color.Red, 1);
       Pen b = new Pen(System.Drawing.Color.Blue, 1);
 
-      foreach (KeyValuePair<NextControl, NextControlList> pair in _nextDict)
+      foreach (var pair in _nextDict)
       {
         NextControl fc = pair.Key;
 
@@ -132,7 +132,7 @@ namespace OCourse.Gui
 
         ControlLabel fg = _lblDict[fc];
         Label fl = fg.Lbl;
-        foreach (NextControl nextControl in pair.Value.List)
+        foreach (var nextControl in pair.Value.List)
         {
           NextControl tc = nextControl;
           ControlLabel tg = _lblDict[tc];
@@ -190,7 +190,7 @@ namespace OCourse.Gui
 
     private void Clear()
     {
-      foreach (System.Windows.Forms.Control l in Controls)
+      foreach (var l in Controls)
       {
         if (!(l is CLabel ll))
         { continue; }
@@ -276,7 +276,7 @@ namespace OCourse.Gui
       _startControl.SetBeginEnd();
       _endControl.SetBeginEnd();
 
-      foreach (NextControlList list in _nextDict.Values)
+      foreach (var list in _nextDict.Values)
       { list.AssureCodes(); }
 
       Dictionary<NextControl, NextControlList> nextDict = Clone(_nextDict);
@@ -345,7 +345,7 @@ namespace OCourse.Gui
     private static Dictionary<NextControl, NextControlList> Clone(Dictionary<NextControl, NextControlList> nextDict)
     {
       Dictionary<NextControl, NextControlList> clone = new Dictionary<NextControl, NextControlList>(new NextControl.EqualControlComparer());
-      foreach (KeyValuePair<NextControl, NextControlList> pair in nextDict)
+      foreach (var pair in nextDict)
       {
         NextControl from = pair.Key;
         pair.Value.AssureCodes();
@@ -353,7 +353,7 @@ namespace OCourse.Gui
         NextControlList cloneList = new NextControlList();
         cloneList.AssureCodes();
         Dictionary<NextControl, NextControl> existing = new Dictionary<NextControl, NextControl>(new NextControl.EqualControlComparer());
-        foreach (NextControl section in pair.Value.List)
+        foreach (var section in pair.Value.List)
         {
           if (existing.ContainsKey(section))
           { continue; }
@@ -385,14 +385,14 @@ namespace OCourse.Gui
 
       Dictionary<string, Control> uniqueDict = new Dictionary<string, Control>();
       Dictionary<Control, Control> oldNew = new Dictionary<Control, Control>();
-      foreach (SimpleSection section in simples)
+      foreach (var section in simples)
       {
         AddControl(section.From, null, uniqueDict, oldNew);
         AddControl(section.To, section.Where, uniqueDict, oldNew);
       }
 
       List<SimpleSection> sections = new List<SimpleSection>(simples.Count);
-      foreach (SimpleSection section in simples)
+      foreach (var section in simples)
       {
         Control from = oldNew[section.From];
         Control to = oldNew[section.To];
@@ -407,7 +407,7 @@ namespace OCourse.Gui
       { return vars; }
 
       Dictionary<Control, NextControl> whereControls = new Dictionary<Control, NextControl>();
-      foreach (SimpleSection section in sections)
+      foreach (var section in sections)
       {
         if (whereControls.TryGetValue(section.From, out NextControl from) == false)
         {
@@ -449,7 +449,7 @@ namespace OCourse.Gui
       ctr.Text = string.Format("where {0}", where);
 
       List<SectionsBuilder.IDisplayControl> result = new List<SectionsBuilder.IDisplayControl>();
-      foreach (SectionsBuilder.IDisplayControl fromControl in fromControls)
+      foreach (var fromControl in fromControls)
       {
         sections.Add(new SimpleSection(fromControl.Control, ctr));
         result.Add(new FromControl(fromControl.Control, ctr));
@@ -494,7 +494,7 @@ namespace OCourse.Gui
       Dictionary<NextControl, NextControlList> next = AssembleNextSections(list);
 
       NextControl start = null;
-      foreach (NextControl key in next.Keys)
+      foreach (var key in next.Keys)
       {
         start = key;
         break;
@@ -520,7 +520,7 @@ namespace OCourse.Gui
         if (!rowOcc.TryGetValue(i, out List<int> occupied))
         { occupied = null; }
 
-        foreach (ControlLabel ctrLbl in dict.Values)
+        foreach (var ctrLbl in dict.Values)
         {
           if (ctrLbl.Pos == i)
           {
@@ -541,7 +541,7 @@ namespace OCourse.Gui
 
             if (next.TryGetValue(new NextControl(ctrLbl.Control), out NextControlList nextList))
             {
-              foreach (NextControl info in nextList.List)
+              foreach (var info in nextList.List)
               {
                 ControlLabel nl = dict[info];
                 int ni;
@@ -583,8 +583,9 @@ namespace OCourse.Gui
       // NextList = next;
       Width = 20;
       Height = 20;
-      foreach (System.Windows.Forms.Control control in Controls)
+      foreach (var o in Controls)
       {
+        System.Windows.Forms.Control control = (System.Windows.Forms.Control)o;
         Width = Math.Max(Width, control.Right + 10);
         Height = Math.Max(Height, control.Bottom + 10);
       }
@@ -610,7 +611,7 @@ namespace OCourse.Gui
         NextControl.EqualControlComparer cmp = new NextControl.EqualControlComparer();
 
         bool containes = false;
-        foreach (NextControl candidate in preList)
+        foreach (var candidate in preList)
         {
           if (cmp.Equals(candidate, c))
           {
@@ -633,7 +634,7 @@ namespace OCourse.Gui
       nextPres.Add(c);
       if (!next.TryGetValue(c, out NextControlList list))
       { return; }
-      foreach (NextControl info in list.List)
+      foreach (var info in list.List)
       {
         BuildTree(next, dict, nextPres, info, pos + 1);
       }
@@ -651,7 +652,7 @@ namespace OCourse.Gui
       controlLabel.Pos = pos;
       if (!next.TryGetValue(c, out NextControlList list))
       { return; }
-      foreach (NextControl info in list.List)
+      foreach (var info in list.List)
       {
         ControlLabel n = dict[info];
         if (n.RecPos > 0)
@@ -785,7 +786,7 @@ namespace OCourse.Gui
       {
         return;
       }
-      foreach (NextControl key in combination.NextControls)
+      foreach (var key in combination.NextControls)
       {
         if (_lblDict.TryGetValue(key, out ControlLabel lbl))
         {
@@ -793,7 +794,7 @@ namespace OCourse.Gui
         }
         else
         {
-          foreach (KeyValuePair<NextControl, ControlLabel> pair in _lblDict)
+          foreach (var pair in _lblDict)
           {
             if (pair.Key.Control.Name == key.Control.Name)
             {

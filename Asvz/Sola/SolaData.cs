@@ -30,10 +30,11 @@ namespace Asvz.Sola
     }
     private void ReadSpecialStrecken(string fileName)
     {
-      foreach (SolaStrecke info in Strecken)
+      foreach (var info in Strecken)
       {
-        foreach (SolaCategorie cat in info.Categories)
+        foreach (var o in info.Categories)
         {
+          SolaCategorie cat = (SolaCategorie)o;
           if ((cat.Typ & Kategorie.Default) == Kategorie.Default)
           {
             Debug.Assert(cat.Strecke != null);
@@ -73,7 +74,7 @@ namespace Asvz.Sola
       IPoint start = defaultStrecke.Points.First.Value;
       IPoint end = defaultStrecke.Points.Last.Value;
       Polyline line0 = null;
-      foreach (Element elem in reader.Elements(true, indexList))
+      foreach (var elem in reader.Elements(true, indexList))
       {
         Polyline line = (Polyline)elem.Geometry;
         if (PointOperator.Dist2(line.Points.First.Value, start) < 100 &&
@@ -105,7 +106,7 @@ namespace Asvz.Sola
 
       _transport = new Dictionary<Polyline, int>();
 
-      foreach (Element elem in reader.Elements(true, pIndexList))
+      foreach (var elem in reader.Elements(true, pIndexList))
       {
         if (elem.Symbol == SymT.Strecke)
         { strecken.Add(elem); }
@@ -177,11 +178,12 @@ namespace Asvz.Sola
 
     private void SortDefaultStrecken(IList<Element> strecken, IList<Element> nummern)
     {
-      foreach (SolaStrecke rawStrecke in Ddx.Strecken)
+      foreach (var rawStrecke in Ddx.Strecken)
       {
         SolaStrecke strecke = new SolaStrecke(rawStrecke.Nummer, rawStrecke.Vorlage);
-        foreach (SolaCategorie rawCat in rawStrecke.Categories)
+        foreach (var o in rawStrecke.Categories)
         {
+          SolaCategorie rawCat = (SolaCategorie)o;
           SolaCategorie cat = new SolaCategorie(rawCat.Typ,
             rawCat.UserLength, rawCat.OffsetStart, rawCat.OffsetEnd,
             rawCat.Stufe);
@@ -203,7 +205,7 @@ namespace Asvz.Sola
         {
           Polyline pLine = (strecken[iGeom]).Geometry as Polyline;
           double dMin = -1;
-          foreach (Curve pSeg in pLine.Segments)
+          foreach (var pSeg in pLine.Segments)
           {
             Point pX = 0.5 * (pSeg.Extent.Max +
               (Point)pSeg.Extent.Min);
@@ -239,7 +241,7 @@ namespace Asvz.Sola
       Setup = reader.ReadSetup();
       Setup.PrjTrans.X = 0;
       Setup.PrjTrans.Y = 0;
-      foreach (int iPos in pIndexList)
+      foreach (var iPos in pIndexList)
       {
         pSymbol = reader.ReadSymbol(iPos);
 
@@ -253,7 +255,7 @@ namespace Asvz.Sola
       Polyline line = Strecken[strecke].GetCategorie(Kategorie.Default).Strecke;
       List<Polyline> index = new List<Polyline>();
 
-      foreach (Polyline idx in IndexList)
+      foreach (var idx in IndexList)
       {
         double t0 = -idx.Segments.First.ParamAt(DistIndex);
         double l_1 = idx.Segments.Last.Length();
@@ -304,7 +306,7 @@ namespace Asvz.Sola
       if (boxFrom != null && boxTo != null &&
         streckeFrom != streckeTo)
       {
-        foreach (KeyValuePair<Polyline, int> pair in _transport)
+        foreach (var pair in _transport)
         {
           Polyline trans = pair.Key;
           if (boxFrom.IsWithin(trans.Points.First.Value)
@@ -317,7 +319,7 @@ namespace Asvz.Sola
       }
       else if (boxFrom != null && streckeFrom == streckeTo)
       {
-        foreach (KeyValuePair<Polyline, int> pair in _transport)
+        foreach (var pair in _transport)
         {
           if (pair.Value != SymT.TransportHilf)
           { continue; }
@@ -332,7 +334,7 @@ namespace Asvz.Sola
       }
       else if (boxTo != null && streckeFrom == streckeTo)
       {
-        foreach (KeyValuePair<Polyline, int> pair in _transport)
+        foreach (var pair in _transport)
         {
           if (pair.Value != SymT.TransportHilf)
           { continue; }
@@ -374,7 +376,7 @@ namespace Asvz.Sola
       while (next != false)
       {
         next = false;
-        foreach (KeyValuePair<Polyline, int> pair in _transport)
+        foreach (var pair in _transport)
         {
           symbol = pair.Value;
 
@@ -410,7 +412,7 @@ namespace Asvz.Sola
 
     private class PointCmpr : IComparer<IPoint>
     {
-      private double _dist;
+      private readonly double _dist;
       public PointCmpr(double dist)
       {
         _dist = dist;
@@ -457,7 +459,7 @@ namespace Asvz.Sola
       Polyline s = strecke.Linearize(3.0);
       s = s.Project(prj);
       StringBuilder builder = new StringBuilder();
-      foreach (Point p in s.Points)
+      foreach (var p in s.Points)
       {
         builder.AppendFormat("{0:F6},{1:F6},0 ", p.X, p.Y);
       }
@@ -505,13 +507,13 @@ namespace Asvz.Sola
     {
       XmlElement elem;
 
-      foreach (KeyValuePair<IPoint, List<int>> pair in marks)
+      foreach (var pair in marks)
       {
         IList<int> strecken = pair.Value;
 
         string desc = "";
         string name = "";
-        foreach (int i in strecken)
+        foreach (var i in strecken)
         {
           if (string.IsNullOrEmpty(desc) == false)
           {

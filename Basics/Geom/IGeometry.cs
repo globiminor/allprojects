@@ -29,7 +29,6 @@ namespace Basics.Geom
     //bool IsWithin(IBox box, IList<int> calcDimensions);
     //bool Intersects(IBox box, IList<int> calcDimensions);
     bool Intersects(IGeometry geometry);
-    void Include(IBox box);
     double GetMaxExtent();
   }
 

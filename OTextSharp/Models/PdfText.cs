@@ -14,7 +14,7 @@ namespace OTextSharp.Models
     {
       List<FilePdfReader> readers = new List<FilePdfReader>();
       PdfReader template = null;
-      foreach (string fileName in fileNames)
+      foreach (var fileName in fileNames)
       {
         PdfReader reader = new PdfReader(fileName);
         readers.Add(new FilePdfReader { File = fileName, Reader = reader });
@@ -39,7 +39,7 @@ namespace OTextSharp.Models
         // step 4: we add content
         PdfContentByte cb = writer.DirectContent;
 
-        foreach (FilePdfReader pair in readers)
+        foreach (var pair in readers)
         {
           document.NewPage();
 
@@ -66,7 +66,7 @@ namespace OTextSharp.Models
     {
       IList<PdfReader> readers = new List<PdfReader>();
       PdfReader template = null;
-      foreach (string fileName in fileNames)
+      foreach (var fileName in fileNames)
       {
         PdfReader reader = new PdfReader(fileName);
         if (fileName == templateName)
@@ -95,7 +95,7 @@ namespace OTextSharp.Models
 
         document.NewPage();
 
-        foreach (PdfReader reader in readers)
+        foreach (var reader in readers)
         {
           PdfImportedPage page1 = writer.GetImportedPage(reader, 1);
           cb.AddTemplate(page1, 1, 0, 0, 1, 0, 0);

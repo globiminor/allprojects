@@ -43,7 +43,7 @@ namespace Basics.Data
 
     public void ClearKeys()
     {
-      foreach (DataTable table in _cascadeTables)
+      foreach (var table in _cascadeTables)
       {
         Updater.ClearKey(table, Updater.DeleteDone);
         Updater.ClearKey(table, Updater.UpdateDone);
@@ -52,10 +52,10 @@ namespace Basics.Data
 
     public void AcceptChanges()
     {
-      foreach (DataTable table in _cascadeTables)
+      foreach (var table in _cascadeTables)
       { AcceptChanges(table, true); }
 
-      foreach (DataTable table in _singleTables)
+      foreach (var table in _singleTables)
       { AcceptChanges(table, false); }
     }
 
@@ -67,8 +67,11 @@ namespace Basics.Data
       }
       if (cascade)
       {
-        foreach (DataRelation rel in table.ChildRelations)
-        { AcceptChanges(rel.ChildTable, cascade); }
+        foreach (var o in table.ChildRelations)
+        {
+          DataRelation rel = (DataRelation)o;
+          AcceptChanges(rel.ChildTable, cascade);
+        }
       }
     }
 

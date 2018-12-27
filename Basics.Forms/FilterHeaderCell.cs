@@ -1,4 +1,5 @@
-﻿using Basics.Views;
+﻿using Basics.Data;
+using Basics.Views;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -147,8 +148,7 @@ namespace Basics.Forms
       if (IsDataSourceNull()) { return; }
 
       // Throw an exception if the data source is not a BindingSource. 
-      IBindingListView data = DataGridView.DataSource as IBindingListView;
-      if (data == null)
+      if (!(DataGridView.DataSource is IBindingListView data))
       {
         throw new NotSupportedException(
             "The DataSource property of the containing DataGridView control " +
@@ -365,8 +365,7 @@ namespace Basics.Forms
     private void ResetFilter()
     {
       if (DataGridView == null) return;
-      IBindingListView source = DataGridView.DataSource as IBindingListView;
-      if (source == null || String.IsNullOrEmpty(source.Filter))
+      if (!(DataGridView.DataSource is IBindingListView source) || String.IsNullOrEmpty(source.Filter))
       {
       }
     }
@@ -522,7 +521,7 @@ namespace Basics.Forms
         {
           Func<object, string> getDisplayValue = null;
 
-          foreach (object value in values)
+          foreach (var value in values)
           {
             if (getDisplayValue == null)
             {
@@ -549,7 +548,7 @@ namespace Basics.Forms
         if (DataGridView.DataSource is IPartialListView partialList)
         {
           SortedDictionary<string, object> dict = new SortedDictionary<string, object>();
-          foreach (object value in partialList.GetDistinctValues(OwningColumn.DataPropertyName, max))
+          foreach (var value in partialList.GetDistinctValues(OwningColumn.DataPropertyName, max))
           {
             string key = $"{value}";
             dict[key] = value;
@@ -644,8 +643,7 @@ namespace Basics.Forms
     private void SortByColumn()
     {
       // Continue only if the data source supports sorting. 
-      IBindingListView sortList = DataGridView.DataSource as IBindingListView;
-      if (sortList == null ||
+      if (!(DataGridView.DataSource is IBindingListView sortList) ||
           !sortList.SupportsSorting ||
           !AutomaticSortingEnabled)
       {
@@ -655,14 +653,13 @@ namespace Basics.Forms
         ListViewUtils.AdaptSort(sortList, OwningColumn.DataPropertyName,
         Control.ModifierKeys == Keys.Shift);
 
-      foreach (DataGridViewColumn column in DataGridView.Columns)
+      foreach (var column in DataGridView.Columns.Enum())
       {
-        FilterHeaderCell cell = column.HeaderCell as FilterHeaderCell;
-        if (cell == null)
+        if (!(column.HeaderCell is FilterHeaderCell cell))
         { continue; }
 
         cell.SortGlyphDirection = SortOrder.None;
-        foreach (ListSortDescription sort in sorts)
+        foreach (var sort in sorts.Enum())
         {
           if (sort.PropertyDescriptor.Name == cell.OwningColumn.DataPropertyName)
           {
@@ -852,16 +849,14 @@ namespace Basics.Forms
 
     private void FilterData()
     {
-      IBindingListView data = DataGridView.DataSource as IBindingListView;
 
-      if (data == null) throw new ArgumentNullException(nameof(data), 
-        "DataSource is not an IBindingListView or does not support filtering");
+      if (!(DataGridView.DataSource is IBindingListView data)) throw new ArgumentNullException(nameof(data),
+          "DataSource is not an IBindingListView or does not support filtering");
 
       StringBuilder filterBuilder = new StringBuilder();
-      foreach (DataGridViewColumn column in DataGridView.Columns)
+      foreach (var column in DataGridView.Columns.Enum())
       {
-        FilterHeaderCell cell = column.HeaderCell as FilterHeaderCell;
-        if (cell == null)
+        if (!(column.HeaderCell is FilterHeaderCell cell))
         { continue; }
 
         string colFilter = cell.GetFilterStatement();
@@ -890,11 +885,10 @@ namespace Basics.Forms
       }
 
       // Cast the data source to a BindingSource.
-      IBindingListView data = dataGridView.DataSource as IBindingListView;
 
       // Confirm that the data source is a BindingSource that 
       // supports filtering.
-      if (data == null ||
+      if (!(dataGridView.DataSource is IBindingListView data) ||
           //data.DataSource == null ||
           !data.SupportsFiltering)
       {
@@ -913,10 +907,9 @@ namespace Basics.Forms
       // Remove the filter. 
       data.Filter = null;
 
-      foreach (DataGridViewColumn column in dataGridView.Columns)
+      foreach (var column in dataGridView.Columns.Enum())
       {
-        FilterHeaderCell cell = column.HeaderCell as FilterHeaderCell;
-        if (cell == null)
+        if (!(column.HeaderCell is FilterHeaderCell cell))
         { continue; }
 
         cell._filterStatement = null;
@@ -1003,8 +996,7 @@ namespace Basics.Forms
 
         // if (the DataSource property has been set, return a value that combines 
         // the filteringEnabledValue and BindingSource.SupportsFiltering values.
-        IBindingListView data = DataGridView.DataSource as IBindingListView;
-        if (data == null) throw new ArgumentNullException(nameof(data));
+        if (!(DataGridView.DataSource is IBindingListView data)) throw new ArgumentNullException(nameof(data));
         return _filteringEnabledValue && data.SupportsFiltering;
       }
       set
@@ -1477,7 +1469,7 @@ namespace Basics.Forms
           if (_replaceDict == null)
           {
             Dictionary<string, object> unsorted = new Dictionary<string, object>();
-            foreach (object o in _dataSource)
+            foreach (var o in _dataSource)
             {
               GetValues(o, out string display, out object value);
 
@@ -1490,7 +1482,7 @@ namespace Basics.Forms
             sorted.Sort(SortLength);
 
             Dictionary<string, string> replaceDict = new Dictionary<string, string>();
-            foreach (string s in sorted)
+            foreach (var s in sorted)
             {
               if (string.IsNullOrEmpty(s))
               { continue; }
@@ -1582,7 +1574,7 @@ namespace Basics.Forms
           object oList = Activator.CreateInstance(listType);
           IList list = (IList)oList;
           list.Add(filterClearValue);
-          foreach (object value in values)
+          foreach (var value in values)
           { list.Add(value); }
           dataSource = list;
         }

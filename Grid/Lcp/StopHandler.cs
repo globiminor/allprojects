@@ -22,7 +22,7 @@ namespace Grid.Lcp
       _stopDict = new Dictionary<IField, StopInfo>(new FieldComparer());
       _minCellCost = minCellCost;
 
-      foreach (IField stop in stops)
+      foreach (var stop in stops)
       {
         _stopDict[stop] = new StopInfo { Stop = stop, Cost = -1 };
       }
@@ -103,7 +103,7 @@ namespace Grid.Lcp
         List<T> toUpdate = new List<T>(costList.Values);
 
         costList.Clear();
-        foreach (T update in toUpdate)
+        foreach (var update in toUpdate)
         {
           SetMinRestCost(update as IRestCostField, maxField);
           costList.Add(update, update);

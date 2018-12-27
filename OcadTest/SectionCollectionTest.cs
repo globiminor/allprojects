@@ -9,6 +9,7 @@ using System.Xml;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Ocad;
 using Grid;
+using Basics.Data;
 
 namespace OcadTest
 {
@@ -694,7 +695,7 @@ namespace OcadTest
           {
             if (x0 < xl0)
             {
-              foreach (Pattern op in ppp)
+              foreach (var op in ppp)
               {
                 op.X0 += xl0 - x0;
               }
@@ -706,7 +707,7 @@ namespace OcadTest
 
             if (y1 > yl1)
             {
-              foreach (Pattern op in ppp)
+              foreach (var op in ppp)
               {
                 op.Y0 -= y1 - yl1;
               }
@@ -740,9 +741,9 @@ namespace OcadTest
     private double LetterGraphics(StringBuilder all, string word, int x0, int y0)
     {
       double x = x0;
-      foreach (char c in word)
+      foreach (var c in word)
       {
-        foreach (Letter letter in _pattern)
+        foreach (var letter in _pattern)
         {
           if (letter.Char == c)
           {
@@ -951,7 +952,7 @@ namespace OcadTest
     {
       double _x0;
       double _y0;
-      List<To> _path;
+      readonly List<To> _path;
 
       public Pattern(string path)
       {
@@ -985,7 +986,7 @@ namespace OcadTest
       {
         all.Append(string.Format("n {0} {1} m", (int)(x0 + _x0), (int)(y0 + _y0)));
         all.Append(Environment.NewLine);
-        foreach (To to in _path)
+        foreach (var to in _path)
         {
           to.AppendTo(all);
           all.Append(Environment.NewLine);
@@ -1027,7 +1028,7 @@ namespace OcadTest
 
     private class Letter
     {
-      private char _letter;
+      private readonly char _letter;
       private List<Pattern> _patternList;
 
       public Letter(char letter, double x0, double y0, string path)
@@ -1068,7 +1069,7 @@ namespace OcadTest
 
       public void AppendTo(StringBuilder builder, int x0, int y0)
       {
-        foreach (Pattern p in _patternList)
+        foreach (var p in _patternList)
         {
           p.AppendGraphics(builder, x0, y0);
         }
@@ -1078,7 +1079,7 @@ namespace OcadTest
       {
         double hMin = double.MaxValue;
         double hMax = double.MinValue;
-        foreach (Pattern p in _patternList)
+        foreach (var p in _patternList)
         {
           hMax = Math.Max(hMax, p.Y0 + p.MaxY());
           hMin = Math.Min(hMin, p.Y0 + p.MinY());
@@ -1090,7 +1091,7 @@ namespace OcadTest
       {
         double wMin = double.MaxValue;
         double wMax = double.MinValue;
-        foreach (Pattern p in _patternList)
+        foreach (var p in _patternList)
         {
           wMax = Math.Max(wMax, p.X0 + p.MaxX());
           wMin = Math.Min(wMin, p.X0 + p.MinX());
@@ -1100,7 +1101,7 @@ namespace OcadTest
     }
     #region letter patterns
     #region .
- private Letter _point = new Letter('.', 0, 2079 - 2079,
+ private readonly Letter _point = new Letter('.', 0, 2079 - 2079,
       "0 -16 l" + Environment.NewLine +
    "17 0 l" + Environment.NewLine +
    "0 16 l" + Environment.NewLine);
@@ -1123,7 +1124,7 @@ namespace OcadTest
          */
 
     #region 0
-    private Letter _0 = new Letter('0',
+    private readonly Letter _0 = new Letter('0',
       new Pattern(8039 - 7961, 2020 - 2079,
     "0 15 -2 26 -4 35 c" + Environment.NewLine +
 "-3 8 -8 15 -13 19 c" + Environment.NewLine +
@@ -1157,7 +1158,7 @@ namespace OcadTest
     #endregion
 
     #region 1
-    private Letter _1 = new Letter ('1', 7924 - 7869, 2079 - 2079,
+    private readonly Letter _1 = new Letter ('1', 7924 - 7869, 2079 - 2079,
       "-15 0 l" + Environment.NewLine +
       "0 -93 l" + Environment.NewLine +
       "-4 4 -8 7 -14 10 c" + Environment.NewLine +
@@ -1169,7 +1170,7 @@ namespace OcadTest
     #endregion
 
     #region 2
- private Letter _2 = new Letter('2', 78, 2065 - 2079,
+ private readonly Letter _2 = new Letter('2', 78, 2065 - 2079,
       "0 14 l" + Environment.NewLine +
    "-78 0 l" + Environment.NewLine +
    "-1 -3 0 -7 1 -10 c" + Environment.NewLine +
@@ -1194,7 +1195,7 @@ namespace OcadTest
     #endregion 2
 
     #region 3
-    private Letter _3 = new Letter ('3', 7869 - 7869, 2048 - 2079,
+    private readonly Letter _3 = new Letter ('3', 7869 - 7869, 2048 - 2079,
       "15 -2 l" + Environment.NewLine +
       "2 8 5 14 9 18 c" + Environment.NewLine +
       "4 3 9 5 15 5 c" + Environment.NewLine +
@@ -1228,7 +1229,7 @@ namespace OcadTest
     #endregion
 
     #region 4
-    private Letter _4 = new Letter('4',
+    private readonly Letter _4 = new Letter('4',
       new Pattern(7930 - 7869, 2019 - 2079,
       "0 17 l" + Environment.NewLine +
       "16 0 l" + Environment.NewLine +
@@ -1255,7 +1256,7 @@ namespace OcadTest
     #endregion
 
     #region 5
-    private Letter _5 = new Letter ('5', 7869 - 7869, 2048 - 2079,
+    private readonly Letter _5 = new Letter ('5', 7869 - 7869, 2048 - 2079,
     "16 -1 l" + Environment.NewLine +
     "1 7 4 13 8 17 c" + Environment.NewLine +
     "4 3 9 5 15 5 c" + Environment.NewLine +
@@ -1281,7 +1282,7 @@ namespace OcadTest
     #endregion
 
     #region 6
-    private Letter _6 = new Letter('6',
+    private readonly Letter _6 = new Letter('6',
       new Pattern(7942 - 7869, 2020 - 2079,
       "3 6 5 13 5 21 c" + Environment.NewLine +
       "0 7 -2 14 -5 21 c" + Environment.NewLine +
@@ -1324,7 +1325,7 @@ namespace OcadTest
     #endregion
 
     #region 7
-    private Letter _7 = new Letter ('7', 7870 - 7869, 1976 - 2079,
+    private readonly Letter _7 = new Letter ('7', 7870 - 7869, 1976 - 2079,
       "0 -14 l" + Environment.NewLine +
       "78 0 l" + Environment.NewLine +
       "0 11 l" + Environment.NewLine +
@@ -1338,7 +1339,7 @@ namespace OcadTest
     #endregion
 
     #region 8
-    private Letter _8 = new Letter('8',
+    private readonly Letter _8 = new Letter('8',
       new Pattern(7908 - 7869, 2081 - 2079,
     "-11 0 -21 -3 -28 -10 c" + Environment.NewLine +
 "-7 -7 -11 -16 -11 -26 c" + Environment.NewLine +
@@ -1402,7 +1403,7 @@ namespace OcadTest
     #endregion
 
     #region 9
-    private Letter _9 = new Letter('9',
+    private readonly Letter _9 = new Letter('9',
       new Pattern(7947 - 7869, 2020 - 2079,
     "0 14 -2 26 -5 34 c" + Environment.NewLine +
 "-3 9 -8 16 -15 20 c" + Environment.NewLine +
@@ -1449,7 +1450,7 @@ namespace OcadTest
 
     #region A
 
-    private Letter _a = new Letter ('A',
+    private readonly Letter _a = new Letter ('A',
       new Pattern(74, -59,
     "25 59 l" + Environment.NewLine +
 "-18 0 l" + Environment.NewLine +
@@ -1510,7 +1511,7 @@ namespace OcadTest
 
     #endregion
     #region E
- private Letter _e = new Letter('E', 0, 0,
+ private readonly Letter _e = new Letter('E', 0, 0,
       "0 -119 l" + Environment.NewLine +
 "86 0 l" + Environment.NewLine +
 "0 14 l" + Environment.NewLine +
@@ -1525,7 +1526,7 @@ namespace OcadTest
  #endregion
 
     #region H
- private Letter _h = new Letter('H', 0, 0,
+ private readonly Letter _h = new Letter('H', 0, 0,
       "0 -119 l" + Environment.NewLine +
 "16 0 l" + Environment.NewLine +
 "0 49 l" + Environment.NewLine +
@@ -1539,7 +1540,7 @@ namespace OcadTest
 "0 56 l" + Environment.NewLine);
     #endregion
 
- private Letter _k = new Letter('K',
+ private readonly Letter _k = new Letter('K',
       0, 0,
 "0 -119 l" + Environment.NewLine +
 "16 0 l" + Environment.NewLine +
@@ -1580,7 +1581,7 @@ namespace OcadTest
       public static List<List<To>> CreateXPath(params string[] paths)
       {
         List<List<To>> list = new List<List<To>>();
-        foreach (string path in paths)
+        foreach (var path in paths)
         {
           list.Add(CreatePath(path));
         }
@@ -1651,7 +1652,7 @@ namespace OcadTest
         double minX = 0;
 
         double currentX = 0;
-        foreach (To part in path)
+        foreach (var part in path)
         {
           double m = part.MinX();
           if (currentX + m < minX)
@@ -1668,7 +1669,7 @@ namespace OcadTest
         double maxX = 0;
 
         double currentX = 0;
-        foreach (To part in path)
+        foreach (var part in path)
         {
           double m = part.MinX();
           if (currentX + m > maxX)
@@ -1685,7 +1686,7 @@ namespace OcadTest
         double minY = 0;
 
         double currentY = 0;
-        foreach (To part in path)
+        foreach (var part in path)
         {
           double m = part.MinY();
           if (currentY + m < minY)
@@ -1702,7 +1703,7 @@ namespace OcadTest
         double maxY = 0;
 
         double currentY = 0;
-        foreach (To part in path)
+        foreach (var part in path)
         {
           double m = part.MaxY();
           if (currentY + m > maxY)
@@ -1893,7 +1894,7 @@ namespace OcadTest
 
       List<To> path = To.CreatePath(pattern);
 
-      foreach (Letter letter in _pattern)
+      foreach (var letter in _pattern)
       {
         if (To.Equals(path, letter.PatternList[0].Path, resol))
         {
@@ -1925,7 +1926,7 @@ namespace OcadTest
     {
       StringBuilder pattern = new StringBuilder();
 
-      foreach (Pattern path in patternList)
+      foreach (var path in patternList)
       {
         pattern.Append(reader.ReadLine() + Environment.NewLine);
         string inner = GetPattern(reader);
@@ -2028,13 +2029,13 @@ namespace OcadTest
 
       OcadReader reader = OcadReader.Open(@"C:\daten\felix\kapreolo\karten\stadlerberg\SOM07_v4.1.1.ocd");
       List<Course> courseList = new List<Course>();
-      foreach (Course course in reader.ReadCourses())
+      foreach (var course in reader.ReadCourses())
       {
         courseList.Add(course);
       }
       reader.Close();
 
-      foreach (Course course in courseList)
+      foreach (var course in courseList)
       {
         XmlNode nodeCourse = doc.CourseNode(course.Name);
 
@@ -2068,7 +2069,7 @@ namespace OcadTest
     private static void VerifyCombinations(CourseXmlDocument doc, XmlNode nodeCourse, Course course)
     {
       XmlNodeList listVari = doc.CourseVariationList(nodeCourse);
-      foreach (XmlNode nodeVari in listVari)
+      foreach (var nodeVari in listVari.Enum())
       {
         string varName = nodeVari.SelectSingleNode("Name").InnerText.Trim();
         List<string> sCourse = doc.CourseVariation(nodeVari);
@@ -2592,7 +2593,7 @@ namespace OcadTest
       } while (nOpenBrackets > 0);
 
       List<int> legList = new List<int>();
-      foreach (string leg in legs)
+      foreach (var leg in legs)
       {
         legList.Add(Convert.ToInt32(leg));
       }

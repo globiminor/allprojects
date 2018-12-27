@@ -27,7 +27,7 @@ namespace ArcSde
         IntPtr pos = lst;
         Type t = x.GetType();
 
-        foreach (FieldInfo info in t.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
+        foreach (var info in t.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
         {
           if (info.FieldType == typeof(Int32))
           {

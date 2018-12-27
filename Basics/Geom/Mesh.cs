@@ -17,8 +17,8 @@ namespace Basics.Geom
     private class _IntersectInfo
     {
       public MeshLineEx Line;
-      private double _vecProdStart;
-      private double _vecProdEnd;
+      private readonly double _vecProdStart;
+      private readonly double _vecProdEnd;
       public _IntersectInfo(MeshLineEx line, double vecProdStart, double vecProdEnd)
       {
         Line = line;
@@ -53,7 +53,7 @@ namespace Basics.Geom
 
     public IEnumerable<MeshPoint> Points(IBox intersect)
     {
-      foreach (PointBoxTree.TileEntry entry in _listPoint.Search(intersect))
+      foreach (var entry in _listPoint.Search(intersect))
       {
         MeshPoint p = entry.Value;
         yield return p;
@@ -73,7 +73,7 @@ namespace Basics.Geom
 
     public IEnumerable<MeshLine> Lines(IBox intersect)
     {
-      foreach (PointBoxTree.TileEntry entry in _listPoint.Search(intersect))
+      foreach (var entry in _listPoint.Search(intersect))
       {
         MeshPoint p = entry.Value;
         MeshLineEx l0 = p.IndexLine;
@@ -89,7 +89,7 @@ namespace Basics.Geom
 
     public IEnumerable<Tri> Tris(IBox intersect)
     {
-      foreach (PointBoxTree.TileEntry entry in _listPoint.Search(intersect))
+      foreach (var entry in _listPoint.Search(intersect))
       {
         MeshPoint p = entry.Value;
         MeshLineEx l0 = p.IndexLine;
@@ -112,7 +112,7 @@ namespace Basics.Geom
       }
       int n = _listPoint.Count;
       List<MeshPoint> points = new List<MeshPoint>(n);
-      foreach (BoxTree<MeshPoint>.TileEntry entry in _listPoint.Search(null))
+      foreach (var entry in _listPoint.Search(null))
       {
         MeshPoint p = entry.Value;
         points.Add(p);
@@ -183,7 +183,7 @@ namespace Basics.Geom
     public void Add(Polyline polyline, object lineType, InsertHandler insertFct)
     {
       MeshPoint p0 = null;
-      foreach (IPoint p in polyline.Points)
+      foreach (var p in polyline.Points)
       {
         Point2D p1 = (Point2D)Point.CastOrCreate(p);
         if (p0 != null)
@@ -234,7 +234,7 @@ namespace Basics.Geom
       Tri tri0 = null;
 
       radius2 = -1;
-      foreach (Tri tri in Tris(null))
+      foreach (var tri in Tris(null))
       {
         double dr2 = point.Dist2(tri.Center) - tri.Radius2;
 

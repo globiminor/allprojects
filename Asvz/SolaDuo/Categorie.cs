@@ -98,7 +98,7 @@ namespace Asvz
             int n = _streckeTeilList.Count;
             for (int i = 1; i < n; i++)
             {
-              foreach (Curve c in _streckeTeilList[i].Line.Segments)
+              foreach (var c in _streckeTeilList[i].Line.Segments)
               { _s.Add(c.Clone()); }
             }
           }
@@ -156,7 +156,7 @@ namespace Asvz
       {
         if (_profil == null)
         {
-          foreach (StreckeTeil teil in _streckeTeilList)
+          foreach (var teil in _streckeTeilList)
           {
             Polyline teilProfil = teil.Profil(_data.Dhm);
 
@@ -168,7 +168,7 @@ namespace Asvz
             {
               double x0 = _profil.Points.Last.Value.X;
 
-              foreach (IPoint p in teilProfil.Points)
+              foreach (var p in teilProfil.Points)
               {
                 if (p.X > 0)
                 { _profil.Add(new Point2D(x0 + p.X, p.Y)); }
@@ -187,7 +187,7 @@ namespace Asvz
         {
           double faktor = Faktor();
           _profilNormed = new Polyline();
-          foreach (IPoint p in Profil.Points)
+          foreach (var p in Profil.Points)
           {
             _profilNormed.Add(new Point2D(p.X / faktor, p.Y));
           }
@@ -202,7 +202,7 @@ namespace Asvz
         if (_steigung < 0)
         {
           _steigung = 0;
-          foreach (Curve seg in Profil.Segments)
+          foreach (var seg in Profil.Segments)
           {
             double dH = seg.End.Y - seg.Start.Y;
             if (dH > 0)

@@ -40,7 +40,7 @@ namespace LeastCostPathUI
       _img = null;
       if (_colors != null)
       {
-        foreach (Panel color in _colors)
+        foreach (var color in _colors)
         {
           Controls.Remove(color);
         }
@@ -62,7 +62,7 @@ namespace LeastCostPathUI
       else
       {
         colors = new List<Color>(_colors.Count);
-        foreach (Panel co in _colors)
+        foreach (var co in _colors)
         {
           colors.Add(co.ForeColor);
         }

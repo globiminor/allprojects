@@ -29,11 +29,11 @@ namespace Dhm
     }
     public IBox GetExtent()
     {
-      IBox box = null;
-      foreach (Contour contour in _contours)
+      Box box = null;
+      foreach (var contour in _contours)
       {
         if (box == null)
-        { box = contour.Polyline.Extent.Clone(); }
+        { box = new Box(contour.Polyline.Extent); }
         else
         { box.Include(contour.Polyline.Extent); }
       }
@@ -42,7 +42,7 @@ namespace Dhm
 
     public IEnumerator<Contour> GetEnumerator(IBox geom)
     {
-      foreach (Contour contour in _contours)
+      foreach (var contour in _contours)
       {
         if (contour.Polyline.Extent.Intersects(geom))
         {

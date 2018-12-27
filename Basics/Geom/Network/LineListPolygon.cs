@@ -7,7 +7,7 @@ namespace Basics.Geom.Network
   {
     private LineList _mainRing;
     private List<LineList> _innerRingList = new List<LineList>();
-    private List<IPoint> _centroids = new List<IPoint>();
+    private readonly List<IPoint> _centroids = new List<IPoint>();
 
     private bool _isInnerRing;
     private bool _canProcess;
@@ -17,7 +17,7 @@ namespace Basics.Geom.Network
       _mainRing = outerRing;
       _canProcess = true;
       _processed = true;
-      foreach (DirectedRow row in outerRing.DirectedRows)
+      foreach (var row in outerRing.DirectedRows)
       {
         row.RightPoly = this;
       }
@@ -50,14 +50,14 @@ namespace Basics.Geom.Network
       Area polygon = new Area();
       Polyline ring = new Polyline();
 
-      foreach (DirectedRow pRow in _mainRing.DirectedRows)
+      foreach (var pRow in _mainRing.DirectedRows)
       {
-        foreach (Curve c in pRow.Line().Segments)
+        foreach (var c in pRow.Line().Segments)
         { ring.Add(c); }
       }
       polygon.Border.Add(ring);
 
-      foreach (LineList lc in _innerRingList)
+      foreach (var lc in _innerRingList)
       {
         polygon.Border.Add(lc.GetPolygon().Border[0]);
       }
@@ -73,7 +73,7 @@ namespace Basics.Geom.Network
         _processed = false;
       }
       _mainRing = ring;
-      foreach (DirectedRow row in ring.DirectedRows)
+      foreach (var row in ring.DirectedRows)
       {
         row.RightPoly = this;
       }
@@ -104,7 +104,7 @@ namespace Basics.Geom.Network
       { _innerRingList = new List<LineList>(); }
 
       _innerRingList.Add(innerRing._mainRing);
-      foreach (DirectedRow row in innerRing._mainRing.DirectedRows)
+      foreach (var row in innerRing._mainRing.DirectedRows)
       {
         row.RightPoly = this;
       }

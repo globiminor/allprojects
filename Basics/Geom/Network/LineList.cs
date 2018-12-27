@@ -233,8 +233,7 @@ namespace Basics.Geom.Network
 
     public override bool Equals(Object obj)
     {
-      LineList lc = obj as LineList;
-      if (lc == null)
+      if (!(obj is LineList lc))
       {
         return false;
       }
@@ -254,7 +253,7 @@ namespace Basics.Geom.Network
     {
       LineList reverse = new LineList();
 
-      foreach (DirectedRow dRow in _directedRows)
+      foreach (var dRow in _directedRows)
       {
         reverse._directedRows.AddFirst(dRow.Reverse());
       }
@@ -268,10 +267,10 @@ namespace Basics.Geom.Network
     public Polyline GetBorder()
     {
       Polyline border = new Polyline();
-      foreach (DirectedRow pRow in _directedRows)
+      foreach (var pRow in _directedRows)
       {
         ICurve nextPart = pRow.Line();
-        foreach (Curve c in nextPart.Segments)
+        foreach (var c in nextPart.Segments)
         {
           border.Add(c);
         }
@@ -279,7 +278,7 @@ namespace Basics.Geom.Network
       //object missing = Type.Missing;
       //polyCollection.AddGeometry(ring, ref missing, ref missing);
 
-      //foreach (LineList lc in _innerRings)
+      //foreach (var lc in _innerRings)
       //{
       //  polyCollection.AddGeometry(((IGeometryCollection)lc.GetPolygon()).get_Geometry(0), ref missing, ref missing);
       //}
@@ -296,17 +295,17 @@ namespace Basics.Geom.Network
     {
       Area polygon = new Area();
       Polyline ring = new Polyline();
-      foreach (DirectedRow pRow in _directedRows)
+      foreach (var pRow in _directedRows)
       {
         ICurve nextPart = pRow.Line();
-        foreach (Curve c in nextPart.Segments)
+        foreach (var c in nextPart.Segments)
         {
           ring.Add(c);
         }
       }
       polygon.Border.Add(ring);
 
-      foreach (LineList lc in _innerRings)
+      foreach (var lc in _innerRings)
       {
         polygon.Border.Add(lc.CombineRings().Border[0]);
       }
@@ -335,7 +334,7 @@ namespace Basics.Geom.Network
         _directedRows.Last.Value.TopoLine ==
         list._directedRows.First.Value.TopoLine))
       { _hasEquals = true; }
-      foreach (DirectedRow row in list._directedRows)
+      foreach (var row in list._directedRows)
       {
         _directedRows.AddLast(row);
       }
@@ -343,12 +342,12 @@ namespace Basics.Geom.Network
 
     public IBox Envelope()
     {
-      IBox boxTotal = null;
-      foreach (DirectedRow pRow in _directedRows)
+      Box boxTotal = null;
+      foreach (var pRow in _directedRows)
       {
         IBox box = pRow.TopoLine.Line.Extent;
         if (boxTotal == null)
-        { boxTotal = box.Clone(); }
+        { boxTotal = new Box(box); }
         else
         {
           boxTotal.Include(box);
@@ -358,8 +357,8 @@ namespace Basics.Geom.Network
       return boxTotal;
     }
 
-    private List<DirectedRow> _fromNode = new List<DirectedRow>();
-    private List<DirectedRow> _toNode = new List<DirectedRow>();
+    private readonly List<DirectedRow> _fromNode = new List<DirectedRow>();
+    private readonly List<DirectedRow> _toNode = new List<DirectedRow>();
 
     public IList<DirectedRow> FromNode
     {

@@ -183,7 +183,7 @@ namespace MacroUi
 
         List<byte> context = new List<byte>();
         char? c = null;
-        foreach (string key in keys)
+        foreach (var key in keys)
         {
           if (string.IsNullOrEmpty(key))
           { continue; }

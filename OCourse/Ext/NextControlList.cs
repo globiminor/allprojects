@@ -40,7 +40,7 @@ namespace OCourse.Ext
 
       Dictionary<NextControl, List<NextControl>> dict =
         new Dictionary<NextControl, List<NextControl>>(new NextControl.EqualityComparer());
-      foreach (NextControl next in _list)
+      foreach (var next in _list)
       {
         if (!dict.TryGetValue(next, out List<NextControl> nextList))
         {
@@ -53,10 +53,10 @@ namespace OCourse.Ext
       {
         char code = 'A';
         code--;
-        foreach (List<NextControl> nextList in dict.Values)
+        foreach (var nextList in dict.Values)
         {
           code++;
-          foreach (NextControl next in nextList)
+          foreach (var next in nextList)
           {
             next.Code = code;
           }

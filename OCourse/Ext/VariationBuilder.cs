@@ -73,7 +73,7 @@ namespace OCourse.Ext
 
       List<SimpleSection> sections = course.GetAllSections();
       Dictionary<string, Control> controls = new Dictionary<string, Control>();
-      foreach (SimpleSection section in sections)
+      foreach (var section in sections)
       {
         controls[section.From.Name] = section.From;
         controls[section.To.Name] = section.To;
@@ -103,7 +103,7 @@ namespace OCourse.Ext
       List<SectionList> permuts = builder.Analyze();
 
       permuts = GetReduced(permuts);
-      foreach (SectionList permutation in permuts)
+      foreach (var permutation in permuts)
       {
         permutation.SetLeg(leg);
       }
@@ -135,7 +135,7 @@ namespace OCourse.Ext
     private static SectionList RemoveControls(SectionList variation, IList<Control> removes)
     {
       SectionList reduced = null;
-      foreach (NextControl control in variation.NextControls)
+      foreach (var control in variation.NextControls)
       {
         if (removes.Contains(control.Control))
         { continue; }
@@ -251,7 +251,7 @@ namespace OCourse.Ext
             {
               int leg = 0;
               Control start = sections.GetControl(0);
-              foreach (Control ctr in sections.Controls)
+              foreach (var ctr in sections.Controls)
               {
                 if (ctr == start)
                 { leg++; }
@@ -353,7 +353,7 @@ namespace OCourse.Ext
       {
         List<Control> currentPart = null;
         bool isControlInCurrentPart = false;
-        foreach (NextControl ctr in sections.NextControls)
+        foreach (var ctr in sections.NextControls)
         {
           if (_legController.IsPartStart(ctr))
           {
@@ -380,7 +380,7 @@ namespace OCourse.Ext
       {
         List<Control> currentLeg = null;
         bool isControlInCurrentPart = false;
-        foreach (NextControl ctr in sections.NextControls)
+        foreach (var ctr in sections.NextControls)
         {
           if (_legController.IsLegStart(ctr))
           {
@@ -406,7 +406,7 @@ namespace OCourse.Ext
       private bool GetControlsInList(List<Control> controls, out string partControls)
       {
         StringBuilder sb = new StringBuilder("(");
-        foreach (Control control in controls)
+        foreach (var control in controls)
         { sb.Append($"'{control.Name}',"); }
         sb.Remove(sb.Length - 1, 1);
         sb.Append(")");
@@ -451,9 +451,9 @@ namespace OCourse.Ext
         {
           get
           {
-            foreach (SectionList leg in CurrentLegs)
+            foreach (var leg in CurrentLegs)
             {
-              foreach (NextControl control in leg.NextControls)
+              foreach (var control in leg.NextControls)
               {
                 yield return control;
               }
@@ -497,7 +497,7 @@ namespace OCourse.Ext
         {
           LegSections clone = new LegSections(_builder, EvalOrder);
           clone._legs.Clear();
-          foreach (SectionList leg in _legs)
+          foreach (var leg in _legs)
           { clone._legs.Add(leg.Clone()); }
 
           clone._currentLeg = _currentLeg;
@@ -536,13 +536,13 @@ namespace OCourse.Ext
         public SectionList GetSectionList()
         {
           SectionList sections = null;
-          foreach (SectionList leg in _legs)
+          foreach (var leg in _legs)
           {
             if (sections == null)
             { sections = leg.Clone(); }
             else
             {
-              foreach (NextControl control in leg.NextControls)
+              foreach (var control in leg.NextControls)
               { sections.Add(control); }
             }
           }
@@ -561,7 +561,7 @@ namespace OCourse.Ext
               leg = _builder._firstLegs._legs[iLeg];
             }
 
-            foreach (Control control in leg.Controls)
+            foreach (var control in leg.Controls)
             {
               if (pre == split.Name)
               { iSplit++; }
@@ -576,7 +576,7 @@ namespace OCourse.Ext
         WhereInfo.State ISectionList.GetState()
         {
           WhereInfo.State allState = WhereInfo.State.Fulfilled;
-          foreach (SectionList leg in _legs)
+          foreach (var leg in _legs)
           {
             WhereInfo.State state = leg.GetState();
             if (state == WhereInfo.State.Failed)
@@ -714,7 +714,7 @@ namespace OCourse.Ext
                 Control split = _split;
                 int pos = 0;
                 Control pre = null;
-                foreach (Control ctr in _pre.Controls)
+                foreach (var ctr in _pre.Controls)
                 {
                   if (pre == split)
                   { pos++; }
@@ -722,7 +722,7 @@ namespace OCourse.Ext
                 }
                 List<List<SplitInfo>> combs = _controlDict[split];
                 Dictionary<char, int> varCount = new Dictionary<char, int>();
-                foreach (List<SplitInfo> comb in combs)
+                foreach (var comb in combs)
                 {
                   char code = comb[pos].GetNextControl().Code;
                   if (!varCount.ContainsKey(code))
@@ -787,7 +787,7 @@ namespace OCourse.Ext
           Control pre = sections.GetControl(0);
           Dictionary<Control, List<SplitInfo>> controlDict = new Dictionary<Control, List<SplitInfo>>();
           Dictionary<string, int> splitCount = new Dictionary<string, int>();
-          foreach (NextControl v in sections.NextControls)
+          foreach (var v in sections.NextControls)
           {
             if (v.Code != 0)
             {
@@ -815,9 +815,9 @@ namespace OCourse.Ext
         public void Add(SectionList sections)
         {
           Dictionary<Control, List<SplitInfo>> controlDict = GetControlDict(sections);
-          foreach (List<SplitInfo> splits in controlDict.Values)
+          foreach (var splits in controlDict.Values)
           {
-            foreach (SplitInfo split in splits)
+            foreach (var split in splits)
             {
               NextControl v = split.GetNextControl();
               if (!_dict.TryGetValue(v, out List<SplitInfo> existing))
@@ -829,7 +829,7 @@ namespace OCourse.Ext
             }
           }
 
-          foreach (KeyValuePair<Control, List<SplitInfo>> pair in controlDict)
+          foreach (var pair in controlDict)
           {
             Control c = pair.Key;
             if (!_controlDict.TryGetValue(c, out List<List<SplitInfo>> controlSplits))
@@ -858,7 +858,7 @@ namespace OCourse.Ext
           IEnumerable<NextWhere> nexts)
         {
           List<CommonInfo> commons = new List<CommonInfo>();
-          foreach (NextWhere next in nexts)
+          foreach (var next in nexts)
           {
             NextControlList nextControls = _builder.NextControls[from];
             List<SplitInfo> existing = GetExisting(next.Next);
@@ -867,7 +867,7 @@ namespace OCourse.Ext
             int maxCountVar = 0;
             int maxCommonSplit = 0;
             int maxCountSplit = 0;
-            foreach (SplitInfo split in existing)
+            foreach (var split in existing)
             {
               SectionList secExist = split.Sections;
               int posExist = split.Position - 3;
@@ -994,7 +994,7 @@ namespace OCourse.Ext
           _fullVariations = fullVariations;
 
           _fullCount = new Dictionary<char, int>();
-          foreach (char key in fullVariations.Keys)
+          foreach (var key in fullVariations.Keys)
           { _fullCount.Add(key, 0); }
 
           _pseudoCount = new Dictionary<char, double>();
@@ -1084,7 +1084,7 @@ namespace OCourse.Ext
 
             List<NextWhere> sorted = Sort(estimate, start, variations.Values);
             int vars = 0;
-            foreach (NextWhere next in sorted)
+            foreach (var next in sorted)
             {
               SectionList clone = estimate.Clone();
               if (EnumVariations(clone, next.Next, next.Where, allLegs: true).FirstOrDefault() != null)
@@ -1116,7 +1116,7 @@ namespace OCourse.Ext
         {
           Dictionary<Control, List<PermutInfo>> equalVars = new Dictionary<Control, List<PermutInfo>>();
           bool completed = true;
-          foreach (PermutInfo permutation in permutations)
+          foreach (var permutation in permutations)
           {
             if (permutation.ControlsCount == _course.Count)
             { continue; }
@@ -1153,14 +1153,14 @@ namespace OCourse.Ext
             List<PermutInfo> permuts = pair.Value;
             NextControlList nexts = NextControls[last];
 
-            foreach (PermutInfo permutation in permuts)
+            foreach (var permutation in permuts)
             {
               permutation.AddBestNext(last, nexts.List);
             }
           }
         }
         List<SectionList> fullSections = new List<SectionList>(permutations.Count);
-        foreach (PermutInfo permutation in permutations)
+        foreach (var permutation in permutations)
         { fullSections.Add(permutation.Sections); }
         return fullSections;
       }
@@ -1215,7 +1215,7 @@ namespace OCourse.Ext
         LegSections permut = new LegSections(this, evalOrder);
 
         IEnumerable<LegSections> legVariations = new List<LegSections> { permut };
-        foreach (int iLeg in evalOrder)
+        foreach (var iLeg in evalOrder)
         {
           legVariations = EnumLegVariations(legVariations, iLeg);
         }
@@ -1239,10 +1239,10 @@ namespace OCourse.Ext
 
       private IEnumerable<LegSections> EnumLegVariations(IEnumerable<LegSections> preLeg, int iLeg)
       {
-        foreach (LegSections valid in preLeg)
+        foreach (var valid in preLeg)
         {
           valid.InitLeg(iLeg);
-          foreach (LegSections nextLeg in EnumVariations(valid, allLegs: false))
+          foreach (var nextLeg in EnumVariations(valid, allLegs: false))
           {
             yield return nextLeg;
           }
@@ -1337,7 +1337,7 @@ namespace OCourse.Ext
 
         List<SimpleSection> sections = new List<SimpleSection>(simples.Count);
         Dictionary<string, Control> controls = new Dictionary<string, Control>();
-        foreach (SimpleSection section in simples)
+        foreach (var section in simples)
         {
           Control from = GetUniqueControl(controls, section.From);
           Control to = GetUniqueControl(controls, section.To);
@@ -1345,7 +1345,7 @@ namespace OCourse.Ext
           MultiSection add = new MultiSection(from, to);
           if (section is MultiSection s)
           {
-            foreach (Control c in s.Inter)
+            foreach (var c in s.Inter)
             {
               Control u = GetUniqueControl(controls, c);
               add.Inter.Add(u);
@@ -1402,7 +1402,7 @@ namespace OCourse.Ext
 
         List<SimpleSection> sections = new List<SimpleSection>(simples.Count);
         Dictionary<string, Control> controls = new Dictionary<string, Control>();
-        foreach (SimpleSection section in simples)
+        foreach (var section in simples)
         {
           Control from = GetUniqueControl(controls, section.From);
           Control to = GetUniqueControl(controls, section.To);
@@ -1447,7 +1447,7 @@ namespace OCourse.Ext
           {
             IReadOnlyList<SimpleSection> sections = Sections;
             Dictionary<Control, NextControlList> nextInfos = AssembleSections(sections);
-            foreach (NextControlList nextInfo in nextInfos.Values)
+            foreach (var nextInfo in nextInfos.Values)
             { nextInfo.AssureCodes(); }
 
             _nextControls = nextInfos;
@@ -1462,7 +1462,7 @@ namespace OCourse.Ext
           if (_sectionCount == null)
           {
             Dictionary<SimpleSection, int> dict = new Dictionary<SimpleSection, int>(new SimpleSection.EqualControlsComparer());
-            foreach (SimpleSection section in Sections)
+            foreach (var section in Sections)
             {
               if (!dict.ContainsKey(section))
               {
@@ -1501,7 +1501,7 @@ namespace OCourse.Ext
         EvaluateNexts(pre, from, nexts, verifyFull,
           out Dictionary<char, List<NextWhere>> variations, out Dictionary<char, InvalidType> invalids);
 
-        foreach (char code in invalids.Keys)
+        foreach (var code in invalids.Keys)
         {
           variations.Remove(code);
         }
@@ -1523,7 +1523,7 @@ namespace OCourse.Ext
       {
         variations = new Dictionary<char, List<NextWhere>>();
         invalids = new Dictionary<char, InvalidType>();
-        foreach (NextControl next in nexts)
+        foreach (var next in nexts)
         {
           if (variations.TryGetValue(next.Code, out List<NextWhere> nextWheres))
           {
@@ -1567,7 +1567,7 @@ namespace OCourse.Ext
       {
         T candidate = variation.Clone();
         bool exists = false;
-        foreach (ISectionList valid in EnumVariations(candidate, next, where, allLegs: true))
+        foreach (var valid in EnumVariations(candidate, next, where, allLegs: true))
         {
           exists = true;
           break;
@@ -1583,13 +1583,13 @@ namespace OCourse.Ext
           start, NextControls[start].List, verifyFull: false);
 
         List<NextWhere> sorted = Sort(variation, start, variations.Values);
-        foreach (NextWhere next in sorted)
+        foreach (var next in sorted)
         {
           T init = variations.Count > 1
             ? variation.Clone()
             : variation;
 
-          foreach (T valid in EnumVariations(init, next.Next, next.Where, allLegs))
+          foreach (var valid in EnumVariations(init, next.Next, next.Where, allLegs))
           {
             yield return valid;
           }
@@ -1635,7 +1635,7 @@ namespace OCourse.Ext
 
           bool finished = true;
           List<NextWhere> nexts = Sort(variation, split, nextsDict.Values);
-          foreach (NextWhere next in nexts)
+          foreach (var next in nexts)
           {
             if (next == null) // only invalid nexts
             {
@@ -1720,7 +1720,7 @@ namespace OCourse.Ext
       private static Dictionary<Control, NextControlList> AssembleSections(IReadOnlyList<SimpleSection> sections)
       {
         Dictionary<Control, NextControlList> dict = new Dictionary<Control, NextControlList>();
-        foreach (SimpleSection section in sections)
+        foreach (var section in sections)
         {
           Control pre = section.From;
 
@@ -1738,7 +1738,7 @@ namespace OCourse.Ext
       {
         Dictionary<string, Control> controls = new Dictionary<string, Control>();
         List<SimpleSection> unique = new List<SimpleSection>(sections.Count);
-        foreach (SimpleSection section in sections)
+        foreach (var section in sections)
         {
           Control from = GetUniqueControl(controls, section.From);
           Control to = GetUniqueControl(controls, section.To);
@@ -1810,7 +1810,7 @@ namespace OCourse.Ext
         }
         else if (section is SplitSection split)
         {
-          foreach (SplitSection.Branch branch in split.Branches)
+          foreach (var branch in split.Branches)
           {
             BuildExplicit(branch, controls);
           }

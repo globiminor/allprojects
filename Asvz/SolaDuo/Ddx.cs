@@ -1,3 +1,4 @@
+using Basics.Data;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +9,7 @@ namespace Asvz.Sola
   public static class Ddx
   {
     private static XmlDocument _ddx;
-    private static string _ddxPath;
+    private static readonly string _ddxPath;
     private const string _nodeLaufdatum = "laufdatum";
     private const string _nodeBewilligung = "bewilligung";
     private const string _nodeDhm = "dhm";
@@ -31,7 +32,7 @@ namespace Asvz.Sola
     private const string _nodeKatOffsetEnd = "offsetEnd";
     private const string _nodeKatStufe = "stufe";
 
-    private static string _workDir;
+    private static readonly string _workDir;
 
     private static List<Uebergabe.Info> _uebergabe;
     private static List<SolaStrecke> _strecken;
@@ -53,7 +54,7 @@ namespace Asvz.Sola
     {
       XmlNodeList nodes = _ddx.SelectNodes("//" + _nodeUebergabe);
       _uebergabe = new List<Uebergabe.Info>(nodes.Count);
-      foreach (XmlNode node in nodes)
+      foreach (var node in nodes.Enum())
       {
         XmlAttribute attr;
 
@@ -122,7 +123,7 @@ namespace Asvz.Sola
     {
       XmlNodeList nodes = _ddx.SelectNodes("//" + _nodeStrecke);
       _strecken = new List<SolaStrecke>(nodes.Count);
-      foreach (XmlNode node in nodes)
+      foreach (var node in nodes.Enum())
       {
         int strecke;
         string vorlage;
@@ -140,7 +141,7 @@ namespace Asvz.Sola
         SolaStrecke info = new SolaStrecke(strecke, vorlage);
 
         XmlNodeList cats = node.SelectNodes(_nodeKategorie);
-        foreach (XmlNode nodeCat in cats)
+        foreach (var nodeCat in cats.Enum())
         {
           attr = nodeCat.Attributes[_nodeKatTyp];
           Kategorie typ = (Kategorie)int.Parse(attr.Value);

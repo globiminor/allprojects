@@ -21,7 +21,7 @@ namespace Basics.Data
         _reader = reader;
         Geom.IBox extent = null;
 
-        foreach (DbBaseParameter parameter in reader._command.Parameters)
+        foreach (var parameter in reader._command.Parameters.Enum())
         {
           if (parameter.Value is Geom.IGeometry)
           {
@@ -337,8 +337,8 @@ namespace Basics.Data
   public class SimpleTransaction<T> : DbTransaction
   {
 
-    private SimpleConnection<T> _connection;
-    private IsolationLevel _level;
+    private readonly SimpleConnection<T> _connection;
+    private readonly IsolationLevel _level;
 
     private SimpleTransaction(SimpleConnection<T> connection,
        IsolationLevel isolationLevel)

@@ -311,9 +311,9 @@ namespace Shape
 
       double zMin = _geomReader.ReadDouble(); // zmin
       double zMax = _geomReader.ReadDouble(); // zmax
-      foreach (Polyline l in lines)
+      foreach (var l in lines)
       {
-        foreach (IPoint p in l.Points)
+        foreach (var p in l.Points)
         { p.Z = _geomReader.ReadDouble(); }
       }
       return lines;
@@ -520,7 +520,7 @@ namespace Shape
 
       _schemaTable = new DataTable();
       _schemaTable.Columns.Add("Shape", typeof(IGeometry));
-      foreach (DataColumn col in _dbfReader.Schema.Columns)
+      foreach (var col in _dbfReader.Schema.Columns)
       {
         _schemaTable.Columns.Add(col); // TODO : create new column
       }
@@ -657,7 +657,7 @@ namespace Shape
     {
       _geomWriter.IsLittleEndian = true;
 
-      foreach (IPoint p in line.Points)
+      foreach (var p in line.Points)
       {
         _geomWriter.Write(p.X);
         _geomWriter.Write(p.Y);
@@ -673,7 +673,7 @@ namespace Shape
     {
       _geomWriter.IsLittleEndian = true;
 
-      foreach (IPoint p in line.Points)
+      foreach (var p in line.Points)
       { _geomWriter.Write(p[dim]); }
     }
 
@@ -855,7 +855,7 @@ namespace Shape
         _geomWriter.Write(nPoints);
       }
 
-      foreach (Polyline line in area.Border)
+      foreach (var line in area.Border)
       { WriteObjectGeom(line); }
 
       return nTotPoints + 4;

@@ -9,7 +9,7 @@ namespace OCourse.Tracking
 {
   class Track
   {
-    private Course _course;
+    private readonly Course _course;
     private IList<TrackPoint> _track;
     public Track(Course course, IList<TrackPoint> track)
     {
@@ -26,7 +26,7 @@ namespace OCourse.Tracking
       }
       Projection prj = new Utm();
       List<IPoint> utm = new List<IPoint>();
-      foreach (TrackPoint tp in _track)
+      foreach (var tp in _track)
       {
         Point gg = new Point2D((tp.Long - lon0) * Math.PI / 180.0,
           tp.Lat * Math.PI / 180.0);
@@ -43,7 +43,7 @@ namespace OCourse.Tracking
       Point center = new Point2D();
       IPoint p1 = null;
       double sumW = 0;
-      foreach (IPoint point in line)
+      foreach (var point in line)
       {
         IPoint p0 = p1;
         p1 = point;

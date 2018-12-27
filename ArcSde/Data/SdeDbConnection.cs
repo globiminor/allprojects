@@ -103,7 +103,7 @@ namespace ArcSde.Data
         layersView.Sort = SchemaLayersTable.ColTableName;
 
         SchemaColumnsTable colTbl = new SchemaColumnsTable();
-        foreach (DataRowView vTbl in tablesView)
+        foreach (var vTbl in tablesView.Enum())
         {
           SchemaTablesTable.Row rowTbl = (SchemaTablesTable.Row)vTbl.Row;
           IList<DataRowView> rowsLyr = layersView.FindRows(rowTbl.TableName);
@@ -114,7 +114,7 @@ namespace ArcSde.Data
           }
           else
           {
-            foreach (DataRowView vLyr in rowsLyr)
+            foreach (var vLyr in rowsLyr)
             {
               SchemaLayersTable.Row rowLyr = (SchemaLayersTable.Row)vLyr.Row;
               AddRow(colTbl, rowLyr.TableName, rowLyr.SpatialColumn, GetType(rowLyr));
@@ -156,7 +156,7 @@ namespace ArcSde.Data
 
       using (SeLayerInfoList layers = _connection.GetLayers())
       {
-        foreach (SeLayerInfo layer in layers.GetLayers())
+        foreach (var layer in layers.GetLayers())
         {
           SchemaLayersTable.Row row = tbl.NewRow();
           row.TableName = layer.Table;
@@ -173,7 +173,7 @@ namespace ArcSde.Data
     {
       SchemaTablesTable tbl = new SchemaTablesTable();
       IList<string> names = _connection.GetTables(SdeType.SE_SELECT_PRIVILEGE);
-      foreach (string name in names)
+      foreach (var name in names)
       {
         SchemaTablesTable.Row row = tbl.NewRow();
         row.TableName = name;
@@ -192,7 +192,7 @@ namespace ArcSde.Data
 
       schema = new SchemaColumnsTable();
       SeTable tbl = new SeTable(_connection, name);
-      foreach (SeColumn column in tbl.Columns)
+      foreach (var column in tbl.Columns)
       {
         Type type;
         if (column.Type == SdeType.SE_SMALLINT_TYPE) type = typeof(Int16);

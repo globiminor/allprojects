@@ -42,7 +42,7 @@ namespace LeastCostPathUI
         {
           Color color = _bitmap.GetPixel(ix, iy);
           double maxC = double.MaxValue;
-          foreach (Color refColor in colors)
+          foreach (var refColor in colors)
           {
             double dr = Delta(refColor.R, color.R);
             double dg = Delta(refColor.G, color.G);

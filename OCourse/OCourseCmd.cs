@@ -8,6 +8,7 @@ using OCourse.Gui;
 using TMap;
 using Grid.Lcp;
 using Control = Ocad.Control;
+using Basics.Forms;
 
 namespace OCourse
 {
@@ -89,7 +90,7 @@ namespace OCourse.Gui
               if (legs.Count > 0)
               {
                 bool notSelected = true;
-                foreach (int leg in branch.Legs)
+                foreach (var leg in branch.Legs)
                 {
                   if (legs.Contains(leg))
                   {
@@ -131,7 +132,7 @@ namespace OCourse.Gui
 
             DataGridView dgv = _wdg.dgvPermut;
             List<int> forks = new List<int>();
-            foreach (DataGridViewColumn col in dgv.Columns)
+            foreach (var col in dgv.Columns.Enum())
             {
               if (col.Tag == section)
               {
@@ -164,7 +165,7 @@ namespace OCourse.Gui
               Polyline p;
               Control c1 = preControls[0];
               string comb = "";
-              foreach (Control cntr in branch.GetCombination(comb))
+              foreach (var cntr in branch.GetCombination(comb))
               {
                 Control c0 = c1;
                 c1 = cntr;

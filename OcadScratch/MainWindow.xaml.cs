@@ -105,7 +105,7 @@ namespace OcadScratch
       {
         XmlSymbols syms = XmlSymbols.Create(map.GetSymbols());
         syms.Colors = new List<XmlColor>();
-        foreach (ColorRef color in map.GetColors())
+        foreach (var color in map.GetColors())
         { syms.Colors.Add(XmlColor.Create(color)); }
         Basics.Serializer.Serialize(syms, w);
       }
@@ -118,7 +118,7 @@ namespace OcadScratch
       }
 
       List<Symbol> symbols = new List<Symbol>();
-      foreach (XmlSymbol s in des.Symbols)
+      foreach (var s in des.Symbols)
       { symbols.Add(s.GetSymbol()); }
       sb = new StringBuilder();
       using (var w = new StringWriter(sb))
@@ -310,7 +310,7 @@ namespace OcadScratch
       }
 
       List<WorkElemVm> elems = new List<WorkElemVm>();
-      foreach (object item in grdElems.Items)
+      foreach (var item in grdElems.Items)
       {
         if (item is WorkElemVm elem)
         { elems.Add(elem); }

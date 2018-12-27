@@ -178,7 +178,7 @@ namespace OcadScratch.ViewModels
           BindingListView<ImageVm> imgs = new BindingListView<ImageVm>();
           if (_config.Images != null)
           {
-            foreach (XmlImage img in _config.Images)
+            foreach (var img in _config.Images)
             { imgs.Add(new ImageVm(img)); }
           }
           _images = imgs;
@@ -210,11 +210,11 @@ namespace OcadScratch.ViewModels
 
       if (xmls != null)
       {
-        foreach (XmlColor clr in xmls.Colors)
+        foreach (var clr in xmls.Colors)
         {
           _lazySymbols.Colors.Add(clr.GetColor());
         }
-        foreach (XmlSymbol sym in xmls.Symbols)
+        foreach (var sym in xmls.Symbols)
         {
           _lazySymbols.Symbols.Add(sym.GetSymbol());
         }
@@ -434,7 +434,7 @@ namespace OcadScratch.ViewModels
         OffsetX = offset?.X ?? 0;
         OffsetY = offset?.Y ?? 0;
 
-        foreach (StringParamIndex idx in r.ReadStringParamIndices())
+        foreach (var idx in r.ReadStringParamIndices())
         {
           if (idx.Type == StringType.ScalePar)
           {

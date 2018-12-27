@@ -33,7 +33,7 @@ namespace Basics.Window.Browse
     private class DevContent : IDisposable
     {
       private PortableDeviceApiLib.IPortableDeviceValues _devVals;
-      private PortableDeviceApiLib.IPortableDeviceContent _content;
+      private readonly PortableDeviceApiLib.IPortableDeviceContent _content;
       public DevContent(string deviceId)
       {
         _devVals = InitDeviceValues();
@@ -72,7 +72,7 @@ namespace Basics.Window.Browse
     {
       using (DevMgr mgr = new DevMgr())
       {
-        foreach (string deviceId in GetDeviceIds(mgr.Base))
+        foreach (var deviceId in GetDeviceIds(mgr.Base))
         {
           yield return GetDeviceFriendlyName(mgr.Base, deviceId);
         }
@@ -113,7 +113,7 @@ namespace Basics.Window.Browse
 
       using (DevMgr mgr = new DevMgr())
       {
-        foreach (string deviceId in GetDeviceIds(mgr.Base))
+        foreach (var deviceId in GetDeviceIds(mgr.Base))
         {
           string device = GetDeviceFriendlyName(mgr.Base, deviceId);
           if (!device.Equals(dirs[0]))
@@ -136,7 +136,7 @@ namespace Basics.Window.Browse
     {
       using (DevMgr mgr = new DevMgr())
       {
-        foreach (string deviceId in GetDeviceIds(mgr.Base))
+        foreach (var deviceId in GetDeviceIds(mgr.Base))
         {
           string device = GetDeviceFriendlyName(mgr.Base, deviceId);
           if (!device.Equals(dirs[0]))
@@ -145,7 +145,7 @@ namespace Basics.Window.Browse
           using (DevContent dev = new DevContent(deviceId))
           {
             PdEntry parent = GetEntry(dev.Base, "DEVICE", dirs, 1);
-            foreach (PdEntry entry in GetContent(dev.Base, parent.Id))
+            foreach (var entry in GetContent(dev.Base, parent.Id))
             {
               yield return entry;
             }
@@ -182,7 +182,7 @@ namespace Basics.Window.Browse
     {
       using (DevMgr mgr = new DevMgr())
       {
-        foreach (string deviceId in GetDeviceIds(mgr.Base))
+        foreach (var deviceId in GetDeviceIds(mgr.Base))
         {
           string deviceName = GetDeviceFriendlyName(mgr.Base, deviceId);
           if (!device.Equals(deviceName))
@@ -235,7 +235,7 @@ namespace Basics.Window.Browse
       { return new PdEntry { Id = parentId, Name = "" }; }
       List<string> ids = GetObjectIds(content, parentId);
 
-      foreach (string id in ids)
+      foreach (var id in ids)
       {
         PdEntry idEntry = GetEntry(content, id);
         if (idEntry == null)
@@ -273,7 +273,7 @@ namespace Basics.Window.Browse
     {
       List<string> ids = GetObjectIds(content, parentId);
 
-      foreach (string id in ids)
+      foreach (var id in ids)
       {
         yield return GetEntry(content, id);
       }

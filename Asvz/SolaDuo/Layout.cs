@@ -54,7 +54,7 @@ namespace Asvz
     protected void WriteKm(OcadWriter writer, Polyline strecke, double f, string suffix, bool flipOnConflict)
     {
       List<KmElem> elems = GetKm(writer.Setup, strecke, f, suffix, flipOnConflict);
-      foreach (KmElem elem in elems)
+      foreach (var elem in elems)
       {
         writer.Append(elem.Text);
         writer.Append(elem.Strich);

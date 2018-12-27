@@ -9,10 +9,10 @@ namespace Basics.Geom
     #region nested classes
     private class _InnerCurve : InnerCurve
     {
-      private IPoint _center;
-      private double _radius;
-      private double _dirStart;
-      private double _angle;
+      private readonly IPoint _center;
+      private readonly double _radius;
+      private readonly double _dirStart;
+      private readonly double _angle;
 
       public _InnerCurve(IPoint center, double radius, double dirStart, double angle)
       {
@@ -141,8 +141,7 @@ namespace Basics.Geom
       if (this == other)
       { return true; }
 
-      Arc o = other as Arc;
-      if (o == null)
+      if (!(other is Arc o))
       { return false; }
       bool equal =
         _center.EqualGeometry(o._center) &&
@@ -260,8 +259,8 @@ namespace Basics.Geom
         Box pBox = new Box(Point.Create(Start), Point.Create(End), true);
         if (HasSubparts)
         {
-          foreach (Arc pSubPart in Subparts())
-          { pBox.Include(pSubPart.Extent); }
+          foreach (var subPart in Subparts())
+          { pBox.Include(subPart.Extent); }
         }
         return pBox;
       }
@@ -617,7 +616,7 @@ namespace Basics.Geom
 
     private class _SubpartsEnumerable : IEnumerable<Arc>
     {
-      private Arc _arc;
+      private readonly Arc _arc;
       public _SubpartsEnumerable(Arc arc)
       {
         _arc = arc;

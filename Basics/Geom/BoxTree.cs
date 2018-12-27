@@ -95,7 +95,7 @@ namespace Basics.Geom
     private void InitSize([NotNull] IEnumerable data)
     {
       _unitBox = null;
-      foreach (object row in data)
+      foreach (var row in data)
       {
         IBox box;
         if (row is IGeometry)
@@ -231,7 +231,7 @@ namespace Basics.Geom
       List<BoxTile> leaves = new List<BoxTile>();
       AddLeaves(_mainTile, leaves, nonEmpty);
       List<Box> leafBoxs = new List<Box>(leaves.Count);
-      foreach (BoxTile leaf in leaves)
+      foreach (var leaf in leaves)
       {
         leafBoxs.Add(GetBox(leaf));
       }
@@ -810,7 +810,7 @@ namespace Basics.Geom
 
         _count = 0;
 
-        foreach (TileEntry entry in InitSplit())
+        foreach (var entry in InitSplit())
         {
           double dMin = entry.Box.Min[splitDim];
           double dMax = entry.Box.Max[splitDim];
@@ -901,7 +901,7 @@ namespace Basics.Geom
       internal bool VerifyPointTile(BoxTree tree)
       {
         IBox extent = tree.TileExtent(this);
-        foreach (TileEntry entry in EnumElems())
+        foreach (var entry in EnumElems())
         {
           if (extent.Contains(entry.Box) == false)
           {
@@ -1089,7 +1089,7 @@ namespace Basics.Geom
       {
         List<TileEntry> toSplit = _elemList;
         _elemList = new List<TileEntry>();
-        foreach (TileEntry splitEntry in toSplit)
+        foreach (var splitEntry in toSplit)
         {
           yield return splitEntry;
         }
@@ -1097,7 +1097,7 @@ namespace Basics.Geom
 
       internal override IEnumerable<BoxTree.TileEntry> EnumElems()
       {
-        foreach (TileEntry entry in _elemList)
+        foreach (var entry in _elemList)
         {
           yield return entry;
         }

@@ -179,14 +179,18 @@ namespace Basics.Geom
     }
     public double Dist2(IPoint point)
     {
+      return Dist2(this, point);
+    }
+    public static double Dist2(IPoint p0, IPoint p1)
+    {
+      int iDim = Math.Min(p0.Dimension, p1.Dimension);
       double dDist2 = 0;
-      for (int i = 0; i < Dimension; i++)
+      for (int i = 0; i < iDim; i++)
       {
-        double d = this[i] - point[i];
+        double d = p0[i] - p1[i];
         dDist2 += d * d;
       }
       return dDist2;
-
     }
 
     public double OrigDist2()
@@ -233,10 +237,6 @@ namespace Basics.Geom
     double IBox.GetMaxExtent()
     {
       return 0;
-    }
-    void IBox.Include(IBox box)
-    {
-      throw new InvalidOperationException("Cannot include Box into Point");
     }
     IBox IBox.Clone()
     {

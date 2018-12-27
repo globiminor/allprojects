@@ -84,7 +84,7 @@ namespace Cards
         _nCovered = 0;
         _nFree = 0;
         _minFree = int.MaxValue;
-        foreach (List<Card> covered in spider.ColumnsCovered)
+        foreach (var covered in spider.ColumnsCovered)
         {
           _nCovered += covered.Count;
 
@@ -103,11 +103,11 @@ namespace Cards
           potential -= covered.Count;
           potential += GetPotential(open);
         }
-        foreach (List<Card> completed in spider.Completed)
+        foreach (var completed in spider.Completed)
         {
           potential += GetPotential(completed);
         }
-        foreach (List<Card> stack in spider.Stack)
+        foreach (var stack in spider.Stack)
         {
           potential -= stack.Count;
         }
@@ -157,10 +157,10 @@ namespace Cards
           if (_positionCode == 0)
           {
             Spider stand = GetCurrent(this);
-            foreach (List<Card> open in stand.ColumnsOpen)
+            foreach (var open in stand.ColumnsOpen)
             {
               _positionCode = _positionCode + 29;
-              foreach (Card card in open)
+              foreach (var card in open)
               { _positionCode = (41 * _positionCode) ^ card.GetCardCode(); }
             }
           }
@@ -249,7 +249,7 @@ namespace Cards
         if (move == null)
         { return null; }
         bool success = false;
-        foreach (Move possible in GetPossibleMoves())
+        foreach (var possible in GetPossibleMoves())
         {
           if (move.FromCard == possible.FromCard &&
             move.FromColumn == possible.FromColumn &&
@@ -305,7 +305,7 @@ namespace Cards
         Card pre = null;
         double g = 1.3;
         double groups = g;
-        foreach (Card card in cards)
+        foreach (var card in cards)
         {
           if (pre != null)
           {
@@ -634,7 +634,7 @@ namespace Cards
     public override List<Card> GetDeck()
     {
       List<Card> cards = new List<Card>();
-      foreach (Suite suite in Suite.Suites)
+      foreach (var suite in Suite.Suites)
       {
         cards.AddRange(suite.CreateCards());
         cards.AddRange(suite.CreateCards());
@@ -675,11 +675,11 @@ namespace Cards
     protected override void Sort(List<Stand<Move>> stands)
     {
       List<MoveQuality> mqs = new List<MoveQuality>(stands.Count);
-      foreach (Stand<Move> stand in stands)
+      foreach (var stand in stands)
       { mqs.Add(new MoveQuality(stand)); }
       mqs.Sort(MoveQuality.CompareQuality);
       stands.Clear();
-      foreach (MoveQuality mq in mqs)
+      foreach (var mq in mqs)
       { stands.Add(mq.Stand); }
     }
     public override IEnumerable<CardPosition> GetCardPositions(IEnumerable<Move> moves)
@@ -789,7 +789,7 @@ namespace Cards
     private List<List<Card>> CloneList(List<List<Card>> orig)
     {
       List<List<Card>> clone = new List<List<Card>>(orig.Count);
-      foreach (List<Card> cards in orig)
+      foreach (var cards in orig)
       {
         clone.Add(new List<Card>(cards));
       }
@@ -797,9 +797,9 @@ namespace Cards
     }
 
     private double _x0 = 0.5;
-    private double _dx = 1.2;
+    private readonly double _dx = 1.2;
     private double _y0 = 2;
-    private double _dy = 0.5;
+    private readonly double _dy = 0.5;
     private double _yStack = 0.2;
 
     private Move TryGetMove(double fx, double fy, double tx, double ty)
@@ -808,7 +808,7 @@ namespace Cards
       int fromCard = int.MinValue;
       int toCol = int.MinValue;
 
-      foreach (Pos pos in GetPositions())
+      foreach (var pos in GetPositions())
       {
         if (pos.Position.Left < tx && pos.Position.Left + 1 > tx && pos.Column >= 0)
         { toCol = pos.Column; }
@@ -835,7 +835,7 @@ namespace Cards
     }
     private IEnumerable<CardPosition> GetCardPositions()
     {
-      foreach (Pos pos in GetPositions())
+      foreach (var pos in GetPositions())
       {
         if (pos.Position.Card == null)
         { continue; }
@@ -851,7 +851,7 @@ namespace Cards
         int iy = 0;
 
         List<Card> covereds = ColumnsCovered[iCol];
-        foreach (Card covered in covereds)
+        foreach (var covered in covereds)
         {
           CardPosition pos = new CardPosition { Card = covered, Visible = false, Left = x, Top = _y0 + iy * _dy };
           yield return new Pos(pos, iCol, -1);
@@ -861,7 +861,7 @@ namespace Cards
         List<Card> opens = ColumnsOpen[iCol];
         int nOpen = opens.Count;
         int iOpen = 0;
-        foreach (Card open in opens)
+        foreach (var open in opens)
         {
           CardPosition pos = new CardPosition { Card = open, Visible = true, Left = x, Top = _y0 + iy * _dy };
           yield return new Pos(pos, iCol, nOpen - iOpen);
@@ -872,9 +872,9 @@ namespace Cards
         { yield return new Pos(new CardPosition { Left = x, Top = _y0 }, iCol, -1); }
       }
 
-      foreach (List<Card> stacks in Stack)
+      foreach (var stacks in Stack)
       {
-        foreach (Card stack in stacks)
+        foreach (var stack in stacks)
         {
           CardPosition pos = new CardPosition { Card = stack, Visible = false, Left = _x0, Top = _yStack };
           yield return new Pos(pos, -1, -1);
@@ -882,10 +882,10 @@ namespace Cards
       }
 
       int ix = 2;
-      foreach (List<Card> comps in Completed)
+      foreach (var comps in Completed)
       {
         double x = _x0 + ix * _dx;
-        foreach (Card comp in comps)
+        foreach (var comp in comps)
         {
           CardPosition pos = new CardPosition { Card = comp, Visible = true, Left = x, Top = _yStack };
           yield return new Pos(pos, int.MinValue, -1);

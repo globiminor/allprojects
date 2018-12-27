@@ -66,7 +66,7 @@ namespace Grid.Lcp
       DirGrid.Extent.GetNearest(end, out int ix, out int iy);
       Polyline line = GetGridPath(ix, iy, stop);
 
-      foreach (IPoint point in line.Points)
+      foreach (var point in line.Points)
       {
         int x = (int)point.X;
         int y = (int)point.Y;
@@ -291,7 +291,7 @@ namespace Grid.Lcp
         IReadOnlyList<Step> distSteps = _parent.Steps.GetDistSteps();
         int iStep = 0;
         ICostField[] fields = new ICostField[distSteps.Count];
-        foreach (Step distStep in distSteps)
+        foreach (var distStep in distSteps)
         {
           iStep++;
           Field key = new Field
@@ -317,7 +317,7 @@ namespace Grid.Lcp
           }
           fields[distStep.Index] = stepField;
         }
-        foreach (Step distStep in distSteps)
+        foreach (var distStep in distSteps)
         {
           int iField = distStep.Index;
           ICostField stepField = fields[iField];
@@ -415,7 +415,7 @@ namespace Grid.Lcp
 //        calcAdapter = new StopHandler(); // TODO
       }
 
-      foreach (TelePoint pt in _starts)
+      foreach (var pt in _starts)
       {
         IDirCostModel<T> costModel = pt.CostModel;
         Layer stack = GetLayer(costModel, invers, calcAdapter);
@@ -431,7 +431,7 @@ namespace Grid.Lcp
         ICostField minCostField = null;
         Layer minLayer = null;
 
-        foreach (Layer layer in LayerDict.Values)
+        foreach (var layer in LayerDict.Values)
         {
           ICostField costField = layer.Calc.InitNextProcessField(remove: false);
           if (costField != null && (minCostField == null || costField.Cost < minCostField.Cost))
@@ -450,7 +450,7 @@ namespace Grid.Lcp
           // calc teleport
           if (minLayer.Teleports.TryGetValue(processField, out IList<Teleport<T>> teleports))
           {
-            foreach (Teleport<T> teleport in teleports)
+            foreach (var teleport in teleports)
             {
               Layer layer = GetLayer(teleport.ToCostModel, invers, calcAdapter);
               layer.Calc.AddStart(teleport.To, processField.Cost + teleport.Cost);
@@ -556,7 +556,7 @@ namespace Grid.Lcp
       bool invers = false, double stopFactor = 1)
     {
       List<IField> stopList = new List<IField>(endList.Count);
-      foreach (Point end in endList)
+      foreach (var end in endList)
       {
         stopList.Add(GetField(end));
       }
@@ -711,7 +711,7 @@ namespace Grid.Lcp
       RouteTable bestRoutes = new RouteTable();
       int iCand = 0;
       int nCands = cands.Count;
-      foreach (RouteInfo cand in cands)
+      foreach (var cand in cands)
       {
         if (Status != null)
         {
@@ -755,11 +755,11 @@ namespace Grid.Lcp
           // because of numerical differences between from- and to-grid :
           // synchronize with existing routes
           double dz = fromFirst.Z - routeGrid[(int)fromFirst.X, (int)fromFirst.Y];
-          foreach (IPoint point in fromPath.Points)
+          foreach (var point in fromPath.Points)
           { point.Z = point.Z - dz; }
 
           double toLastZ = toLast.Z;
-          foreach (IPoint point in toPath.Points)
+          foreach (var point in toPath.Points)
           { point.Z = fromLast.Z + toLastZ - point.Z; }
 
           Polyline inv = toPath.Invert();
@@ -790,7 +790,7 @@ namespace Grid.Lcp
 
     private static void MakeGridPath(GridExtent extent, Polyline path)
     {
-      foreach (IPoint p in path.Points)
+      foreach (var p in path.Points)
       {
         extent.GetNearest(p, out int ix, out int iy);
         p.X = ix;
@@ -819,7 +819,7 @@ namespace Grid.Lcp
       int x0 = -1;
       int y0 = -1;
       bool first = true;
-      foreach (IPoint p in line.Points)
+      foreach (var p in line.Points)
       {
         closeGrid.Extent.GetNearest(p, out int x1, out int y1);
 
@@ -844,7 +844,7 @@ namespace Grid.Lcp
       int x0 = -1;
       int y0 = -1;
       bool first = true;
-      foreach (IPoint p in line.Points)
+      foreach (var p in line.Points)
       {
         int x1 = (int)p.X;
         int y1 = (int)p.Y;
@@ -919,7 +919,7 @@ namespace Grid.Lcp
 
     private static bool IsBlocked(Polyline line, IntGrid closeGrid)
     {
-      foreach (IPoint p in line.Points)
+      foreach (var p in line.Points)
       {
         int x1 = (int)p.X;
         int y1 = (int)p.Y;
@@ -941,7 +941,7 @@ namespace Grid.Lcp
       int y1 = (int)first.Y;
       double z1 = valueFct(first.Z);
 
-      foreach (IPoint p in line.Points)
+      foreach (var p in line.Points)
       {
         int x0 = x1;
         int y0 = y1;
@@ -1036,7 +1036,7 @@ namespace Grid.Lcp
       List<double> xs = new List<double>();
       List<double> ys = new List<double>();
 
-      foreach (int iNeighbor in Steps.GetInvolveds(step))
+      foreach (var iNeighbor in Steps.GetInvolveds(step))
       {
         ICostField involved = iNeighbor < 0 ? startField : neighbors[iNeighbor];
         if (involved == null)

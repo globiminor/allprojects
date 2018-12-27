@@ -86,7 +86,7 @@ namespace Asvz.Sola
       File.Copy(_template, outFile, true);
       using (Ocad9Writer writer = Ocad9Writer.AppendTo(outFile))
       {
-        foreach (Element elemStrecke in _lstStrecke)
+        foreach (var elemStrecke in _lstStrecke)
         {
           PointCollection points = (PointCollection)elemStrecke.Geometry;
           Point center = 0.5 * PointOperator.Add(points[1], points[3]);
@@ -137,7 +137,7 @@ namespace Asvz.Sola
 
         writer.DeleteElements(new[] { SymT.StreckenInfo });
 
-        foreach (Element strecke in _lstStrecke)
+        foreach (var strecke in _lstStrecke)
         {
           PointCollection points = (PointCollection)strecke.Geometry;
           Point center = 0.5 * PointOperator.Add(points[1], points[3]);
@@ -151,7 +151,7 @@ namespace Asvz.Sola
           Element minInfo = null;
           double minDist2 = double.MaxValue;
           int iStrecke = int.Parse(strecke.Text);
-          foreach (Element elemInfo in _lstStreckeInfo)
+          foreach (var elemInfo in _lstStreckeInfo)
           {
             PointCollection infoPoints = (PointCollection)elemInfo.Geometry;
             Point infoCenter = 0.5 * PointOperator.Add(infoPoints[1], infoPoints[3]);
@@ -190,7 +190,7 @@ namespace Asvz.Sola
         AdaptText(writer, _templateSetup, _lstKlein, _symKlein, SymT.TextRahmen);
         AdaptText(writer, _templateSetup, _lstSpital, _symSpital, SymT.TextRahmen);
 
-        foreach (Element pSanBg in _lstSanBg)
+        foreach (var pSanBg in _lstSanBg)
         {
           Element pElem = new ElementV9(true);
           pElem.Symbol = SymT.TextRahmen;
@@ -214,7 +214,7 @@ namespace Asvz.Sola
     {
       Point diff = start - points[0];
       PointCollection trans = new PointCollection();
-      foreach (IPoint p in points)
+      foreach (var p in points)
       { trans.Add(p + diff); }
       return trans;
     }
@@ -286,7 +286,7 @@ namespace Asvz.Sola
     private void WriteDefaultStrecken(Ocad9Writer writer, IList<SolaStrecke> strecken)
     {
       Polyline strecke0 = null;
-      foreach (SolaStrecke info in strecken)
+      foreach (var info in strecken)
       {
         ElementV9 elem;
 
@@ -553,7 +553,7 @@ namespace Asvz.Sola
       _lstSpital = new List<Element>();
       _lstSanBg = new List<Element>();
 
-      foreach (Element elem in template.Elements(true, pIndexList))
+      foreach (var elem in template.Elements(true, pIndexList))
       {
         if (elem.Symbol == SymT.TextStrecke)
         { _lstStrecke.Add(elem); }
@@ -586,7 +586,7 @@ namespace Asvz.Sola
       pSetup.PrjTrans.X = 0;
       pSetup.PrjTrans.Y = 0;
 
-      foreach (int iPos in pIndexList)
+      foreach (var iPos in pIndexList)
       {
         Ocad.Symbol.BaseSymbol pSymbol = reader.ReadSymbol(iPos);
         if (pSymbol == null)
@@ -611,7 +611,7 @@ namespace Asvz.Sola
     {
       IList<StringParamIndex> pStrIdxList = template.ReadStringParamIndices();
 
-      foreach (StringParamIndex strIdx in pStrIdxList)
+      foreach (var strIdx in pStrIdxList)
       {
         if (strIdx.Type == StringType.PrintPar)
         { _printParam = new PrintPar(template.ReadStringParam(strIdx)); }
@@ -640,7 +640,7 @@ namespace Asvz.Sola
       double dy1 = pFrame.Top - textSymbol.Size * 1.1;
       Element pElem = new ElementV9(true);
 
-      foreach (Element pText in textList)
+      foreach (var pText in textList)
       {
         PointCollection pList = (PointCollection)pText.Geometry;
         pList = pList.Project(setup.Prj2Map);

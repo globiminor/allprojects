@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Basics.Data;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
@@ -15,7 +16,7 @@ namespace Basics.Views
 
       Type elemType = null;
       Type e = typeof(IEnumerable<>);
-      foreach (Type type in list.GetType().GetInterfaces())
+      foreach (var type in list.GetType().GetInterfaces())
       {
         if (type.IsGenericType && type.GetGenericTypeDefinition() == e)
         {
@@ -52,7 +53,7 @@ namespace Basics.Views
 
       Type listType = null;
       Type e = typeof(IEnumerable<>);
-      foreach (Type type in view.GetType().GetInterfaces())
+      foreach (var type in view.GetType().GetInterfaces())
       {
         if (type.IsGenericType && type.GetGenericTypeDefinition() == e)
         {
@@ -68,7 +69,7 @@ namespace Basics.Views
       bool propSortExists = false;
       if (oldSorts != null)
       {
-        foreach (ListSortDescription sort in oldSorts)
+        foreach (var sort in oldSorts.Enum())
         {
           ListSortDescription newSort;
           if (sort.PropertyDescriptor.Name == property)
@@ -119,7 +120,7 @@ namespace Basics.Views
       StringBuilder statement = new StringBuilder();
       StringBuilder expression = null;
       bool inText = false;
-      foreach (char c in text)
+      foreach (var c in text)
       {
         if (c == '\'')
         {

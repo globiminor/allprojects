@@ -66,7 +66,7 @@ namespace Macro
     public void SetForegroundProcess(string process)
     {
       IList<Process> processes = Process.GetProcessesByName(process);
-      foreach (Process proc in processes)
+      foreach (var proc in processes)
       {
         if (proc.MainWindowHandle != IntPtr.Zero)
         {
@@ -118,7 +118,7 @@ namespace Macro
       IntPtr hWnd = IntPtr.Zero;
       WindowsHandler w = new WindowsHandler();
       w.InitWindows();
-      foreach (WindowPtr window in w.Windows)
+      foreach (var window in w.Windows)
       {
         if (window.GetWindowText().ToUpper().Contains(textStart.ToUpper()))
         {
@@ -158,7 +158,7 @@ namespace Macro
 
         WindowsHandler w = new WindowsHandler();
         w.InitChildWindows(current, IntPtr.Zero);
-        foreach (WindowPtr pair in w.Windows)
+        foreach (var pair in w.Windows)
         {
           if (pair.HWnd == hWnd)
           {
@@ -235,7 +235,7 @@ namespace Macro
 
     public void SendKeys(string word)
     {
-      foreach (char key in word)
+      foreach (var key in word)
       { SendKey(key); }
     }
 

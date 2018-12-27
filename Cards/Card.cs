@@ -64,14 +64,14 @@ namespace Cards
         string suiteCode = value[0].ToString();
         string heightCode = value.Substring(1);
 
-        foreach (Suite s in Suite.Suites)
+        foreach (var s in Suite.Suites)
         {
           if (s.Code == suiteCode)
           {
             Suite = s;
           }
         }
-        foreach (Height h in Height.Heights)
+        foreach (var h in Height.Heights)
         {
           if (h.Code == heightCode)
           {
@@ -106,7 +106,7 @@ namespace Cards
 
     public static void EmptyCards(List<Card> cards)
     {
-      foreach (Card card in cards)
+      foreach (var card in cards)
       {
         card.Suite = _unknownSuite;
         card.Height = _unknownHeight;
@@ -119,7 +119,7 @@ namespace Cards
 
       List<int> randoms = new List<int>(cards.Count);
       Dictionary<int, Card> randomCards = new Dictionary<int, Card>(cards.Count);
-      foreach (Card card in cards)
+      foreach (var card in cards)
       {
         int idx;
         do
@@ -132,7 +132,7 @@ namespace Cards
       }
       randoms.Sort();
       List<Card> shuffled = new List<Card>(cards.Count);
-      foreach (int idx in randoms)
+      foreach (var idx in randoms)
       {
         shuffled.Add(randomCards[idx]);
       }

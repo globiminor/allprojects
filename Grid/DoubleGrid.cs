@@ -23,8 +23,8 @@ namespace Grid
       private readonly double _dOperator;
       private readonly IGrid<int> _iGrd;
 
-      private double[] _dArray;
-      private Func<int, int, double> _opFunc;
+      private readonly double[] _dArray;
+      private readonly Func<int, int, double> _opFunc;
 
       public DoubleOpGrid(IGrid<double> grid, Func<int, int, double> op)
         : base(grid.Extent)
@@ -404,7 +404,7 @@ namespace Grid
       pos = line.Points.First.Value;
       h = grid.Value(pos.X, pos.Y, EGridInterpolation.bilinear);
       profile.Add(new Point2D(0, h));
-      foreach (Curve segment in line.Segments)
+      foreach (var segment in line.Segments)
       {
         double dist = segment.Length();
         sumDist += dist;

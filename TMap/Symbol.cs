@@ -106,7 +106,7 @@ namespace TMap
     /// </summary>
     public void Draw(IGeometry geometry, DataRow properties, IDrawable drawable)
     {
-      foreach (ISymbolPart pPart in this)
+      foreach (var pPart in this)
       {
         drawable.BeginDraw(pPart);
         pPart.Draw(geometry, properties, drawable);
@@ -117,7 +117,7 @@ namespace TMap
     public double Size()
     {
       double dSize = 0;
-      foreach (ISymbolPart part in this)
+      foreach (var part in this)
       {
         double dSizePart = part.Size();
         if (dSizePart > dSize)

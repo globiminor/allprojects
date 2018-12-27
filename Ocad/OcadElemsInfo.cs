@@ -6,7 +6,7 @@ namespace Ocad
 {
   public class OcadElemsInfo
   {
-    private string _fullName;
+    private readonly string _fullName;
     private DateTime _changeDate = DateTime.MinValue;
 
     private IList<ElementIndex> _indexList;
@@ -37,18 +37,19 @@ namespace Ocad
       Validate();
       if (_extent == null)
       {
-        IBox extent = null;
-        foreach (ElementIndex idx in GetIndexList())
+        Box extent = null;
+        foreach (var idx in GetIndexList())
         {
           Box box = idx.Box;
           if (extent == null)
-          { extent = box.Clone(); }
+          { extent = new Box(box); }
           else
           { extent.Include(box); }
         }
         if (extent != null)
         {
-          _extent = extent.Project(GetSetup().Map2Prj).Extent;
+          IBox box = extent;
+          _extent = box.Project(GetSetup().Map2Prj).Extent;
         }
       }
       return _extent;

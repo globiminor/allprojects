@@ -53,7 +53,7 @@ namespace OCourse.Gui
       Basics.Geom.Projection.Utm prj = new Basics.Geom.Projection.Utm();
       List<IPoint> prjPoints = new List<IPoint>(points.Count);
       double? offset = null;
-      foreach (TrackPoint trackPoint in points)
+      foreach (var trackPoint in points)
       {
         if (offset == null)
         {
@@ -66,7 +66,7 @@ namespace OCourse.Gui
         prjPoints.Add(pp);
       }
       // Transform
-      foreach (Control section in _course)
+      foreach (var section in _course)
       {
       }
     }

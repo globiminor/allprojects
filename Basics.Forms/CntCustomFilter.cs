@@ -28,7 +28,7 @@ namespace Basics.Forms
     {
       _treValues.Nodes.Clear();
       _applyFilter = false;
-      foreach (object value in values)
+      foreach (var value in values)
       {
         _treValues.Nodes.Add(new TreeNode($"{value}"));
       }
@@ -40,7 +40,7 @@ namespace Basics.Forms
     private bool TryAppendInStatement(StringBuilder sb, DataGridViewColumn col)
     {
       List<string> values = new List<string>();
-      foreach (TreeNode node in _treValues.Nodes)
+      foreach (var node in _treValues.Nodes.Enum())
       {
         if (node.Checked)
         {
@@ -52,7 +52,7 @@ namespace Basics.Forms
 
       sb.Append(" IN (");
       bool first = true;
-      foreach (string value in values)
+      foreach (var value in values)
       {
         if (first)
         { first = false; }

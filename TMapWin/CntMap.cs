@@ -63,7 +63,7 @@ namespace TMapWin
     private System.Drawing.Point _screenPointLast;
     private System.Drawing.Point _pointDown = new System.Drawing.Point(0, 0);
     private MouseDownStyle _downStyle;
-    private IProjection _prj;
+    private readonly IProjection _prj;
 
     public ToolHandler ToolEnd;
     public ToolHandler ToolMove;
@@ -113,11 +113,11 @@ namespace TMapWin
 
     private void DisposeDatagraphics()
     {
-      foreach (KeyValuePair<int, Graphics> pair in _dataGraphics)
+      foreach (var pair in _dataGraphics)
       { pair.Value.Dispose(); }
       _dataGraphics.Clear();
 
-      foreach (KeyValuePair<int, Bitmap> pair in _dataImages)
+      foreach (var pair in _dataImages)
       { { pair.Value.Dispose(); } }
       _dataImages.Clear();
 
@@ -455,10 +455,10 @@ namespace TMapWin
 
     public void EndDraw(MapData data)
     {
-      foreach (Pen pen in _symbolPens.Values)
+      foreach (var pen in _symbolPens.Values)
       { pen.Dispose(); }
       _symbolPens.Clear();
-      foreach (Brush brush in _symbolBrushes.Values)
+      foreach (var brush in _symbolBrushes.Values)
       { brush.Dispose(); }
       _symbolBrushes.Clear();
 
@@ -626,8 +626,7 @@ namespace TMapWin
     {
       try
       {
-        WdgMain main = TopLevelControl as WdgMain;
-        if (main == null)
+        if (!(TopLevelControl is WdgMain main))
         {
           return;
         }
@@ -665,7 +664,7 @@ namespace TMapWin
     private readonly Basics.Geom.Point _start;
     private readonly Basics.Geom.Point _end;
     private Basics.Geom.Point _middle = null;
-    private bool _isPoint;
+    private readonly bool _isPoint;
 
     public ToolArgs(Point2D pos, int mouse, Point2D start, Point2D end, bool isPoint)
     {

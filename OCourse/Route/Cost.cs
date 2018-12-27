@@ -29,10 +29,10 @@ namespace OCourse.Route
 
   public class CostBase : ICost
   {
-    private double _direct;
-    private double _optimalLength;
-    private double _optimalCost;
-    private double _climb;
+    private readonly double _direct;
+    private readonly double _optimalLength;
+    private readonly double _optimalCost;
+    private readonly double _climb;
 
     private string _name;
 
@@ -127,13 +127,12 @@ namespace OCourse.Route
     public static IEnumerable<CostSectionlist> GetUniqueCombs(IEnumerable<ICost> costs)
     {
       Dictionary<CostSectionlist, CostSectionlist> uniques = new Dictionary<CostSectionlist, CostSectionlist>();
-      foreach (ICost cost in costs)
+      foreach (var cost in costs)
       {
-        ICostSectionlists sections = cost as ICostSectionlists;
-        if (sections == null)
+        if (!(cost is ICostSectionlists sections))
         { continue; }
 
-        foreach (CostSectionlist costSectionlist in sections.Costs)
+        foreach (var costSectionlist in sections.Costs)
         {
           if (!uniques.ContainsKey(costSectionlist))
           {
@@ -148,7 +147,7 @@ namespace OCourse.Route
     public string GetInfo()
     {
       StringBuilder sb = new StringBuilder();
-      foreach (Control c in _sectionList.Controls)
+      foreach (var c in _sectionList.Controls)
       {
         if (sb.Length > 0)
         { sb.Append(" "); }

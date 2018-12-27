@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using Basics.Data;
+using Basics.Forms;
 using Basics.Geom;
 using TMap;
 
@@ -50,8 +51,7 @@ namespace Dhm
     {
       if (_context == null || _args == null)
       { return; }
-      ContourSorter.InfoContour contour = _args.Contour as ContourSorter.InfoContour;
-      if (contour == null)
+      if (!(_args.Contour is ContourSorter.InfoContour contour))
       { return; }
 
       grdContours.AutoGenerateColumns = false;
@@ -64,7 +64,7 @@ namespace Dhm
 
       List<Contour> contours = new List<Contour>();
       contours.Add(contour);
-      foreach (Contour involved in contour.Involveds)
+      foreach (var involved in contour.Involveds)
       {
         if (involved == null)
         { continue; }
@@ -86,10 +86,9 @@ namespace Dhm
       _context.SetExtent(box);
       _context.Refresh();
 
-      foreach (MapData data in _context.Data.GetAllData())
+      foreach (var data in _context.Data.GetAllData())
       {
-        TableMapData tMap = data as TableMapData;
-        if (tMap == null)
+        if (!(data is TableMapData tMap))
         { continue; }
         if (tMap.Data.Path.Equals(_fullPath, StringComparison.InvariantCultureIgnoreCase))
         {
@@ -121,7 +120,7 @@ namespace Dhm
     private List<JoinOption> GetJoinOptions(List<Contour> contours)
     {
       List<Contour> joins = new List<Contour>();
-      foreach (Contour c in contours)
+      foreach (var c in contours)
       {
         if (c == null || c.Id < 0)
         { continue; }
@@ -134,7 +133,7 @@ namespace Dhm
 
       DataColumn key = keys[0];
       StringBuilder sb = new StringBuilder();
-      foreach (Contour join in joins)
+      foreach (var join in joins)
       {
         if (sb.Length > 0)
         { sb.Append(","); }
@@ -158,7 +157,7 @@ namespace Dhm
       { 
         return options; 
       }
-      foreach (ParamGeometryRelation rel in rels)
+      foreach (var rel in rels)
       {
         JoinOption option = new JoinOption(this);
         option.Row0 = tbl.Rows[0];
@@ -183,15 +182,14 @@ namespace Dhm
 
     private void ZoomTo()
     {
-      IBox box = null;
-      foreach (DataGridViewRow row in grdContours.SelectedRows)
+      Box box = null;
+      foreach (var row in grdContours.SelectedRows.Enum())
       {
-        Contour c = row.DataBoundItem as Contour;
-        if (c == null)
+        if (!(row.DataBoundItem is Contour c))
         { continue; }
 
         if (box == null)
-        { box = c.Polyline.Extent.Clone(); }
+        { box = new Box(c.Polyline.Extent); }
         else
         { box.Include(c.Polyline.Extent); }
       }
@@ -210,10 +208,9 @@ namespace Dhm
     {
       IDrawable draw = _context.Maps[0];
 
-      foreach (DataGridViewRow row in grdContours.Rows)
+      foreach (var row in grdContours.Rows.Enum())
       {
-        Contour c = row.DataBoundItem as Contour;
-        if (c == null)
+        if (!(row.DataBoundItem is Contour c))
         { continue; }
 
         SymbolPart lineSymbol = new SymbolPartLine(null);
@@ -227,10 +224,9 @@ namespace Dhm
                       lineSymbol);
       }
 
-      foreach (DataGridViewRow row in grdJoinOptions.Rows)
+      foreach (var row in grdJoinOptions.Rows.Enum())
       {
-        JoinOption c = row.DataBoundItem as JoinOption;
-        if (c == null)
+        if (!(row.DataBoundItem is JoinOption c))
         { continue; }
 
         Color clr;
@@ -255,7 +251,7 @@ namespace Dhm
     private void BtnJoin_Click(object sender, EventArgs e)
     {
       JoinOption j = null;
-      foreach (DataGridViewRow row in grdJoinOptions.SelectedRows)
+      foreach (var row in grdJoinOptions.SelectedRows.Enum())
       {
         j = row.DataBoundItem as JoinOption;
         break;
@@ -313,7 +309,7 @@ namespace Dhm
         Polyline part0 = (parts0[0].Length() > parts0[1].Length()) ? parts0[0] : parts0[1].Invert();
         IList<Polyline> parts1 = l1.Split(rels);
         Polyline part1 = (parts1[0].Length() > parts1[1].Length()) ? parts1[0].Invert() : parts1[1];
-        foreach (Curve seg in part1.Segments)
+        foreach (var seg in part1.Segments)
         { part0.Add(seg); }
         Ocad.Data.OcadConnection.FieldShape.SetValue(Row0, part0);
 

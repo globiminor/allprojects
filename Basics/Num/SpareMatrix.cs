@@ -6,7 +6,7 @@ namespace Basics.Num
 {
   public class SpareMatrix
   {
-    private int _nCol;
+    private readonly int _nCol;
 
     private class Cell
     {
@@ -26,7 +26,7 @@ namespace Basics.Num
       {
         StringBuilder s = new StringBuilder();
         int iCol = 0;
-        foreach (Cell cell in this)
+        foreach (var cell in this)
         {
           while (iCol < cell.Col)
           {
@@ -77,7 +77,7 @@ namespace Basics.Num
         if (r == null)
         { return 0; }
 
-        foreach (Cell cell in r)
+        foreach (var cell in r)
         {
           int col = cell.Col;
           if (col > iCol)
@@ -160,7 +160,7 @@ namespace Basics.Num
         if (r0 == null)
         { continue; }
 
-        foreach (Cell cell0 in r0)
+        foreach (var cell0 in r0)
         {
           Row r1 = m1.GetRow(cell0.Col);
           r1.AddLast(new Cell(cell0.V, iR0));
@@ -172,9 +172,9 @@ namespace Basics.Num
 
     void Scalar(double f)
     {
-      foreach (Row row in _rows)
+      foreach (var row in _rows)
       {
-        foreach (Cell cell in row)
+        foreach (var cell in row)
         {
           cell.V *= f;
         }
@@ -247,7 +247,7 @@ namespace Basics.Num
         if (r0 == null)
         { continue; }
 
-        foreach (Cell cell0 in r0)
+        foreach (var cell0 in r0)
         {
           int col0 = cell0.Col;
 
@@ -260,7 +260,7 @@ namespace Basics.Num
 
           double v0 = cell0.V;
 
-          foreach (Cell cell1 in r1)
+          foreach (var cell1 in r1)
           {
             double v2 = v0 * cell1.V;
             int col1 = cell1.Col;
@@ -316,7 +316,7 @@ namespace Basics.Num
         if (r1 == null)
         { continue; }
 
-        foreach (Cell cell0 in r0)
+        foreach (var cell0 in r0)
         {
           int col0 = cell0.Col;
 
@@ -325,7 +325,7 @@ namespace Basics.Num
 
           double v0 = cell0.V;
 
-          foreach (Cell cell1 in r1)
+          foreach (var cell1 in r1)
           {
             double v2 = v0 * cell1.V;
             int col1 = cell1.Col;
@@ -432,7 +432,7 @@ namespace Basics.Num
       {
         double t = 0;
         double? ex = null;
-        foreach (Cell cell in _rows[iRow])
+        foreach (var cell in _rows[iRow])
         {
           int col = cell.Col;
           double v = cell.V;

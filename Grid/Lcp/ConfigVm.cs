@@ -169,7 +169,7 @@ namespace Grid.Lcp
     {
       get
       {
-        foreach (Steps step in _stepsModes)
+        foreach (var step in _stepsModes)
         { yield return step; }
       }
     }

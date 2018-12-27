@@ -62,12 +62,12 @@ namespace OCourse.Ext
       writer.Remove(StringType.Course);
 
       int iStart = 1;
-      foreach (CoursePar coursePar in info.ParList)
+      foreach (var coursePar in info.ParList)
       {
         if (coursePar.NrRunners != null)
         {
           Course course = null;
-          foreach (Course t in info.CourseList)
+          foreach (var t in info.CourseList)
           {
             if (t.Name == coursePar.Name)
             {
@@ -104,12 +104,12 @@ namespace OCourse.Ext
       writer.Remove(StringType.Course);
 
       int iStart = 1;
-      foreach (CoursePar coursePar in info.ParList)
+      foreach (var coursePar in info.ParList)
       {
         if (coursePar.NrRunners != null)
         {
           Course course = null;
-          foreach (Course t in info.CourseList)
+          foreach (var t in info.CourseList)
           {
             if (t.Name == coursePar.Name)
             {
@@ -142,7 +142,7 @@ namespace OCourse.Ext
       TextWriter writer = new StreamWriter(exportFileName);
       try
       {
-        foreach (Course course in courses)
+        foreach (var course in courses)
         {
           writer.Write(course.ToShortString());
 
@@ -220,7 +220,7 @@ namespace OCourse.Ext
       if (preList != null)
       {
         int nCost = 0;
-        foreach (PreInfo pre in preList)
+        foreach (var pre in preList)
         {
           double addCost = 0;
           if (pre.Control != null)
@@ -239,7 +239,7 @@ namespace OCourse.Ext
     private IList<PreInfo> WriteList(StringBuilder list, SectionCollection sections,
       int leg, int nLegs, IList<PreInfo> preList, List<CostFromTo> routeCosts)
     {
-      foreach (ISection section in sections)
+      foreach (var section in sections)
       {
         if (section is Control)
         {
@@ -260,7 +260,7 @@ namespace OCourse.Ext
         else if (section is Fork fork)
         {
           List<ForkInfo> branches = new List<ForkInfo>();
-          foreach (Fork.Branch branch in fork.Branches)
+          foreach (var branch in fork.Branches)
           {
             branches.Add(new ForkInfo(this, branch.GetEnumerator(), preList, routeCosts));
           }
@@ -269,7 +269,7 @@ namespace OCourse.Ext
           {
             finished = true;
             StringBuilder line = new StringBuilder();
-            foreach (ForkInfo branch in branches)
+            foreach (var branch in branches)
             {
               if (branch.MoveNext())
               {
@@ -284,7 +284,7 @@ namespace OCourse.Ext
             {
               for (int i = branches.Count; i < nLegs; i++)
               { line.Append(";"); }
-              foreach (ForkInfo branch in branches)
+              foreach (var branch in branches)
               {
                 if (branch.Current != null)
                 { line.Append(branch.Cost); }
@@ -294,7 +294,7 @@ namespace OCourse.Ext
             }
           }
           preList = new List<PreInfo>();
-          foreach (ForkInfo branch in branches)
+          foreach (var branch in branches)
           {
             PreInfo pre = new PreInfo(branch.LastControl, branch.Cost);
             preList.Add(pre);
@@ -359,7 +359,7 @@ namespace OCourse.Ext
       IList<SimpleSection> secList = null;
       Dictionary<string, int> teamMapping = null;
 
-      foreach (string bahn in bahnen)
+      foreach (var bahn in bahnen)
       {
         string inFile = Path.GetFileName(bahn);
         if (inFile.StartsWith(pre))
@@ -391,7 +391,7 @@ namespace OCourse.Ext
             teamMapping = new Dictionary<string, int>();
             List<string> validTeams = combinationDoc.GetValidStartNumbers(mapInfo.Course);
             int min = combinationDoc.GetMinimumStartNr(mapInfo.Course);
-            foreach (string team in validTeams)
+            foreach (var team in validTeams)
             {
               teamMapping.Add(team, min);
               min++;
@@ -412,7 +412,7 @@ namespace OCourse.Ext
 
           IEnumerator<string> infoControl = mapInfo.Codes.GetEnumerator();
           controlList = secCourse.GetCombination(mapInfo.Combination);
-          foreach (Control control in controlList)
+          foreach (var control in controlList)
           {
             if (control.Element.Symbol != 702000)
             { continue; }
@@ -454,7 +454,7 @@ namespace OCourse.Ext
           WriteClimb(writer, iClimb);
           if (grafics != null)
           {
-            foreach (Grafics grafic in grafics)
+            foreach (var grafic in grafics)
             {
               if (grafic.IsApplicable(secCourse, controlList))
               {
@@ -474,7 +474,7 @@ namespace OCourse.Ext
 
       double climb = 0;
       Control post = null;
-      foreach (Control control in controls)
+      foreach (var control in controls)
       {
         Control pre = post;
         post = control;
@@ -495,7 +495,7 @@ namespace OCourse.Ext
     {
       if (routeCosts == null)
       { return null; }
-      foreach (CostFromTo routeCost in routeCosts)
+      foreach (var routeCost in routeCosts)
       {
         if (routeCost.From.Name == pre.Name && routeCost.To.Name == post.Name)
         {
@@ -508,11 +508,11 @@ namespace OCourse.Ext
     private Dictionary<string, Control> GetControls(List<Course> courses)
     {
       Dictionary<string, Control> controls = new Dictionary<string, Control>();
-      foreach (Course course in courses)
+      foreach (var course in courses)
       {
-        foreach (List<Control> list in course.GetExplicitCombinations())
+        foreach (var list in course.GetExplicitCombinations())
         {
-          foreach (Control control in list)
+          foreach (var control in list)
           {
             if (controls.ContainsKey(control.Name) == false)
             {
@@ -551,7 +551,7 @@ namespace OCourse.Ext
     private RelayMapInfo GetCourse(IList<Course> courses, OcadReader reader)
     {
       RelayMapInfo info = new RelayMapInfo();
-      foreach (Element element in reader.Elements(null, false, reader.GetIndices()))
+      foreach (var element in reader.Elements(null, false, reader.GetIndices()))
       {
         if (element.Symbol == _symStartNr)
         {
@@ -567,7 +567,7 @@ namespace OCourse.Ext
         if (element.Symbol == _symPoBeTitle)
         {
           string courseName = element.Text;
-          foreach (Course course in courses)
+          foreach (var course in courses)
           {
             if (course.Name == courseName)
             {
@@ -664,7 +664,7 @@ namespace OCourse.Ext
       private List<CoursePar> GetCoursePars(OcadReader reader)
       {
         List<CoursePar> courseList = new List<CoursePar>();
-        foreach (StringParamIndex idx in reader.ReadStringParamIndices())
+        foreach (var idx in reader.ReadStringParamIndices())
         {
           if (idx.Type == StringType.Course)
           {

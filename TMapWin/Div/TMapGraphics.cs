@@ -14,8 +14,8 @@ namespace TMapWin.Div
     private class _Projection : IProjection
     {
       #region IProjection Members
-      double _x;
-      double _y;
+      readonly double _x;
+      readonly double _y;
       public _Projection(Rectangle bounds)
       {
         _x = bounds.X + bounds.Width / 2.0;
@@ -37,7 +37,7 @@ namespace TMapWin.Div
     private Dictionary<ISymbolPart, Pen> _symbolPens = new Dictionary<ISymbolPart, Pen>();
     private Dictionary<ISymbolPart, Brush> _symbolBrushes = new Dictionary<ISymbolPart, Brush>();
     private Graphics _graphics;
-    private IProjection _prj;
+    private readonly IProjection _prj;
 
     public ToolHandler SelectionEnd;
 
@@ -131,7 +131,7 @@ namespace TMapWin.Div
       { return; }
 
       GraphicsPath path = new GraphicsPath();
-      foreach (Polyline polyline in area.Border)
+      foreach (var polyline in area.Border)
       {
         GraphicsPath part = GetPath(polyline);
         path.AddPath(part, false);
@@ -150,7 +150,7 @@ namespace TMapWin.Div
     {
       GraphicsPath path = new GraphicsPath();
 
-      foreach (Curve seg in line.Segments)
+      foreach (var seg in line.Segments)
       {
         if (seg is Line l)
         {

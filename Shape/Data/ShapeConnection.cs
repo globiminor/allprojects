@@ -81,7 +81,7 @@ namespace Shape.Data
       DBase.DBaseReader reader = new DBase.DBaseReader(fullPath);
       SchemaColumnsTable schema = new SchemaColumnsTable();
       schema.AddSchemaColumn("Shape", typeof(Basics.Geom.IGeometry));
-      foreach (DBase.DBaseColumn column in reader.Schema.Columns)
+      foreach (var column in reader.Schema.Columns)
       {
         schema.AddSchemaColumn(column.ColumnName, column.DataType);
       }

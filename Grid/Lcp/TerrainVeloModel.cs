@@ -22,11 +22,8 @@ namespace Grid.Lcp
     {
       get
       {
-        Basics.Geom.IBox hBox = HeightGrid.Extent.Extent;
-        Basics.Geom.IBox vBox = VelocityGrid.Extent.Extent;
-
-        Basics.Geom.Box b = new Basics.Geom.Box(hBox.Min, hBox.Max);
-        Basics.Geom.IBox extent = (Basics.Geom.IBox)b.Intersection(vBox)[0];
+        Basics.Geom.Box b = new Basics.Geom.Box(HeightGrid.Extent.Extent);
+        Basics.Geom.IBox extent = (Basics.Geom.IBox)b.Intersection(VelocityGrid.Extent.Extent)[0];
         return extent;
       }
     }

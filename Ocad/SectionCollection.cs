@@ -55,7 +55,7 @@ namespace Ocad
       public int GetHashCode(SectionCollection obj)
       {
         int code = 0;
-        foreach (ISection section in obj)
+        foreach (var section in obj)
         {
           int add = GetHashCode(section);
           code = code * 29 + add;
@@ -91,7 +91,7 @@ namespace Ocad
     {
       string s = "";
       int iControl = 0;
-      foreach (ISection section in this)
+      foreach (var section in this)
       {
         if (section is Control)
         {
@@ -132,7 +132,7 @@ namespace Ocad
     {
       List<string> combs = GetValidCombinationStrings(leg, First, leg.ToString());
       StringBuilder txt = new StringBuilder();
-      foreach (ISection section in this)
+      foreach (var section in this)
       {
         if (txt.Length > 0)
         { txt.Append("-"); }
@@ -145,7 +145,7 @@ namespace Ocad
           txt.Append("(");
           Fork fork = (Fork)section;
           bool start = true;
-          foreach (Fork.Branch branch in fork.Branches)
+          foreach (var branch in fork.Branches)
           {
             if (start)
             { start = false; }
@@ -195,7 +195,7 @@ namespace Ocad
     protected virtual SectionCollection CloneCore()
     {
       SectionCollection clone = (SectionCollection)Activator.CreateInstance(GetType(), true);
-      foreach (ISection section in this)
+      foreach (var section in this)
       {
         clone.AddLast(section.Clone());
       }
@@ -409,7 +409,7 @@ namespace Ocad
           if (node.Previous == null || node.Previous.Value is Control)
           {
             char add = 'A';
-            foreach (Fork.Branch branch in fork.Branches)
+            foreach (var branch in fork.Branches)
             {
               combs.AddRange(GetValidCombinationStrings(leg, node.Next, pre + add));
               add = (char)(add + 1);
@@ -450,7 +450,7 @@ namespace Ocad
 
             char add = 'A';
             index = 0;
-            foreach (Fork.Branch branch in fork.Branches)
+            foreach (var branch in fork.Branches)
             {
               bool cont = false;
               if (add == lastComb)
@@ -541,7 +541,7 @@ namespace Ocad
 
             char add = 'A';
             int index = 0;
-            foreach (Fork.Branch branch in fork.Branches)
+            foreach (var branch in fork.Branches)
             {
               Control to = (Control)branch.First.Value;
 
@@ -596,7 +596,7 @@ namespace Ocad
                 }
                 else if (subBranch.First.Value is Control)
                 {
-                  foreach (int varLeg in subBranch.Legs)
+                  foreach (var varLeg in subBranch.Legs)
                   {
                     int idx = var.GetBranchIndex(varLeg);
                     if (preFork.Branches[idx].Count > 0)
@@ -650,7 +650,7 @@ namespace Ocad
 
     public int LegCount()
     {
-      foreach (ISection section in this)
+      foreach (var section in this)
       {
         if (section is SplitSection split)
         {
@@ -671,7 +671,7 @@ namespace Ocad
       {
         if (node.Value is SplitSection split)
         {
-          foreach (SplitSection.Branch branch in split.Branches)
+          foreach (var branch in split.Branches)
           {
             branch.SetParentRecursive(node);
           }
@@ -687,7 +687,7 @@ namespace Ocad
         {
           if (node.Previous != null && node.Previous.Value is Control)
           {
-            foreach (SplitSection.Branch branch in split.Branches)
+            foreach (var branch in split.Branches)
             {
               branch.SetPre((Control)node.Previous.Value);
             }
@@ -723,7 +723,7 @@ namespace Ocad
 
           if (node.Next != null && node.Next.Value is Control)
           {
-            foreach (SplitSection.Branch branch in split.Branches)
+            foreach (var branch in split.Branches)
             {
               branch.SetPost((Control)node.Next.Value);
             }
@@ -863,7 +863,7 @@ namespace Ocad
     private Control GetNeighbor(SplitSection split, int subBranch, Dlg directionFct)
     {
       int iPosMax = 0;
-      foreach (SplitSection.Branch branch in split.Branches)
+      foreach (var branch in split.Branches)
       {
         int iPosMin = iPosMax;
         if (branch is Fork.Branch)
@@ -884,7 +884,7 @@ namespace Ocad
       {
         if (node.Value is SplitSection split)
         {
-          foreach (SplitSection.Branch branch in split.Branches)
+          foreach (var branch in split.Branches)
           {
             if (branch == part)
             { return LastControls(node.Previous); }
@@ -914,7 +914,7 @@ namespace Ocad
 
         if (node.Value is SplitSection split)
         {
-          foreach (SplitSection.Branch branch in split.Branches)
+          foreach (var branch in split.Branches)
           {
             IList<Control> list = branch.PreviousControls(section);
             if (list == null)
@@ -940,7 +940,7 @@ namespace Ocad
       List<Control> list = new List<Control>();
       if (node.Value is SplitSection split)
       {
-        foreach (SplitSection.Branch branch in split.Branches)
+        foreach (var branch in split.Branches)
         {
           if (branch.Count > 0)
           { list.AddRange(LastControls(branch.Last)); }
@@ -963,7 +963,7 @@ namespace Ocad
 
         if (node.Value is SplitSection split)
         {
-          foreach (SplitSection.Branch branch in split.Branches)
+          foreach (var branch in split.Branches)
           {
             IList<Control> list = branch.NextControls(section);
             if (list == null)
@@ -984,7 +984,7 @@ namespace Ocad
       {
         if (node.Value is SplitSection split)
         {
-          foreach (SplitSection.Branch branch in split.Branches)
+          foreach (var branch in split.Branches)
           {
             if (branch == part)
             { return FirstControls(node.Next); }
@@ -1014,7 +1014,7 @@ namespace Ocad
       List<Control> list = new List<Control>();
       if (node.Value is SplitSection split)
       {
-        foreach (SplitSection.Branch branch in split.Branches)
+        foreach (var branch in split.Branches)
         {
           if (branch.Count > 0)
           { list.AddRange(FirstControls(branch.First)); }

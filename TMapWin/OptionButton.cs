@@ -64,7 +64,7 @@ namespace TMapWin
       else
       {
         Checked = true;
-        foreach (Control cntr in Parent.Controls)
+        foreach (var cntr in Parent.Controls)
         {
           if (cntr is OptionButton obtn && obtn != this)
           { obtn.Checked = false; }

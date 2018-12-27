@@ -80,7 +80,7 @@ public class DeviceTest
       { ids.Add(objId); }
     }
 
-    foreach (string id in ids)
+    foreach (var id in ids)
     {
       content.Properties(out PortableDeviceApiLib.IPortableDeviceProperties props);
 

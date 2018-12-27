@@ -7,7 +7,7 @@ namespace Basics.Data
   public abstract class DbBaseReader : DbDataReader
   {
     private DbBaseCommand _command;
-    private CommandBehavior _behavior;
+    private readonly CommandBehavior _behavior;
 
     private bool _closed;
 
@@ -207,8 +207,9 @@ namespace Basics.Data
           SchemaColumnsTable schemaTable = GetSchemaTableCore();
 
           DataTable schema = new DataTable(_command.TableName);
-          foreach (SchemaColumnsTable.Row row in schemaTable.Rows)
+          foreach (var o in schemaTable.Rows)
           {
+            SchemaColumnsTable.Row row = (SchemaColumnsTable.Row)o;
             schema.Columns.Add(row.ColumnName, row.DataType);
           }
           _schema = schema;
@@ -228,8 +229,9 @@ namespace Basics.Data
       DataTable schema = new DataTable();
       System.Collections.Generic.List<DataColumn> key =
         new System.Collections.Generic.List<DataColumn>();
-      foreach (SchemaColumnsTable.Row row in schemaTable.Rows)
+      foreach (var o in schemaTable.Rows)
       {
+        SchemaColumnsTable.Row row = (SchemaColumnsTable.Row)o;
         DataColumn col = schema.Columns.Add(row.ColumnName, row.DataType);
 
         if (!SchemaColumnsTable.IsKeyColumn.IsNull(row) && row.IsKey)

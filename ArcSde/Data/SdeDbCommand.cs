@@ -70,7 +70,7 @@ namespace ArcSde.Data
       SelectCommand cmd = (SelectCommand)BaseCmd;
 
       List<string> cols = new List<string>(cmd.Fields.Count);
-      foreach (FieldExpression field in cmd.Fields)
+      foreach (var field in cmd.Fields)
       {
         cols.Add(field.FieldName);
       }
@@ -83,7 +83,7 @@ namespace ArcSde.Data
         IList<Function> fctList = cmd.WhereExp.Functions;
         StringBuilder whereBuilder = new StringBuilder(cmd.Where);
 
-        foreach (Function function in fctList)
+        foreach (var function in fctList)
         {
           if (function.Name == "ST_Intersects")
           {

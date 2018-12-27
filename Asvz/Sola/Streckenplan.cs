@@ -105,8 +105,9 @@ namespace Asvz.Sola
         writer.DeleteElements(delElems);
 
         bool first = true;
-        foreach (SolaCategorie cat in _data.Strecken[_iStrecke - 1].Categories)
+        foreach (var o in _data.Strecken[_iStrecke - 1].Categories)
         {
+          SolaCategorie cat = (SolaCategorie)o;
           Element pElem = new ElementV9(true);
           pElem.Geometry = cat.Strecke;
           if (first)
@@ -212,7 +213,7 @@ namespace Asvz.Sola
     {
       if (elemStrecke.Count > 1 || elemInfo.Count > 1)
       {
-        foreach (Element strNr in elemStrecke)
+        foreach (var strNr in elemStrecke)
         {
           DrawStreckenNrBack(writer, ((PointCollection)strNr.Geometry)[0], setup, symNrBack);
 
@@ -311,7 +312,7 @@ namespace Asvz.Sola
     private void WriteScale(Ocad9Writer writer, IList<Element> infoElems, ColorPar topRed)
     {
       IPoint pMin = null;
-      foreach (Element infoElem in infoElems)
+      foreach (var infoElem in infoElems)
       {
         if (infoElem.IsGeometryProjected)
         { throw new NotImplementedException("Geometry is projected"); }
@@ -384,7 +385,7 @@ namespace Asvz.Sola
       double dy1 = frame.Top - textSymbol.Size;
 
       List<Element> elems = new List<Element>(textList.Count);
-      foreach (Element txtElem in textList)
+      foreach (var txtElem in textList)
       {
         PointCollection txtGeom = (PointCollection)txtElem.Geometry;
         txtGeom = txtGeom.Project(setup.Prj2Map);
@@ -416,7 +417,7 @@ namespace Asvz.Sola
       Polyline line = _data.Strecken[_iStrecke - 1].GetCategorie(Kategorie.Default).Strecke;
 
       List<Data.VerpflegungSym> verpfList = _data.Verpflegung(line);
-      foreach (Data.VerpflegungSym verpf in verpfList)
+      foreach (var verpf in verpfList)
       {
         Element pElem = new ElementV9(true);
         pElem.Geometry = verpf.Symbol;
@@ -470,7 +471,7 @@ namespace Asvz.Sola
         box.Max.X += 700;
         box.Max.Y += 700;
 
-        foreach (Element e in _elemUeKreis)
+        foreach (var e in _elemUeKreis)
         {
           if (e.Geometry.Extent.Intersects(box))
           {
@@ -481,7 +482,7 @@ namespace Asvz.Sola
             writer.Append(pElem);
           }
         }
-        foreach (Element e in _elemUeZiel)
+        foreach (var e in _elemUeZiel)
         {
           if (e.Geometry.Extent.Intersects(box))
           {
@@ -501,7 +502,7 @@ namespace Asvz.Sola
       double d = cat.DispLength / 1000.0;
       double h = cat.SteigungRound(5.0);
 
-      foreach (Element e in _elemInfo)
+      foreach (var e in _elemInfo)
       {
         if (e.Text.StartsWith("Länge:") && (kat & Kategorie.Default) == Kategorie.Default)
         {
@@ -618,7 +619,7 @@ namespace Asvz.Sola
         iIndex++;
       }
 
-      foreach (Element elem in template.Elements(true, pIndexList))
+      foreach (var elem in template.Elements(true, pIndexList))
       {
         if (elem.Symbol == SymS.UebergabeTeil)
         { _elemUeKreis.Add(elem); }
@@ -656,12 +657,12 @@ namespace Asvz.Sola
         iIndex++;
       }
 
-      foreach (Element elem in template.Elements(true, pIndexList))
+      foreach (var elem in template.Elements(true, pIndexList))
       {
         if (elem.Symbol == _infoSymbol.Number)
         {
           bool b = false;
-          foreach (Element existing in _elemInfo)
+          foreach (var existing in _elemInfo)
           {
             if (existing.Text == elem.Text)
             {
@@ -701,7 +702,7 @@ namespace Asvz.Sola
       setup.PrjTrans.Y = 0;
 
       Dictionary<int, Ocad.Symbol.BaseSymbol> symbols = new Dictionary<int, Ocad.Symbol.BaseSymbol>();
-      foreach (int iPos in indexList)
+      foreach (var iPos in indexList)
       {
         Ocad.Symbol.BaseSymbol symbol = reader.ReadSymbol(iPos);
         if (symbol == null)
@@ -745,7 +746,7 @@ namespace Asvz.Sola
       IList<StringParamIndex> strIdxList = template.ReadStringParamIndices();
       _colors = new Dictionary<StringParamIndex, ColorPar>();
       //Template pTpl = new Template();
-      foreach (StringParamIndex strIdx in strIdxList)
+      foreach (var strIdx in strIdxList)
       {
         if (strIdx.Type == StringType.PrintPar)
         { _printParam = new PrintPar(template.ReadStringParam(strIdx)); }

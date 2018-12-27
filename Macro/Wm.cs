@@ -54,13 +54,13 @@ namespace Macro
     {
       IList<WindowPtr> allWindows = Processor.GetChildWindows(IntPtr.Zero);
 
-      foreach (WindowPtr window in allWindows)
+      foreach (var window in allWindows)
       {
         if (window.GetWindowText() == dialogTitle)
         {
           IList<WindowPtr> controls = Processor.GetChildWindows(window.HWnd);
 
-          foreach (WindowPtr control in controls)
+          foreach (var control in controls)
           {
             string txt = control.GetWindowText();
             if (txt.Contains("Adresse:"))

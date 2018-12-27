@@ -31,7 +31,7 @@ namespace Ocad
       setup.PrjRotation = -angle;// +_templateSetup.PrjRotation;
 
       GeometryCollection prjList = new GeometryCollection();
-      foreach (IGeometry geometry in symbol)
+      foreach (var geometry in symbol)
       {
         IGeometry gprj = geometry.Project(setup.Map2Prj);
         prjList.Add(gprj);

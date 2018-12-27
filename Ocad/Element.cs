@@ -231,7 +231,7 @@ namespace Ocad
       {
         Area pArea = geometry as Area;
         int nPoints = 0;
-        foreach (Polyline pLine in pArea.Border)
+        foreach (var pLine in pArea.Border)
         { nPoints += PointCount(pLine); }
         return nPoints;
       }
@@ -249,7 +249,7 @@ namespace Ocad
     private static int PointCount(Polyline line)
     {
       int nPoints = 1;
-      foreach (Curve pSeg in line.Segments)
+      foreach (var pSeg in line.Segments)
       {
         if (pSeg is Bezier)
         { nPoints += 3; }

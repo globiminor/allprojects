@@ -41,7 +41,7 @@ namespace Grid
             if (double.IsNaN(_baseGrid[ix, iy]))
             { continue; }
 
-            foreach (Dir dir in Dir.MeshDirs)
+            foreach (var dir in Dir.MeshDirs)
             {
               int tx = ix + dir.Dx;
               if (tx < 0 || tx >= nx)

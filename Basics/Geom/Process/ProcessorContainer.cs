@@ -27,14 +27,14 @@ namespace Basics.Geom.Process
 
       RowEnumerator rowEnumerator = new RowEnumerator(spatialProcs, extent, _tileSize);
       ISearchEngine searchEngine = rowEnumerator.GetSearchEngine();
-      foreach (ITablesProcessor spatialProc in spatialProcs)
+      foreach (var spatialProc in spatialProcs)
       {
         if (spatialProc is ISearchProcessor searchProc)
         { searchProc.SearchEngine = searchEngine; }
       }
-      foreach (ProcessRow row in rowEnumerator.GetProcessRows())
+      foreach (var row in rowEnumerator.GetProcessRows())
       {
-        foreach (Action<IRow> action in row.GetActions())
+        foreach (var action in row.GetActions())
         {
           action(row.Row);
         }
@@ -44,17 +44,16 @@ namespace Basics.Geom.Process
     private static void SortProcs<T>(IEnumerable<T> procs, IList<IProcessor> nonSpatialProcs, IList<ITablesProcessor> spatialProcs)
       where T : IProcessor
     {
-      foreach (IProcessor proc in procs)
+      foreach (var proc in procs)
       {
-        ITablesProcessor tablesProc = proc as ITablesProcessor;
-        if (tablesProc == null)
+        if (!(proc is ITablesProcessor tablesProc))
         {
           nonSpatialProcs.Add(proc);
           continue;
         }
 
         bool isSpatial = true;
-        foreach (TableAction action in tablesProc.TableActions)
+        foreach (var action in tablesProc.TableActions)
         {
           if (!(action.Table is ISpatialTable))
           {

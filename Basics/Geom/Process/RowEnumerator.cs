@@ -46,7 +46,7 @@ namespace Basics.Geom.Process
           if (_executeActions == null)
           {
             List<TableAction> executeActions = new List<TableAction>();
-            foreach (TableAction action in Actions)
+            foreach (var action in Actions)
             {
               if (action.Execute == null) { continue; }
               executeActions.Add(action);
@@ -79,9 +79,9 @@ namespace Basics.Geom.Process
     public IEnumerable<ProcessRow> GetProcessRows()
     {
       Dictionary<ISpatialTable, TableActions> involvedTables = new Dictionary<ISpatialTable, TableActions>();
-      foreach (ITablesProcessor processor in _processors)
+      foreach (var processor in _processors)
       {
-        foreach (TableAction tableAction in processor.TableActions)
+        foreach (var tableAction in processor.TableActions)
         {
           ISpatialTable table = (ISpatialTable)tableAction.Table;
           if (!involvedTables.TryGetValue(table, out TableActions involved))
@@ -112,7 +112,7 @@ namespace Basics.Geom.Process
 
       IBox extent = _extent ?? GetExtent(involvedTables.Keys);
 
-      foreach (Tile tile in GetTiles(extent))
+      foreach (var tile in GetTiles(extent))
       {
         foreach (var pair in involvedTables)
         {
@@ -135,7 +135,7 @@ namespace Basics.Geom.Process
 
           if (actions.IsQueried)
           {
-            foreach (IRow row in _searchEngine.Search(table, tile.Box))
+            foreach (var row in _searchEngine.Search(table, tile.Box))
             {
               yield return new ProcessRow(row, actions.ExecuteActions);
             }
@@ -146,7 +146,7 @@ namespace Basics.Geom.Process
             if (actions.Actions.Count == 1)
             { dbConstraint = actions.Actions[0].DbConstraint; }
 
-            foreach (ISpatialRow row in table.Search(tile.Box, dbConstraint))
+            foreach (var row in table.Search(tile.Box, dbConstraint))
             {
               yield return new ProcessRow(row, actions.ExecuteActions);
             }
@@ -159,11 +159,11 @@ namespace Basics.Geom.Process
 
     private IBox GetExtent(IEnumerable<ISpatialTable> tables)
     {
-      IBox allExtent = null;
-      foreach (ISpatialTable table in tables)
+      Box allExtent = null;
+      foreach (var table in tables)
       {
         if (allExtent == null)
-        { allExtent = table.Extent; }
+        { allExtent = new Box(table.Extent); }
         else
         { allExtent.Include(table.Extent); }
       }
@@ -182,7 +182,7 @@ namespace Basics.Geom.Process
 
       Point min = Point.Create(dim);
       Point max = Point.Create(dim);
-      foreach (Tile tile in GetTiles(extent, min, max, 0))
+      foreach (var tile in GetTiles(extent, min, max, 0))
       {
         yield return tile;
       }
@@ -199,7 +199,7 @@ namespace Basics.Geom.Process
 
         if (dim + 1 < extent.Dimension)
         {
-          foreach (Tile tile in GetTiles(extent, min, max, dim + 1))
+          foreach (var tile in GetTiles(extent, min, max, dim + 1))
           {
             yield return tile;
           }

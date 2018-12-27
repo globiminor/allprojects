@@ -84,7 +84,7 @@ namespace OCourse.Commands
         {
           Dictionary<StringParamIndex, CourseViewPar> courseViewDict =
             new Dictionary<StringParamIndex, CourseViewPar>();
-          foreach (StringParamIndex idx in OrigStrIdxList)
+          foreach (var idx in OrigStrIdxList)
           {
             if (idx.Type == StringType.CourseView)
             {
@@ -122,7 +122,7 @@ namespace OCourse.Commands
 
     public void Export(string prefix, IEnumerable<CostSectionlist> combs, string customLayoutCourse)
     {
-      foreach (CostSectionlist comb in combs)
+      foreach (var comb in combs)
       {
         Course course = comb.Sections.ToSimpleCourse();
         string name;
@@ -139,14 +139,15 @@ namespace OCourse.Commands
     {
       Export(course, climb);
 
-      foreach (KeyValuePair<StringParamIndex, CourseViewPar> pair in CourseViewDict)
+      foreach (var pair in CourseViewDict)
       {
         CourseViewPar par = pair.Value;
         if (par.Name != customLayoutCourse)
         { continue; }
 
-        foreach (Control control in course)
+        foreach (var section in course)
         {
+          Control control = (Control)section;
           if (control.Name == par.Obj)
           {
             CourseViewPar expPar = new CourseViewPar(course.Name) { Obj = control.Name };
@@ -183,7 +184,7 @@ namespace OCourse.Commands
       writer.DeleteElements(new int[] { 701000, 70200, 705000, 706000, 709000 });
 
       List<ControlHelper> controls = new List<ControlHelper>();
-      foreach (StringParamIndex index in reader.ReadStringParamIndices())
+      foreach (var index in reader.ReadStringParamIndices())
       {
         if (index.Type == StringType.Control)
         {
@@ -200,7 +201,7 @@ namespace OCourse.Commands
 
       }
       Setup rs = reader.ReadSetup();
-      foreach (ControlHelper control in controls)
+      foreach (var control in controls)
       {
         Element elem = reader.ReadElement(control.ParIndex.ElemNummer - 1);
         if (elem != null)
@@ -211,14 +212,14 @@ namespace OCourse.Commands
         }
       }
 
-      foreach (ControlHelper control in controls)
+      foreach (var control in controls)
       {
         writer.Append(StringType.Control, control.ElementIndex + 1, control.Par);
       }
 
 
       IList<int> transferSymbols = new int[] { 709000 };
-      foreach (Element element in reader.Elements(true, null))
+      foreach (var element in reader.Elements(true, null))
       {
         if (transferSymbols.Contains(element.Symbol))
         {

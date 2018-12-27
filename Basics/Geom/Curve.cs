@@ -135,7 +135,7 @@ namespace Basics.Geom
       { return null; }
       IList<ParamGeometryRelation> result = null;
 
-      foreach (ParamGeometryRelation rel in list)
+      foreach (var rel in list)
       {
         if (rel.Intersection == null)
         { continue; }
@@ -402,7 +402,7 @@ namespace Basics.Geom
     protected static IList<T> GetSplitArray<T>(T curve, IList<ParamGeometryRelation> splits) where T : Curve
     {
       List<double> paramList = new List<double>(splits.Count);
-      foreach (ParamGeometryRelation rel in splits)
+      foreach (var rel in splits)
       {
         ParamGeometryRelation r = rel.GetChildRelation(curve);
         double g;
@@ -418,7 +418,7 @@ namespace Basics.Geom
       List<T> result = new List<T>();
       T part;
       double min = 0;
-      foreach (double param in paramList)
+      foreach (var param in paramList)
       {
         if (param < min)
         { throw new InvalidOperationException(); }

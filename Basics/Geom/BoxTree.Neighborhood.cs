@@ -39,7 +39,7 @@ namespace Basics.Geom
           {
             if (!box.Intersects(_tileBox))
             { yield break; }
-            foreach (TileEntry entry in _tile.EnumElems())
+            foreach (var entry in _tile.EnumElems())
             {
               if (entry.Box.Intersects(box))
               { yield return entry; }
@@ -62,7 +62,7 @@ namespace Basics.Geom
 
           public IEnumerable<TileEntry> GetEntries(IBox search)
           {
-            foreach (TileEntry entry in new TileEntryEnumerable(
+            foreach (var entry in new TileEntryEnumerable(
               _tree, _tile, _tileBox, search))
             {
               yield return entry;
@@ -109,7 +109,7 @@ namespace Basics.Geom
           if (_neighbourTiles != null)
           {
             int iTile = 0;
-            foreach (BoxTile yTile in _neighbourTiles)
+            foreach (var yTile in _neighbourTiles)
             {
               sb.AppendFormat(" Y[{0}]: ", iTile);
               TileToString(sb, _master._neighbourTree._mainBox, _master._neighbourTree.GetBox(yTile));
@@ -156,11 +156,11 @@ namespace Basics.Geom
           WriteBox(s, ctx, _master._searchingTree._mainBox, x, f, 4, "#000000");
           WriteBox(s, ctx, _master._neighbourTree._mainBox, x, f, 4, "#000000");
           WriteBox(s, ctx, _master._common, x, f, 6, "#808080");
-          foreach (Box b in _master._searchingTree.GetLeaves(true))
+          foreach (var b in _master._searchingTree.GetLeaves(true))
           {
             WriteBox(s, ctx, b, x, f, 0.5, "#00ff00");
           }
-          foreach (Box b in _master._neighbourTree.GetLeaves(true))
+          foreach (var b in _master._neighbourTree.GetLeaves(true))
           {
             WriteBox(s, ctx, b, x, f, 0.5, "#ff00ff");
           }
@@ -170,12 +170,12 @@ namespace Basics.Geom
           }
           if (_neighbourTiles != null)
           {
-            foreach (BoxTile yTile in _neighbourTiles)
+            foreach (var yTile in _neighbourTiles)
             {
               WriteBox(s, ctx, _master._neighbourTree.GetBox(yTile), x, f, 1, "#0000ff");
             }
           }
-          foreach (BoxTile yTile in GetNeighbourTilesWithElems())
+          foreach (var yTile in GetNeighbourTilesWithElems())
           {
             WriteBox(s, ctx, _master._neighbourTree.GetBox(yTile), x, f, 1, "#00ffff");
           }
@@ -252,7 +252,7 @@ namespace Basics.Geom
           if (neighbourEntryEnumerators == null)
           { yield break; }
 
-          foreach (TileEntry searchEntry in _searchingTile.EnumElems())
+          foreach (var searchEntry in _searchingTile.EnumElems())
           {
             IBox search = GetSearchBox(searchEntry.Box, searchDistance, _master._common);
             if (search == null)
@@ -288,13 +288,13 @@ namespace Basics.Geom
           List<INeighbourEntryEnumerable> enums = new List<INeighbourEntryEnumerable>(n);
           if (_neighbourTilesWithElems != null)
           {
-            foreach (BoxTile tile in _neighbourTilesWithElems)
+            foreach (var tile in _neighbourTilesWithElems)
             { enums.Add(new ElemsEnumerable(_master._neighbourTree, tile)); }
           }
 
           if (_neighbourTiles != null)
           {
-            foreach (BoxTile tile in _neighbourTiles)
+            foreach (var tile in _neighbourTiles)
             { enums.Add(new EntryEnumerable(_master._neighbourTree, tile)); }
           }
 
@@ -305,7 +305,7 @@ namespace Basics.Geom
         {
           if (_neighbourTilesWithElems != null)
           {
-            foreach (BoxTile neighbourTile in _neighbourTilesWithElems)
+            foreach (var neighbourTile in _neighbourTilesWithElems)
             { yield return neighbourTile; }
           }
         }
@@ -313,9 +313,9 @@ namespace Basics.Geom
         private IEnumerable<TileEntry> GetNeighbours(IBox search,
           List<INeighbourEntryEnumerable> neighbourEntryEnumerators)
         {
-          foreach (INeighbourEntryEnumerable neighbourEntryEnumerator in neighbourEntryEnumerators)
+          foreach (var neighbourEntryEnumerator in neighbourEntryEnumerators)
           {
-            foreach (TileEntry neighbourEntry in neighbourEntryEnumerator.GetEntries(search))
+            foreach (var neighbourEntry in neighbourEntryEnumerator.GetEntries(search))
             {
               yield return neighbourEntry;
             }
@@ -324,12 +324,12 @@ namespace Basics.Geom
 
         private IEnumerable<TileEntry> GetNeighbours(IBox search)
         {
-          foreach (BoxTile neighbourTile in GetNeighbourTilesWithElems())
+          foreach (var neighbourTile in GetNeighbourTilesWithElems())
           {
             if (!_master._neighbourTree.GetBox(neighbourTile).Intersects(search))
             { continue; }
 
-            foreach (TileEntry neighbour in neighbourTile.EnumElems())
+            foreach (var neighbour in neighbourTile.EnumElems())
             {
               if (neighbour.Box.Intersects(search))
               { yield return neighbour; }
@@ -337,9 +337,9 @@ namespace Basics.Geom
           }
           if (_neighbourTiles != null)
           {
-            foreach (BoxTile neighbourTile in _neighbourTiles)
+            foreach (var neighbourTile in _neighbourTiles)
             {
-              foreach (TileEntry neighbour in new TileEntryEnumerable(
+              foreach (var neighbour in new TileEntryEnumerable(
                 _master._neighbourTree, neighbourTile,
                 _master._neighbourTree.GetBox(neighbourTile), search))
               {
@@ -400,7 +400,7 @@ namespace Basics.Geom
 
           if (_parent._neighbourTilesWithElems != null)
           {
-            foreach (BoxTile neighbourTile in _parent._neighbourTilesWithElems)
+            foreach (var neighbourTile in _parent._neighbourTilesWithElems)
             {
               if (GetNeighbourSearchDimExtent(neighbourTile) != null)
               { AddNeighbourTileWithElements(neighbourTile); }
@@ -431,7 +431,7 @@ namespace Basics.Geom
             }
 
             // neighbourNodes was created because neighbourTiles changes during iteration
-            foreach (LinkedListNode<BoxTile> neighbourNode in neighbourNodes)
+            foreach (var neighbourNode in neighbourNodes)
             {
               BoxTile neighbourTile = neighbourNode.Value;
               double[] neighbourExtent = GetNeighbourSearchDimExtent(neighbourTile);
@@ -633,7 +633,7 @@ namespace Basics.Geom
 
       private IEnumerable<Neighborhood> GetTileNeighborhoods()
       {
-        foreach (Neighborhood neighborhood in _tilesHandler.GetNeighborhoods(_searchDistance))
+        foreach (var neighborhood in _tilesHandler.GetNeighborhoods(_searchDistance))
         {
           yield return neighborhood;
         }
@@ -705,9 +705,9 @@ namespace Basics.Geom
 
       private IEnumerable<BoxTree<U>.TileEntry> GetEntries(IEnumerable neighbourTileEntries)
       {
-        foreach (BoxTree<U>.TileEntry neighbourEntry in neighbourTileEntries)
+        foreach (var neighbourEntry in neighbourTileEntries)
         {
-          yield return neighbourEntry;
+          yield return (BoxTree<U>.TileEntry)neighbourEntry;
         }
       }
     }

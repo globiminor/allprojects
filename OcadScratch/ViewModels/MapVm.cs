@@ -105,7 +105,7 @@ namespace OcadScratch.ViewModels
           BindingListView<WorkElemVm> elems = new BindingListView<WorkElemVm>();
           elems.AllowNew = false;
           elems.AllowRemove = false;
-          foreach (Elem elem in _map.Elems)
+          foreach (var elem in _map.Elems)
           { elems.Add(new WorkElemVm(elem)); }
           _elems = elems;
           Changed();

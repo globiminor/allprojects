@@ -53,7 +53,7 @@ namespace Asvz
       s = s.Project(prj);
 
       TrkSeg seg = new TrkSeg { Points = new List<Pt>() };
-      foreach (IPoint p in s.Points)
+      foreach (var p in s.Points)
       {
         Pt pt = new Pt { Lat = p.Y, Lon = p.X };
         seg.Points.Add(pt);
@@ -136,7 +136,7 @@ namespace Asvz
       Polyline s = line.Linearize(3.0);
       s = s.Project(prj);
       StringBuilder builder = new StringBuilder();
-      foreach (Point p in s.Points)
+      foreach (var p in s.Points)
       {
         builder.AppendFormat("{0:F6},{1:F6},0 ", p.X, p.Y);
       }

@@ -11,9 +11,9 @@ namespace Basics.Geom
     #region LineString enumeration
     private class EnumerableLineString : IEnumerable<LinkedList<MeshLine>>
     {
-      private Mesh _mesh;
-      private IComparable<MeshLine> _selectComparable;
-      private IComparer<MeshLine> _connectComparer;
+      private readonly Mesh _mesh;
+      private readonly IComparable<MeshLine> _selectComparable;
+      private readonly IComparer<MeshLine> _connectComparer;
       public EnumerableLineString(
         Mesh mesh,
         IComparable<MeshLine> selectComparable,
@@ -36,7 +36,7 @@ namespace Basics.Geom
     {
       private Mesh _mesh;
       private IComparable<MeshLine> _selectComparable;
-      private IComparer<MeshLine> _connectComparer;
+      private readonly IComparer<MeshLine> _connectComparer;
 
       private IEnumerator<MeshLine> _lineEnum;
       private LinkedList<MeshLine> _current;
@@ -173,12 +173,12 @@ namespace Basics.Geom
     #region TriList enumeration
 
     private class EnumerableTriList : IEnumerable<IList<Tri>>, 
-      IEnumerable<IList<MeshLine>>
+      IEnumerable<IReadOnlyList<MeshLine>>
     {
-      private Mesh _mesh;
-      private IComparable<Tri> _selectComparable;
-      private IComparer<Tri> _connectComparer;
-      private bool _border;
+      private readonly Mesh _mesh;
+      private readonly IComparable<Tri> _selectComparable;
+      private readonly IComparer<Tri> _connectComparer;
+      private readonly bool _border;
 
       public EnumerableTriList(
         Mesh mesh,
@@ -196,7 +196,7 @@ namespace Basics.Geom
         Debug.Assert(_border == false, "Error in software design assumption");
         return new EnumeratorTriList(_mesh, _selectComparable, _connectComparer, false);
       }
-      IEnumerator<IList<MeshLine>> IEnumerable<IList<MeshLine>>.GetEnumerator()
+      IEnumerator<IReadOnlyList<MeshLine>> IEnumerable<IReadOnlyList<MeshLine>>.GetEnumerator()
       {
         Debug.Assert(_border == true, "Error in software design assumption");
         return new EnumeratorTriList(_mesh, _selectComparable, _connectComparer, true);
@@ -207,18 +207,18 @@ namespace Basics.Geom
       }
     }
 
-    private class EnumeratorTriList : IEnumerator<IList<Tri>>, IEnumerator<IList<MeshLine>>
+    private class EnumeratorTriList : IEnumerator<IList<Tri>>, IEnumerator<IReadOnlyList<MeshLine>>
     {
       private Mesh _mesh;
       private IComparable<Tri> _selectComparable;
       private IComparer<Tri> _connectComparer;
-      private bool _border;
+      private readonly bool _border;
 
       private IEnumerator<Tri> _triEnum;
       private List<Tri> _currentTris;
-      private List<MeshLine> _currentBorder;
+      private List<MeshLineEx> _currentBorder;
 
-      private uint _triProcessId;
+      private readonly uint _triProcessId;
       private uint _borderProcessId;
 
       public EnumeratorTriList(
@@ -264,7 +264,7 @@ namespace Basics.Geom
       }
       IList<Tri> IEnumerator<IList<Tri>>.Current
       { get { return _currentTris; } }
-      IList<MeshLine> IEnumerator<IList<MeshLine>>.Current
+      IReadOnlyList<MeshLine> IEnumerator<IReadOnlyList<MeshLine>>.Current
       { get { return _currentBorder; } }
 
       public bool MoveNext()
@@ -281,7 +281,7 @@ namespace Basics.Geom
             _currentTris = new List<Tri>();
             if (_border)
             {
-              _currentBorder = new List<MeshLine>();
+              _currentBorder = new List<MeshLineEx>();
               _borderProcessId = _mesh.CaptureLineProcessId();
             }
 
@@ -347,7 +347,7 @@ namespace Basics.Geom
       {
         List<MeshLine> sorted = new List<MeshLine>();
 
-        foreach (MeshLineEx border in _currentBorder)
+        foreach (var border in _currentBorder)
         {
           if (border.BaseLine.GetProcessed(_borderProcessId) == false)
           { continue; }
@@ -425,7 +425,7 @@ namespace Basics.Geom
     /// <param name="selectComparable"></param>
     /// <param name="connectComparer"></param>
     /// <returns></returns>
-    public IEnumerable<IList<MeshLine>> TriBorders(
+    public IEnumerable<IReadOnlyList<MeshLine>> TriBorders(
       IComparable<Tri> selectComparable,
       IComparer<Tri> connectComparer)
     {

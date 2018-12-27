@@ -50,7 +50,7 @@ namespace OCourse.Route
       InitRawCourses(courseFile);
       List<CostFromTo> addList = GetRoutes(resolution);
 
-      foreach (CostFromTo info in addList)
+      foreach (var info in addList)
       {
         if (!RouteCostDict.ContainsKey(info))
         {
@@ -67,7 +67,7 @@ namespace OCourse.Route
       {
         SortedDictionary<IPoint, List<CostFromTo>> starts = new SortedDictionary<IPoint, List<CostFromTo>>(new PointComparer());
         SortedDictionary<IPoint, List<CostFromTo>> ends = new SortedDictionary<IPoint, List<CostFromTo>>(new PointComparer());
-        foreach (CostFromTo info in _calcList.Keys)
+        foreach (var info in _calcList.Keys)
         {
           if (starts.TryGetValue(info.Start, out List<CostFromTo> startList) == false)
           {
@@ -85,7 +85,7 @@ namespace OCourse.Route
         }
         string lcpPath = typeof(IO).Assembly.Location;
         w.WriteLine("-- Start files scripts");
-        foreach (KeyValuePair<IPoint, List<CostFromTo>> pair in starts)
+        foreach (var pair in starts)
         {
           IBox extent = GetBox(pair.Value, new List<IPoint>());
           Round(extent, resolution);
@@ -96,7 +96,7 @@ namespace OCourse.Route
             pair.Value[0].From.Name);
         }
         w.WriteLine("-- End files scripts");
-        foreach (KeyValuePair<IPoint, List<CostFromTo>> pair in ends)
+        foreach (var pair in ends)
         {
           IBox extent = GetBox(pair.Value, new List<IPoint>());
           Round(extent, resolution);
@@ -108,7 +108,7 @@ namespace OCourse.Route
         }
 
         w.WriteLine("-- route files script");
-        foreach (CostFromTo route in _calcList.Keys)
+        foreach (var route in _calcList.Keys)
         {
           IBox extent = GetBox(new CostFromTo[] { route }, new List<IPoint>());
           Round(extent, resolution);
@@ -154,7 +154,7 @@ namespace OCourse.Route
         if (permuts.Count > 1)
         {
           int nStarts = 0;
-          foreach (Control ctr in permuts[0].Controls)
+          foreach (var ctr in permuts[0].Controls)
           {
             if (ctr.Code == ControlCode.Start)
             { nStarts++; }
@@ -189,7 +189,7 @@ namespace OCourse.Route
     public List<CostSectionlist> GetCourseInfo(IList<SectionList> permuts, double resol, Setup setup)
     {
       List<CostSectionlist> courseInfo = new List<CostSectionlist>(permuts.Count);
-      foreach (SectionList permut in permuts)
+      foreach (var permut in permuts)
       {
         CostSectionlist cost = GetCourseInfo(permut, resol, setup);
         if (cost != null)
@@ -206,7 +206,7 @@ namespace OCourse.Route
       Control from = null;
       IPoint toP = null;
       CostSum sum = null;
-      foreach (Control to in controls)
+      foreach (var to in controls)
       {
         IPoint fromP = toP;
 
@@ -261,7 +261,7 @@ namespace OCourse.Route
       Dictionary<IPoint, List<CostFromTo>> startList =
         new Dictionary<IPoint, List<CostFromTo>>(new PointComparer());
 
-      foreach (CostFromTo cost in _calcList.Keys)
+      foreach (var cost in _calcList.Keys)
       {
         if (cost.Resolution > 0)
         { continue; }
@@ -279,11 +279,11 @@ namespace OCourse.Route
       }
 
       int idx = 0;
-      foreach (List<CostFromTo> routes in startList.Values)
+      foreach (var routes in startList.Values)
       {
         idx++;
         List<CostFromTo> notCalculated = new List<CostFromTo>(routes.Count);
-        foreach (CostFromTo route in routes)
+        foreach (var route in routes)
         {
           if (_calcList.TryGetValue(new CostFromTo(route.From, route.To, route.Start, route.End,
                                                   resolution, 0, 0, null, 0, 0), out CostFromTo existing))
@@ -299,7 +299,7 @@ namespace OCourse.Route
         OnStatusChanged(string.Format("{0} of {1}: {2} -> :", idx, startList.Count, notCalculated[0].From.Name), null);
         List<CostFromTo> calcList = CalcRoutes(notCalculated, resolution);
 
-        foreach (CostFromTo cost in calcList)
+        foreach (var cost in calcList)
         {
           if (!_calcList.ContainsKey(cost))
           { _calcList.Add(cost, cost); }
@@ -332,7 +332,7 @@ namespace OCourse.Route
 
       LeastCostData lcg = path.CalcCost(calcList[0].Start, endList);
       List<CostFromTo> result = new List<CostFromTo>();
-      foreach (CostFromTo routeCost in calcList)
+      foreach (var routeCost in calcList)
       {
         double cost = lcg.CostGrid.Value(routeCost.End.X, routeCost.End.Y);
         Polyline route = GetRoute(lcg, routeCost.Start, routeCost.End, out double dh, out double optimal);
@@ -351,7 +351,7 @@ namespace OCourse.Route
     {
       Box box = new Box(Point.Create(calcList[0].Start),
                         Point.Create(calcList[0].End), true);
-      foreach (CostFromTo info in calcList)
+      foreach (var info in calcList)
       {
         endList.Add(info.End);
         double l = Math.Sqrt(PointOperator.Dist2(info.Start, info.End)) / 2.0 + 200;
@@ -455,7 +455,7 @@ namespace OCourse.Route
 
       climb = -1;
       double h0 = 0;
-      foreach (IPoint p1 in line.Points)
+      foreach (var p1 in line.Points)
       {
         double h1 = _heightGrid.Value(p1.X, p1.Y, EGridInterpolation.bilinear);
         if (climb >= 0 && h0 < h1)
@@ -481,7 +481,7 @@ namespace OCourse.Route
       {
         Setup setup = reader.ReadSetup();
 
-        foreach (string courseName in courseList)
+        foreach (var courseName in courseList)
         {
           Course course = reader.ReadCourse(courseName);
           CalcCourse(course, -1, setup);

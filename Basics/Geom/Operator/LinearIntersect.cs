@@ -8,10 +8,10 @@ namespace Basics.Geom
   {
     private class LinearIntersect : IGeometry
     {
-      private IPoint _fullOrig;
+      private readonly IPoint _fullOrig;
       private OrthogonalSystem _fullSystem;
-      private int _xTopology;
-      private IPoint _offset;
+      private readonly int _xTopology;
+      private readonly IPoint _offset;
       private Axis _offsetAxis;
       private IList<Axis> _commonAxes;
       private ParamGeometryRelation _commonRel;
@@ -39,7 +39,7 @@ namespace Basics.Geom
 
         List<Axis> nullAxes = null;
 
-        foreach (IPoint yAxis in yAxes)
+        foreach (var yAxis in yAxes)
         {
           Axis axis = fullSystem.GetOrthogonal(yAxis);
           if (axis.Length2Epsi > 0)

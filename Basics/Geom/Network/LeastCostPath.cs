@@ -83,7 +83,7 @@ namespace Basics.Geom.Network
         AssignNewCosts(minCost, nodes, costs);
 
         minCost = null;
-        foreach (T cost in costs.Keys)
+        foreach (var cost in costs.Keys)
         {
           minCost = cost;
           break;
@@ -99,7 +99,7 @@ namespace Basics.Geom.Network
       SortedDictionary<T, T> nodes,
       SortedDictionary<T, double> costs)
     {
-      foreach (T rawNeighbor in startNode.RawNeighbors)
+      foreach (var rawNeighbor in startNode.RawNeighbors)
       {
         if (IsFixed(rawNeighbor))
         { continue; }

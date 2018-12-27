@@ -17,7 +17,7 @@ namespace ArcSde
       string user = null;
       string password = null;
       string[] parts = connectionString.Split(';');
-      foreach (string part in parts)
+      foreach (var part in parts)
       {
         int ePos = part.IndexOf('=');
         if (ePos < 0) continue;

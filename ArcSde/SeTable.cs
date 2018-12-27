@@ -83,7 +83,7 @@ namespace ArcSde
       {
         if (_geomCol == null)
         {
-          foreach (SeColumn column in Columns)
+          foreach (var column in Columns)
           {
             if (column.Type == SdeType.SE_SHAPE_TYPE)
             {

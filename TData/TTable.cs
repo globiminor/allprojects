@@ -44,7 +44,7 @@ namespace TData
 
       DataTable copy = _edits.Table.Copy();
       copy.TableName = _tableName;
-      foreach (DataRow row in copy.Rows)
+      foreach (var row in copy.Rows.Enum())
       {
         if (row.RowState == DataRowState.Unchanged)
         { row.Delete(); }
@@ -145,7 +145,7 @@ namespace TData
       {
         if (_defaultGeomCol == null)
         {
-          foreach (DataColumn col in FullSchema.Columns)
+          foreach (var col in FullSchema.Columns.Enum())
           {
             if (typeof(IGeometry).IsAssignableFrom(col.DataType))
             {
@@ -183,7 +183,7 @@ namespace TData
       else
       {
         Dictionary<string, string> fieldsDict = new Dictionary<string, string>();
-        foreach (string field in fields.Split(','))
+        foreach (var field in fields.Split(','))
         {
           string f = field.Trim();
           fieldsDict.Add(f.ToUpper(), f);
@@ -191,7 +191,7 @@ namespace TData
         if (!string.IsNullOrWhiteSpace(_where))
         {
           string upperWhere = _where.ToUpper();
-          foreach (DataColumn col in FullSchema.Columns)
+          foreach (var col in FullSchema.Columns.Enum())
           {
             string upperCol = col.ColumnName.ToUpper();
             if (!upperWhere.Contains(upperCol))
@@ -210,7 +210,7 @@ namespace TData
           { fieldsDict.Add(keyField.ToUpper(), keyField); }
         }
         StringBuilder fieldsBuilder = new StringBuilder();
-        foreach (string field in fieldsDict.Values)
+        foreach (var field in fieldsDict.Values)
         {
           if (fieldsBuilder.Length > 0)
           { fieldsBuilder.Append(", "); }
@@ -247,7 +247,7 @@ namespace TData
         }
       }
       cmd.CommandText = stmt.ToString();
-      foreach (DbBaseParameter param in paramList)
+      foreach (var param in paramList)
       { cmd.Parameters.Add(param); }
       return cmd;
     }
@@ -275,7 +275,7 @@ namespace TData
     }
     private void CopyValues(DataRow row, DataRow editRow)
     {
-      foreach (DataColumn column in _edits.Table.Columns)
+      foreach (var column in _edits.Table.Columns.Enum())
       { editRow[column] = row[column.ColumnName]; }
     }
 
@@ -354,7 +354,7 @@ namespace TData
     public bool CheckConditions(DataRow row)
     {
       IGeometry p = null;
-      foreach (GeometryQuery geomQry in _queryList)
+      foreach (var geomQry in _queryList)
       {
         if (p == null)
         { p = row[geomQry.Column.ColumnName] as IGeometry; }
@@ -373,7 +373,7 @@ namespace TData
         bool success = true;
         DataView pView = new DataView(_table);
         _table.Rows.Add(row);
-        foreach (string sWhere in _whereList)
+        foreach (var sWhere in _whereList)
         {
           pView.RowFilter = sWhere;
           if (pView.Count == 0)
@@ -672,14 +672,14 @@ namespace TData
 
       public Enumerator(OcadReader schema, Ocad.OcadReader ocad)
       {
-        IBox box = null;
-        foreach (GeometryQuery pQuery in schema._queryList)
+        Box box = null;
+        foreach (var pQuery in schema._queryList)
         {
           if (pQuery.Relation == Relation.Intersect ||
             pQuery.Relation == Relation.ExtentIntersect)
           {
             if (box == null)
-            { box = pQuery.Geometry.Extent.Clone(); }
+            { box = new Box(pQuery.Geometry.Extent); }
             else
             { box.Include(pQuery.Geometry.Extent); }
           }
@@ -737,7 +737,7 @@ namespace TData
     #endregion
 
     private Ocad.OcadReader _ocad;
-    private Ocad.Setup _setup;
+    private readonly Ocad.Setup _setup;
     private IList<Ocad.ElementIndex> _indexList;
     private const string _fieldShape = "Shape";
     private const string _fieldSymbol = "Symbol";
@@ -790,11 +790,11 @@ namespace TData
     {
       get
       {
-        IBox extent = null;
-        foreach (Ocad.Element elem in _ocad.Elements(true, IndexList))
+        Box extent = null;
+        foreach (var elem in _ocad.Elements(true, IndexList))
         {
           if (extent == null)
-          { extent = elem.Geometry.Extent.Clone(); }
+          { extent = new Box(elem.Geometry.Extent); }
           else
           { extent.Include(elem.Geometry.Extent); }
         }

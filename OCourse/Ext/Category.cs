@@ -46,7 +46,7 @@ namespace OCourse.Ext
 
       int minNr = 1;
 
-      foreach (string courseName in courseNames)
+      foreach (var courseName in courseNames)
       {
         Category cat = Create(reader, paramList, courseName, minNr, runnersConst);
         categories.Add(cat);
@@ -112,7 +112,7 @@ namespace OCourse.Ext
     {
       CategoryPar catPar = null;
       CoursePar coursePar = null;
-      foreach (StringParamIndex par in paramList)
+      foreach (var par in paramList)
       {
         if (par.Type == StringType.Class)
         {

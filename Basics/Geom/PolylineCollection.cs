@@ -14,8 +14,8 @@ namespace Basics.Geom
     {
       if (_extent == null)
       {
-        IPoint min = Point.Create(extent.Min);
-        IPoint max = Point.Create(extent.Max);
+        Point min = Point.Create(extent.Min);
+        Point max = Point.Create(extent.Max);
         _extent = new Box(min, max);
       }
       else
@@ -24,7 +24,7 @@ namespace Basics.Geom
 
     private void Init()
     {
-      foreach (Polyline line in this)
+      foreach (var line in this)
       {
         UpdateExtent(line.Extent);
       }
@@ -80,7 +80,7 @@ namespace Basics.Geom
       get // TODO get
       {
         PointCollection border = new PointCollection();
-        foreach (Polyline line in this)
+        foreach (var line in this)
         {
           PointCollection lineBorder = line.Border;
           border.AddRange(lineBorder);
@@ -94,7 +94,7 @@ namespace Basics.Geom
     public PolylineCollection Project(IProjection projection)
     {
       PolylineCollection pPrj = new PolylineCollection();
-      foreach (Polyline polyline in this)
+      foreach (var polyline in this)
       { pPrj.Add(polyline.Project(projection)); }
 
       return pPrj;
@@ -114,7 +114,7 @@ namespace Basics.Geom
       get
       {
         int n = 0;
-        foreach (Polyline polyline in this)
+        foreach (var polyline in this)
         { n += polyline.Points.Count; }
         return n;
       }

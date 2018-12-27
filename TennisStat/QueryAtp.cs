@@ -28,7 +28,7 @@ namespace TennisStat
 
       Dictionary<string, int> matchDict = new Dictionary<string, int>();
       HtmlNodeCollection nodes = doc.DocumentNode.SelectNodes("//tbody[@id='winLossTableContent']");
-      foreach (HtmlNode player in nodes[0].SelectNodes("tr"))
+      foreach (var player in nodes[0].SelectNodes("tr"))
       {
         string playerRef = player.SelectSingleNode("td[@class='player-cell']").SelectSingleNode("a").Attributes["href"].Value;
         string stats = player.SelectSingleNode("td[@class='fifty-two-week-win-loss-cell']").InnerText;
@@ -55,7 +55,7 @@ namespace TennisStat
         // HtmlNodeCollection nodes = doc.DocumentNode.SelectNodes("//div");
         HtmlNodeCollection nodes = doc.DocumentNode.SelectNodes("//div[@class='commonProfileContainer']");
 
-        foreach (HtmlNode node in nodes)
+        foreach (var node in nodes)
         {
           HtmlNodeCollection pnodes = node.SelectNodes("p[@class='bioPlayActivityInfo']");
           if (pnodes == null)
@@ -70,7 +70,7 @@ namespace TennisStat
           TournierTable.Row tournier = ((TennisDataset)player.Table.DataSet).GetOrCreateTournier(tournierNode.InnerText);
           EventTable.Row eventRow = ((TennisDataset)player.Table.DataSet).GetOrCreateEvent(tournier, eventNode.InnerText);
 
-          foreach (HtmlNode tnode in tnodes)
+          foreach (var tnode in tnodes)
           {
             HtmlNodeCollection tds = tnode.SelectNodes("td");
             if (tds == null || tds.Count < 4)
@@ -101,8 +101,9 @@ namespace TennisStat
       TournierTable dbTournier = new TournierTable();
       ada.Fill(dbTournier);
       DataView vTounier = new DataView(dbTournier) { Sort = $"{TournierTable.IdTournierColumn.Name}" };
-      foreach (TournierTable.Row rowTournier in tournierTable.Rows)
+      foreach (var row in tournierTable.Rows)
       {
+        TournierTable.Row rowTournier = (TournierTable.Row)row;
         rowTournier.AcceptChanges();
         if (vTounier.Find(rowTournier.IdTournier) < 0)
         { rowTournier.SetAdded(); }
@@ -119,8 +120,9 @@ namespace TennisStat
       ada.Fill(dbEvent);
       eventTable.BeginLoadData();
       DataView vTounier = new DataView(dbEvent) { Sort = $"{EventTable.FkTournierColumn.Name},{EventTable.EndDateColumn.Name}" };
-      foreach (EventTable.Row rowEvent in eventTable.Rows)
+      foreach (var row in eventTable.Rows)
       {
+        EventTable.Row rowEvent = (EventTable.Row)row;
         rowEvent.AcceptChanges();
         if (EventTable.FkTournierColumn.IsNull(rowEvent))
         { continue; }
@@ -170,7 +172,7 @@ namespace TennisStat
 
       TennisDataset td = null;
       string round = null;
-      foreach (HtmlNode rec in nodeTable.ChildNodes)
+      foreach (var rec in nodeTable.ChildNodes)
       {
         if (rec.Name == "#text") { continue; }
         if (rec.Name == "thead")
@@ -181,7 +183,7 @@ namespace TennisStat
         if (rec.Name == "tbody")
         {
           HtmlNodeCollection matches = rec.SelectNodes("tr");
-          foreach (HtmlNode match in matches)
+          foreach (var match in matches)
           {
             HtmlNodeCollection cols = match.SelectNodes("td");
             string winNat = cols[1].SelectNodes("img")?[0].Attributes["alt"].Value;
@@ -237,7 +239,7 @@ namespace TennisStat
 
       IList<string> sets = score.Split();
       int setNr = 0;
-      foreach (string set in sets)
+      foreach (var set in sets)
       {
         setNr++;
         SetTable.Row setRow = td.SetTable.NewRow();
@@ -307,7 +309,7 @@ namespace TennisStat
       if (nodes?.Count != 1) throw new InvalidOperationException("table entries");
       HtmlNode nodeEvents = nodes[0];
 
-      foreach (HtmlNode nodeEvent in nodeEvents.ChildNodes)
+      foreach (var nodeEvent in nodeEvents.ChildNodes)
       {
         EventTable.Row eventRow = GetEvent(nodeEvent, ds);
         if (eventRow != null)
@@ -327,7 +329,7 @@ namespace TennisStat
       string environ = null;
       string surface = null;
 
-      foreach (HtmlNode eventInfo in nodeEvent.ChildNodes)
+      foreach (var eventInfo in nodeEvent.ChildNodes)
       {
         if (eventInfo.Attributes["class"]?.Value == "tourney-badge-wrapper")
         {
@@ -337,7 +339,7 @@ namespace TennisStat
         }
         if (eventInfo.Attributes["class"]?.Value == "title-content")
         {
-          foreach (HtmlNode titleNode in eventInfo.ChildNodes)
+          foreach (var titleNode in eventInfo.ChildNodes)
           {
             if (titleNode.Attributes["class"]?.Value == "tourney-title")
             { title = titleNode.InnerText.Trim(); }
@@ -353,7 +355,7 @@ namespace TennisStat
         }
         if (eventInfo.Attributes["class"]?.Value == "tourney-details")
         {
-          foreach (HtmlNode detailNode in eventInfo.ChildNodes)
+          foreach (var detailNode in eventInfo.ChildNodes)
           {
             if (detailNode.Attributes["href"] != null && detailNode.Name == "a")
             {
@@ -362,13 +364,13 @@ namespace TennisStat
 
             if (detailNode.Attributes["class"]?.Value == "info-area")
             {
-              foreach (HtmlNode areaNode in detailNode.ChildNodes)
+              foreach (var areaNode in detailNode.ChildNodes)
               {
                 if (areaNode.Attributes["class"]?.Value == "item-details")
                 {
                   bool sgl = false;
                   bool dbl = false;
-                  foreach (HtmlNode detNode in areaNode.ChildNodes)
+                  foreach (var detNode in areaNode.ChildNodes)
                   {
                     if (detNode.InnerText.Trim() == "SGL")
                     { sgl = true; dbl = false; }

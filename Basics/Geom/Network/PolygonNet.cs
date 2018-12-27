@@ -25,7 +25,7 @@ namespace Basics.Geom.Network
 
     private class Tree : BoxTree<TopologicalLine>
     {
-      BoxComparer _comparer;
+      readonly BoxComparer _comparer;
       bool _excludeEqual;
       public Tree(BoxComparer comparer)
         : base(2)
@@ -53,12 +53,12 @@ namespace Basics.Geom.Network
       List<LineListPolygon> polyList = new List<LineListPolygon>();
       net._polyList = polyList;
 
-      foreach (LineList ring in outerRingList)
+      foreach (var ring in outerRingList)
       {
         LineListPolygon poly = new LineListPolygon(ring);
         polyList.Add(poly);
       }
-      foreach (LineList ring in innerRingList)
+      foreach (var ring in innerRingList)
       {
         LineListPolygon poly = new LineListPolygon(ring, true);
         Debug.Assert(poly != null,"Make resharper happy");
@@ -72,7 +72,7 @@ namespace Basics.Geom.Network
 
     private static void AssignInnerRings(IList<DirectedRow> innerLines, Tree tree, IBox outerRingsBox)
     {
-      foreach (DirectedRow row in innerLines)
+      foreach (var row in innerLines)
       {
         TopologicalLine line = row.TopoLine;
         LineListPolygon poly = null;
@@ -118,9 +118,9 @@ namespace Basics.Geom.Network
 
       // Add each line once to box tree
       tree.InitSize(new IGeometry[] { box });
-      foreach (LineList ring in outerRingList)
+      foreach (var ring in outerRingList)
       {
-        foreach (DirectedRow row in ring.DirectedRows)
+        foreach (var row in ring.DirectedRows)
         {
           if (row.RightPoly != null && row.RightPoly.IsInnerRing == false)
           { tree.Add(row.TopoLine.Line.Extent, row.TopoLine); }
@@ -132,7 +132,7 @@ namespace Basics.Geom.Network
           }
         }
       }
-      foreach (DirectedRow row in innerLineList)
+      foreach (var row in innerLineList)
       {
         if (row.RightPoly == null || row.LeftPoly == null)
         { tree.Add(row.TopoLine.Line.Extent, row.TopoLine); }
@@ -207,7 +207,7 @@ namespace Basics.Geom.Network
 
         _tBox = new Box(new Point2D(pnt.X, pnt.Y), new Point2D(xMax, pnt.Y));
 
-        foreach (Curve seg in currentLine.Line.Segments)
+        foreach (var seg in currentLine.Line.Segments)
         {
           if (xMax <= pnt.X)
           {

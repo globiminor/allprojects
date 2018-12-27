@@ -209,7 +209,7 @@ namespace Ocad
       }
       else if (geometry is PointCollection)
       {
-        foreach (Point p in ((PointCollection)geometry))
+        foreach (var p in ((PointCollection)geometry))
         {
           pCoord = Coord.Create(p, Coord.Flags.none);
           writer.Write((int)pCoord.Ox);
@@ -223,7 +223,7 @@ namespace Ocad
       else if (geometry is Area area)
       {
         bool bIsInnerRing = false;
-        foreach (Polyline pLine in area.Border)
+        foreach (var pLine in area.Border)
         {
           Write(writer, pLine, bIsInnerRing);
           bIsInnerRing = true;
@@ -269,7 +269,7 @@ namespace Ocad
       Writer.Write((int)pCoord.Ox);
       Writer.Write((int)pCoord.Oy);
 
-      foreach (Curve pSeg in polyline.Segments)
+      foreach (var pSeg in polyline.Segments)
       {
         if (pSeg is Bezier)
         {
@@ -499,7 +499,7 @@ namespace Ocad
         pIndex = OcdReader.ReadIndex(iIndex);
       }
 
-      foreach (ElementIndex index in changedElements)
+      foreach (var index in changedElements)
       {
         Writer.BaseStream.Seek(index.Position, SeekOrigin.Begin);
         // Assumption: Symbol and ObjectType is at the start position!
@@ -885,7 +885,7 @@ namespace Ocad
         iSymbol++;
       }
 
-      foreach (int posIndex in symPos)
+      foreach (var posIndex in symPos)
       {
         Symbol.BaseSymbol symbol = OcdReader.ReadSymbol(posIndex);
         if (symbols == null || sortSymbols.BinarySearch(symbol.Number) >= 0)

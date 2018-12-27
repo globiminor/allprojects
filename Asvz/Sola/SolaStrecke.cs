@@ -5,7 +5,7 @@ namespace Asvz.Sola
   public class SolaStrecke : Strecke, IComparable<SolaStrecke>
   {
     private int _nummer;
-    private string _vorlage;
+    private readonly string _vorlage;
 
     public SolaStrecke(int nummer, string vorlage)
     {
@@ -29,11 +29,12 @@ namespace Asvz.Sola
 
     public SolaCategorie GetCategorie(Kategorie kat)
     {
-      foreach (SolaCategorie c in Categories)
+      foreach (var c in Categories)
       {
-        if ((c.Typ & kat) == kat)
+        SolaCategorie cat = (SolaCategorie)c;
+        if ((cat.Typ & kat) == kat)
         {
-          return c;
+          return cat;
         }
       }
       return null;

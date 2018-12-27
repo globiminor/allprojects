@@ -5,18 +5,21 @@ namespace Basics.Geom
 {
   public class Box : IBox
   {
-    private IPoint _min;
-    private IPoint _max;
+    private Point _min;
+    private Point _max;
     private readonly int _dimension;
     private int _topology = -1;
 
-    public Box(IPoint min, IPoint max)
+    public Box(IBox source) :
+      this(Point.Create(source.Min), Point.Create(source.Max))
+    { }
+    public Box(Point min, Point max)
     {
       _dimension = min.Dimension;
       _min = min;
       _max = max;
     }
-    public Box(IPoint p0, IPoint p1, bool verify)
+    public Box(Point p0, Point p1, bool verify)
     {
       if (p0.Dimension < p1.Dimension)
       { _dimension = p0.Dimension; }
@@ -68,7 +71,7 @@ namespace Basics.Geom
     public double Dist2(IBox box, IList<int> calcDimensions)
     {
       double d2 = 0;
-      foreach (int i in calcDimensions)
+      foreach (var i in calcDimensions)
       {
         double d;
         if (Max[i] < box.Min[i])
@@ -129,7 +132,7 @@ namespace Basics.Geom
     }
     public static int ExceedDimension(IBox x, IBox y, int[] dimensionList)
     {
-      foreach (int i in dimensionList)
+      foreach (var i in dimensionList)
       {
         if (y.Min[i] < x.Min[i])
         { return -i - 1; }
@@ -254,8 +257,7 @@ namespace Basics.Geom
     }
     public override bool Equals(object obj)
     {
-      Box cmpr = obj as Box;
-      if (cmpr == null)
+      if (!(obj is Box cmpr))
       { return false; }
       return _min.Equals(cmpr._min) && _max.Equals(cmpr.Max);
     }
@@ -353,11 +355,11 @@ namespace Basics.Geom
           {
             if (_min[i] != _max[i])
             {
-              IPoint p0 = Point.Create(_min);
-              IPoint p1 = Point.Create(_max);
+              Point p0 = Point.Create(_min);
+              Point p1 = Point.Create(_max);
               p1[i] = p0[i];
-              IPoint p2 = Point.Create(_min);
-              IPoint p3 = Point.Create(_max);
+              Point p2 = Point.Create(_min);
+              Point p3 = Point.Create(_max);
               p2[i] = p3[i];
               Box b0 = new Box(p0, p1) { _topology = Topology - 1 };
               Box b1 = new Box(p2, p3) { _topology = Topology - 1 };
@@ -419,7 +421,7 @@ namespace Basics.Geom
       get
       {
         Box extent = this[0].Clone();
-        foreach (Box box in this)
+        foreach (var box in this)
         {
           extent.Include(box);
         }
@@ -432,7 +434,7 @@ namespace Basics.Geom
       get
       {
         GeometryCollection border = new GeometryCollection();
-        foreach (Box box in this)
+        foreach (var box in this)
         {
           border.Add(box.Border);
         }
@@ -448,8 +450,9 @@ namespace Basics.Geom
     IGeometry IGeometry.Project(IProjection projection)
     {
       GeometryCollection prj = new GeometryCollection();
-      foreach (IGeometry box in this)
+      foreach (var b in this)
       {
+        IBox box = b;
         prj.Add(box.Project(projection));
       }
       return prj;

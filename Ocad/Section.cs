@@ -111,7 +111,7 @@ namespace Ocad
       { }
       protected Branch(IEnumerable<ISection> sections)
       {
-        foreach (ISection section in sections)
+        foreach (var section in sections)
         { AddLast(section); }
       }
 
@@ -148,7 +148,7 @@ namespace Ocad
     {
       SplitSection clone = (SplitSection)Activator.CreateInstance(GetType(), true);
       clone._branchList = new List<Branch>();
-      foreach (Branch branch in _branchList)
+      foreach (var branch in _branchList)
       {
         clone._branchList.Add(branch.Clone());
       }
@@ -228,8 +228,9 @@ namespace Ocad
     public override List<Control> GetExplicitCombination(int index)
     {
       List<Control> list = new List<Control>(Branches[index].Count);
-      foreach (Control control in Branches[index])
+      foreach (var section in Branches[index])
       {
+        Control control = (Control)section;
         list.Add(control);
       }
       return list;
@@ -318,7 +319,7 @@ namespace Ocad
         { return GetValidCombinationStrings(leg, next, pre); }
 
         List<string> combs = new List<string>();
-        foreach (string comb in GetValidCombinationStrings(leg, First, ""))
+        foreach (var comb in GetValidCombinationStrings(leg, First, ""))
         {
           combs.AddRange(GetValidCombinationStrings(leg, next, pre + comb));
         }
@@ -335,7 +336,7 @@ namespace Ocad
       public string GetLegsListToString()
       {
         StringBuilder legsList = new StringBuilder();
-        foreach (int i in Legs)
+        foreach (var i in Legs)
         {
           if (legsList.Length > 0) legsList.Append(",");
           legsList.Append(i);
@@ -348,8 +349,9 @@ namespace Ocad
     public override SplitSection.Branch GetExplicitBranch(int index)
     {
       int nLegs = 0;
-      foreach (Branch branch in Branches)
+      foreach (var o in Branches)
       {
+        Variation.Branch branch = (Variation.Branch)o;
         nLegs += branch.Legs.Count;
         if (nLegs > index)
         { return branch; }
@@ -359,15 +361,16 @@ namespace Ocad
 
     public override List<Control> GetExplicitCombination(int leg)
     {
-      foreach (Branch branch in Branches)
+      foreach (var o in Branches)
       {
+        Variation.Branch branch = (Variation.Branch)o;
         int index = 0;
-        foreach (int iLeg in branch.Legs)
+        foreach (var iLeg in branch.Legs)
         {
           if (iLeg == leg)
           {
             List<Control> list = new List<Control>();
-            foreach (ISection section in branch)
+            foreach (var section in branch)
             {
               if (section is Control)
               { list.Add((Control)section); }
@@ -387,8 +390,9 @@ namespace Ocad
     public override int LegCount()
     {
       int nLegs = 0;
-      foreach (Branch branch in Branches)
+      foreach (var o in Branches)
       {
+        Variation.Branch branch = (Variation.Branch)o;
         nLegs += branch.Legs.Count;
       }
       return nLegs;
@@ -397,8 +401,9 @@ namespace Ocad
 
     public Branch GetBranch(int leg)
     {
-      foreach (Branch branch in Branches)
+      foreach (var o in Branches)
       {
+        Variation.Branch branch = (Variation.Branch)o;
         if (branch.Legs.IndexOf(leg) >= 0)
         {
           return branch;
@@ -410,9 +415,10 @@ namespace Ocad
     public int GetBranchIndex(int leg)
     {
       int index = 0;
-      foreach (Branch branch in Branches)
+      foreach (var o in Branches)
       {
-        foreach (int iLeg in branch.Legs)
+        Variation.Branch branch = (Variation.Branch)o;
+        foreach (var iLeg in branch.Legs)
         {
           if (iLeg == leg)
           {

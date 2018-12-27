@@ -22,7 +22,7 @@ namespace Basics.Data
 
     public override void AddRange(Array values)
     {
-      foreach (DbBaseParameter param in values)
+      foreach (var param in values)
       { Add(param); }
     }
 

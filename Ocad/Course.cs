@@ -101,10 +101,10 @@ namespace Ocad
     //{
     //  List<List<Control>> explicitLegList = GetExplicitCombinations();
     //  List<SimpleSection> allSections = new List<SimpleSection>();
-    //  foreach (List<Control> list in explicitLegList)
+    //  foreach (var list in explicitLegList)
     //  {
     //    Control pre = null;
-    //    foreach (Control post in list)
+    //    foreach (var post in list)
     //    {
     //      int symbol = post.Element.Symbol;
     //      if (symbol == 701000 || symbol == 702000 || symbol == 706000)

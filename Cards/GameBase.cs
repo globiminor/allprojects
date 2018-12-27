@@ -96,14 +96,14 @@ namespace Cards
       get
       {
         List<string> codes = new List<string>();
-        foreach (Card card in Cards)
+        foreach (var card in Cards)
         { codes.Add(card.Code); }
         return codes;
       }
       set
       {
         List<Card> cards = new List<Card>(value.Count);
-        foreach (string code in value)
+        foreach (var code in value)
         { cards.Add(new Card(code)); }
         Cards = cards;
       }
@@ -192,7 +192,7 @@ namespace Cards
         if (!CodeStands.TryGetValue(stand.PositionCode, out List<SolverStand> existings))
         { return null; }
 
-        foreach (SolverStand existing in existings)
+        foreach (var existing in existings)
         {
           Stand<T> existPos = existing.Stand;
           if (stand.EqualPosition(existPos))
@@ -247,7 +247,7 @@ namespace Cards
 
         Dictionary<SolverStand, SolverStand> nexts =
           new Dictionary<SolverStand, SolverStand>();
-        foreach (T move in moves)
+        foreach (var move in moves)
         {
           Stand<T> nextPos = parent.CreateStand();
           nextPos.SetMove(_stand, move);
@@ -287,7 +287,7 @@ namespace Cards
 
         int movesCount = nextPos.MovesCount + 1;
         List<SolverStand> removes = new List<SolverStand>(_children.Keys.Count);
-        foreach (SolverStand child in _children.Keys)
+        foreach (var child in _children.Keys)
         {
           if (child.Completed ||
             child._stand.Pre != _stand)
@@ -305,7 +305,7 @@ namespace Cards
           { removes.Add(child); }
         }
 
-        foreach (SolverStand remove in removes)
+        foreach (var remove in removes)
         { _children.Remove(remove); }
       }
 
@@ -379,7 +379,7 @@ namespace Cards
             if (stand != null)
             { break; }
           }
-          foreach (double key in removes)
+          foreach (var key in removes)
           { _potential.Remove(key); }
 
           StandArgs args = new StandArgs { Stand = stand.Stand };
@@ -392,7 +392,7 @@ namespace Cards
           List<Stand<T>> sorteds = new List<Stand<T>>(newStands.Count);
           Dictionary<Stand<T>, SolverStand> nextDict =
             new Dictionary<Stand<T>, SolverStand>(newStands.Count);
-          foreach (SolverStand newStand in newStands.Keys)
+          foreach (var newStand in newStands.Keys)
           {
             sorteds.Add(newStand.Stand);
             nextDict.Add(newStand.Stand, newStand);
@@ -400,7 +400,7 @@ namespace Cards
           _parent.Sort(sorteds);
 
 
-          foreach (Stand<T> sorted in sorteds)
+          foreach (var sorted in sorteds)
           {
             SolverStand newStand = nextDict[sorted];
             SolverStand preStand = newStands[newStand];
@@ -452,7 +452,7 @@ namespace Cards
         List<Stand<T>> sorted = new List<Stand<T>>(nexts.Count);
         Dictionary<Stand<T>, SolverStand> nextDict =
           new Dictionary<Stand<T>, SolverStand>(nexts.Count);
-        foreach (SolverStand stand in nexts.Keys)
+        foreach (var stand in nexts.Keys)
         {
           sorted.Add(stand.Stand);
           nextDict.Add(stand.Stand, stand);
@@ -460,7 +460,7 @@ namespace Cards
         _parent.Sort(sorted);
 
         Status baseStatus = Status.Completed;
-        foreach (Stand<T> nextPos in sorted)
+        foreach (var nextPos in sorted)
         {
           SolverStand next = nextDict[nextPos];
           if (nextPos.MovesCount > MaxMoves)

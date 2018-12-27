@@ -50,7 +50,7 @@ namespace BasicsTest
     {
       DataTable tbl = _ds.Tables[0];
       DataColumn geomCol = null;
-      foreach (DataColumn col in tbl.Columns)
+      foreach (var col in tbl.Columns.Enum())
       {
         if (typeof(IGeometry).IsAssignableFrom(col.DataType))
         {
@@ -60,17 +60,16 @@ namespace BasicsTest
       if (geomCol == null)
       { return null; }
 
-      IBox extent = null;
-      foreach (DataRowView vRow in tbl.DefaultView)
+      Box extent = null;
+      foreach (var vRow in tbl.DefaultView.Enum())
       {
-        IGeometry geom = vRow.Row[geomCol] as IGeometry;
-        if (geom == null)
+        if (!(vRow.Row[geomCol] is IGeometry geom))
         { continue; }
 
         if (extent == null)
-        { extent = geom.Extent.Clone(); }
+        { extent = new Box(geom.Extent); }
         else
-        { extent?.Include(geom.Extent); }
+        { extent.Include(geom.Extent); }
       }
       return extent;
     }

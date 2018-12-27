@@ -104,7 +104,7 @@ namespace Shape.Data
         ada.Fill(tbl);
       }
       Box allBox = null;
-      foreach (DataRow row in tbl.Rows)
+      foreach (var row in tbl.Rows.Enum())
       {
         byte[] data = (byte[])row[ShapeField];
         Box box = AccessUtils.GetExtent(data);
@@ -166,7 +166,7 @@ namespace Shape.Data
         _conn.Close();
       }
       SchemaColumnsTable schema = new SchemaColumnsTable();
-      foreach (DataRow row in rawSchema.Rows)
+      foreach (var row in rawSchema.Rows.Enum())
       {
         string columnName = (string)row["ColumnName"];
         Type dataType = (Type)row["DataType"];

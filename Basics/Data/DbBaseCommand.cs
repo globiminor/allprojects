@@ -1,10 +1,10 @@
+using Basics.Geom;
+using Basics.Geom.Projection;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Text;
-using Basics.Geom;
-using Basics.Geom.Projection;
 
 namespace Basics.Data
 {
@@ -14,7 +14,7 @@ namespace Basics.Data
 
     protected class FieldExpression : ExpressionInfo
     {
-      string _fieldName;
+      readonly string _fieldName;
 
       public FieldExpression(string expression, BaseCommand parent)
         : base(expression, parent)
@@ -31,7 +31,7 @@ namespace Basics.Data
     protected class ExpressionInfo
     {
       private string _expression;
-      private BaseCommand _parent;
+      private readonly BaseCommand _parent;
 
       private List<ParameterInfo> _params;
       private List<Function> _funcList;
@@ -87,7 +87,7 @@ namespace Basics.Data
         {
           if (end != null)
           {
-            foreach (char c in end)
+            foreach (var c in end)
             {
               if (text[position] == c)
               { return position; }
@@ -159,7 +159,7 @@ namespace Basics.Data
       public ParameterInfo GetParameter(int position)
       {
         ParameterInfo before = null;
-        foreach (ParameterInfo parameter in Parameters)
+        foreach (var parameter in Parameters)
         {
           if (parameter.Position <= position)
           { before = parameter; }
@@ -238,7 +238,7 @@ namespace Basics.Data
       {
         DataRow row = Row;
         int i = 0;
-        foreach (ParameterInfo parameter in Parameters)
+        foreach (var parameter in Parameters)
         {
           row[i] = parameter.DbParameter.Value;
           i++;
@@ -296,15 +296,15 @@ namespace Basics.Data
       {
         get
         {
-          foreach (FieldExpression field in _fields)
+          foreach (var field in _fields)
           {
-            foreach (ParameterInfo param in field.Parameters)
+            foreach (var param in field.Parameters)
             {
               yield return param;
             }
           }
 
-          foreach (ParameterInfo param in WhereParameterInfos)
+          foreach (var param in WhereParameterInfos)
           {
             yield return param;
           }
@@ -478,19 +478,19 @@ namespace Basics.Data
       {
         get
         {
-          foreach (ExpressionInfo values in _fields.Values)
+          foreach (var values in _fields.Values)
           {
-            foreach (ParameterInfo param in values.Parameters)
+            foreach (var param in values.Parameters)
             { yield return param; }
           }
 
-          foreach (ExpressionInfo values in _returnValues.Keys)
+          foreach (var values in _returnValues.Keys)
           {
-            foreach (ParameterInfo param in values.Parameters)
+            foreach (var param in values.Parameters)
             { yield return param; }
           }
 
-          foreach (ParameterInfo param in _returnValues.Values)
+          foreach (var param in _returnValues.Values)
           {
             yield return param;
           }
@@ -501,7 +501,7 @@ namespace Basics.Data
       public Dictionary<int, object> GetInputFields(DataRow row)
       {
         Dictionary<int, object> values = new Dictionary<int, object>();
-        foreach (KeyValuePair<FieldInfo, ExpressionInfo> pair in _fields)
+        foreach (var pair in _fields)
         {
           object value = pair.Value.Value(row);
 
@@ -517,7 +517,7 @@ namespace Basics.Data
         if (_returnValues == null)
         { return values; }
 
-        foreach (KeyValuePair<ExpressionInfo, ParameterInfo> pair in _returnValues)
+        foreach (var pair in _returnValues)
         {
           object value = pair.Key.Value(row);
           values.Add(pair.Value.DbParameter, value);
@@ -584,9 +584,9 @@ namespace Basics.Data
       {
         get
         {
-          foreach (ExpressionInfo value in _updateFields.Values)
+          foreach (var value in _updateFields.Values)
           {
-            foreach (ParameterInfo param in value.Parameters)
+            foreach (var param in value.Parameters)
             {
               yield return param;
             }
@@ -598,12 +598,12 @@ namespace Basics.Data
       {
         get
         {
-          foreach (ParameterInfo param in UpdateParameterInfos)
+          foreach (var param in UpdateParameterInfos)
           {
             yield return param;
           }
 
-          foreach (ParameterInfo param in WhereParameterInfos)
+          foreach (var param in WhereParameterInfos)
           {
             yield return param;
           }
@@ -613,7 +613,7 @@ namespace Basics.Data
       public Dictionary<int, object> GetInputFields(DataRow row)
       {
         Dictionary<int, object> values = new Dictionary<int, object>();
-        foreach (KeyValuePair<FieldInfo, ExpressionInfo> pair in _updateFields)
+        foreach (var pair in _updateFields)
         {
           object value = pair.Value.Value(row);
 
@@ -687,7 +687,7 @@ namespace Basics.Data
 
         string upperWhere = _where.Expression.ToUpper();
         _validateColumns = new Dictionary<string, int>();
-        foreach (DataColumn col in validateSchema.Columns)
+        foreach (var col in validateSchema.Columns.Enum())
         {
           if (!upperWhere.Contains(col.ColumnName.ToUpper()))
           { continue; }
@@ -696,7 +696,7 @@ namespace Basics.Data
           _validateColumns.Add(col.ColumnName, idx);
         }
         int iPar = 0;
-        foreach (ParameterInfo par in _where.Parameters)
+        foreach (var par in _where.Parameters)
         {
           string name;
           if (string.IsNullOrEmpty(par.Name) == false)
@@ -716,7 +716,7 @@ namespace Basics.Data
         StringBuilder validateWhere = new StringBuilder(_where.Expression);
 
         char iFunction = (char)0;
-        foreach (Function func in _where.Functions)
+        foreach (var func in _where.Functions)
         {
           if (func.IsQueryHandled)
           {
@@ -752,18 +752,18 @@ namespace Basics.Data
         DataTable validateSchema = _validateView.Table;
         validateSchema.Clear();
         DataRow validateRow = validateSchema.NewRow();
-        foreach (KeyValuePair<string, int> pair in _validateColumns)
+        foreach (var pair in _validateColumns)
         {
           validateRow[pair.Key] = row.GetValue(pair.Value);
         }
-        foreach (ParameterInfo param in _where.Parameters)
+        foreach (var param in _where.Parameters)
         {
           if (param.DbParameter.Value == null)
           { continue; }
           validateRow[":" + param.Name] = param.DbParameter.Value;
         }
         int iFunction = 0;
-        foreach (Function f in _where.Functions)
+        foreach (var f in _where.Functions)
         {
           if (f.IsQueryHandled)
           { }
@@ -848,7 +848,7 @@ namespace Basics.Data
       {
         get
         {
-          foreach (ParameterInfo param in WhereParameterInfos)
+          foreach (var param in WhereParameterInfos)
           {
             yield return param;
           }
@@ -862,7 +862,7 @@ namespace Basics.Data
           if (_where == null)
           { yield break; }
 
-          foreach (ParameterInfo param in _where.Parameters)
+          foreach (var param in _where.Parameters)
           { yield return param; }
         }
       }
@@ -912,7 +912,7 @@ namespace Basics.Data
         DbParameterCollection paramList = BaseCmnd.Parameters;
         int nParams = paramList.Count;
 
-        foreach (ParameterInfo paramInfo in ParameterInfos)
+        foreach (var paramInfo in ParameterInfos)
         {
           string paramName = paramInfo.Name;
           if (string.IsNullOrEmpty(paramName))
@@ -925,7 +925,7 @@ namespace Basics.Data
           else
           {
             bool success = false;
-            foreach (DbParameter dbParam in paramList)
+            foreach (var dbParam in paramList.Enum())
             {
               if (dbParam.ParameterName == paramName)
               {
@@ -980,11 +980,11 @@ namespace Basics.Data
         return intersects;
       }
 
-      private string _name;
+      private readonly string _name;
       private string _paramString;
       private readonly int _start;
       private readonly int _end;
-      private BaseCommand _baseCmd;
+      private readonly BaseCommand _baseCmd;
       private List<string> _parameters;
       private List<Function> _functions;
       private List<ParameterInfo> _params;
@@ -1054,7 +1054,7 @@ namespace Basics.Data
       public object Execute(DataRow row)
       {
         List<object> values = new List<object>();
-        foreach (string parameter in Parameters)
+        foreach (var parameter in Parameters)
         {
           values.Add(row[parameter]);
         }
@@ -1076,8 +1076,8 @@ namespace Basics.Data
     }
     protected class ParameterInfo
     {
-      private int _position;
-      private string _name;
+      private readonly int _position;
+      private readonly string _name;
       private DbParameter _dbParameter;
       private BaseCommand _assignedTo;
 
@@ -1162,9 +1162,7 @@ namespace Basics.Data
 
     public string GetStandardSqlText()
     {
-      WhereCommand cmd = BaseCmd as WhereCommand;
-
-      if (cmd == null)
+      if (!(BaseCmd is WhereCommand cmd))
       { return CommandText; }
 
       if (cmd.WhereExp != null)
@@ -1173,7 +1171,7 @@ namespace Basics.Data
         IList<Function> fctList = cmd.WhereExp.Functions;
         StringBuilder whereBuilder = new StringBuilder(cmd.Where);
 
-        foreach (Function function in fctList)
+        foreach (var function in fctList)
         {
           if (function.Name == "ST_Intersects")
           {
@@ -1193,8 +1191,7 @@ namespace Basics.Data
 
     public bool Validate(IDataRecord row)
     {
-      WhereCommand cmd = BaseCmd as WhereCommand;
-      if (cmd == null)
+      if (!(BaseCmd is WhereCommand cmd))
       { throw new InvalidOperationException("Unhandled command " + CommandText); }
 
       return cmd.Validate(row);
@@ -1348,15 +1345,16 @@ namespace Basics.Data
       {
         SchemaColumnsTable table = Connection.GetTableSchema(TableName);
         SchemaColumnsTable schema = new SchemaColumnsTable();
-        foreach (FieldExpression field in selCmd.Fields)
+        foreach (var field in selCmd.Fields)
         {
           if (field.FieldName == "*")
           {
             return table;
           }
           SchemaColumnsTable.Row column = null;
-          foreach (SchemaColumnsTable.Row c in table.Rows)
+          foreach (var o in table.Rows)
           {
+            SchemaColumnsTable.Row c = (SchemaColumnsTable.Row)o;
             if (c.ColumnName.Equals(field.FieldName, StringComparison.InvariantCultureIgnoreCase))
             {
               column = c;
@@ -1440,7 +1438,7 @@ namespace Basics.Data
       List<char> seps = new List<char>();
       if (separator != null)
       {
-        foreach (char sep in separator)
+        foreach (var sep in separator)
         { seps.Add(sep); }
       }
       seps.Add('(');
@@ -1453,7 +1451,7 @@ namespace Basics.Data
           next = null;
           return;
         }
-        foreach (string keyword in keywords)
+        foreach (var keyword in keywords)
         {
           if (part.Equals(keyword, StringComparison.InvariantCultureIgnoreCase))
           {

@@ -30,9 +30,9 @@ namespace TMap
 
       if (this is GroupMapData grpData)
       {
-        foreach (MapData subpart in grpData.Subparts)
+        foreach (var subpart in grpData.Subparts)
         {
-          foreach (MapData data in subpart.GetAllData())
+          foreach (var data in subpart.GetAllData())
           {
             yield return data;
           }

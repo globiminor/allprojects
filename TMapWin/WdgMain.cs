@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using Basics.Data;
 using TMap;
 using TMapWin.Browse;
+using Basics.Forms;
 
 namespace TMapWin
 {
@@ -183,7 +184,7 @@ namespace TMapWin
     private void OptSelect_SelectionEnd(object sender, ToolArgs e)
     {
       wdgSel.Clear();
-      foreach (MapData mapData in wdgToc.MapData.VisibleList().Subparts)
+      foreach (var mapData in wdgToc.MapData.VisibleList().Subparts)
       {
         if (mapData is TableMapData == false)
         { continue; }
@@ -202,7 +203,7 @@ namespace TMapWin
         adapter.SelectCommand = cmd;
         DataTable selection = new DataTable();
         adapter.Fill(selection);
-        foreach (DataRow row in selection.Rows)
+        foreach (var row in selection.Rows.Enum())
         {
           if (sMap == "")
           {
@@ -325,7 +326,7 @@ namespace TMapWin
 
     private bool VerifySchema(DataTable t0, DataTable t1)
     {
-      foreach (DataColumn col in t1.Columns)
+      foreach (var col in t1.Columns.Enum())
       {
         if (t0.Columns.Contains(col.ColumnName) == false)
         {
@@ -459,7 +460,7 @@ namespace TMapWin
       if (wdgCustom.ShowDialog(this) != DialogResult.OK)
       { return; }
 
-      foreach (Attribute.TblICustomRow addPlugin in wdgCustom.AddPlugins())
+      foreach (var addPlugin in wdgCustom.AddPlugins())
       {
         AddPlugin(addPlugin);
       }
@@ -483,12 +484,12 @@ namespace TMapWin
         {
           qry.X = qry.X - mainMenu.Left;
           qry.Y = qry.Y - mainMenu.Top;
-          foreach (ToolStripMenuItem item in mainMenu.Items)
+          foreach (var item in mainMenu.Items.Enum())
           {
             if (item.Bounds.Contains(qry))
             {
               item.Select();
-              item.ShowDropDown();
+              ((ToolStripMenuItem)item).ShowDropDown();
               break;
             }
           }
@@ -515,7 +516,7 @@ namespace TMapWin
         {
           Settings.Default.Plugins = new Attribute();
         }
-        foreach (Attribute.TblICustomRow plugin in
+        foreach (var plugin in
           Settings.Default.Plugins.TblICustom)
         {
           try

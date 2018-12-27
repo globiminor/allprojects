@@ -47,7 +47,7 @@ namespace LeastCostPathUI
       sbTtp.Append($"public {miBase.ReturnType.Name} {nameof(ITvmCalc.Calc)}(");
       sbLbl.Append($"public {miBase.ReturnType.Name} {nameof(ITvmCalc.Calc)}(");
       bool first = true;
-      foreach (ParameterInfo paramInfo in miBase.GetParameters())
+      foreach (var paramInfo in miBase.GetParameters())
       {
         if (!first)
         {
@@ -83,7 +83,7 @@ namespace LeastCostPathUI
         Assembly assembly = Assembly.LoadFile(assemblyName);
         List<Type> types = GetImplementations<ITvmCalc>(assembly);
         List<TypeHelper> m = new List<TypeHelper>(types.Count);
-        foreach (Type type in types)
+        foreach (var type in types)
         { m.Add(new TypeHelper(type)); }
 
         dgCustom.DataSource = m;
@@ -94,7 +94,7 @@ namespace LeastCostPathUI
     {
       List<Type> types = new List<Type>();
       Type baseType = typeof(T);
-      foreach (Type type in assembly.GetTypes())
+      foreach (var type in assembly.GetTypes())
       {
         if (baseType.IsAssignableFrom(type) &&
           type.IsAbstract == false && type.GetConstructor(Type.EmptyTypes) != null)
@@ -181,8 +181,7 @@ namespace LeastCostPathUI
     {
       if (optExisting.Checked)
       {
-        TypeHelper meth = dgCustom.SelectedRows[0].DataBoundItem as TypeHelper;
-        if (meth == null)
+        if (!(dgCustom.SelectedRows[0].DataBoundItem is TypeHelper meth))
         { return; }
 
         TvmCalc = (ITvmCalc)Activator.CreateInstance(meth.Type, nonPublic: true);
@@ -244,10 +243,11 @@ namespace LeastCostPathUI
       if (results.Errors.Count > 0)
       {
         StringBuilder error = new StringBuilder();
-        foreach (CompilerError CompErr in results.Errors)
+        foreach (var o in results.Errors)
         {
+          CompilerError compErr = (CompilerError)o;
           error.AppendFormat("Line number {0}: {1};",
-            CompErr.Line, CompErr.ErrorText);
+            compErr.Line, compErr.ErrorText);
           error.AppendLine();
           error.AppendLine();
         }
@@ -275,8 +275,7 @@ namespace LeastCostPathUI
       if (dgCustom.SelectedRows.Count != 1)
       { return; }
 
-      TypeHelper meth = dgCustom.SelectedRows[0].DataBoundItem as TypeHelper;
-      if (meth == null)
+      if (!(dgCustom.SelectedRows[0].DataBoundItem is TypeHelper meth))
       { return; }
 
       TvmCalc = (ITvmCalc)Activator.CreateInstance(meth.Type, nonPublic: true);

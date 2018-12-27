@@ -47,7 +47,7 @@ namespace OCourse.Ext
       Dictionary<string, Control> controls)
     {
       List<Grafics> lst = new List<Grafics>();
-      foreach (Element element in reader.Elements(true, null))
+      foreach (var element in reader.Elements(true, null))
       {
         if (symbols != null && symbols.ContainsKey(element.Symbol) == false)
         { continue; }
@@ -116,7 +116,7 @@ namespace OCourse.Ext
     }
     public bool IsApplicable(Course course, List<Control> controls)
     {
-      foreach (Condition condition in GetConditions())
+      foreach (var condition in GetConditions())
       {
         if (condition.IsTrue(course, controls) == false)
         { return false; }
@@ -131,7 +131,7 @@ namespace OCourse.Ext
 
       public bool IsTrue(Course course, List<Control> controls)
       {
-        foreach (Control control in controls)
+        foreach (var control in controls)
         {
           if (control.Code == Code &&
               control.Name == Name)

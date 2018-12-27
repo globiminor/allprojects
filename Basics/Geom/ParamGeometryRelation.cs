@@ -411,8 +411,7 @@ namespace Basics.Geom
     }
     public static ParamGeometryRelation GetLineRelation(IParamGeometry xLine, IGeometry y)
     {
-      IParamGeometry yLine = y as IParamGeometry;
-      if (yLine == null)
+      if (!(y is IParamGeometry yLine))
       { throw new NotImplementedException(); }
 
 
@@ -462,8 +461,7 @@ namespace Basics.Geom
 
     public static List<ParamGeometryRelation> Assemble(IGeometry x, IGeometry y, IList<ParamGeometryRelation> borderRelations)
     {
-      Area area = x as Area;
-      if (area == null)
+      if (!(x is Area area))
       { return null; }
 
       List<ParamGeometryRelation> sortY;
@@ -481,11 +479,11 @@ namespace Basics.Geom
         {
           List<ParamGeometryRelation> childRels = new List<ParamGeometryRelation>(borderRelations.Count * 2);
           List<Polyline> fullBorders = new List<Polyline>(borderRelations.Count);
-          foreach (ParamGeometryRelation xBorder in borderRelations)
+          foreach (var xBorder in borderRelations)
           {
             if (xBorder._borderRelations != null)
             {
-              foreach (ParamGeometryRelation borderRel in xBorder._borderRelations)
+              foreach (var borderRel in xBorder._borderRelations)
               {
                 if (borderRel != null)
                 { childRels.Add(borderRel); }
@@ -497,7 +495,7 @@ namespace Basics.Geom
             }
           }
           List<ParamGeometryRelation> yBorders = Assemble(x, y.Border, childRels);
-          foreach (ParamGeometryRelation yRel in yBorders)
+          foreach (var yRel in yBorders)
           {
             if (yRel._borderRelations == null) // Line completly within x
             { fullBorders.Add((Polyline)yRel.Intersection); }
@@ -519,7 +517,7 @@ namespace Basics.Geom
       {
         int nLines = lines.Count;
         Dictionary<int, List<ParamGeometryRelation>> parts = new Dictionary<int, List<ParamGeometryRelation>>(nLines);
-        foreach (ParamGeometryRelation rel in sortY)
+        foreach (var rel in sortY)
         {
           Info yInfo = rel.GetInfo(y);
           int i = yInfo.Hierarchy.Last.Value.ChildIndex;
@@ -536,7 +534,7 @@ namespace Basics.Geom
           if (parts.TryGetValue(i, out List<ParamGeometryRelation> part))
           {
             List<ParamGeometryRelation> splits = new List<ParamGeometryRelation>(part.Count);
-            foreach (ParamGeometryRelation split in part)
+            foreach (var split in part)
             {
               ParamGeometryRelation s = split.GetChildRelation(y);
               splits.Add(s);
@@ -601,7 +599,7 @@ namespace Basics.Geom
       while (rels.Count > 0)
       {
         ParamGeometryRelation start = null;
-        foreach (ParamGeometryRelation s in rels.Keys)
+        foreach (var s in rels.Keys)
         {
           start = s;
           break;
@@ -659,7 +657,7 @@ namespace Basics.Geom
               line.Points.First.Value = end;
             }
           }
-          foreach (Curve curve in line.Segments)
+          foreach (var curve in line.Segments)
           {
             border.Add(curve);
           }
@@ -681,7 +679,7 @@ namespace Basics.Geom
       Dictionary<Polyline, ParamGeometryRelation> startEnds = new Dictionary<Polyline, ParamGeometryRelation>();
       Dictionary<ParamGeometryRelation, ParamGeometryRelation[]> rels =
         new Dictionary<ParamGeometryRelation, ParamGeometryRelation[]>(cmp);
-      foreach (ParamGeometryRelation rel in xborders)
+      foreach (var rel in xborders)
       {
         if (rel._borderRelations == null)
         {
@@ -710,7 +708,7 @@ namespace Basics.Geom
           rels.Add(b, new ParamGeometryRelation[] { rel, null });
         }
       }
-      foreach (ParamGeometryRelation rel in yborders)
+      foreach (var rel in yborders)
       {
         if (rel._borderRelations == null)
         { continue; }
@@ -773,7 +771,7 @@ namespace Basics.Geom
       else
       { return; }
 
-      System.Collections.IEnumerable parts;
+      IEnumerable<IGeometry> parts;
       if (y is Polyline)
       {
         parts = ((Polyline)y).Split(sortY);
@@ -784,7 +782,7 @@ namespace Basics.Geom
       }
 
       int i = 0;
-      foreach (IGeometry part in parts)
+      foreach (var part in parts)
       {
         if ((i % 2 == 0) != within)
         {

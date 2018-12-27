@@ -11,7 +11,7 @@ namespace Basics.Data.DataSetDb
   public class EnumConnection : DbBaseConnection
   {
     private EnumTransaction _trans;
-    private IEnumerator _enum;
+    private readonly IEnumerator _enum;
     private DataTable _schema;
 
     public EnumConnection(IEnumerator enumerator, DataTable schema)
@@ -76,8 +76,9 @@ namespace Basics.Data.DataSetDb
 
       schema = new SchemaColumnsTable();
       DataTable tbl = _schema;
-      foreach (DataColumn column in tbl.Columns)
+      foreach (var o in tbl.Columns)
       {
+        DataColumn column = (DataColumn)o;
         Type type = column.DataType;
         schema.AddSchemaColumn(column.ColumnName, type);
       }

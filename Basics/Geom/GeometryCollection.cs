@@ -35,7 +35,7 @@ namespace Basics.Geom
       get
       {
         int dim = 0;
-        foreach (IGeometry geom in this)
+        foreach (var geom in this)
         {
           dim = Math.Max(geom.Dimension, dim);
         }
@@ -47,7 +47,7 @@ namespace Basics.Geom
       get
       {
         int topo = 0;
-        foreach (IGeometry geom in this)
+        foreach (var geom in this)
         {
           topo = Math.Max(geom.Topology, topo);
         }
@@ -61,8 +61,8 @@ namespace Basics.Geom
       {
         if (Count == 0)
         { return null; }
-        IBox box = this[0].Extent.Clone();
-        foreach (IGeometry geom in this)
+        Box box = new Box(this[0].Extent);
+        foreach (var geom in this)
         {
           box.Include(geom.Extent);
         }
@@ -71,7 +71,7 @@ namespace Basics.Geom
     }
     public bool IsWithin(IPoint point)
     {
-      foreach (IGeometry geom in this)
+      foreach (var geom in this)
       {
         if (geom.IsWithin(point))
         { return true; }
@@ -83,7 +83,7 @@ namespace Basics.Geom
       get
       {
         GeometryCollection border = new GeometryCollection();
-        foreach (IGeometry geom in this)
+        foreach (var geom in this)
         {
           border.Add(geom.Border);
         }
@@ -97,7 +97,7 @@ namespace Basics.Geom
     public IGeometry Project(IProjection projection)
     {
       GeometryCollection prj = new GeometryCollection();
-      foreach (IGeometry geom in this)
+      foreach (var geom in this)
       {
         prj.Add(geom.Project(projection));
       }

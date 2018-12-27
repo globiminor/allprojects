@@ -17,11 +17,11 @@ namespace Basics.Geom
   /// </summary>
   public abstract class Geometry : IGeometry
   {
-    private static int[] _dim0 = new int[] { };
+    private static readonly int[] _dim0 = new int[] { };
     public static int[] DimensionX = new int[] { 0 };
     public static int[] DimensionXY = new int[] { 0, 1 };
     public static int[] DimensionXYZ = new int[] { 0, 1, 2 };
-    private static int[][] _dimList = new int[][] { _dim0, DimensionX, DimensionXY, DimensionXYZ };
+    private static readonly int[][] _dimList = new int[][] { _dim0, DimensionX, DimensionXY, DimensionXYZ };
 
     public static int[] DimensionList(int dimension)
     {
@@ -42,7 +42,7 @@ namespace Basics.Geom
     public class Comparer : IComparer<IGeometry>
     {
       #region IComparer<IGeometry> Members
-      private IList<int> _calcDimensions;
+      private readonly IList<int> _calcDimensions;
 
       public Comparer(IList<int> calcDimensions)
       {
@@ -68,7 +68,7 @@ namespace Basics.Geom
         if (i != 0)
         { return i; }
 
-        foreach (int iDim in calcDimensions)
+        foreach (var iDim in calcDimensions)
         {
           double d;
           d = x.Extent.Min[iDim] - y.Extent.Min[iDim];
@@ -89,10 +89,9 @@ namespace Basics.Geom
         else if (yParts == null)
         { return -1; }
 
-        System.Collections.IList xList = xParts as System.Collections.IList;
         System.Collections.IList yList = yParts as System.Collections.IList;
 
-        if (xList == null)
+        if (!(xParts is System.Collections.IList xList))
         {
           if (yList == null)
           { }

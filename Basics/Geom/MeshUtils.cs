@@ -52,7 +52,7 @@ namespace Basics.Geom
       if (start != null)
       {
         bool first = true;
-        foreach (IPoint p in start.Points)
+        foreach (var p in start.Points)
         {
           if (first)
           {

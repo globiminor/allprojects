@@ -34,7 +34,7 @@ namespace OCourse.ViewModels
       if (Count > 0)
       {
         int iPart = 0;
-        foreach (SectionList part in this[0].Parts)
+        foreach (var part in this[0].Parts)
         {
           descList.Add(new PartPropertyDesc(iPart, new Attribute[] { new SortAttribute(typeof(SectionList.NameComparer)) }));
           iPart++;

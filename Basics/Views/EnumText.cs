@@ -11,7 +11,7 @@ namespace Basics.Views
 
     public static string GetText<T>(IEnumerable<EnumText<T>> lookup, T id)
     {
-      foreach (EnumText<T> enumText in lookup)
+      foreach (var enumText in lookup)
       {
         if (enumText.Id.Equals(id))
         { return enumText.Text; }

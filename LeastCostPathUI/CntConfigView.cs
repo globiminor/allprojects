@@ -68,7 +68,7 @@ namespace LeastCostPathUI
         { return; }
 
         List<StepImage> steps = new List<StepImage>();
-        foreach (Steps step in _vm.StepsModes)
+        foreach (var step in _vm.StepsModes)
         {
           steps.Add(new StepImage(step, GetImage(step)));
         }

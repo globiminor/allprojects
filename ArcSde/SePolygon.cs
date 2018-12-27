@@ -26,7 +26,7 @@ namespace ArcSde
       for (int iRing = 0; iRing < nRings; iRing++)
       {
         Se_Point[] pRing = pointList[iRing];
-        foreach (Se_Point pPoint in pRing)
+        foreach (var pPoint in pRing)
         {
           pAllPoints[iPoint] = pPoint;
           iPoint++;

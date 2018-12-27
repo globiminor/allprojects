@@ -1,3 +1,4 @@
+using Basics.Data;
 using System;
 using System.Data;
 using System.Windows.Forms;
@@ -126,21 +127,19 @@ namespace TMapWin
     {
       try
       {
-        RowTreeNode node = _lastClickedNode as RowTreeNode;
-        if (node == null)
+        if (!(_lastClickedNode is RowTreeNode node))
         { return; }
         if (_map == null)
         { return; }
 
-        Basics.Geom.IBox box = null;
-        foreach (object item in node.Row.ItemArray)
+        Basics.Geom.Box box = null;
+        foreach (var item in node.Row.ItemArray)
         {
-          Basics.Geom.IGeometry geom = item as Basics.Geom.IGeometry;
-          if (geom == null)
+          if (!(item is Basics.Geom.IGeometry geom))
           { continue; }
 
           if (box == null)
-          { box = geom.Extent.Clone(); }
+          { box = new Basics.Geom.Box(geom.Extent); }
           else
           { box.Include(geom.Extent); }
         }
@@ -171,7 +170,7 @@ namespace TMapWin
         if (treSelection.SelectedNode is RowTreeNode rowNode)
         {
           DataRow row = rowNode.Row;
-          foreach (DataColumn col in row.Table.Columns)
+          foreach (var col in row.Table.Columns.Enum())
           { _attrs.AddTblDataRow(col.ColumnName, row[col].ToString()); }
         }
       }

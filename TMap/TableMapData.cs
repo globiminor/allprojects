@@ -76,7 +76,7 @@ namespace TMap
           }
 
           Basics.Geom.IGeometry geom = (Basics.Geom.IGeometry)data[sym.GeometryColumn.ColumnName];
-          foreach (ISymbolPart part in symbol)
+          foreach (var part in symbol)
           {
             drawable.BeginDraw(part);
             part.Draw(geom, data, drawable);
@@ -102,7 +102,7 @@ namespace TMap
         setup.PrjTrans.X = 0;
         setup.PrjTrans.Y = 0;
         System.Collections.Generic.Dictionary<int, SymbolInfo> symbols = new System.Collections.Generic.Dictionary<int, SymbolInfo>();
-        foreach (Ocad.ElementIndex idx in reader.GetIndices())
+        foreach (var idx in reader.GetIndices())
         {
           if (symbols.TryGetValue(idx.Symbol, out SymbolInfo symInfo) == false)
           {
@@ -118,13 +118,13 @@ namespace TMap
         { symbolInfos[i].Position = -i - 1; }
 
         System.Collections.Generic.Dictionary<int, Ocad.ColorInfo> colors = new System.Collections.Generic.Dictionary<int, Ocad.ColorInfo>();
-        foreach (Ocad.ColorInfo color in reader.ReadColorInfos())
+        foreach (var color in reader.ReadColorInfos())
         { colors.Add(color.Nummer, color); }
 
         string name = System.IO.Path.GetFileNameWithoutExtension(ocadPath);
         TableMapData data = new TableMapData(name, table);
 
-        foreach (Ocad.Symbol.BaseSymbol ocadSymbol in reader.ReadSymbols())
+        foreach (var ocadSymbol in reader.ReadSymbols())
         {
           if (symbols.ContainsKey(ocadSymbol.Number) == false)
           {
@@ -153,7 +153,7 @@ namespace TMap
       if (ocadSymbol is Ocad.Symbol.PointSymbol ocadPoint)
       {
         sym = new Symbol(0);
-        foreach (Ocad.Symbol.SymbolGraphics graphic in ocadPoint.Graphics)
+        foreach (var graphic in ocadPoint.Graphics)
         {
           SymbolPartPoint part = new SymbolPartPoint(null);
           part.Scale = true;

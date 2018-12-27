@@ -178,7 +178,7 @@ namespace Cards.Gui
       { return; }
 
       Macro.Processor proc = new Macro.Processor();
-      foreach (Macro.WindowPtr window in Macro.Processor.GetChildWindows(IntPtr.Zero))
+      foreach (var window in Macro.Processor.GetChildWindows(IntPtr.Zero))
       {
         if (window.GetWindowText() == "Microsoft Solitaire Collection")
         {

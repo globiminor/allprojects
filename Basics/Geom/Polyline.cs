@@ -31,7 +31,7 @@ namespace Basics.Geom
     public Polyline ToBeziers()
     {
       Polyline copy = new Polyline();
-      foreach (Curve seg in Segments)
+      foreach (var seg in Segments)
       {
         if (seg is Line || seg is Bezier)
         {
@@ -39,7 +39,7 @@ namespace Basics.Geom
           continue;
         }
         Arc arc = seg as Arc;
-        foreach (Bezier part in arc.EnumBeziers())
+        foreach (var part in arc.EnumBeziers())
         {
           copy.Add(part);
         }
@@ -49,7 +49,7 @@ namespace Basics.Geom
 
     public bool HasNonBezier()
     {
-      foreach (Curve seg in Segments)
+      foreach (var seg in Segments)
       {
         if (seg is Line || seg is Bezier)
         { continue; }
@@ -90,7 +90,7 @@ namespace Basics.Geom
 
     private void AddRange<T>(IEnumerable<T> pointList) where T : IPoint
     {
-      foreach (T point in pointList)
+      foreach (var point in pointList)
       {
         _pointList.AddLast(point);
       }
@@ -164,7 +164,7 @@ namespace Basics.Geom
     public Polyline Clone()
     {
       Polyline pClone = new Polyline();
-      foreach (Curve pLine in Segments)
+      foreach (var pLine in Segments)
       {
         pClone.Add(pLine.Clone());
       }
@@ -182,7 +182,7 @@ namespace Basics.Geom
       int iSeg = 0;
       double p0 = 0;
       double p1 = 0;
-      foreach (Curve curve in Segments)
+      foreach (var curve in Segments)
       {
         double l0 = l1;
         double d = curve.Length();
@@ -238,7 +238,7 @@ namespace Basics.Geom
     public double Length()
     {
       double dDist = 0;
-      foreach (Curve pLine in Segments)
+      foreach (var pLine in Segments)
       {
         dDist += pLine.Length();
       }
@@ -249,7 +249,7 @@ namespace Basics.Geom
     {
       double dRest = distance;
       int iSeg = 0;
-      foreach (Curve curve in Segments)
+      foreach (var curve in Segments)
       {
         double dLength = curve.Length();
         if (dLength > dRest)
@@ -268,7 +268,7 @@ namespace Basics.Geom
       Dictionary<Curve, List<ParamGeometryRelation>> curveSplits =
         new Dictionary<Curve, List<ParamGeometryRelation>>(new Curve.GeometryEquality());
 
-      foreach (ParamGeometryRelation rel in splits)
+      foreach (var rel in splits)
       {
         ParamGeometryRelation r = rel.GetChildRelation(this);
         Curve curve = (Curve)r.CurrentX;
@@ -283,7 +283,7 @@ namespace Basics.Geom
       List<Polyline> parts = new List<Polyline>();
       Polyline part = null;
 
-      foreach (Curve curve in Segments)
+      foreach (var curve in Segments)
       {
         if (curveSplits.TryGetValue(curve, out List<ParamGeometryRelation> list) == false)
         {
@@ -372,7 +372,7 @@ namespace Basics.Geom
         if (_extent == null)
         {
           Box extent = null;
-          foreach (Curve seg in Segments)
+          foreach (var seg in Segments)
           {
             if (extent == null)
             {
@@ -407,7 +407,7 @@ namespace Basics.Geom
         {
           _spatialIndex = new BoxTree<Curve>(2);
           _spatialIndex.InitSize(new IGeometry[] { Extent });
-          foreach (Curve curve in Segments)
+          foreach (var curve in Segments)
           { _spatialIndex.Add(curve.Extent, curve); }
         }
         return _spatialIndex;
@@ -455,7 +455,7 @@ namespace Basics.Geom
     //  if (rel == Relation.Disjoint)
     //  { return false; }
 
-    //  foreach (Curve seg in Segments)
+    //  foreach (var seg in Segments)
     //  {
     //    extent = seg.Extent;
     //    rel = box.RelationTo(extent, calcDimensions);
@@ -513,7 +513,7 @@ namespace Basics.Geom
     //				{ 
     //					if (pTouch != null)
     //					{
-    //						foreach (IGeometry pGeom in pTouch)
+    //						foreach (var pGeom in pTouch)
     //						{ 
     //							if (pGeom.Topology == 0)
     //							{ 
@@ -548,7 +548,7 @@ namespace Basics.Geom
     private Polyline Project__(IProjection projection)
     {
       Polyline pPoly = new Polyline();
-      foreach (Curve line in Segments)
+      foreach (var line in Segments)
       { pPoly.Add(line.Project(projection)); }
       return pPoly;
     }
@@ -599,7 +599,7 @@ namespace Basics.Geom
       else
       {
         points = new List<IPoint>(2 * Points.Count) { Points.First.Value };
-        foreach (Curve curve in Segments)
+        foreach (var curve in Segments)
         {
           points.AddRange(curve.Linearize(d, false));
         }
@@ -656,7 +656,7 @@ namespace Basics.Geom
       Polyline poly = new Polyline();
       IList<IPoint> list = null;
       int n = 0;
-      foreach (Curve curve in Segments)
+      foreach (var curve in Segments)
       {
         list = curve.Linearize(maxOffset);
         n = list.Count - 1;

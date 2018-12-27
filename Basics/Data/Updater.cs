@@ -43,7 +43,7 @@ namespace Basics.Data
       int n;
       bool bHasChanges = false;
 
-      foreach (DataTable tbl in dataset.Tables)
+      foreach (var tbl in dataset.Tables.Enum())
       {
         if (tbl.GetChanges() != null)
         {
@@ -55,7 +55,7 @@ namespace Basics.Data
       { return 0; }
 
       List<DataTable> tables = new List<DataTable>(dataset.Tables.Count);
-      foreach (DataTable table in dataset.Tables)
+      foreach (var table in dataset.Tables.Enum())
       { tables.Add(table); }
 
       n = UpdateDB(transaction, tables, false);
@@ -98,13 +98,13 @@ namespace Basics.Data
       try
       {
         // First handle single Tables, because cascading tables may need updated data!
-        foreach (DataTable table in updateInfo.SingleTableList)
+        foreach (var table in updateInfo.SingleTableList)
         {
           n += Delete(t, table, false) +
                UpdateInsert(t, table, false);
         }
 
-        foreach (DataTable table in updateInfo.CascadeTableList)
+        foreach (var table in updateInfo.CascadeTableList)
         {
           n += Delete(t, table, true) +
                UpdateInsert(t, table, true);
@@ -181,7 +181,7 @@ namespace Basics.Data
 
       if (cascade)
       {
-        foreach (DataRelation rel in table.ChildRelations)
+        foreach (var rel in table.ChildRelations.Enum())
         { n += Delete(t, rel.ChildTable, cascade); }
       }
 
@@ -207,7 +207,7 @@ namespace Basics.Data
     private static string Where(DataTable table)
     {
       StringBuilder where = new StringBuilder();
-      foreach (DataColumn column in table.PrimaryKey)
+      foreach (var column in table.PrimaryKey)
       {
         if (where.Length > 0)
         { where.Append(" AND "); }
@@ -223,7 +223,7 @@ namespace Basics.Data
       bool keyFix = (formatMode & CommandFormatMode.KeyVariable) == 0;
 
       StringBuilder set = new StringBuilder();
-      foreach (DataColumn column in table.Columns)
+      foreach (var column in table.Columns.Enum())
       {
         if (keyFix && keys.Contains(column))
         { continue; }
@@ -241,7 +241,7 @@ namespace Basics.Data
     private static void AppendKeyParameters(DbCommand command, DataTable table,
                                             DataRowVersion sourceVersion, ParameterDirection direction)
     {
-      foreach (DataColumn column in table.PrimaryKey)
+      foreach (var column in table.PrimaryKey)
       {
         if (!column.AutoIncrement)
         { continue; }
@@ -263,7 +263,7 @@ namespace Basics.Data
 
       bool keyFix = (formatMode & CommandFormatMode.KeyVariable) == 0;
 
-      foreach (DataColumn column in table.Columns)
+      foreach (var column in table.Columns.Enum())
       {
         if (keyFix && keys.Contains(column) && column.AutoIncrement)
         { continue; }
@@ -365,7 +365,7 @@ namespace Basics.Data
 
         bool autoIncrement = true;
         bool match = false;
-        foreach (DataColumn keyCol in row.Table.PrimaryKey)
+        foreach (var keyCol in row.Table.PrimaryKey)
         {
           if (keyCol.AutoIncrement == false)
           {
@@ -419,7 +419,7 @@ namespace Basics.Data
 
       if (cascade)
       {
-        foreach (DataRelation rel in table.ChildRelations)
+        foreach (var rel in table.ChildRelations.Enum())
         { UpdateInsert(transaction, rel.ChildTable, cascade); }
       }
 
@@ -437,7 +437,7 @@ namespace Basics.Data
 
       StringBuilder attrs = new StringBuilder();
       StringBuilder values = new StringBuilder();
-      foreach (DataColumn column in table.Columns)
+      foreach (var column in table.Columns.Enum())
       {
         if (autoKeys && keys.Contains(column) && column.AutoIncrement)
         { continue; }
@@ -469,7 +469,7 @@ namespace Basics.Data
       StringBuilder keys = new StringBuilder();
 
       first = true;
-      foreach (DataColumn column in table.PrimaryKey)
+      foreach (var column in table.PrimaryKey)
       {
         if (!column.AutoIncrement)
         { continue; }
@@ -483,7 +483,7 @@ namespace Basics.Data
       }
 
       first = true;
-      foreach (DataColumn column in table.PrimaryKey)
+      foreach (var column in table.PrimaryKey)
       {
         if (!column.AutoIncrement)
         { continue; }
@@ -505,7 +505,7 @@ namespace Basics.Data
       if (table.ExtendedProperties.ContainsKey(key))
       { table.ExtendedProperties.Remove(key); }
 
-      foreach (DataRelation rel in table.ChildRelations)
+      foreach (var rel in table.ChildRelations.Enum())
       { ClearKey(rel.ChildTable, key); }
     }
   }

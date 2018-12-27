@@ -40,7 +40,7 @@ namespace Ocad.StringParams
 
       //par.Add(LegCountKey, course.LegCount());
       //par.Add(CourseTypeKey, "gaga");
-      foreach (ISection section in course)
+      foreach (var section in course)
       {
         par.Add(section);
       }

@@ -8,7 +8,7 @@ namespace Asvz.SolaDuo
 {
   public class DuoMap : IDisposable
   {
-    Symbol[] _symbols = new Symbol[]
+    readonly Symbol[] _symbols = new Symbol[]
       {
         new Symbol("Fussweg", 112000),
         new Symbol("Fahrstraes", 111000),
@@ -188,7 +188,7 @@ namespace Asvz.SolaDuo
       int iStufe = -1;
       int iBaute = -1;
       int iBreite = -1;
-      foreach (DataRow row in reader)
+      foreach (var row in reader)
       {
         DataTable tbl = row.Table;
         iStufe = tbl.Columns.IndexOf(stufe);
@@ -197,7 +197,7 @@ namespace Asvz.SolaDuo
         break;
       }
 
-      foreach (DataRow row in reader)
+      foreach (var row in reader)
       {
 
         ElementV9 elem = new ElementV9(true);
@@ -211,7 +211,7 @@ namespace Asvz.SolaDuo
 
 
         Symbol sym = null;
-        foreach (Symbol symbol in _symbols)
+        foreach (var symbol in _symbols)
         {
           if (symbol.Name == val)
           {

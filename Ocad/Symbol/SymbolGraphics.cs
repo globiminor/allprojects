@@ -6,12 +6,12 @@ namespace Ocad.Symbol
   {
     public IBox Extent()
     {
-      IBox boxAll = null;
-      foreach (SymbolGraphics element in this)
+      Box boxAll = null;
+      foreach (var element in this)
       {
         IBox box = element.Geometry.Extent;
         if (boxAll == null)
-        { boxAll = box.Clone(); }
+        { boxAll = new Box(box); }
         else
         { boxAll.Include(box); }
       }
@@ -38,14 +38,14 @@ namespace Ocad.Symbol
     }
     public bool RoundEnds
     {
-      get{ return _roundEnds; }
-      set{ _roundEnds = value; }
+      get { return _roundEnds; }
+      set { _roundEnds = value; }
     }
 
     public int Color
     {
-      get{ return _color; }
-      set{ _color = value; }
+      get { return _color; }
+      set { _color = value; }
     }
 
     /// <summary>
@@ -53,8 +53,8 @@ namespace Ocad.Symbol
     /// </summary>
     public int LineWidth
     {
-      get{ return _lineWidth; }
-      set{ _lineWidth = value; }
+      get { return _lineWidth; }
+      set { _lineWidth = value; }
     }
 
     /// <summary>

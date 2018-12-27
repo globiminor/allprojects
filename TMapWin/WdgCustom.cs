@@ -1,3 +1,4 @@
+using Basics.Forms;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -38,7 +39,7 @@ namespace TMapWin
       if (chkAdd.Enabled && chkAdd.Checked)
       {
 
-        foreach (DataGridViewRow row in dgCustom.SelectedRows)
+        foreach (var row in dgCustom.SelectedRows.Enum())
         {
           DataRowView vrow = (DataRowView)row.DataBoundItem;
           yield return (Attribute.TblICustomRow)vrow.Row;
@@ -69,7 +70,7 @@ namespace TMapWin
         txtAssembly.ReadOnly = true;
         System.Reflection.Assembly assembly =
           System.Reflection.Assembly.LoadFile(assemblyName);
-        foreach (Type type in assembly.GetExportedTypes())
+        foreach (var type in assembly.GetExportedTypes())
         {
           if (typeof(TMap.ICommand).IsAssignableFrom(type))
           {

@@ -174,7 +174,7 @@ namespace Ocad
       if (_controlElements == null)
       {
         List<Element> controlElements = new List<Element>();
-        foreach (Element elem in Elements(false, null))
+        foreach (var elem in Elements(false, null))
         {
           if (elem.ObjectStringType == ObjectStringType.None)
           { continue; }
@@ -188,7 +188,7 @@ namespace Ocad
       string search = control.Name;
       while (search.Length < 3) search = $"0{search}";
 
-      foreach (Element e in _controlElements)
+      foreach (var e in _controlElements)
       {
         if (e.ObjectStringType != ObjectStringType.CsObject)
         { continue; }
@@ -210,7 +210,7 @@ namespace Ocad
 
       if (control.Code == ControlCode.TextBlock)
       {
-        foreach (StringParamIndex idx in settingIndexList)
+        foreach (var idx in settingIndexList)
         {
           if (idx.Type == StringType.TextBlock)
           {

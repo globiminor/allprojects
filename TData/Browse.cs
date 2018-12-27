@@ -39,7 +39,7 @@ namespace TData
       if (dir == "")
       {
         DriveInfo[] allDrives = DriveInfo.GetDrives();
-        foreach (DriveInfo drive in allDrives)
+        foreach (var drive in allDrives)
         {
           list.Add(new DatasetInfo(drive.Name, null, DataType.Folder));
         }
@@ -67,7 +67,7 @@ namespace TData
     private static void GetDirectoryObjects(string dir, List<DatasetInfo> list)
     {
       List<string> subDirs = new List<string>(Directory.GetDirectories(dir));
-      foreach (string subDir in subDirs)
+      foreach (var subDir in subDirs)
       {
         list.Add(new DatasetInfo(subDir, null, DataType.Folder));
       }
@@ -75,7 +75,7 @@ namespace TData
       List<string> files = new List<string>(Directory.GetFiles(dir));
       files.Sort();
 
-      foreach (string file in files)
+      foreach (var file in files)
       {
         string full = Path.Combine(dir, file);
         string ext = Path.GetExtension(file);
@@ -129,7 +129,7 @@ namespace TData
 
         string preTbl = null;
         Dictionary<string, DataType> geometryType = new Dictionary<string, DataType>();
-        foreach (DataRowView vTbl in vwCols)
+        foreach (var vTbl in vwCols.Enum())
         {
           DataRow rowTbl = vTbl.Row;
           string table = SchemaColumnsTable.TableNameColumn.GetValue(rowTbl,"");
@@ -155,7 +155,7 @@ namespace TData
               { list.Add(new DatasetInfo(preTbl, null, DataType.Table)); }
               else
               {
-                foreach (KeyValuePair<string, DataType> pair in geometryType)
+                foreach (var pair in geometryType)
                 {
                   string fullName;
                   if (geometryType.Count == 1)
@@ -177,8 +177,8 @@ namespace TData
 
   public class DatasetInfo
   {
-    private string _name;
-    private object _dsName;
+    private readonly string _name;
+    private readonly object _dsName;
     private readonly DataType _dataType;
 
     public DatasetInfo(string name, object dsName, DataType dataType)

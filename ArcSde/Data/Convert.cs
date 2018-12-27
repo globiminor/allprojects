@@ -13,10 +13,10 @@ namespace ArcSde.Data
       {
         List<Se_Point> points = new List<Se_Point>();
         List<int> parts = new List<int>();
-        foreach (Polyline polyline in area.Border)
+        foreach (var polyline in area.Border)
         {
           parts.Add(points.Count);
-          foreach (IPoint point in polyline.Points)
+          foreach (var point in polyline.Points)
           {
             Se_Point p = new Se_Point(point.X, point.Y);
             points.Add(p);

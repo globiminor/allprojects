@@ -1,10 +1,10 @@
+using Basics.Geom;
+using Ocad;
+using Ocad.StringParams;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Basics.Geom;
-using Ocad;
 using System.IO;
-using Ocad.StringParams;
 
 namespace Asvz.Sola
 {
@@ -67,7 +67,7 @@ namespace Asvz.Sola
         _templateSetup = tplReader.ReadSetup();
 
         int iDetail = 0;
-        foreach (Element elem in tplReader.Elements(true, indexList))
+        foreach (var elem in tplReader.Elements(true, indexList))
         {
           if (elem.Symbol == SymD.Detail)
           {
@@ -88,7 +88,7 @@ namespace Asvz.Sola
         ReadSymbols(tplReader);
 
         IList<StringParamIndex> strIdxList = tplReader.ReadStringParamIndices();
-        foreach (StringParamIndex strIdx in strIdxList)
+        foreach (var strIdx in strIdxList)
         {
           if (strIdx.Type == StringType.ViewPar)
           { viewPar = new ViewPar(tplReader.ReadStringParam(strIdx)); }
@@ -114,7 +114,7 @@ namespace Asvz.Sola
         Polyline border = GetBorder(_detail);
         writer.Append(_detail);
 
-        foreach (Element legPos in _legendPos)
+        foreach (var legPos in _legendPos)
         {
           if (border.Extent.Intersects(legPos.Geometry))
           {
@@ -189,7 +189,7 @@ namespace Asvz.Sola
       setup.PrjTrans.X = 0;
       setup.PrjTrans.Y = 0;
 
-      foreach (int iPos in indexList)
+      foreach (var iPos in indexList)
       {
         Ocad.Symbol.BaseSymbol symbol = reader.ReadSymbol(iPos);
         if (symbol == null)
@@ -210,15 +210,15 @@ namespace Asvz.Sola
 
     private void AddLegend(OcadWriter writer, Polyline border, Point rawPosition)
     {
-      Point edge = null;
+      IPoint edge = null;
 
       border = border.Project(_templateSetup.Prj2Map);
       rawPosition = rawPosition.Project(_templateSetup.Prj2Map);
 
       double dDist = -1;
-      foreach (Point pnt in border.Points)
+      foreach (var pnt in border.Points)
       {
-        double d2 = pnt.Dist2(rawPosition);
+        double d2 = Point.Dist2(pnt, rawPosition);
         if (dDist < 0 || dDist > d2)
         {
           dDist = d2;

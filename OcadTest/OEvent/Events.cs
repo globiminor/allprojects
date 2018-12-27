@@ -56,7 +56,7 @@ namespace OcadTest.OEvent
           new ControlInfo { Key = "157", Info = "Hinweis 30\""}
         });
 
-      foreach (string course in new[] { "Setzen1", "Setzen2", "Setzen3", "Setzen4", "Setzen5", "SetzenFinal" })
+      foreach (var course in new[] { "Setzen1", "Setzen2", "Setzen3", "Setzen4", "Setzen5", "SetzenFinal" })
       {
         cmd.WriteImages(course, @"c:\temp\o*.jpg");
       }

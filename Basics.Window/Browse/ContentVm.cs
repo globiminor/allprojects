@@ -25,12 +25,12 @@ namespace Basics.Window.Browse
 
     protected static IEnumerable<ContentVm> GetContent(string directory)
     {
-      foreach (string path in Directory.GetDirectories(directory))
+      foreach (var path in Directory.GetDirectories(directory))
       {
         yield return new DirContentVm { FullPath = path };
       }
 
-      foreach (string path in Directory.GetFiles(directory))
+      foreach (var path in Directory.GetFiles(directory))
       {
         yield return new FileContentVm { FullPath = path };
       }
@@ -53,7 +53,7 @@ namespace Basics.Window.Browse
     protected override IEnumerable<ContentVm> GetContentCore()
     {
       IList<string> dir = new[] { FullPath };
-      foreach (PdEntry entry in PortableDeviceUtils.GetContent(dir))
+      foreach (var entry in PortableDeviceUtils.GetContent(dir))
       {
         yield return new DevEntryContentVm(dir, entry);
       }
@@ -72,7 +72,7 @@ namespace Basics.Window.Browse
       _entry = entry;
 
       string full = string.Empty;
-      foreach (string dir in directory)
+      foreach (var dir in directory)
       {
         full = Path.Combine(full, dir);
       }
@@ -81,7 +81,7 @@ namespace Basics.Window.Browse
     public override string Name { get { return _path[_path.Count - 1]; } }
     protected override IEnumerable<ContentVm> GetContentCore()
     {
-      foreach (PdEntry entry in PortableDeviceUtils.GetContent(_path))
+      foreach (var entry in PortableDeviceUtils.GetContent(_path))
       {
         yield return new DevEntryContentVm(_path, entry);
       }

@@ -51,7 +51,7 @@ namespace Basics.Geom
         {
           _spatialIndex = new BoxTree<Polyline>(2);
           _spatialIndex.InitSize(new IGeometry[] { Extent });
-          foreach (Polyline line in _lines)
+          foreach (var line in _lines)
           { _spatialIndex.Add(line.Extent, line); }
         }
         return _spatialIndex;
@@ -65,7 +65,7 @@ namespace Basics.Geom
 
       int i = 0;
 
-      foreach (Polyline border in _lines)
+      foreach (var border in _lines)
       {
         Relation rel = border.Extent.RelationTo(p.Extent);
         if (rel == Relation.Disjoint)
@@ -75,7 +75,7 @@ namespace Basics.Geom
         { border.Add(border.Points.First.Value); }
 
         double? xPre = null;
-        foreach (Curve curve in border.Segments)
+        foreach (var curve in border.Segments)
         {
           IBox extent = curve.Extent;
 
@@ -100,14 +100,15 @@ namespace Basics.Geom
       if (curve is IMultipartGeometry multi && multi.HasSubparts)
       {
         int n = 0;
-        foreach (Curve part in multi.Subparts())
+        foreach (var part in multi.Subparts())
         {
           IBox partExtent = part.Extent;
+          Curve subCurve = (Curve)part;
 
           if (VerifyExtent(isInside, partExtent) == false)
           { continue; }
 
-          int nNew = Intersects(isInside, lineDown, part, partExtent, ref xPre);
+          int nNew = Intersects(isInside, lineDown, subCurve, partExtent, ref xPre);
           if (nNew < 0) // Touch
           { return nNew; }
           else
@@ -214,12 +215,12 @@ namespace Basics.Geom
       Line searchLine = new Line(min, max);
       Box searchBox = new Box(min, max);
 
-      foreach (BoxTree<Polyline>.TileEntry eLine in SpatialIndex.Search(searchBox))
+      foreach (var eLine in SpatialIndex.Search(searchBox))
       {
         Polyline line = eLine.Value;
         if (Point.Equals(line.Points.First.Value, line.Points.Last.Value) == false)
         { line.Add(line.Points.First.Value); }
-        foreach (BoxTree<Curve>.TileEntry eCurve in line.SpatialIndex.Search(searchBox))
+        foreach (var eCurve in line.SpatialIndex.Search(searchBox))
         {
           Curve curve = eCurve.Value;
           bool within = IsWithinCurve(p, curve, max, searchLine, ref near, ref onRightSide);
@@ -236,9 +237,10 @@ namespace Basics.Geom
       bool within = false;
       if (curve is IMultipartGeometry parts && parts.HasSubparts)
       {
-        foreach (Curve part in parts.Subparts())
+        foreach (var part in parts.Subparts())
         {
-          within = IsWithinCurve(p, part, max, searchLine,
+          Curve subCurve = (Curve)part;
+          within = IsWithinCurve(p, subCurve, max, searchLine,
             ref near, ref onRightSide);
           if (within)
           { break; }
@@ -341,7 +343,7 @@ namespace Basics.Geom
     public void CloseBorders()
     {
       System.Collections.Generic.List<Polyline> invalidList = new System.Collections.Generic.List<Polyline>();
-      foreach (Polyline border in Border)
+      foreach (var border in Border)
       {
         if (border.Points.Count == 0)
         {
@@ -352,7 +354,7 @@ namespace Basics.Geom
         if (start.Dist2(border.Points.Last.Value) > 1e-12)
         { border.Add(start); }
       }
-      foreach (Polyline invalid in invalidList)
+      foreach (var invalid in invalidList)
       {
         Border.Remove(invalid);
       }

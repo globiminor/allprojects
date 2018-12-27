@@ -1,3 +1,4 @@
+using Basics.Data;
 using System;
 using System.Data;
 using System.Drawing;
@@ -78,7 +79,7 @@ namespace TMapWin
 
       _tblParts.Clear();
       int iRow = 0;
-      foreach (ISymbolPart part in _inSymbol)
+      foreach (var part in _inSymbol)
       {
         _tblParts.AddRow(iRow, part);
         iRow++;
@@ -110,9 +111,10 @@ namespace TMapWin
     void TblParts_RowChanged(object sender, DataRowChangeEventArgs e)
     {
       _newSymbol = new Symbol(_inSymbol.Topology);
-      foreach (SymbolPartTable.Row row in _tblParts.Rows)
+      foreach (var row in _tblParts.Rows.Enum())
       {
-        ISymbolPart p = row.Part;
+        SymbolPartTable.Row pRow = (SymbolPartTable.Row)row;
+        ISymbolPart p = pRow.Part;
         if (p != null)
         { _newSymbol.Add(p); }
       }

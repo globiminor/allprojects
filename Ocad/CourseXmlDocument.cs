@@ -1,3 +1,4 @@
+using Basics.Data;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -74,7 +75,7 @@ namespace Ocad
     public List<string> CourseVariation(XmlNode nodeVariation)
     {
       List<string> sCourse = new List<string> { StartPointCode(nodeVariation)};
-      foreach (XmlNode nodeControl in CourseControls(nodeVariation))
+      foreach (var nodeControl in CourseControls(nodeVariation).Enum())
       {
         string code = ControlCode(nodeControl);
         sCourse.Add(code);
@@ -145,7 +146,7 @@ namespace Ocad
 
       int legCount = course.LegCount();
 
-      foreach (XmlNode comb in TeamCombinations(courseId))
+      foreach (var comb in TeamCombinations(courseId).Enum())
       {
         string startNo = StartNo(comb);
 
@@ -167,7 +168,7 @@ namespace Ocad
     public int GetMinimumStartNr(string courseId)
     {
       int minStartNo = int.MaxValue;
-      foreach (XmlNode comb in TeamCombinations(courseId))
+      foreach (var comb in TeamCombinations(courseId).Enum())
       {
         int startNo = int.Parse(StartNo(comb));
         if (startNo < minStartNo)
@@ -184,7 +185,7 @@ namespace Ocad
 
       csv.WriteLine("Strecke" + s + "Distanz" + s + "Code" + s);
 
-      foreach (Course course in courses)
+      foreach (var course in courses)
       {
         XmlNode nodeCourse = CourseNode(course.Name);
         string courseId = CourseId(nodeCourse);
@@ -194,7 +195,7 @@ namespace Ocad
 
         int legCount = course.LegCount();
 
-        foreach (XmlNode comb in TeamCombinations(courseId))
+        foreach (var comb in TeamCombinations(courseId).Enum())
         {
           XmlNodeList legList = Legs(comb);
           Trace.Assert(legCount == legList.Count, "Leg Count do not correspond");
@@ -227,7 +228,7 @@ namespace Ocad
         dummyControls = new Dictionary<ISection, Control>();
       }
 
-      foreach (Course course in courses)
+      foreach (var course in courses)
       {
         XmlNode nodeCourse = CourseNode(course.Name);
         string courseId = CourseId(nodeCourse);
@@ -237,7 +238,7 @@ namespace Ocad
 
         int legCount = course.LegCount();
 
-        foreach (XmlNode comb in TeamCombinations(courseId))
+        foreach (var comb in TeamCombinations(courseId).Enum())
         {
           XmlNodeList legList = Legs(comb);
           Trace.Assert(legCount == legList.Count, "Leg Count do not correspond");
@@ -261,7 +262,7 @@ namespace Ocad
     private void WriteTeamCsv(TextWriter csv, XmlNode nodeCourse, XmlNodeList legList, int iStartNo, string s)
     {
       StringBuilder line;
-      foreach (XmlNode leg in legList)
+      foreach (var leg in legList.Enum())
       {
         string variationId = LegVariationId(leg);
         XmlNode variation = CourseVariation(nodeCourse, variationId);
@@ -270,7 +271,7 @@ namespace Ocad
         line.AppendFormat("{0}.{1}" + s, iStartNo, LegNo(leg));
         line.AppendFormat("{0:N2}" + s, Basics.Utils.Round(CourseLength(variation) / 100.0, 0.1));
         line.Append(LegName(leg) + s);
-        foreach (string code in CourseVariation(variation))
+        foreach (var code in CourseVariation(variation))
         {
           line.Append(code + s);
         }
@@ -293,7 +294,7 @@ namespace Ocad
       Course course, XmlNode nodeCourse, XmlNodeList legList,
       int iStartNo, Dictionary<ISection, Control> dummies, string dummyPrefix)
     {
-      foreach (XmlNode leg in legList)
+      foreach (var leg in legList.Enum())
       {
         string variationId = LegVariationId(leg);
         XmlNode variation = CourseVariation(nodeCourse, variationId);
@@ -303,7 +304,7 @@ namespace Ocad
 
         List<ControlDist> xmlCourseList = new List<ControlDist>(cntls.Count)
         { new ControlDist(0, StartPointCode(variation))};
-        foreach (XmlNode control in CourseControls(variation))
+        foreach (var control in CourseControls(variation).Enum())
         {
           xmlCourseList.Add(new ControlDist(LegLength(control), ControlCode(control)));
         }
@@ -357,7 +358,7 @@ namespace Ocad
       line.AppendFormat(s + "{0:N0}", climbM);
 
       bool first = true;
-      foreach (ControlDist dist in controls)
+      foreach (var dist in controls)
       {
         if (first == false)
         { line.AppendFormat("{0}{1:N3}", s, dist.Dist / 1000.0); }
@@ -371,7 +372,7 @@ namespace Ocad
     private string TeamCombinationString(XmlNode nodeCourse, XmlNodeList legList)
     {
       StringBuilder varKomb = new StringBuilder();
-      foreach (XmlNode leg in legList)
+      foreach (var leg in legList.Enum())
       {
         string variationId = LegVariationId(leg);
         XmlNode variation = CourseVariation(nodeCourse, variationId);
@@ -387,13 +388,13 @@ namespace Ocad
 
       List<SimpleSection> cloneSections = new List<SimpleSection>(allSections);
 
-      foreach (XmlNode leg in legList)
+      foreach (var leg in legList.Enum())
       {
         string variationId = LegVariationId(leg);
         XmlNode variation = CourseVariation(nodeCourse, variationId);
 
         string post = StartPointCode(variation);
-        foreach (XmlNode control in CourseControls(variation))
+        foreach (var control in CourseControls(variation).Enum())
         {
           string pre = post;
           post = ControlCode(control);
@@ -422,7 +423,7 @@ namespace Ocad
 
     private bool TryRemoveSection(string post, List<SimpleSection> sectionList, string pre)
     {
-      foreach (SimpleSection section in sectionList)
+      foreach (var section in sectionList)
       {
         if (section.From.Name == pre && section.To.Name == post)
         {

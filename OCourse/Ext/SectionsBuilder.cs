@@ -32,7 +32,7 @@ namespace OCourse.Ext
 
       Dictionary<SimpleSection, List<SimpleSection>> uniqueSections = GetUniqueSections(course);
 
-      foreach (ISection section in course)
+      foreach (var section in course)
       {
         lastControls = AppendSections(-1, section, lastControls, sections, null, uniqueSections);
       }
@@ -48,7 +48,7 @@ namespace OCourse.Ext
     private Dictionary<SimpleSection, List<SimpleSection>> GetUniqueSections(IEnumerable<SimpleSection> sections)
     {
       Dictionary<SimpleSection, List<SimpleSection>> unique = new Dictionary<SimpleSection, List<SimpleSection>>(new SimpleSection.EqualFullComparer());
-      foreach (SimpleSection section in sections)
+      foreach (var section in sections)
       {
         if (!unique.TryGetValue(section, out List<SimpleSection> equals))
         {
@@ -66,7 +66,7 @@ namespace OCourse.Ext
       IList<IDisplayControl> lastControls = new List<IDisplayControl>();
       Dictionary<SimpleSection, List<SimpleSection>> uniqueSections = GetUniqueSections(course);
 
-      foreach (ISection section in course)
+      foreach (var section in course)
       {
         lastControls = AppendSections(leg, section, lastControls, sections, null, uniqueSections);
       }
@@ -80,7 +80,7 @@ namespace OCourse.Ext
       IList<IDisplayControl> toControls;
       if (section is Control to)
       {
-        foreach (IDisplayControl from in fromControls)
+        foreach (var from in fromControls)
         {
           SimpleSection simple = new SimpleSection(from.Control, to);
           simple.AndWhere(where);
@@ -108,7 +108,7 @@ namespace OCourse.Ext
       }
       else if (section is Fork.Branch forkBranch)
       {
-        foreach (ISection control in forkBranch)
+        foreach (var control in forkBranch)
         {
           fromControls = AppendSections(leg, control, fromControls, sections, where, uniqueAllSections);
         }
@@ -124,7 +124,7 @@ namespace OCourse.Ext
           if (fromControls.Count > 1)
           {
             branchFroms = new List<IDisplayControl>();
-            foreach (int iLeg in branch.Legs)
+            foreach (var iLeg in branch.Legs)
             {
               branchFroms.Add(fromControls[iVar]);
               iVar++;
@@ -156,7 +156,7 @@ namespace OCourse.Ext
           fromControls = AddingBranch(leg, varBranch, fromControls, sections, varBranch.GetWhere());
         }
 
-        foreach (ISection control in varBranch)
+        foreach (var control in varBranch)
         {
           fromControls = AppendSections(leg, control, fromControls, sections, varBranch.GetWhere(), uniqueAllSections);
         }
@@ -177,7 +177,7 @@ namespace OCourse.Ext
 
       List<IDisplayControl> inter = new List<IDisplayControl>();
       IDisplayControl lastControl = null;
-      foreach (ISection section in course)
+      foreach (var section in course)
       {
         if (section is Control)
         {
@@ -209,7 +209,7 @@ namespace OCourse.Ext
       IList<IDisplayControl> toControls;
       if (section is Control to)
       {
-        foreach (IDisplayControl from in fromControls)
+        foreach (var from in fromControls)
         {
           MultiSection simple = new MultiSection(from.Control, to);
           simple.Inter.AddRange(inter.Select(x => x.Control));
@@ -222,8 +222,9 @@ namespace OCourse.Ext
       {
         List<IDisplayControl> tos = new List<IDisplayControl>(fork.Branches.Count);
         char code = 'A';
-        foreach (Fork.Branch branch in fork.Branches)
+        foreach (var o in fork.Branches)
         {
+          Fork.Branch branch = (Fork.Branch)o;
           string w = string.Format("'{0}' = '{0}'", code);
           if (!string.IsNullOrEmpty(where))
           {
@@ -240,7 +241,7 @@ namespace OCourse.Ext
       {
         List<IDisplayControl> interBranch = new List<IDisplayControl>();
         Control lastControl = null;
-        foreach (ISection control in forkBranch)
+        foreach (var control in forkBranch)
         {
           if (control is Control)
           {
@@ -284,7 +285,7 @@ namespace OCourse.Ext
 
         List<IDisplayControl> interBranch = new List<IDisplayControl>();
         Control lastControl = null;
-        foreach (ISection control in varBranch)
+        foreach (var control in varBranch)
         {
           if (control is Control)
           {

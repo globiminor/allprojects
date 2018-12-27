@@ -22,17 +22,17 @@ namespace OTextSharp.Models
     private int _ix;
     private int _iy;
 
-    private int _maxX = 2;
-    private int _maxY = 4;
+    private readonly int _maxX = 2;
+    private readonly int _maxY = 4;
 
-    private float _w;
-    private float _h;
+    private readonly float _w;
+    private readonly float _h;
 
-    private float _mx = 10;
-    private float _my = 10;
+    private readonly float _mx = 10;
+    private readonly float _my = 10;
     private Dictionary<string, ControlPar> _controlPars;
     private Dictionary<int, PointSymbol> _symbs;
-    private Setup _setup;
+    private readonly Setup _setup;
 
     public ImagePoBeWriter(OcadReader reader, IList<ControlInfo> infos, string export, string imageTemplate)
       : base(export)
@@ -52,7 +52,7 @@ namespace OTextSharp.Models
 
       _controlPars = new Dictionary<string, ControlPar>();
       IList<StringParamIndex> idxs = _reader.ReadStringParamIndices();
-      foreach (StringParamIndex idx in idxs)
+      foreach (var idx in idxs)
       {
         if (idx.Type == StringType.Control)
         {
@@ -61,7 +61,7 @@ namespace OTextSharp.Models
           _controlPars.Add(ctrPar.Name, ctrPar);
         }
       }
-      foreach (Ocad.Element elem in _reader.Elements(false, null))
+      foreach (var elem in _reader.Elements(false, null))
       {
         if (elem.ObjectStringType == ObjectStringType.None)
         { continue; }
@@ -78,10 +78,9 @@ namespace OTextSharp.Models
       _setup = reader.ReadSetup();
 
       _symbs = new Dictionary<int, PointSymbol>();
-      foreach (BaseSymbol symbol in _reader.ReadSymbols())
+      foreach (var symbol in _reader.ReadSymbols())
       {
-        PointSymbol p = symbol as PointSymbol;
-        if (p == null)
+        if (!(symbol is PointSymbol p))
         {
           continue;
         }
@@ -206,7 +205,7 @@ namespace OTextSharp.Models
 
       Pcb.SaveState();
       Pcb.Transform(new Matrix(0.028f, 0, 0, 0.028f, x0, y0));
-      foreach (SymbolGraphics graphics in ps.Graphics)
+      foreach (var graphics in ps.Graphics)
       {
         if (graphics.Type == SymbolGraphicsType.Line)
         {
@@ -216,7 +215,7 @@ namespace OTextSharp.Models
         }
         if (graphics.Type == SymbolGraphicsType.Area)
         {
-          foreach (Polyline border in ((Area)graphics.Geometry).Border)
+          foreach (var border in ((Area)graphics.Geometry).Border)
           {
             DrawCurve(border);
             Pcb.Fill();

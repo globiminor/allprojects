@@ -5,6 +5,7 @@ using System.Data.Common;
 using System.Drawing;
 using D = System.Drawing;
 using System.Text;
+using Basics.Data;
 
 namespace TMap
 {
@@ -195,7 +196,7 @@ namespace TMap
           DataTable schema = _geomColumn.Table;
 
           StringBuilder fullQuery = new StringBuilder(GeometryColumn.ColumnName);
-          foreach (DataRowView vRow in SymbolList)
+          foreach (var vRow in SymbolList.Enum())
           {
             SymbolTable.Row row = (SymbolTable.Row)vRow.Row;
             string condition = row.Condition;
@@ -206,7 +207,7 @@ namespace TMap
 
           string queryWithNeededFields = fullQuery.ToString().ToUpper();
           List<DataColumn> fields = new List<DataColumn>();
-          foreach (DataColumn column in schema.Columns)
+          foreach (var column in schema.Columns.Enum())
           {
             if (queryWithNeededFields.Contains(column.ColumnName.ToUpper()))
             { fields.Add(column); }
@@ -232,7 +233,7 @@ namespace TMap
           }
           else
           {
-            foreach (DataColumn field in columns)
+            foreach (var field in columns)
             {
               if (sbFields.Length > 0) sbFields.Append(", ");
               sbFields.Append(field.ColumnName);
@@ -266,10 +267,10 @@ namespace TMap
       }
     }
 
-    private DataRow _templateRow;
+    private readonly DataRow _templateRow;
     public Symbol GetSymbol(DbDataReader reader, out DataRow dataRow)
     {
-      foreach (DataColumn column in NeededColumns)
+      foreach (var column in NeededColumns)
       {
         int idx = reader.GetOrdinal(column.ColumnName);
         _templateRow[column.ColumnName] = reader.GetValue(idx);
@@ -279,7 +280,7 @@ namespace TMap
       //if (_dict == null)
       //{
       //  _dict = new Dictionary<int, Symbol>();
-      //  foreach (DataRowView symView in _vSymbolList)
+      //  foreach (var symView in _vSymbolList)
       //  {
       //    DsSymbol.SymbolRow rowSymbol = (DsSymbol.SymbolRow)symView.Row;
       //    string[] parts = rowSymbol.Condition.Split();
@@ -299,7 +300,7 @@ namespace TMap
       //return null;
 
 
-      foreach (DataRowView symView in SymbolList)
+      foreach (var symView in SymbolList.Enum())
       {
         SymbolTable.Row rowSymbol = (SymbolTable.Row)symView.Row;
         if (rowSymbol.FulFillsCondition(_templateRow, _geomColumn))
