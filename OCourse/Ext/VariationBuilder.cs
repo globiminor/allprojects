@@ -159,10 +159,11 @@ namespace OCourse.Ext
 
     internal class WhereInfo
     {
+      public enum State { Fulfilled, Unknown, Failed }
+
       public static WhereInfo Failed = new WhereInfo(State.Failed);
       public static WhereInfo FulFilled = new WhereInfo(State.Fulfilled);
 
-      public enum State { Fulfilled, Unknown, Failed }
       [ThreadStatic]
       private static DataView _whereView;
       [ThreadStatic]
@@ -171,14 +172,14 @@ namespace OCourse.Ext
       private static DataColumn _exprColumn;
 
       private int _max;
-      public int MaxControl { get { return _max; } }
+      public int MaxControl { get => _max; set => _max = value; }
 
       private readonly NextControl _nextControl;
       private readonly State _state;
       private readonly string _parsed;
       private readonly ILegController _legController;
 
-      public WhereInfo(ILegController legController, string where, SectionList permut)
+      public WhereInfo(ILegController legController, string where, ISectionList permut)
       {
         _legController = legController;
         _nextControl = permut.GetNextControl(permut.ControlsCount - 1);
@@ -195,14 +196,14 @@ namespace OCourse.Ext
         return $"{_parsed} : {_state}";
       }
 
-      public State GetState(SectionList sections)
+      public State GetState(ISectionList sections)
       {
         if (_state == State.Failed)
         { return State.Failed; }
         if (_state == State.Fulfilled)
         { return State.Fulfilled; }
 
-        if (sections.ControlsCount <= _max)
+        if (sections.ControlsCount <= MaxControl)
         { return State.Unknown; }
 
         State state = GetState(_parsed, sections, out string parsed);
@@ -222,7 +223,7 @@ namespace OCourse.Ext
       private static readonly List<string> _keys = new List<string> { Leg, PartControls, LegControls };
       public static IReadOnlyList<string> Keywords => _keys;
 
-      private State GetState(string where, SectionList sections, out string parse)
+      private State GetState(string where, ISectionList sections, out string parse)
       {
         parse = where;
         if (string.IsNullOrEmpty(where))
@@ -319,13 +320,13 @@ namespace OCourse.Ext
           else
           {
             parsed.Replace(string.Format("[{0}]", ctrName), string.Format("[{0}]", ctrIdx));
-            _max = Math.Max(_max, ctrIdx);
+            MaxControl = Math.Max(MaxControl, ctrIdx);
           }
         }
         parsed.Append(where);
 
         parse = parsed.ToString();
-        if (_max > sections.ControlsCount)
+        if (MaxControl > sections.ControlsCount)
         {
           return State.Unknown;
         }
@@ -348,7 +349,7 @@ namespace OCourse.Ext
         }
       }
 
-      private bool GetPartControls(SectionList sections, NextControl control, out string partControls)
+      private bool GetPartControls(ISectionList sections, NextControl control, out string partControls)
       {
         List<Control> currentPart = null;
         bool isControlInCurrentPart = false;
@@ -375,7 +376,7 @@ namespace OCourse.Ext
         partControls = null;
         return false;
       }
-      private bool GetLegControls(SectionList sections, NextControl control, out string legControls)
+      private bool GetLegControls(ISectionList sections, NextControl control, out string legControls)
       {
         List<Control> currentLeg = null;
         bool isControlInCurrentPart = false;
@@ -416,6 +417,177 @@ namespace OCourse.Ext
 
     private class PermutationBuilder : Builder
     {
+      private sealed class LegSections : ISectionList, ICloneable<LegSections>
+      {
+        private readonly PermutationBuilder _builder;
+        private readonly List<SectionList> _legs;
+
+        private int _currentLeg;
+
+        public IReadOnlyList<int> EvalOrder { get; }
+        public LegSections(PermutationBuilder builder, IReadOnlyList<int> evalOrder)
+        {
+          _builder = builder;
+          EvalOrder = evalOrder;
+          _legs = new List<SectionList>(evalOrder.Select(x => new SectionList(new NextControl(_builder.StartControl))));
+        }
+
+        public override string ToString()
+        {
+          StringBuilder sb = new StringBuilder(string.Concat(EvalOrder.Select(x => $"{x},")));
+          sb.Remove(sb.Length - 1, 1);
+          sb.Append($":{GetSectionList()}");
+          return sb.ToString();
+        }
+
+        public void InitLeg(int iLeg)
+        {
+          _currentLeg = iLeg;
+        }
+
+        IEnumerable<Control> ISectionList.Controls => NextControls.Select(x => x.Control);
+        IEnumerable<NextControl> ISectionList.NextControls => NextControls;
+        private IEnumerable<NextControl> NextControls
+        {
+          get
+          {
+            foreach (SectionList leg in CurrentLegs)
+            {
+              foreach (NextControl control in leg.NextControls)
+              {
+                yield return control;
+              }
+            }
+          }
+        }
+
+        int ISectionList.ControlsCount => ControlsCount;
+        private int ControlsCount
+        {
+          get
+          {
+            int count = CurrentLegs.Sum(x => x.ControlsCount);
+            return count;
+          }
+        }
+
+        private IEnumerable<SectionList> CurrentLegs
+        {
+          get
+          {
+            for (int iLeg = 0; iLeg < _currentLeg; iLeg++)
+            { yield return _legs[iLeg]; }
+          }
+        }
+
+        private SectionList CurrentLeg => _legs[_currentLeg - 1];
+        NextControl ISectionList.Add(NextControl current)
+        {
+          return CurrentLeg.Add(current);
+        }
+
+        WhereInfo ISectionList.Add(WhereInfo where)
+        {
+          if (_currentLeg == 0)
+          { throw new NotImplementedException(); }
+          return CurrentLeg.Add(where);
+        }
+
+        public LegSections Clone()
+        {
+          LegSections clone = new LegSections(_builder, EvalOrder);
+          clone._legs.Clear();
+          foreach (SectionList leg in _legs)
+          { clone._legs.Add(leg.Clone()); }
+
+          clone._currentLeg = _currentLeg;
+
+          return clone;
+        }
+
+        int ISectionList.CountExisting(Control from, Control to)
+        {
+          int count = _legs.Sum(x => x.CountExisting(from, to));
+          return count;
+        }
+
+        Control ISectionList.GetControl(int index)
+        {
+          return GetNextControl(index)?.Control;
+        }
+
+        NextControl ISectionList.GetNextControl(int index)
+        { return GetNextControl(index); }
+        private NextControl GetNextControl(int index)
+        {
+          int i = index;
+          if (i < 0)
+          { i = ControlsCount + i; }
+
+          int iLeg = 0;
+          while (_legs[iLeg].ControlsCount <= i)
+          {
+            i -= _legs[iLeg].ControlsCount;
+            iLeg++;
+          }
+          return _legs[iLeg].GetNextControl(i);
+        }
+
+        public SectionList GetSectionList()
+        {
+          SectionList sections = null;
+          foreach (SectionList leg in _legs)
+          {
+            if (sections == null)
+            { sections = leg.Clone(); }
+            else
+            {
+              foreach (NextControl control in leg.NextControls)
+              { sections.Add(control); }
+            }
+          }
+          return sections;
+        }
+
+        int ISectionList.GetSplitIndex(Control split)
+        {
+          int iSplit = 0;
+          for (int iLeg = 0; iLeg < _currentLeg; iLeg++)
+          {
+            string pre = null;
+            SectionList leg = _legs[iLeg];
+            if (leg.ControlsCount < 2 && iLeg < _currentLeg - 1)
+            {
+              leg = _builder._firstLegs._legs[iLeg];
+            }
+
+            foreach (Control control in leg.Controls)
+            {
+              if (pre == split.Name)
+              { iSplit++; }
+              pre = control.Name;
+            }
+          }
+
+          return iSplit;
+        }
+
+
+        WhereInfo.State ISectionList.GetState()
+        {
+          WhereInfo.State allState = WhereInfo.State.Fulfilled;
+          foreach (SectionList leg in _legs)
+          {
+            WhereInfo.State state = leg.GetState();
+            if (state == WhereInfo.State.Failed)
+            { return state; }
+
+            if (state == WhereInfo.State.Unknown)
+            { allState = state; }
+          }
+          return allState;
+        }
+      }
       private class SplitInfo : IComparable<SplitInfo>
       {
         public SectionList Sections;
@@ -484,82 +656,16 @@ namespace OCourse.Ext
       }
       private class Index
       {
-        Dictionary<NextControl, List<SplitInfo>> _dict =
-          new Dictionary<NextControl, List<SplitInfo>>(new NextControl.EqualCodeComparer());
-
-        private Dictionary<Control, List<List<SplitInfo>>> _controlDict =
-          new Dictionary<Control, List<List<SplitInfo>>>();
-
-        private static Dictionary<Control, List<SplitInfo>> GetControlDict(SectionList sections)
-        {
-          int i = 0;
-          Control pre = sections.GetControl(0);
-          Dictionary<Control, List<SplitInfo>> controlDict = new Dictionary<Control, List<SplitInfo>>();
-          Dictionary<string, int> splitCount = new Dictionary<string, int>();
-          foreach (NextControl v in sections.NextControls)
-          {
-            if (v.Code != 0)
-            {
-              if (!splitCount.ContainsKey(pre.Name))
-              { splitCount.Add(pre.Name, 0); }
-              else
-              { splitCount[pre.Name]++; }
-
-              SplitInfo split = new SplitInfo(sections, i, splitCount[pre.Name]);
-
-              if (!controlDict.TryGetValue(pre, out List<SplitInfo> splits))
-              {
-                splits = new List<SplitInfo>();
-                controlDict.Add(pre, splits);
-              }
-              splits.Add(split);
-            }
-            pre = v.Control;
-            i++;
-          }
-
-          return controlDict;
-        }
-
-        public void Add(SectionList sections)
-        {
-          Dictionary<Control, List<SplitInfo>> controlDict = GetControlDict(sections);
-          foreach (List<SplitInfo> splits in controlDict.Values)
-          {
-            foreach (SplitInfo split in splits)
-            {
-              NextControl v = split.GetNextControl();
-              if (!_dict.TryGetValue(v, out List<SplitInfo> existing))
-              {
-                existing = new List<SplitInfo>();
-                _dict.Add(v, existing);
-              }
-              existing.Add(split);
-            }
-          }
-
-          foreach (KeyValuePair<Control, List<SplitInfo>> pair in controlDict)
-          {
-            Control c = pair.Key;
-            if (!_controlDict.TryGetValue(c, out List<List<SplitInfo>> controlSplits))
-            {
-              controlSplits = new List<List<SplitInfo>>();
-              _controlDict.Add(c, controlSplits);
-            }
-            controlSplits.Add(pair.Value);
-          }
-        }
-
         private class CommonInfo
         {
-          public readonly SectionList Variation;
+          public readonly ISectionList Variation;
           public readonly NextWhere Next;
           public readonly int SplitLength;
           public readonly int SplitCount;
           public readonly int VarLength;
           public readonly int VarCount;
 
-          public CommonInfo(SectionList variation, NextWhere next,
+          public CommonInfo(ISectionList variation, NextWhere next,
             int splitLength, int splitCount, int varLength, int varCount)
           {
             Variation = variation;
@@ -579,13 +685,13 @@ namespace OCourse.Ext
         }
         private class CommonCpr : IComparer<CommonInfo>
         {
-          private readonly SectionList _pre;
+          private readonly ISectionList _pre;
           private readonly Control _split;
           private readonly Dictionary<Control, List<List<SplitInfo>>> _controlDict;
 
           private Dictionary<char, int> _varCount;
 
-          public CommonCpr(SectionList pre, Control split, Dictionary<Control, List<List<SplitInfo>>> controlDict)
+          public CommonCpr(ISectionList pre, Control split, Dictionary<Control, List<List<SplitInfo>>> controlDict)
           {
             _pre = pre;
             _split = split;
@@ -662,87 +768,101 @@ namespace OCourse.Ext
             return d;
           }
         }
-        public void Sort(SectionList variation, Control split, int iSplit, List<NextWhere> nexts)
+
+        private readonly PermutationBuilder _builder;
+        Dictionary<NextControl, List<SplitInfo>> _dict =
+          new Dictionary<NextControl, List<SplitInfo>>(new NextControl.EqualCodeComparer());
+
+        private Dictionary<Control, List<List<SplitInfo>>> _controlDict =
+          new Dictionary<Control, List<List<SplitInfo>>>();
+
+        public Index(PermutationBuilder builder)
+        {
+          _builder = builder;
+        }
+
+        private static Dictionary<Control, List<SplitInfo>> GetControlDict(SectionList sections)
+        {
+          int i = 0;
+          Control pre = sections.GetControl(0);
+          Dictionary<Control, List<SplitInfo>> controlDict = new Dictionary<Control, List<SplitInfo>>();
+          Dictionary<string, int> splitCount = new Dictionary<string, int>();
+          foreach (NextControl v in sections.NextControls)
+          {
+            if (v.Code != 0)
+            {
+              if (!splitCount.ContainsKey(pre.Name))
+              { splitCount.Add(pre.Name, 0); }
+              else
+              { splitCount[pre.Name]++; }
+
+              SplitInfo split = new SplitInfo(sections, i, splitCount[pre.Name]);
+
+              if (!controlDict.TryGetValue(pre, out List<SplitInfo> splits))
+              {
+                splits = new List<SplitInfo>();
+                controlDict.Add(pre, splits);
+              }
+              splits.Add(split);
+            }
+            pre = v.Control;
+            i++;
+          }
+
+          return controlDict;
+        }
+
+        public void Add(SectionList sections)
+        {
+          Dictionary<Control, List<SplitInfo>> controlDict = GetControlDict(sections);
+          foreach (List<SplitInfo> splits in controlDict.Values)
+          {
+            foreach (SplitInfo split in splits)
+            {
+              NextControl v = split.GetNextControl();
+              if (!_dict.TryGetValue(v, out List<SplitInfo> existing))
+              {
+                existing = new List<SplitInfo>();
+                _dict.Add(v, existing);
+              }
+              existing.Add(split);
+            }
+          }
+
+          foreach (KeyValuePair<Control, List<SplitInfo>> pair in controlDict)
+          {
+            Control c = pair.Key;
+            if (!_controlDict.TryGetValue(c, out List<List<SplitInfo>> controlSplits))
+            {
+              controlSplits = new List<List<SplitInfo>>();
+              _controlDict.Add(c, controlSplits);
+            }
+            controlSplits.Add(pair.Value);
+          }
+        }
+
+        public void Sort(ISectionList variation, Control split, int iSplit, List<NextWhere> nexts)
         {
           if (_dict.Count == 0)
           { return; }
           if (nexts.Count < 2)
           { return; }
 
-          int iPermut = 0;
-          foreach (var val in _controlDict.Values)
-          {
-            iPermut = val.Count;
-            break;
-          }
-          int splitSize = _controlDict[split][0].Count;
-          List<int> order = GetEvalOrder(splitSize, iPermut);
-          order.Reverse();
-
-          Dictionary<NextWhere, NextWhere> evalNexts = new Dictionary<NextWhere, NextWhere>();
-          foreach (NextWhere next in nexts)
-          { evalNexts.Add(next, next); }
-          List<NextWhere> sorted = new List<NextWhere>();
-          foreach (int iEval in order)
-          {
-            if (evalNexts.Count <= 1)
-            { break; }
-            if (iEval <= iSplit)
-            { continue; }
-            if (iEval - 1 == iSplit)
-            { break; }
-
-            List<CommonInfo> evalCommons = GetCommons(variation, iEval - 1, evalNexts.Keys);
-            evalCommons.Sort(new CommonCpr(variation, split, _controlDict));
-
-            sorted.Add(evalCommons[0].Next);
-            evalNexts.Remove(evalCommons[0].Next);
-          }
-
-          if (evalNexts.Count > 1)
-          {
-            List<CommonInfo> commons = GetCommons(variation, iSplit, evalNexts.Keys);
-            commons.Sort(new CommonCpr(variation, split, _controlDict));
-            commons.Reverse();
-
-            sorted.AddRange(commons.Select(x => x.Next));
-          }
-          else
-          { sorted.Add(evalNexts.Keys.First()); }
-          sorted.Reverse();
-
+          List<CommonInfo> commons = GetCommons(variation, split, iSplit, nexts);
+          commons.Sort(new CommonCpr(variation, split, _controlDict));
           nexts.Clear();
-          nexts.AddRange(sorted);
+          nexts.AddRange(commons.Select(x => x.Next));
         }
 
-        private static List<int> GetEvalOrder(int splitSize, int iPermut)
-        {
-          int x = iPermut / splitSize;
-          int y = iPermut % splitSize;
-
-          if (splitSize > 1)
-          {
-            List<int> inner = GetEvalOrder(splitSize - 1, x);
-            for (int i = 0; i < inner.Count; i++)
-            {
-              inner[i] = (inner[i] + y) % splitSize + 1;
-            }
-            inner.Add(y + 1);
-            return inner;
-          }
-          else
-          {
-            return new List<int> { 1 };
-          }
-        }
-
-        private List<CommonInfo> GetCommons(SectionList variation, int iSplit,
+        private List<CommonInfo> GetCommons(ISectionList variation, Control from, int iSplit,
           IEnumerable<NextWhere> nexts)
         {
           List<CommonInfo> commons = new List<CommonInfo>();
           foreach (NextWhere next in nexts)
           {
+            NextControlList nextControls = _builder.NextControls[from];
             List<SplitInfo> existing = GetExisting(next.Next);
+
             int maxCommonVar = 0;
             int maxCountVar = 0;
             int maxCommonSplit = 0;
@@ -864,7 +984,6 @@ namespace OCourse.Ext
           return next;
         }
       }
-      private SectionCollection _course;
       private class Stat
       {
         private readonly Dictionary<char, List<NextWhere>> _fullVariations;
@@ -933,7 +1052,13 @@ namespace OCourse.Ext
         }
       }
 
+      private SectionCollection _course;
       private Dictionary<Control, Stat> _stats;
+      private Index _index;
+      private LegSections _firstLegs;
+
+      protected override Control StartControl { get { return (Control)_course.First.Value; } }
+      protected override Control EndControl { get { return (Control)_course.Last.Value; } }
 
       public int Estimate()
       {
@@ -941,19 +1066,15 @@ namespace OCourse.Ext
         { return 0; }
 
         SectionList permut = new SectionList(new NextControl(StartControl));
-        List<SectionList> validList = new List<SectionList>();
+        SectionList first = EnumVariations(permut, allLegs: true).FirstOrDefault();
 
-        GetVariations(permut, true, true, validList);
-
-        if (validList.Count == 0)
+        if (first == null)
         { return 0; }
 
-        SectionList def = validList[0];
-
         int nEstimate = 1;
-        SectionList estimate = new SectionList(new NextControl(def.GetControl(0)));
+        SectionList estimate = new SectionList(new NextControl(first.GetControl(0)));
         int iCtr = 0;
-        while (iCtr < def.ControlsCount)
+        while (iCtr < first.ControlsCount)
         {
           Control start = estimate.GetControl(iCtr);
           if (NextControls.TryGetValue(start, out NextControlList nexts))
@@ -965,19 +1086,16 @@ namespace OCourse.Ext
             int vars = 0;
             foreach (NextWhere next in sorted)
             {
-              validList = new List<SectionList>();
-
               SectionList clone = estimate.Clone();
-              GetVariations(clone, next.Next, next.Where, true, true, validList);
-              if (validList.Count > 0)
+              if (EnumVariations(clone, next.Next, next.Where, allLegs: true).FirstOrDefault() != null)
               { vars++; }
             }
 
             nEstimate *= vars;
           }
 
-          if (iCtr < def.ControlsCount - 1)
-          { estimate.Add(def.GetNextControl(iCtr + 1)); }
+          if (iCtr < first.ControlsCount - 1)
+          { estimate.Add(first.GetNextControl(iCtr + 1)); }
           iCtr++;
         }
 
@@ -1047,11 +1165,6 @@ namespace OCourse.Ext
         return fullSections;
       }
 
-      protected override Control StartControl { get { return (Control)_course.First.Value; } }
-      protected override Control EndControl { get { return (Control)_course.Last.Value; } }
-
-      private Index _index;
-
       protected override List<SimpleSection> GetSections()
       {
         List<SimpleSection> sections = _course.GetAllSections();
@@ -1060,7 +1173,7 @@ namespace OCourse.Ext
         return sections;
       }
 
-      protected override List<NextWhere> Sort(SectionList variation,
+      protected override List<NextWhere> Sort(ISectionList variation,
         Control split, IEnumerable<NextWhere> nextEnum)
       {
         List<NextWhere> nexts = base.Sort(variation, split, nextEnum);
@@ -1069,31 +1182,94 @@ namespace OCourse.Ext
         if (_index == null)
         { return nexts; }
 
-        string pre = null;
-        int iSplit = 0;
-        foreach (Control control in variation.Controls)
-        {
-          if (pre == split.Name)
-          { iSplit++; }
-          pre = control.Name;
-        }
+        int iSplit = variation.GetSplitIndex(split);
         _index.Sort(variation, split, iSplit, nexts);
         return nexts;
       }
 
       public List<SectionList> BuildPermutations(int nPermutations)
       {
-        _index = new Index();
+        _index = new Index(this);
+        _firstLegs = null;
+        int nLegs = _course.LegCount();
+        bool orderedLegs = true;
         List<SectionList> variations = new List<SectionList>(nPermutations);
-        for (int i = 0; i < nPermutations; i++)
+        for (int iPermutation = 0; iPermutation < nPermutations; iPermutation++)
         {
-          SectionList variation = GetVariation();
+          SectionList variation = orderedLegs
+            ? GetVariation(iPermutation, nLegs)
+            : GetVariation();
+
           variations.Add(variation);
+          OnVariationAdded(variation);
           _index.Add(variation);
         }
 
         return variations;
       }
+
+      private SectionList GetVariation(int iPermutation, int nLegs)
+      {
+        List<int> evalOrder = GetEvalOrder(nLegs, iPermutation);
+        evalOrder.Reverse();
+        LegSections permut = new LegSections(this, evalOrder);
+
+        IEnumerable<LegSections> legVariations = new List<LegSections> { permut };
+        foreach (int iLeg in evalOrder)
+        {
+          legVariations = EnumLegVariations(legVariations, iLeg);
+        }
+
+        foreach (var candidate in legVariations)
+        {
+          SectionList variation = candidate.GetSectionList();
+
+          string countExpr = GetCountExpression(_course);
+          WhereInfo countWhere = new WhereInfo(this, countExpr, permut);
+          variation.Add(countWhere);
+
+          if (variation.GetState() == WhereInfo.State.Fulfilled)
+          {
+            _firstLegs = _firstLegs ?? candidate;
+            return variation;
+          }
+        }
+        return null;
+      }
+
+      private IEnumerable<LegSections> EnumLegVariations(IEnumerable<LegSections> preLeg, int iLeg)
+      {
+        foreach (LegSections valid in preLeg)
+        {
+          valid.InitLeg(iLeg);
+          foreach (LegSections nextLeg in EnumVariations(valid, allLegs: false))
+          {
+            yield return nextLeg;
+          }
+        }
+      }
+
+      private static List<int> GetEvalOrder(int splitSize, int iPermut)
+      {
+        int x = iPermut / splitSize;
+        int y = iPermut % splitSize;
+
+        if (splitSize > 1)
+        {
+          List<int> inner = GetEvalOrder(splitSize - 1, x);
+          for (int i = 0; i < inner.Count; i++)
+          {
+            inner[i] = (inner[i] + y) % splitSize + 1;
+          }
+          inner.Add(y + 1);
+          return inner;
+        }
+        else
+        {
+          return new List<int> { 1 };
+        }
+      }
+
 
       private SectionList GetVariation()
       {
@@ -1101,15 +1277,9 @@ namespace OCourse.Ext
         string countExpr = GetCountExpression(_course);
         WhereInfo countWhere = new WhereInfo(this, countExpr, permut);
         permut.Add(countWhere);
-        List<SectionList> variations = new List<SectionList>();
 
-        GetVariations(permut, true, true, variations);
 
-        SectionList variation;
-        if (variations.Count == 1)
-        { variation = variations[0]; }
-        else
-        { variation = null; }
+        SectionList variation = EnumVariations(permut, allLegs: true).FirstOrDefault();
         return variation;
       }
 
@@ -1135,15 +1305,18 @@ namespace OCourse.Ext
 
       public List<SectionList> Analyze()
       {
-        List<SectionList> validList = new List<SectionList>();
-
         SectionList permut = new SectionList(new NextControl(StartControl));
         for (int i = 1; i < _leg; i++)
         {
           permut.Add(new NextControl(StartControl));
         }
 
-        GetVariations(permut, false, false, validList);
+        List<SectionList> validList = new List<SectionList>();
+        foreach (var valid in EnumVariations(permut, allLegs: false))
+        {
+          validList.Add(valid);
+          OnVariationAdded(valid);
+        }
 
         return validList;
       }
@@ -1208,7 +1381,11 @@ namespace OCourse.Ext
         permut.Add(countWhere);
         List<SectionList> validList = new List<SectionList>();
 
-        GetVariations(permut, true, false, validList);
+        foreach (var valid in EnumVariations(permut, allLegs: true))
+        {
+          validList.Add(valid);
+          OnVariationAdded(valid);
+        }
 
         return validList;
 
@@ -1317,8 +1494,9 @@ namespace OCourse.Ext
 
       protected enum InvalidType { WhereFailed, NoVariation }
 
-      protected Dictionary<char, NextWhere> GetPossibleNexts(SectionList pre,
+      protected Dictionary<char, NextWhere> GetPossibleNexts<T>(T pre,
         Control from, IList<NextControl> nexts, bool verifyFull)
+        where T : ISectionList, ICloneable<T>
       {
         EvaluateNexts(pre, from, nexts, verifyFull,
           out Dictionary<char, List<NextWhere>> variations, out Dictionary<char, InvalidType> invalids);
@@ -1337,10 +1515,11 @@ namespace OCourse.Ext
         return possibles;
       }
 
-      protected void EvaluateNexts(SectionList pre,
+      protected void EvaluateNexts<T>(T pre,
         Control from, IList<NextControl> nexts, bool verifyFull,
         out Dictionary<char, List<NextWhere>> variations,
         out Dictionary<char, InvalidType> invalids)
+        where T : ISectionList, ICloneable<T>
       {
         variations = new Dictionary<char, List<NextWhere>>();
         invalids = new Dictionary<char, InvalidType>();
@@ -1383,18 +1562,21 @@ namespace OCourse.Ext
         }
       }
 
-      private bool ExistsVariation(SectionList variation, NextControl next, WhereInfo where)
+      private bool ExistsVariation<T>(T variation, NextControl next, WhereInfo where)
+        where T: ISectionList, ICloneable<T>
       {
-        SectionList candidate = variation.Clone();
-        List<SectionList> sectionsList = new List<SectionList>();
-
-        GetVariations(candidate, next, where, true, true, sectionsList);
-        bool exists = sectionsList.Count > 0;
+        T candidate = variation.Clone();
+        bool exists = false;
+        foreach (ISectionList valid in EnumVariations(candidate, next, where, allLegs: true))
+        {
+          exists = true;
+          break;
+        }
         return exists;
       }
 
-      protected void GetVariations(SectionList variation,
-        bool allLegs, bool oneOnly, List<SectionList> valids)
+      protected IEnumerable<T> EnumVariations<T>(T variation, bool allLegs)
+        where T : ISectionList, ICloneable<T>
       {
         Control start = variation.GetControl(variation.ControlsCount - 1);
         Dictionary<char, NextWhere> variations = GetPossibleNexts(variation,
@@ -1403,22 +1585,20 @@ namespace OCourse.Ext
         List<NextWhere> sorted = Sort(variation, start, variations.Values);
         foreach (NextWhere next in sorted)
         {
-          if (variations.Count > 1)
+          T init = variations.Count > 1
+            ? variation.Clone()
+            : variation;
+
+          foreach (T valid in EnumVariations(init, next.Next, next.Where, allLegs))
           {
-            SectionList clone = variation.Clone();
-            GetVariations(clone, next.Next, next.Where, allLegs, oneOnly, valids);
-            if (oneOnly && valids.Count > 0)
-            { return; }
-          }
-          else
-          {
-            GetVariations(variation, next.Next, next.Where, allLegs, oneOnly, valids);
+            yield return valid;
           }
         }
       }
 
-      protected void GetVariations(SectionList variation, NextControl current, WhereInfo currentWhere,
-        bool allLegs, bool oneOnly, List<SectionList> valids)
+      protected IEnumerable<T> EnumVariations<T>(T variation,
+        NextControl current, WhereInfo currentWhere, bool allLegs)
+        where T : ISectionList, ICloneable<T>
       {
         do
         {
@@ -1428,7 +1608,7 @@ namespace OCourse.Ext
           variation.Add(currentWhere);
           WhereInfo.State state = variation.GetState();
           if (state == WhereInfo.State.Failed)
-          { return; }
+          { yield break; }
 
           if (NextControls.TryGetValue(current.Control, out NextControlList nextList) == false) // last Control
           {
@@ -1436,17 +1616,16 @@ namespace OCourse.Ext
             {
               if (state == WhereInfo.State.Fulfilled && current.Control == EndControl)
               {
-                valids.Add(variation);
-                OnVariationAdded(variation);
+                yield return variation;
               }
-              return;
+              yield break;
             }
             current = null;
             nextList = NextControls[StartControl];
           }
 
           Control split = current != null ? current.Control : StartControl;
-          SectionList nextVariation = variation;
+          T nextVariation = variation;
           if (current == null)
           {
             nextVariation = nextVariation.Clone();
@@ -1462,7 +1641,7 @@ namespace OCourse.Ext
             {
               if (current == null)
               { break; }
-              return;
+              yield break;
             }
 
             finished = false;
@@ -1475,10 +1654,11 @@ namespace OCourse.Ext
 
             if (nexts.Count > 1)
             {
-              SectionList clone = variation.Clone();
-              GetVariations(clone, next.Next, next.Where, allLegs, oneOnly, valids);
-              if (oneOnly && valids.Count > 0)
-              { return; }
+              T clone = variation.Clone();
+              foreach (var validVariation in EnumVariations(clone, next.Next, next.Where, allLegs))
+              {
+                yield return validVariation;
+              }
             }
             else
             {
@@ -1488,33 +1668,32 @@ namespace OCourse.Ext
           }
           if (nexts.Count > 1)
           {
-            return;
+            yield break;
           }
           if (finished)
           {
             WhereInfo.State finishedState = variation.GetState();
             if (finishedState == WhereInfo.State.Fulfilled)
             {
-              valids.Add(variation);
-              OnVariationAdded(variation);
+              yield return variation;
             }
-            return;
+            yield break;
           }
         } while (true);
       }
 
-      private void OnVariationAdded(SectionList variation)
+      protected void OnVariationAdded(SectionList variation)
       {
         VariationAdded?.Invoke(this, variation);
       }
 
-      protected virtual List<NextWhere> Sort(SectionList variation, Control split, IEnumerable<NextWhere> nextEnum)
+      protected virtual List<NextWhere> Sort(ISectionList variation, Control split, IEnumerable<NextWhere> nextEnum)
       {
         List<NextWhere> nexts = new List<NextWhere>(nextEnum);
         return nexts;
       }
 
-      private WhereInfo GetWhere(SectionList sections, Control from, NextControl next)
+      private WhereInfo GetWhere(ISectionList sections, Control from, NextControl next)
       {
         int nSections = sections.ControlsCount - 1;
         if (nSections == 0)

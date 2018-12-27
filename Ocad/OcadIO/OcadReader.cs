@@ -197,6 +197,8 @@ namespace Ocad
       { reader = new Ocad11Reader(); }
       else if (version == 12)
       { reader = new Ocad12Reader(); }
+      else if (version == 2018)
+      { reader = new Ocad12Reader(); }
       else
       { throw new Exception("Invalid OCAD File"); }
 

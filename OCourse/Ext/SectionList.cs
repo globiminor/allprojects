@@ -5,7 +5,26 @@ using System.Text;
 
 namespace OCourse.Ext
 {
-  public class SectionList
+  internal interface ICloneable<T>
+  {
+    T Clone();
+  }
+  internal interface ISectionList
+  {
+    IEnumerable<Control> Controls { get; }
+    IEnumerable<NextControl> NextControls { get; }
+    int ControlsCount { get; }
+    Control GetControl(int index);
+    NextControl GetNextControl(int index);
+    int CountExisting(Control from, Control to);
+
+    NextControl Add(NextControl current);
+    VariationBuilder.WhereInfo.State GetState();
+    VariationBuilder.WhereInfo Add(VariationBuilder.WhereInfo where);
+    int GetSplitIndex(Control split);
+  }
+
+  public class SectionList : ISectionList, ICloneable<SectionList>
   {
     public class NameComparer : IComparer<SectionList>, IComparer<object>
     {
@@ -79,6 +98,7 @@ namespace OCourse.Ext
       }
     }
 
+    IEnumerable<NextControl> ISectionList.NextControls => NextControls;
     public IReadOnlyList<NextControl> NextControls => _nextControls;
 
     public string PreName
@@ -90,6 +110,19 @@ namespace OCourse.Ext
     public IList<Course> Parts
     {
       get { throw new NotImplementedException(); }
+    }
+
+    int ISectionList.GetSplitIndex(Control split)
+    {
+      string pre = null;
+      int iSplit = 0;
+      foreach (Control control in Controls)
+      {
+        if (pre == split.Name)
+        { iSplit++; }
+        pre = control.Name;
+      }
+      return iSplit;
     }
 
     public string GetName()
@@ -158,6 +191,8 @@ namespace OCourse.Ext
       return clone;
     }
 
+    VariationBuilder.WhereInfo.State ISectionList.GetState()
+    { return GetState(); }
     internal VariationBuilder.WhereInfo.State GetState()
     {
       if (_wheres.Count == 0)
@@ -209,17 +244,16 @@ namespace OCourse.Ext
 
     public NextControl GetNextControl(int i)
     {
+      if (i < 0)
+      {
+        i = _nextControls.Count - (-i % _nextControls.Count) - 1;
+      }
       return _nextControls[i];
     }
 
     public Control GetControl(int i)
     {
-      if (i < 0)
-      {
-        i = _nextControls.Count - (-i % _nextControls.Count);
-      }
-
-      return _nextControls[i].Control;
+      return GetNextControl(i).Control;
     }
     public NextControl Add(NextControl nextControl)
     {
@@ -227,6 +261,8 @@ namespace OCourse.Ext
       return nextControl;
     }
 
+    VariationBuilder.WhereInfo ISectionList.Add(VariationBuilder.WhereInfo where)
+    { return Add(where); }
     internal VariationBuilder.WhereInfo Add(VariationBuilder.WhereInfo where)
     {
       if (where == null)

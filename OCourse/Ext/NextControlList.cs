@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text;
 using Ocad;
 
 namespace OCourse.Ext
@@ -14,6 +15,22 @@ namespace OCourse.Ext
     public List<NextControl> List
     {
       get { return _list; }
+    }
+
+    public override string ToString()
+    {
+      StringBuilder sb = new StringBuilder();
+      for (int i = 0; i < _list.Count && i < 7; i++)
+      {
+        sb.Append($"{_list[i]}, ");
+      }
+      if (_list.Count > 8)
+      { sb.Append("..., "); }
+      if (_list.Count > 7)
+      { sb.Append($"{_list[_list.Count - 1]}"); }
+      else
+      { sb.Remove(sb.Length - 2, 2); }
+      return sb.ToString();
     }
 
     public void AssureCodes()

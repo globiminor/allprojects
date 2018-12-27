@@ -67,6 +67,8 @@ namespace OcadScratch.Commands
       // see https://www.ngdc.noaa.gov/geomag-web/calculators/declinationHelp
 
       string address = "https://www.ngdc.noaa.gov/geomag-web/calculators/calculateDeclination";
+      //string address = "https://www.ngdc.noaa.gov/geomag-web/calculators/calculateDeclination?browserRequest=true&magneticComponent=d&lat1=48&lat1Hemisphere=N&lon1=7&lon1Hemisphere=E&model=WMM&startYear=2018&startMonth=12&startDay=14&resultFormat=xml";
+      //address = "https://www.ngdc.noaa.gov/geomag-web/calculators/calculateDeclination?lat1=40&lon1=-105.25&resultFormat=xml ";
       NameValueCollection values = new NameValueCollection();
       values.Add("lat1", string.Format(CultureInfo.InvariantCulture, "{0:N4}", Lat));
       values.Add("lon1", string.Format(CultureInfo.InvariantCulture, "{0:N4}", Lon));
@@ -83,10 +85,19 @@ namespace OcadScratch.Commands
 
       values.Add("resultFormat", "xml");
 
+      System.Text.StringBuilder request = new System.Text.StringBuilder();
+      foreach (var pair in values)
+      {
+        request.Append($"{pair}={Uri.EscapeDataString(values[pair.ToString()])}&");
+      }
+
+      string escapedRequest = request.ToString().Trim('&');
+
       byte[] result;
       using (WebClient w = new WebClient())
       {
-        result = w.UploadValues(address, values);
+        result = w.DownloadData($"{address}?{escapedRequest}");
+        //result = w.UploadValues(address, values);
       }
 
       string xml = System.Text.Encoding.Default.GetString(result);
