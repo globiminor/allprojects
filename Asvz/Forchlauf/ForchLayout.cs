@@ -262,7 +262,7 @@ namespace Asvz.Forchlauf
       ForchCategorie categorie, IPoint above)
     {
       IPoint min = above;
-      IPoint prj = min.Project(Setup.Prj2Map);
+      Point prj = Point.CastOrCreate(min.Project(Setup.Prj2Map));
       prj.Y -= symText.LineSpace / 100.0 * symText.Size * 2.54;
 
       min = prj.Project(Setup.Map2Prj);

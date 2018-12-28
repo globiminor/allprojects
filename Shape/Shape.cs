@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using System.Linq;
 using Basics.Geom;
 using DBase;
 // ReSharper disable RedundantCast
@@ -258,11 +259,11 @@ namespace Shape
       { throw new InvalidOperationException("Unhandled Dimension " + _dimension); }
     }
 
-    private Polyline[] ReadNextLine()
+    private List<Point>[] ReadNextLine()
     {
       ReadNextLineNPartsPnts(out int nParts, out int nPoints);
       int[] nPartPoints = new int[nParts];
-      Polyline[] l = new Polyline[nParts];
+      List<Point>[] l = new List<Point>[nParts];
       for (int i = 0; i < nParts; i++)
       { nPartPoints[i] = _geomReader.ReadInt32(); } // read start index
 
@@ -275,24 +276,17 @@ namespace Shape
       for (int i = 0; i < nParts; i++)
       {
         int n = nPartPoints[i];
-        IList<IPoint> pntList;
-        if (_dimension == 2)
-        { pntList = new Point2D[n]; }
-        else if (_dimension == 3)
-        { pntList = new Point3D[n]; }
-        else
-        { throw new InvalidOperationException("Unhandled Dimension " + _dimension); }
-
+        List<Point> pntList = new List<Point>();
 
         for (int j = 0; j < n; j++)
         { pntList[j] = ReadCoord(); }
 
-        l[i] = Polyline.Create(pntList);
+        l[i] = pntList;
       }
       return l;
     }
 
-    private Polyline[] ReadLine(int rec)
+    private List<Point>[] ReadLine(int rec)
     {
       SeekStartPos(rec);
       return ReadNextLine();
@@ -305,21 +299,21 @@ namespace Shape
       return p;
     }
 
-    private Polyline[] ReadNextLineZ()
+    private List<Point>[] ReadNextLineZ()
     {
-      Polyline[] lines = ReadNextLine();
+      List<Point>[] lines = ReadNextLine();
 
       double zMin = _geomReader.ReadDouble(); // zmin
       double zMax = _geomReader.ReadDouble(); // zmax
       foreach (var l in lines)
       {
-        foreach (var p in l.Points)
+        foreach (var p in l)
         { p.Z = _geomReader.ReadDouble(); }
       }
       return lines;
     }
 
-    private Polyline[] ReadLineZ(int rec)
+    private List<Point>[] ReadLineZ(int rec)
     {
       SeekStartPos(rec);
       return ReadNextLineZ();
@@ -337,15 +331,15 @@ namespace Shape
       if (_shapeType == ShapeType.Point)
       { geom = ReadNextPoint(); }
       else if (_shapeType == ShapeType.Line)
-      { geom = ReadNextLine()[0]; }
+      { geom = Polyline.Create(ReadNextLine()[0]); }
       else if (_shapeType == ShapeType.Area)
-      { geom = new Area(ReadNextLine()); }
+      { geom = new Area(ReadNextLine().Select(x => Polyline.Create(x))); }
       else if (_shapeType == ShapeType.PointZ)
       { geom = ReadNextPointZ(); }
       else if (_shapeType == ShapeType.LineZ)
-      { geom = ReadNextLineZ()[0]; }
+      { geom = Polyline.Create(ReadNextLineZ()[0]); }
       else if (_shapeType == ShapeType.AreaZ)
-      { geom = new Area(ReadNextLineZ()); }
+      { geom = new Area(ReadNextLineZ().Select(x => Polyline.Create(x))); }
       else
       { throw new InvalidOperationException("unhandled shape type" + _shapeType); }
       return geom;

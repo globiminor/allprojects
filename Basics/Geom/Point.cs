@@ -124,6 +124,7 @@ namespace Basics.Geom
       get { return this; }
     }
 
+    [Obsolete("refactor")]
     private Point Project__(IProjection projection)
     {
       IPoint p = projection.Project(this);

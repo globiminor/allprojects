@@ -1,12 +1,13 @@
-﻿using System;
-using System.ComponentModel;
-using System.Windows.Forms;
+﻿using Basics.Geom;
 using Common.Gui;
 using Grid;
-using Basics.Geom;
-using BackgroundWorker = Common.Gui.BackgroundWorker;
-using System.Threading;
 using Grid.Lcp;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Threading;
+using System.Windows.Forms;
+using BackgroundWorker = Common.Gui.BackgroundWorker;
 
 namespace LeastCostPathUI
 {
@@ -153,7 +154,7 @@ namespace LeastCostPathUI
 
       private DoubleGrid _sum;
       private DoubleGrid _route;
-      private RouteTable _routes;
+      private Basics.Views.BindingListView<RouteRecord> _routes;
 
       public CalcCostWorker(CntOutput parent, LeastCostGrid<TvmCell> costPath,
         IDoubleGrid grHeight, Point2D from, Point2D to, Steps step, bool autoExtent,
@@ -241,8 +242,12 @@ namespace LeastCostPathUI
           _parent.CostPath_Status(this, new StatusEventArgs(null, null, 0, 0, 0, 0));
 
           //CreateRouteImage(sum, cntRoute.FullName(txtRoute.Text));
-          _routes = LeastCostGrid.CalcBestRoutes(_sum, _parent._fromResult,
+          List<RouteRecord> routes = LeastCostGrid.CalcBestRoutes(_sum, _parent._fromResult,
             _parent._toResult, _lengthFact, _offset, _parent.CostPath_Status);
+
+          _routes = new Basics.Views.BindingListView<RouteRecord>();
+          foreach (RouteRecord route in routes)
+          { _routes.Add(route); }
         }
         _parent.SetStepLabel(this, "EXPORT:");
 

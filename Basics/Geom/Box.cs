@@ -44,18 +44,12 @@ namespace Basics.Geom
     { return this == other; }
 
     // properties
-    public IPoint Min
-    {
-      get { return _min; }
-    }
-    IPoint IBox.Min
-    { get { return Min; } }
-    public IPoint Max
-    {
-      get { return _max; }
-    }
-    IPoint IBox.Max
-    { get { return Max; } }
+    IPoint IBox.Min => Min;
+    public Point Min => _min;
+
+    IPoint IBox.Max => Max;
+    public Point Max => _max;
+
     public double GetMaxExtent()
     {
       double dMax = 0;

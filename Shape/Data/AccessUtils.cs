@@ -34,11 +34,11 @@ namespace Shape.Data
           return base.Extent;
         }
       }
-      protected override PolylineCollection _lines
+      protected override PolylineCollection Lines
       {
         get
         {
-          PolylineCollection border = base._lines;
+          PolylineCollection border = base.Lines;
           if (_bytes == null)
           { return border; }
 

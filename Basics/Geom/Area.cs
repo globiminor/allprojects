@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Basics.Geom
 {
@@ -7,35 +8,29 @@ namespace Basics.Geom
   /// </summary>
   public class Area : Geometry, IGeometry
   {
-    PolylineCollection _lines_;
+    private readonly PolylineCollection _lines_;
     BoxTree<Polyline> _spatialIndex;
 
     public Area()
-    {
-      _lines_ = new PolylineCollection();
-    }
+      : this(new List<Polyline>())
+    { }
     public Area(Polyline border)
+      : this(new[] { border })
+    { }
+    public Area(IEnumerable<Polyline> border)
     {
       _lines_ = new PolylineCollection();
-      _lines_.Add(border);
-    }
-    public Area(PolylineCollection border)
-    {
-      _lines_ = border;
-    }
-    public Area(Polyline[] border)
-    {
-      _lines_ = new PolylineCollection(border);
+      _lines_.AddRange(border);
     }
     #region IGeometry Members
 
-    protected virtual PolylineCollection _lines
+    protected virtual PolylineCollection Lines
     {
       get { return _lines_; }
     }
     public override int Dimension
     {
-      get { return _lines.Dimension; }
+      get { return _lines_.Dimension; }
     }
 
     public override int Topology
@@ -51,7 +46,7 @@ namespace Basics.Geom
         {
           _spatialIndex = new BoxTree<Polyline>(2);
           _spatialIndex.InitSize(new IGeometry[] { Extent });
-          foreach (var line in _lines)
+          foreach (var line in Lines)
           { _spatialIndex.Add(line.Extent, line); }
         }
         return _spatialIndex;
@@ -60,12 +55,11 @@ namespace Basics.Geom
 
     public override bool IsWithin(IPoint p)
     {
-      Point down = Point.Create(p);
-      Line lineDown = new Line(p, down);
+      Point pDown = Point.Create(p);
 
       int i = 0;
 
-      foreach (var border in _lines)
+      foreach (var border in Lines)
       {
         Relation rel = border.Extent.RelationTo(p.Extent);
         if (rel == Relation.Disjoint)
@@ -82,7 +76,7 @@ namespace Basics.Geom
           if (VerifyExtent(p, extent) == false)
           { continue; }
 
-          int iNew = Intersects(p, lineDown, curve, extent, ref xPre);
+          int iNew = Intersects(p, pDown, curve, extent, ref xPre);
           if (iNew < 0) // Touch
           { return true; }
           i += iNew;
@@ -94,7 +88,7 @@ namespace Basics.Geom
       { return false; }
     }
 
-    private int Intersects(IPoint isInside, Line lineDown, Curve curve, IBox extent,
+    private int Intersects(IPoint isInside, Point isInsideDown, Curve curve, IBox extent,
       ref double? xPre)
     {
       if (curve is IMultipartGeometry multi && multi.HasSubparts)
@@ -108,7 +102,7 @@ namespace Basics.Geom
           if (VerifyExtent(isInside, partExtent) == false)
           { continue; }
 
-          int nNew = Intersects(isInside, lineDown, subCurve, partExtent, ref xPre);
+          int nNew = Intersects(isInside, isInsideDown, subCurve, partExtent, ref xPre);
           if (nNew < 0) // Touch
           { return nNew; }
           else
@@ -141,8 +135,8 @@ namespace Basics.Geom
         if (isInside.Y > extent.Max.Y)
         { return 1; }
 
-        lineDown.End.Y = extent.Min.Y;
-        GeometryCollection intersects = curve.Intersection(lineDown);
+        isInsideDown.Y = extent.Min.Y;
+        GeometryCollection intersects = curve.Intersection(new Line(isInside, isInsideDown));
         if (intersects != null)
         {
           if (intersects.Count > 1)
@@ -288,7 +282,7 @@ namespace Basics.Geom
       return false;
     }
 
-    private void OnRightSide(IPoint p, IPoint max, IPoint onLine, IPoint offLine,
+    private void OnRightSide(IPoint p, Point max, IPoint onLine, IPoint offLine,
       bool startOnLine, ref IPoint near, ref bool onRightSide)
     {
       if (onLine.X < p.X || onLine.X > max.X)
@@ -310,26 +304,17 @@ namespace Basics.Geom
       }
     }
 
-    public override IBox Extent
-    {
-      get
-      { return _lines.Extent; }
-    }
+    public override IBox Extent => Lines.Extent;
     IBox IGeometry.Extent
     { get { return Extent; } }
 
-    public PolylineCollection Border
-    {
-      get { return _lines; }
-    }
-    protected override IGeometry BorderGeom
-    { get { return Border; } }
-    IGeometry IGeometry.Border
-    { get { return Border; } }
+    public PolylineCollection Border => Lines;
+    protected override IGeometry BorderGeom => Border;
+    IGeometry IGeometry.Border => Border;
 
     private Area Project__(IProjection projection)
     {
-      return new Area(_lines.Project(projection));
+      return new Area(Lines.Project(projection));
     }
     protected override Geometry Project_(IProjection projection)
     { return Project__(projection); }

@@ -29,14 +29,14 @@ namespace Basics.Geom
     }
     #endregion
 
-    private IPoint _center;
-    private double _radius;
-    private double _dirStart;
-    private double _angle;
+    private readonly IPoint _center;
+    private readonly double _radius;
+    private readonly double _dirStart;
+    private readonly double _angle;
 
     private IPoint _start;
     private IPoint _end;
-    private bool _isQuadrant; // indicates if it is a subpart
+    private readonly bool _isQuadrant; // indicates if it is a subpart
     private double _maxOffset = -1;
 
     private Arc(IPoint start, IPoint end,
@@ -51,13 +51,18 @@ namespace Basics.Geom
       _end = end;
     }
 
-    public Arc(IPoint center,
-      double radius, double startDirection, double angle)
+    public Arc(IPoint center, double radius, double startDirection, double angle)
+      : this(center, radius, startDirection, angle, isQuadrant: false)
+    { }
+    private Arc(IPoint center,
+      double radius, double startDirection, double angle, bool isQuadrant)
     {
       _center = center;
       _radius = radius;
       _dirStart = startDirection;
       _angle = angle;
+
+      _isQuadrant = isQuadrant;
     }
 
     public new Arc Clone()
@@ -256,13 +261,13 @@ namespace Basics.Geom
     {
       get
       {
-        Box pBox = new Box(Point.Create(Start), Point.Create(End), true);
+        Box box = new Box(Point.Create(Start), Point.Create(End), true);
         if (HasSubparts)
         {
           foreach (var subPart in Subparts())
-          { pBox.Include(subPart.Extent); }
+          { box.Include(subPart.Extent); }
         }
-        return pBox;
+        return box;
       }
     }
 
@@ -534,104 +539,33 @@ namespace Basics.Geom
     public IEnumerable<Arc> Subparts()
     {
       if (HasSubparts == false)
-      { return null; }
-      return new _SubpartsEnumerable(this);
+      { yield break; }
+
+      if (_angle > 0)
+      {
+        double next = 0;
+        double dirEnd = _dirStart + _angle;
+        for (double dDir = _dirStart; dDir < dirEnd; dDir = next)
+        {
+          next = (1 + Math.Floor(dDir / (0.5 * Math.PI))) * 0.5 * Math.PI;
+          next = Math.Min(next, dirEnd);
+          yield return new Arc(_center, _radius, dDir, next, isQuadrant: true);
+        }
+      }
+      else
+      {
+        double next = 0;
+        double dirEnd = _dirStart + _angle;
+        for (double dDir = _dirStart; dDir > dirEnd; dDir = next)
+        {
+          next = (Math.Ceiling(dDir / (0.5 * Math.PI)) - 1) * 0.5 * Math.PI;
+          next = Math.Max(next, dirEnd);
+          yield return new Arc(_center, _radius, dDir, next, isQuadrant: true);
+        }
+      }
     }
     IEnumerable<IGeometry> IMultipartGeometry.Subparts()
     { return Subparts(); }
-
-    private class _SubpartsEnumerator : IEnumerator<Arc>
-    {
-      private Arc _arc;
-      private Arc _quadrant;
-      private bool _isLast;
-
-      public _SubpartsEnumerator(Arc arc)
-      {
-        _arc = arc;
-
-        _quadrant = new Arc(_arc._center, _arc._radius, 0, 0)
-        { _isQuadrant = true };
-        Reset();
-      }
-      #region IEnumerator Members
-
-      public void Dispose()
-      { }
-
-      public void Reset()
-      {
-        _isLast = false;
-        _quadrant._end = Point.Create(_arc.Start);
-
-        _quadrant._dirStart = _arc._dirStart;
-        _quadrant._angle = 0;
-      }
-
-      public Arc Current
-      {
-        get
-        { return _quadrant; }
-      }
-      object System.Collections.IEnumerator.Current
-      { get { return Current; } }
-
-      public bool MoveNext()
-      {
-        if (_isLast)
-        { return false; }
-
-        double dDir = _quadrant._dirStart + _quadrant._angle;
-        _quadrant._start = Point.Create(_quadrant.End);
-        _quadrant._dirStart = dDir;
-
-        if (_arc._angle > 0)
-        {
-          dDir = (1 + Math.Floor(dDir / (0.5 * Math.PI))) * 0.5 * Math.PI;
-          if (dDir >= _arc._dirStart + _arc._angle)
-          {
-            dDir = _arc._dirStart + _arc._angle;
-            _isLast = true;
-          }
-        }
-        else
-        {
-          dDir = (Math.Ceiling(dDir / (0.5 * Math.PI)) - 1) * 0.5 * Math.PI;
-          if (dDir <= _arc._dirStart + _arc._angle)
-          {
-            dDir = _arc._dirStart + _arc._angle;
-            _isLast = true;
-          }
-        }
-
-        _quadrant._angle = dDir - _quadrant._dirStart;
-        _quadrant.End.X = _quadrant._center.X + _quadrant._radius * Math.Cos(dDir);
-        _quadrant.End.Y = _quadrant._center.Y + _quadrant._radius * Math.Sin(dDir);
-
-        return true;
-      }
-
-      #endregion
-    }
-
-    private class _SubpartsEnumerable : IEnumerable<Arc>
-    {
-      private readonly Arc _arc;
-      public _SubpartsEnumerable(Arc arc)
-      {
-        _arc = arc;
-      }
-      #region IEnumerable Members
-
-      public IEnumerator<Arc> GetEnumerator()
-      {
-        return new _SubpartsEnumerator(_arc);
-      }
-      System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-      { return GetEnumerator(); }
-
-      #endregion
-    }
 
     #endregion
   }

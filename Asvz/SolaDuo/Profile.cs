@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Ocad;
 using Basics.Geom;
 using Ocad.StringParams;
+using System.Linq;
 
 namespace Asvz
 {
@@ -169,15 +170,15 @@ namespace Asvz
       //  iStrecke + 1, dist / 1000.0, iSteigung5m, (dist + sumDist) / 1000.0,
       //  profile.Points.First.Value.Y, profile.Points.Last.Value.Y);
 
-      Polyline pLine = profile.Clone();
-      pLine.Add(new Point2D(pLine.Points.Last.Value.X, 300));
-      pLine.Add(new Point2D(pLine.Points.First.Value.X, 300));
-      pLine.Add(new Point2D(pLine.Points.First.Value.X, pLine.Points.First.Value.Y));
-      foreach (var p in pLine.Points)
+      List<Point> points = new List<Point>(profile.Points.Select(x => Point.Create(x)));
+      points.Add(new Point2D(profile.Points.Last.Value.X, 300));
+      points.Add(new Point2D(profile.Points.First.Value.X, 300));
+      points.Add(new Point2D(profile.Points.First.Value.X, profile.Points.First.Value.Y));
+      foreach (var p in points)
       {
         p.X = (p.X + sumDist) / _fHeight;
       }
-      Area area = new Area(pLine);
+      Area area = new Area(Polyline.Create(points));
 
       Element elem = new ElementV9(true);
       elem.Symbol = ProfileSymbol.Profile;

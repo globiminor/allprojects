@@ -79,7 +79,7 @@ namespace Basics.Geom.Projection
     /// transforms mercator coordinates [meter] into
     /// geographic coordinates [rad]
     /// </summary>
-    private IPoint Prj2Gg(IPoint p, double r0)
+    private Point Prj2Gg(IPoint p, double r0)
     {
       return new Point2D(
         p.X / r0,
@@ -91,7 +91,7 @@ namespace Basics.Geom.Projection
     public override IPoint Prj2Gg(IPoint prj)
     {
       prj = new Point2D(prj.X - _offX, prj.Y - _offY);
-      IPoint kugel = Prj2Gg(prj, _r0);
+      Point kugel = Prj2Gg(prj, _r0);
 
       Point3D p3 = new Point3D(
         Math.Cos(kugel.X) * Math.Cos(kugel.Y),
@@ -103,7 +103,7 @@ namespace Basics.Geom.Projection
       double lam = Math.Atan2(p3.Y, p3.X);
       double phi = Math.Asin(p3.Z);
 
-      IPoint ell = kugel; // kugel wird nicht mehr benoetigt
+      Point ell = kugel; // kugel wird nicht mehr benoetigt
       ell.X = _lam0 + lam / _alpha;
       ell.Y = Kugel2Ellipsoid(phi, _alpha, _k, _e);
 
@@ -127,7 +127,7 @@ namespace Basics.Geom.Projection
     ///     transforms geographic coordinates [rad] into
     ///     mercartor coordinates [m]
     /// </summary>
-    private IPoint Gg2Prj(IPoint gg, double r0)
+    private Point Gg2Prj(IPoint gg, double r0)
     {
       Point2D prj = new Point2D(
         r0 * gg.X,
@@ -150,7 +150,7 @@ namespace Basics.Geom.Projection
       p3 = Ellipsoid.Rotate(p3, 1, _phi1);
       kugel.X = Math.Atan2(p3.Y, p3.X);
       kugel.Y = Math.Asin(p3.Z);
-      IPoint prj = Gg2Prj(kugel, _r0);
+      Point prj = Gg2Prj(kugel, _r0);
 
       prj.X += _offX;
       prj.Y += _offY;

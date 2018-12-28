@@ -311,14 +311,14 @@ namespace Asvz.Sola
     }
     private void WriteScale(Ocad9Writer writer, IList<Element> infoElems, ColorPar topRed)
     {
-      IPoint pMin = null;
+      Point pMin = null;
       foreach (var infoElem in infoElems)
       {
         if (infoElem.IsGeometryProjected)
         { throw new NotImplementedException("Geometry is projected"); }
         IPoint p = infoElem.Geometry.Extent.Min;
         if (pMin == null || pMin.Y > p.Y)
-        { pMin = p; }
+        { pMin = Point.Create(p); }
       }
       if (pMin == null)
       { throw new NotImplementedException("Position not defined"); }
@@ -465,7 +465,7 @@ namespace Asvz.Sola
 
       if (updateStartZiel)
       {
-        IBox box = point.Extent.Clone();
+        Box box = new Box(point.Extent);
         box.Min.X -= 700;
         box.Min.Y -= 700;
         box.Max.X += 700;

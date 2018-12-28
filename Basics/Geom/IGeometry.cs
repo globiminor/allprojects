@@ -42,10 +42,10 @@ namespace Basics.Geom
   public interface IPoint : IGeometry
   {
     new IPoint Project(IProjection prj);
-    double X { get; set; }
-    double Y { get; set; }
-    double Z { get; set; }
-    double this[int index] { get; set; }
+    double X { get; }
+    double Y { get; }
+    double Z { get; }
+    double this[int index] { get; }
   }
 
   public enum ParamRelate { Unknown, Intersect, Near, Disjoint }

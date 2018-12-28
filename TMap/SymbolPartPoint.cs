@@ -108,7 +108,7 @@ namespace TMap
       double dSize = 0;
       if (_line != null)
       {
-        IBox box = _line.Extent;
+        Box box = new Box(_line.Extent);
         if (box.Max.X < 0)
         { box.Max.X = 0; }
         if (box.Max.Y < 0)

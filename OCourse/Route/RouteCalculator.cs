@@ -87,7 +87,7 @@ namespace OCourse.Route
         w.WriteLine("-- Start files scripts");
         foreach (var pair in starts)
         {
-          IBox extent = GetBox(pair.Value, new List<IPoint>());
+          Box extent = GetBox(pair.Value, new List<IPoint>());
           Round(extent, resolution);
           w.WriteLine("{0} -h {1} -v {2} -E {3} {4} {5} {6} -r {7} -s {8} {9} -sc {10}_c.grd -sd {10}_d.grd",
             lcpPath, heightGrid, veloGrid,
@@ -98,7 +98,7 @@ namespace OCourse.Route
         w.WriteLine("-- End files scripts");
         foreach (var pair in ends)
         {
-          IBox extent = GetBox(pair.Value, new List<IPoint>());
+          Box extent = GetBox(pair.Value, new List<IPoint>());
           Round(extent, resolution);
           w.WriteLine("{0} -h {1} -v {2} -E {3} {4} {5} {6} -r {7} -e {8} {9} -ec _{10}c.grd -ed _{10}d.grd",
             lcpPath, heightGrid, veloGrid,
@@ -110,7 +110,7 @@ namespace OCourse.Route
         w.WriteLine("-- route files script");
         foreach (var route in _calcList.Keys)
         {
-          IBox extent = GetBox(new CostFromTo[] { route }, new List<IPoint>());
+          Box extent = GetBox(new CostFromTo[] { route }, new List<IPoint>());
           Round(extent, resolution);
           w.WriteLine("{0} -E {1} {2} {3} {4} -r {5} -sc {6}_c.grd -sd {6}_d.grd -ec _{7}c.grd -ed _{7}d.grd -C {6}_{7}.tif -rg {6}_{7}r.tif",
             lcpPath,
@@ -121,7 +121,7 @@ namespace OCourse.Route
       }
     }
 
-    private void Round(IBox extent, double resolution)
+    private void Round(Box extent, double resolution)
     {
       extent.Min.X = Math.Floor(extent.Min.X / resolution) * resolution;
       extent.Min.Y = Math.Floor(extent.Min.Y / resolution) * resolution;
@@ -447,11 +447,11 @@ namespace OCourse.Route
     {
       Polyline line = lcg.GetPath(end);
 
-      line.Points.First.Value.X = start.X;
-      line.Points.First.Value.Y = start.Y;
+      line.Points.RemoveFirst();
+      line.AddFirst(Point.Create(start));
 
-      line.Points.Last.Value.X = end.X;
-      line.Points.Last.Value.Y = end.Y;
+      line.Points.RemoveLast();
+      line.Add(Point.Create(end));
 
       climb = -1;
       double h0 = 0;

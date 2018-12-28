@@ -239,12 +239,12 @@ namespace Basics.Geom
         }
       }
 
-      public IPoint Parameter(int index, IBox box)
+      public Point Parameter(int index, IBox box)
       {
         Point d = PntOp.Sub(box.Max, box.Min);
         if (index == 0)
         {
-          IPoint p = Point.Create(_xTopology);
+          Point p = Point.Create(_xTopology);
           for (int i = 0; i < _xTopology; i++)
           {
             p[i] = box.Min[i] + d[i] * VectorFactors[i];
@@ -254,7 +254,7 @@ namespace Basics.Geom
         else if (index == 1)
         {
           int n = VectorFactors.Count - _xTopology;
-          IPoint p = Point.Create(n);
+          Point p = Point.Create(n);
           for (int i = 0; i < n; i++)
           {
             p[i] = box.Min[i] - d[i] * VectorFactors[i + _xTopology];

@@ -4,6 +4,8 @@ using Grid;
 using Basics.Geom;
 using Shape;
 using Grid.Lcp;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace LeastCostPathUI
 {
@@ -395,7 +397,7 @@ namespace LeastCostPathUI
         if (grdSum == null) grdSum = GetSum(startLcg.CostGrid, endLcg.CostGrid, costPath.GetGridExtent());
         double maxLengthFactor = lcp.maxLonger + 1;
         double minDiffFactor = lcp.minOffset;
-        RouteTable routes = LeastCostGrid.CalcBestRoutes(grdSum, startLcg, endLcg, 
+        List<RouteRecord> routes = LeastCostGrid.CalcBestRoutes(grdSum, startLcg, endLcg, 
           maxLengthFactor, minDiffFactor, Route_Status);
         if (lcp.sRouteTif != null)
         {
@@ -438,27 +440,26 @@ namespace LeastCostPathUI
       Console.WriteLine();
     }
 
-    internal static void CreateRouteImage(RouteTable routes, GridExtent e, string routeName)
+    internal static void CreateRouteImage(IReadOnlyList<RouteRecord> routes, GridExtent e, string routeName)
     {
       DataDoubleGrid routeGrid = new DataDoubleGrid(e.Nx, e.Ny, typeof(double), e.X0, e.Y0, e.Dx);
       bool first = true;
-      foreach (var o in routes.Rows)
+      foreach (var row in routes)
       {
-        RouteTable.Row row = (RouteTable.Row)o;
-        Polyline route = row.Route.Clone();
+        LinkedList<Point> route = new LinkedList<Point>(row.Route.Select(x => Point.Create(x)));
         if (!first)
         {
           double limit = 25;
-          Polyline start = new Polyline();
-          Polyline end = new Polyline();
+          LinkedList<Point> start = new LinkedList<Point>();
+          LinkedList<Point> end = new LinkedList<Point>();
           {
-            IPoint p0 = route.Points.First.Value;
+            IPoint p0 = route.First.Value;
             double x0 = p0.X;
             double y0 = p0.Y;
             double dist;
             do
             {
-              IPoint pt = route.Points.First.Value;
+              Point pt = route.First.Value;
               double dx = pt.X - x0;
               double dy = pt.Y - y0;
               dist = dx * dx + dy * dy;
@@ -466,30 +467,30 @@ namespace LeastCostPathUI
               if (dist < limit)
               {
                 pt.Z = -1;
-                start.Add(pt);
-                route.Points.RemoveFirst();
+                start.AddLast(pt);
+                route.RemoveFirst();
               }
-            } while (route.Points.Count > 0 && dist < limit);
+            } while (route.Count > 0 && dist < limit);
           }
-          if (route.Points.Count > 0)
+          if (route.Count > 0)
           {
-            IPoint p1 = route.Points.Last.Value;
+            IPoint p1 = route.Last.Value;
             double x1 = p1.X;
             double y1 = p1.Y;
             double dist;
             do
             {
-              IPoint pt = route.Points.Last.Value;
+              Point pt = route.Last.Value;
               double dx = pt.X - x1;
               double dy = pt.Y - y1;
               dist = dx * dx + dy * dy;
               if (dist < limit)
               {
                 pt.Z = -1;
-                end.Add(pt);
-                route.Points.RemoveLast();
+                end.AddLast(pt);
+                route.RemoveLast();
               }
-            } while (route.Points.Count > 0 && dist < limit);
+            } while (route.Count > 0 && dist < limit);
           }
           LeastCostGrid.Assign(start, routeGrid, RouteValue);
           LeastCostGrid.Assign(end, routeGrid, RouteValue);
@@ -533,43 +534,39 @@ namespace LeastCostPathUI
       return value;
     }
 
-    internal static void CreateRouteShapes(RouteTable routes, IDoubleGrid sum, IDoubleGrid heightGrd, string fileName)
+    internal static void CreateRouteShapes(IReadOnlyList<RouteRecord> routes, IDoubleGrid sum, IDoubleGrid heightGrd, string fileName)
     {
-      RouteTable copy = new RouteTable();
-      foreach (var o in routes.Rows)
-      {
-        RouteTable.Row row = (RouteTable.Row)o;
-        Polyline grdRoute = row.Route;
-        Polyline prjRoute = new Polyline();
-        foreach (var grdPt in grdRoute.Points)
-        {
-          IPoint cell = sum.Extent.CellLL((int)grdPt.X, (int)grdPt.Y);
-          Vector prjPt = new Vector(4)
-          {
-            X = cell.X,
-            Y = cell.Y
-          };
-          if (heightGrd != null)
-          {
-            prjPt.Z = heightGrd.Value(cell.X, cell.Y, EGridInterpolation.bilinear);
-          }
-          prjPt[3] = grdPt.Z;
-          prjRoute.Add(prjPt);
-
-          prjRoute.Add(prjPt);
-        }
-        copy.AddRow(prjRoute, row.TotalCost, row.Delay);
-      }
       System.Data.DataTable schema = new System.Data.DataTable();
       schema.Columns.Add("Shape", typeof(Polyline));
-      schema.Columns.Add(new DBase.DBaseColumn(RouteTable.TotalCostColumn.Name, DBase.ColumnType.Double, 8, 2));
-      schema.Columns.Add(new DBase.DBaseColumn(RouteTable.DelayColumn.Name, DBase.ColumnType.Double, 8, 2));
+      schema.Columns.Add(new DBase.DBaseColumn(nameof(RouteRecord.TotalCost), DBase.ColumnType.Double, 8, 2));
+      schema.Columns.Add(new DBase.DBaseColumn(nameof(RouteRecord.Delay), DBase.ColumnType.Double, 8, 2));
+
       using (ShapeWriter writer = new ShapeWriter(fileName, ShapeType.LineZ, schema))
       {
-        foreach (var o in copy.Rows)
+
+        foreach (var row in routes)
         {
-          RouteTable.Row row = (RouteTable.Row)o;
-          writer.Write(row.Route, new object[] { row.TotalCost, row.Delay });
+          LinkedList<Point> grdRoute = row.Route;
+          Polyline prjRoute = new Polyline();
+          foreach (var grdPt in grdRoute)
+          {
+            IPoint cell = sum.Extent.CellLL((int)grdPt.X, (int)grdPt.Y);
+            Vector prjPt = new Vector(4)
+            {
+              X = cell.X,
+              Y = cell.Y
+            };
+            if (heightGrd != null)
+            {
+              prjPt.Z = heightGrd.Value(cell.X, cell.Y, EGridInterpolation.bilinear);
+            }
+            prjPt[3] = grdPt.Z;
+            prjRoute.Add(prjPt);
+
+            prjRoute.Add(prjPt);
+          }
+
+          writer.Write(prjRoute, new object[] { row.TotalCost, row.Delay });
         }
       }
     }

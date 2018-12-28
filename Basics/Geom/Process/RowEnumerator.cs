@@ -188,7 +188,7 @@ namespace Basics.Geom.Process
       }
     }
 
-    private IEnumerable<Tile> GetTiles(IBox extent, IPoint min, IPoint max, int dim)
+    private IEnumerable<Tile> GetTiles(IBox extent, Point min, Point max, int dim)
     {
       double d0 = extent.Min[dim];
       double d1 = extent.Max[dim];

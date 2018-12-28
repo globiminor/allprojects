@@ -113,7 +113,7 @@ namespace Basics.Geom.Network
       {
         return _maxCode;
       }
-      IBox box = _line.Extent.Clone();
+      Box box = new Box(_line.Extent);
       double xMax = box.Max.X;
       box.Max.X = xMax + 1;
       box.Min.X = xMax;

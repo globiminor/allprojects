@@ -672,10 +672,10 @@ namespace Basics.Geom
         IBox yBox = _y.GeometryBox();
         int yDim = yGeom.Topology;
 
-        IPoint xParam = intersect.Parameter(0, _x.ParamBox);
+        Point xParam = intersect.Parameter(0, _x.ParamBox);
         xParam = _x.ParamInfo.GeometryParamAt(xParam);
 
-        IPoint yParam = intersect.Parameter(1, _y.ParamBox);
+        Point yParam = intersect.Parameter(1, _y.ParamBox);
         yParam = _y.ParamInfo.GeometryParamAt(yParam);
 
         IPoint xAt = xGeom.PointAt(xParam);
@@ -779,7 +779,7 @@ namespace Basics.Geom
           return _paramRelation;
         }
       }
-      private static void SetDeltaParam(IPoint param, int index, double delta, IBox box)
+      private static void SetDeltaParam(Point param, int index, double delta, IBox box)
       {
         double newParam = param[index] + delta;
         if (newParam > box.Max[index])
@@ -789,7 +789,7 @@ namespace Basics.Geom
         param[index] = newParam;
       }
 
-      private static OrthogonalSystem XSystem(IParamGeometry xGeom, IPoint xParam, IBox xBox, IPoint xAt)
+      private static OrthogonalSystem XSystem(IParamGeometry xGeom, Point xParam, IBox xBox, IPoint xAt)
       {
         IList<IPoint> xApprox;
         OrthogonalSystem xSys = null;
@@ -816,7 +816,7 @@ namespace Basics.Geom
         return xSys;
       }
 
-      private static IList<IPoint> Sekante(IParamGeometry geom, IPoint param, IBox box, IPoint at)
+      private static IList<IPoint> Sekante(IParamGeometry geom, Point param, IBox box, IPoint at)
       {
         //IList<IPoint> sek = new List<IPoint>();
         //for (int i = 0; i < param.Dimension; i++)
@@ -1016,8 +1016,8 @@ namespace Basics.Geom
         }
         else
         {
-          IPoint pExtent = ClosestPoint(p, part.Extent);
-          if (PntOp.Dist2(pExtent, p) < d2)
+          IPoint extent = ClosestPoint(p, part.Extent);
+          if (PntOp.Dist2(extent, p) < d2)
           {
             IPoint pPart = ClosestPoint(p, part);
             double dPart2 = PntOp.Dist2(pPart, p);
@@ -1033,10 +1033,10 @@ namespace Basics.Geom
       return pMin;
     }
 
-    public static IPoint ClosestPoint(IPoint p, IBox b)
+    private static Point ClosestPoint(IPoint p, IBox b)
     {
       int dim = Math.Min(p.Dimension, b.Dimension);
-      Point c = Point.Create(dim);
+      Point closest = Point.Create(dim);
       for (int i = 0; i < dim; i++)
       {
         double t;
@@ -1046,9 +1046,9 @@ namespace Basics.Geom
         { t = p[i]; }
         else
         { t = b.Max[i]; }
-        p[i] = t;
+        closest[i] = t;
       }
-      return p;
+      return closest;
     }
 
     public static bool Intersects(IGeometry x, IGeometry y)
@@ -1526,7 +1526,7 @@ namespace Basics.Geom
         int n = paramRange.Dimension;
         IPoint paramMin = paramRange.Min;
         IPoint paramMax = paramRange.Max;
-        IPoint param = Point.Create(paramMin);
+        Point param = Point.Create(paramMin);
         List<IPoint> axes = new List<IPoint>(n);
         IPoint origin = _geom.PointAt(param);
         for (int i = 0; i < n; i++)
@@ -1580,8 +1580,8 @@ namespace Basics.Geom
               extent = GetExtent(_paramRange);
             }
             double normed = _geom.NormedMaxOffset;
-            IPoint min = extent.Min;
-            IPoint max = extent.Max;
+            Point min = extent.Min;
+            Point max = extent.Max;
             double maxOffset = normed * normed * PntOp.Dist2(min, max);
             for (int iDim = 0; iDim < dim; iDim++)
             {
@@ -1733,8 +1733,8 @@ namespace Basics.Geom
         foreach (var builder in builders)
         {
           Box extent = builder.GeomExtent;
-          IPoint sMin = extent.Min;
-          IPoint sMax = extent.Max;
+          Point sMin = extent.Min;
+          Point sMax = extent.Max;
           double off = PntOp.Dist2(sMin, sMax) * normed;
           for (int iDim = 0; iDim < sMin.Dimension; iDim++)
           {

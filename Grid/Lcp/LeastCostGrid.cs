@@ -1,6 +1,6 @@
+using Basics.Geom;
 using System;
 using System.Collections.Generic;
-using Basics.Geom;
 
 namespace Grid.Lcp
 {
@@ -55,18 +55,19 @@ namespace Grid.Lcp
     public IGrid<int> DirGrid { get; }
     public Steps Steps => _steps ?? (_steps = Steps.ReverseEngineer(DirGrid, CostGrid));
 
-    public Polyline GetPath(IPoint end)
+    public Polyline GetPath(IPoint end, Func<int, int, bool> stop = null)
     {
-      Polyline line = GetPath(end, null);
-      return line;
+      LinkedList<Point> gridPath = GetPathPoints(end, stop);
+      Polyline path = Polyline.Create(gridPath);
+      return path;
     }
 
-    internal Polyline GetPath(IPoint end, Func<int, int, bool> stop)
+    public LinkedList<Point> GetPathPoints(IPoint end, Func<int, int, bool> stop = null)
     {
       DirGrid.Extent.GetNearest(end, out int ix, out int iy);
-      Polyline line = GetGridPath(ix, iy, stop);
+      LinkedList<Point> gridPath = GetPathPoints(ix, iy, stop);
 
-      foreach (var point in line.Points)
+      foreach (var point in gridPath)
       {
         int x = (int)point.X;
         int y = (int)point.Y;
@@ -74,15 +75,15 @@ namespace Grid.Lcp
         point.X = p.X;
         point.Y = p.Y;
       }
-      return line;
+      return gridPath;
     }
 
-    private Polyline GetGridPath(int endX, int endY, Func<int, int, bool> stopMethod)
+    private LinkedList<Point> GetPathPoints(int endX, int endY, Func<int, int, bool> stopMethod)
     {
       int ix = endX;
       int iy = endY;
 
-      Polyline path = new Polyline();
+      LinkedList<Point> path = new LinkedList<Point>();
 
       int dir = DirGrid[ix, iy];
       double cost = 0;
@@ -354,7 +355,7 @@ namespace Grid.Lcp
   }
 
   public class LeastCostGridStack<T> : LeastCostGridBase
-    where T:class
+    where T : class
   {
     private readonly IList<IDirCostModel<T>> _dirCostModels;
     private readonly IList<Teleport<T>> _teleports;
@@ -365,7 +366,7 @@ namespace Grid.Lcp
     private readonly List<TelePoint> _starts;
     private readonly List<TelePoint> _ends;
 
-    public LeastCostGridStack(IList<IDirCostModel<T>> dirCostModels,  IList<Teleport<T>> teleports, double dx, 
+    public LeastCostGridStack(IList<IDirCostModel<T>> dirCostModels, IList<Teleport<T>> teleports, double dx,
       IBox userBox = null, Steps steps = null)
     {
       _dirCostModels = dirCostModels;
@@ -412,7 +413,7 @@ namespace Grid.Lcp
       ICostOptimizer calcAdapter = null;
       if (_ends.Count != 0)
       {
-//        calcAdapter = new StopHandler(); // TODO
+        //        calcAdapter = new StopHandler(); // TODO
       }
 
       foreach (var pt in _starts)
@@ -675,7 +676,7 @@ namespace Grid.Lcp
         return _stop(ix, iy);
       }
     }
-    public static RouteTable CalcBestRoutes(IGrid<double> sum,
+    public static List<RouteRecord> CalcBestRoutes(IGrid<double> sum,
       LeastCostData fromResult, LeastCostData toResult,
       double maxLengthFactor, double minDiffFactor, StatusEventHandler Status)
     {
@@ -708,7 +709,7 @@ namespace Grid.Lcp
         }
       }
       cands.Sort(RouteInfo.CompareCost);
-      RouteTable bestRoutes = new RouteTable();
+      List<RouteRecord> bestRoutes = new List<RouteRecord>();
       int iCand = 0;
       int nCands = cands.Count;
       foreach (var cand in cands)
@@ -722,20 +723,20 @@ namespace Grid.Lcp
 
         IPoint candPrj = routeGrid.Extent.CellLL(cand.X, cand.Y);
         PathStop fromStop = new PathStop(fromResult.DirGrid, routeGrid);
-        Polyline fromPath = fromResult.GetPath(candPrj, fromStop.GetStop);
-        MakeGridPath(routeGrid.Extent, fromPath);
+        LinkedList<Point> fromPathPoints = fromResult.GetPathPoints(candPrj, fromStop.GetStop);
+        MakeGridPath(routeGrid.Extent, fromPathPoints);
 
         PathStop toStop = new PathStop(toResult.DirGrid, routeGrid);
-        Polyline toPath = toResult.GetPath(candPrj, toStop.GetStop);
-        MakeGridPath(routeGrid.Extent, toPath);
+        LinkedList<Point> toPathPoints = toResult.GetPathPoints(candPrj, toStop.GetStop);
+        MakeGridPath(routeGrid.Extent, toPathPoints);
 
-        if (fromPath.Points.Count <= 1 && toPath.Points.Count <= 1)
+        if (fromPathPoints.Count <= 1 && toPathPoints.Count <= 1)
         { continue; }
 
-        IPoint fromLast = fromPath.Points.Last.Value;
-        IPoint toLast = toPath.Points.Last.Value;
-        IPoint fromFirst = fromPath.Points.First.Value;
-        IPoint toFirst = toPath.Points.First.Value;
+        IPoint fromLast = fromPathPoints.Last.Value;
+        IPoint toLast = toPathPoints.Last.Value;
+        IPoint fromFirst = fromPathPoints.First.Value;
+        IPoint toFirst = toPathPoints.First.Value;
 
         double newCost = fromLast.Z + toLast.Z - (fromFirst.Z + toFirst.Z);
 
@@ -749,30 +750,30 @@ namespace Grid.Lcp
         }
         if (f < maxLengthFactor && f > 0)
         {
-          if (IsBlocked(fromPath, closeGrid) && IsBlocked(toPath, closeGrid))
+          if (IsBlocked(fromPathPoints, closeGrid) && IsBlocked(toPathPoints, closeGrid))
           { continue; }
 
           // because of numerical differences between from- and to-grid :
           // synchronize with existing routes
           double dz = fromFirst.Z - routeGrid[(int)fromFirst.X, (int)fromFirst.Y];
-          foreach (var point in fromPath.Points)
+          foreach (var point in fromPathPoints)
           { point.Z = point.Z - dz; }
 
           double toLastZ = toLast.Z;
-          foreach (var point in toPath.Points)
+          foreach (var point in toPathPoints)
           { point.Z = fromLast.Z + toLastZ - point.Z; }
 
-          Polyline inv = toPath.Invert();
-          LinkedListNode<IPoint> next = inv.Points.First.Next;
+          LinkedList<Point> fullPath = fromPathPoints;
+          LinkedListNode<Point> next = toPathPoints.Last.Previous;
           while (next != null)
           {
-            fromPath.Add(next.Value);
-            next = next.Next;
+            fullPath.AddLast(next.Value);
+            next = next.Previous;
           }
 
-          Assign(fromPath, routeGrid, OrigValue);
+          Assign(fullPath, routeGrid, OrigValue);
           //Assign(to, routeGrid, delegate(double value) { return fromLast.Z + toLast.Z - value; });
-          bestRoutes.AddRow(fromPath, cand.Cost, newCost - optCost);
+          bestRoutes.Add(new RouteRecord(fullPath, cand.Cost, newCost - optCost));
 
           if (rClose < 0)
           {
@@ -780,7 +781,7 @@ namespace Grid.Lcp
             double dy = toFirst.Y - fromFirst.Y;
             rClose = minDiffFactor * Math.Sqrt(dx * dx + dy * dy);
           }
-          BlockGridLine(fromPath, rClose, closeGrid);
+          BlockGridLine(fullPath, rClose, closeGrid);
           // Block(to, rClose, closeGrid);
         }
       }
@@ -788,9 +789,9 @@ namespace Grid.Lcp
       return bestRoutes;
     }
 
-    private static void MakeGridPath(GridExtent extent, Polyline path)
+    private static void MakeGridPath(GridExtent extent, IEnumerable<Point> path)
     {
-      foreach (var p in path.Points)
+      foreach (var p in path)
       {
         extent.GetNearest(p, out int ix, out int iy);
         p.X = ix;
@@ -834,7 +835,8 @@ namespace Grid.Lcp
       }
     }
 
-    private static void BlockGridLine(Polyline line, double rClose, IntGrid closeGrid)
+    private static void BlockGridLine<T>(IEnumerable<T> line, double rClose, IntGrid closeGrid)
+      where T : IPoint
     {
       double r2 = rClose * rClose;
       int ir = (int)rClose;
@@ -844,7 +846,7 @@ namespace Grid.Lcp
       int x0 = -1;
       int y0 = -1;
       bool first = true;
-      foreach (var p in line.Points)
+      foreach (var p in line)
       {
         int x1 = (int)p.X;
         int y1 = (int)p.Y;
@@ -917,9 +919,10 @@ namespace Grid.Lcp
       }
     }
 
-    private static bool IsBlocked(Polyline line, IntGrid closeGrid)
+    private static bool IsBlocked<T>(IEnumerable<T> line, IntGrid closeGrid)
+      where T : IPoint
     {
-      foreach (var p in line.Points)
+      foreach (var p in line)
       {
         int x1 = (int)p.X;
         int y1 = (int)p.Y;
@@ -930,18 +933,19 @@ namespace Grid.Lcp
       return true;
     }
 
-    public static void Assign(Polyline line, DataDoubleGrid routeGrid, Func<double, double> valueFct)
+    public static void Assign<T>(LinkedList<T> line, DataDoubleGrid routeGrid, Func<double, double> valueFct)
+      where T : IPoint
     {
-      if (line.Points.Count == 0)
+      if (line.Count == 0)
       {
         return;
       }
-      IPoint first = line.Points.First.Value;
+      IPoint first = line.First.Value;
       int x1 = (int)first.X;
       int y1 = (int)first.Y;
       double z1 = valueFct(first.Z);
 
-      foreach (var p in line.Points)
+      foreach (var p in line)
       {
         int x0 = x1;
         int y0 = y1;
@@ -980,7 +984,6 @@ namespace Grid.Lcp
             PutValue(xf, y, routeGrid, x0, y0, x1, y1, z0, z1);
           }
         }
-
       }
     }
 

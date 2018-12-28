@@ -38,8 +38,7 @@ namespace Basics.Geom
       if (this == other)
       { return true; }
 
-      Line o = other as Line;
-      if (o == null)
+      if (!(other is Line o))
       { return false; }
       bool equal = Start.EqualGeometry(o.Start) && End.EqualGeometry(o.End);
       return equal;
@@ -48,7 +47,7 @@ namespace Basics.Geom
     private delegate double BoxFct(double x, double y);
     private class BoxPoint : Line, IPoint
     {
-      BoxFct _fct;
+      private readonly BoxFct _fct;
       public BoxPoint(IPoint s, IPoint e, BoxFct fct)
       {
         _start = s;

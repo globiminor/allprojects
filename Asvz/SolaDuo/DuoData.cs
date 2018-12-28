@@ -479,7 +479,7 @@ namespace Asvz.SolaDuo
         //Grid.DoubleGrid.FromAsciiFile("C:\\Daten\\ASVZ\\Daten\\Dhm\\mm1116.agr", 0, 1, typeof(double)),
       };
 
-      IBox extent = grids[0].Extent.Extent.Clone();
+      Box extent = grids[0].Extent.Extent.Clone();
       double dx = grids[0].Extent.Dx;
 
       foreach (var grid in grids)

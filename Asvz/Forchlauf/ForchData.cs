@@ -220,8 +220,9 @@ namespace Asvz.Forchlauf
     private static Polyline AppendLine(Polyline line, Polyline append)
     {
       append = append.Clone();
-      append.Points.First.Value.X = line.Points.Last.Value.X;
-      append.Points.First.Value.Y = line.Points.Last.Value.Y;
+      append.Points.RemoveFirst();
+      append.AddFirst(Point.Create(line.Points.Last.Value));
+
       foreach (var seg in append.Segments)
       {
         line.Add(seg);
