@@ -14,7 +14,6 @@ namespace OCourse.Gui
   public partial class WdgTrack : Form
   {
     private WdgOCourse _parent;
-    private IList<Control> _course;
     public WdgTrack()
     {
       InitializeComponent();
@@ -64,10 +63,6 @@ namespace OCourse.Gui
         Point2D p = new Point2D(trackPoint.Long - offset.Value, trackPoint.Lat);
         IPoint pp = prj.Gg2Prj(p);
         prjPoints.Add(pp);
-      }
-      // Transform
-      foreach (var section in _course)
-      {
       }
     }
 

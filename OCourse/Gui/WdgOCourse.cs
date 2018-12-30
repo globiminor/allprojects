@@ -23,8 +23,6 @@ namespace OCourse.Gui
 
     private static event InitHandler Init;
 
-    private List<CostSectionlist> _fullInfo;
-
     List<ICost> _selectedRoute;
     private bool _suspend;
 
@@ -418,7 +416,7 @@ namespace OCourse.Gui
       }
       else
       {
-        info = _fullInfo;
+        info = null;
       }
       _selectedRoute.Clear();
       Vm.SetInfo(_selectedRoute, info);

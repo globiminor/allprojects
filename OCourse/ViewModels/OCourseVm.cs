@@ -10,7 +10,6 @@ using OCourse.Route;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
 using System.IO;
 
 namespace OCourse.ViewModels
@@ -431,10 +430,10 @@ namespace OCourse.ViewModels
     {
       using (OcadReader reader = OcadReader.Open(CourseFile))
       {
-        IList<StringParamIndex> pars = reader.ReadStringParamIndices();
-        SetCourseList(reader, pars);
+        IList<StringParamIndex> indexList = reader.ReadStringParamIndices();
+        SetCourseList(reader, indexList);
 
-        Config config = Utils.GetConfig(reader, pars);
+        Config config = Utils.GetConfig(reader, indexList);
         string dir = Path.GetDirectoryName(CourseFile);
         _lcpConfig.SetConfig(dir, config);
         if (config != null && config.Routes != null)
@@ -602,12 +601,13 @@ namespace OCourse.ViewModels
     {
       using (OcadReader reader = OcadReader.Open(courseFile))
       {
-        IList<StringParamIndex> pars = reader.ReadStringParamIndices();
-        SetCourseList(reader, pars);
+        SetCourseList(reader);
       }
     }
-    public void SetCourseList(OcadReader reader, IList<StringParamIndex> pars)
+    public void SetCourseList(OcadReader reader, IList<StringParamIndex> indexList = null)
     {
+      indexList = indexList ?? reader.ReadStringParamIndices();
+
       string oldCourse = CourseName;
       using (ChangingAll())
       {
@@ -618,7 +618,7 @@ namespace OCourse.ViewModels
           _courseNames.Clear();
           _courseNames.Add("");
 
-          foreach (var course in Utils.GetCourseList(reader, pars))
+          foreach (var course in Utils.GetCourseList(reader, indexList))
           {
             _courseNames.Add(course);
             if (course == oldCourse)

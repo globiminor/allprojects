@@ -310,8 +310,8 @@ namespace Asvz.SolaDuo
 
         if (iStrecke == 0)
         {
-          Curve c = str.Segments.First;
-          Point tangent = c.TangentAt(0);
+          ISegment c = str.Segments.First;
+          IPoint tangent = c.TangentAt(0);
 
           element = new ElementV9(true);
           element.Geometry = Point.Create(c.Start);

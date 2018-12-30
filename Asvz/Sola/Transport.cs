@@ -742,16 +742,16 @@ namespace Asvz.Sola
         {
           Polyline line = (Polyline)elem.Geometry;
 
-          Curve c0 = line.Segments.First;
-          Curve c1 = line.Segments.Last;
+          ISegment c0 = line.Segments.First;
+          ISegment c1 = line.Segments.Last;
 
-          Element elemStart = FindIndexElement(c0.Start, -(c0.TangentAt(0)), elements);
+          Element elemStart = FindIndexElement(c0.Start, Point.Scale(-1, c0.TangentAt(0)), elements);
           Element elemEnd = FindIndexElement(c1.End, c1.TangentAt(1), elements);
         }
       }
 
     }
-    private Element FindIndexElement(IPoint p0, Point direction, IList<Element> elements)
+    private Element FindIndexElement(IPoint p0, IPoint direction, IList<Element> elements)
     {
       Element indexElement = null;
       double x0 = 0;
@@ -761,9 +761,9 @@ namespace Asvz.Sola
         { continue; }
 
         Point d = p - p0;
-        Point dirPrj = direction.Project(Geometry.ToXY);
-        double x = dirPrj.SkalarProduct(d);
-        double y = dirPrj.VectorProduct(d);
+        IPoint dirPrj = direction.Project(Geometry.ToXY);
+        double x = Point.SkalarProduct( dirPrj, d);
+        double y = Point.VectorProduct(dirPrj, d);
 
         if (x > 0 &&
           (indexElement == null || (Math.Abs(y / x) < 0.3 && x < x0)))
@@ -824,26 +824,26 @@ namespace Asvz.Sola
 
       foreach (var iPos in pIndexList)
       {
-        Ocad.Symbol.BaseSymbol pSymbol = reader.ReadSymbol(iPos);
-        if (pSymbol == null)
+        Ocad.Symbol.BaseSymbol symbol = reader.ReadSymbol(iPos);
+        if (symbol == null)
         { continue; }
 
-        if (pSymbol.Number == SymD.TextGross)
-        { _textSymbol = (Ocad.Symbol.TextSymbol)pSymbol; }
-        if (pSymbol.Number == SymD.TrTextLegende)
-        { _legendText = (Ocad.Symbol.TextSymbol)pSymbol; }
-        if (pSymbol.Number == SymD.TrLegendeBox)
-        { _legendBox = (Ocad.Symbol.PointSymbol)pSymbol; }
+        if (symbol.Number == SymD.TextGross)
+        { _textSymbol = (Ocad.Symbol.TextSymbol)symbol; }
+        if (symbol.Number == SymD.TrTextLegende)
+        { _legendText = (Ocad.Symbol.TextSymbol)symbol; }
+        if (symbol.Number == SymD.TrLegendeBox)
+        { _legendBox = (Ocad.Symbol.PointSymbol)symbol; }
 
-        if (pSymbol.Number == SymD.TrAusschnitt)
+        if (symbol.Number == SymD.TrAusschnitt)
         {
-          Debug.Assert(pSymbol.Graphics.Count == 1);
-          _symUebergabe = (Polyline)pSymbol.Graphics[0].Geometry.Project(pSetup.Map2Prj);
+          if (!(symbol.Graphics.Count == 1)) throw new InvalidOperationException($"Expected 1 'TrAusschnitt', got {symbol.Graphics.Count}");
+          _symUebergabe = (Polyline)symbol.Graphics[0].Geometry.Project(pSetup.Map2Prj);
         }
-        else if (pSymbol.Number == SymD.UeCircle)
+        else if (symbol.Number == SymD.UeCircle)
         {
-          Debug.Assert(pSymbol.Graphics.Count == 1);
-          _symUeCircle = (Polyline)pSymbol.Graphics[0].Geometry.Project(pSetup.Map2Prj);
+          if (!(symbol.Graphics.Count == 1)) throw new InvalidOperationException($"Expected 1 'UeCircle', got {symbol.Graphics.Count}");
+          _symUeCircle = (Polyline)symbol.Graphics[0].Geometry.Project(pSetup.Map2Prj);
         }
 
       }

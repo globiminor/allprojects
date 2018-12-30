@@ -450,6 +450,7 @@ namespace Asvz.Sola
 
         IList<ParamGeometryRelation> intersects =
           GeometryOperator.CreateRelations(strecke, arc);
+
         IList<Polyline> parts = strecke.Split(intersects);
         if (iPoint == 0)
         { strecke = parts[0]; }
@@ -535,16 +536,16 @@ namespace Asvz.Sola
       while (iKm < lengthMeas)
       {
         double[] param = cat.GetLineParams(iKm * 1000.0); 
-        Point p = line.Segments[(int)param[0]].PointAt(param[1]);
-        Point t = line.Segments[(int)param[0]].TangentAt(param[1]);
+        IPoint p = line.Segments[(int)param[0]].PointAt(param[1]);
+        IPoint t = line.Segments[(int)param[0]].TangentAt(param[1]);
         Element textKm = CreateKmText(p, t, iKm, kmTxtSymbol, setup, damen);
         PointCollection textKmBox = ((PointCollection)textKm.Geometry).Clone();
         textKmBox.Add(textKmBox[1]);
-        textKmBox.Insert(0, p + 0.01 * (textKmBox[0] - p));
+        textKmBox.Insert(0, p + 0.01 * Point.Sub(textKmBox[0], p));
         Polyline textKmPoly = Polyline.Create(textKmBox);
         if (line.Intersection(textKmPoly) != null)
         {
-          t = -1.0 * t;
+          t = Point.Scale(-1.0, t);
           textKm = CreateKmText(p, t, iKm, kmTxtSymbol, setup, damen);
         }
         writer.Append(textKm);
@@ -561,7 +562,7 @@ namespace Asvz.Sola
       }
     }
 
-    private static Element CreateKmText(Point p, Point t, int km,
+    private static Element CreateKmText(IPoint p, IPoint t, int km,
       Ocad.Symbol.TextSymbol kmTxtSymbol, Setup setup, bool damen)
     {
       string sKm = km.ToString();
@@ -570,7 +571,7 @@ namespace Asvz.Sola
 
       Point pText = new Point2D(t.Y, -t.X);
       pText = 130.0 * 1.0 / Math.Sqrt(pText.OrigDist2()) * pText;
-      pText = pText + p;
+      pText = Point.Add(pText, p);
 
       Element elem = Common.CreateText(sKm, pText.X, pText.Y, kmTxtSymbol, setup);
       PointCollection list = (PointCollection)elem.Geometry;
@@ -742,11 +743,10 @@ namespace Asvz.Sola
 
     private void ReadUpStringParams(Ocad9Reader template)
     {
-      Debug.Assert(template != null);
-      IList<StringParamIndex> strIdxList = template.ReadStringParamIndices();
+      IList<StringParamIndex> indexEnum = template.ReadStringParamIndices();
       _colors = new Dictionary<StringParamIndex, ColorPar>();
       //Template pTpl = new Template();
-      foreach (var strIdx in strIdxList)
+      foreach (var strIdx in indexEnum)
       {
         if (strIdx.Type == StringType.PrintPar)
         { _printParam = new PrintPar(template.ReadStringParam(strIdx)); }

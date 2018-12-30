@@ -77,16 +77,16 @@ namespace Asvz
         elems.Add(kmElem);
 
         double[] param = strecke.ParamAt(iKm * 1000.0 * f);
-        Point p = strecke.Segments[(int)param[0]].PointAt(param[1]);
-        Point t = strecke.Segments[(int)param[0]].TangentAt(param[1]);
+        IPoint p = strecke.Segments[(int)param[0]].PointAt(param[1]);
+        IPoint t = strecke.Segments[(int)param[0]].TangentAt(param[1]);
         Element elem = CreateKmText(p, t, iKm, kmTxtSymbol, setup, suffix);
         PointCollection points = ((PointCollection)elem.Geometry).Clone();
         points.Add(points[1]);
-        points.Insert(0, p + 0.01 * (points[0] - p));
+        points.Insert(0, p + 0.01 * Point.Sub(points[0], p));
         Polyline pPoly = Polyline.Create(points);
         if (flipOnConflict && strecke.Intersection(pPoly) != null)
         {
-          t = -1.0 * t;
+          t = Point.Scale(-1.0, t);
           elem = CreateKmText(p, t, iKm, kmTxtSymbol, setup, suffix);
         }
         kmElem.Text = elem;
@@ -111,7 +111,7 @@ namespace Asvz
       public Element Strich { get; set; }
     }
 
-      private static Element CreateKmText(Point p, Point t, int km,
+      private static Element CreateKmText(IPoint p, IPoint t, int km,
       Ocad.Symbol.TextSymbol kmTxtSymbol, Setup setup, string suffix)
     {
       string sKm = km.ToString();

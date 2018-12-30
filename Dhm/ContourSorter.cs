@@ -380,8 +380,9 @@ namespace Dhm
           if (contour.MaxHeightIndex == contour.MinHeightIndex &&
             incomplete == false)
           {
-            Debug.Assert(contour.HeightIndex == null ||
-              contour.HeightIndex == contour.MinHeightIndex);
+            if (!(contour.HeightIndex == null ||
+              contour.HeightIndex == contour.MinHeightIndex))
+              throw new InvalidOperationException($"HeightIndex {contour.HeightIndex} != {contour.MinHeightIndex}");
 
             if (contour.HeightIndex == null)
             {

@@ -7,17 +7,45 @@ namespace Basics.Geom
   public interface ICurve : ITanParamGeometry
   {
     ICurve Invert();
-    IEnumerable<Curve> Segments { get; }
+    IEnumerable<ISegment> Segments { get; }
   }
-  public abstract class Curve : Geometry, ICurve, IRelTanParamGeometry
+
+  public interface ISegment : IGeometry, IParamGeometry
   {
-    public class GeometryEquality : IEqualityComparer<Curve>
+    IPoint Start { get; }
+    IPoint End { get; }
+
+    double Length();
+    double ParamAt(double at);
+    IPoint PointAt(double param);
+    IPoint TangentAt(double at);
+    new ISegment Project(IProjection prj);
+    ISegment Subpart(double t0, double t1);
+
+    ISegment Clone();
+    ISegment Invert();
+    IInnerSegment InnerSegment();
+    IList<IPoint> Linearize(double maxOffset, bool includeFirstPoint = true);
+  }
+  public interface IMultipartSegment : IMultipartGeometry
+  {
+    double Parameter(ParamGeometryRelation split);
+  }
+  public interface ISegment<T> : ISegment
+    where T: ISegment
+  {
+    new T Subpart(double t0, double t1);
+  }
+
+  public abstract class Curve : Geometry, ISegment, ICurve, IRelTanParamGeometry
+  {
+    public class GeometryEquality : IEqualityComparer<ISegment>
     {
-      public bool Equals(Curve x, Curve y)
+      public bool Equals(ISegment x, ISegment y)
       {
         return x.EqualGeometry(y);
       }
-      public int GetHashCode(Curve x)
+      public int GetHashCode(ISegment x)
       {
         return x.Start.X.GetHashCode();
       }
@@ -33,21 +61,19 @@ namespace Basics.Geom
       _paramBox = new Box(min, max);
     }
 
-    IEnumerable<Curve> ICurve.Segments
+    IEnumerable<ISegment> ICurve.Segments
     { get { yield return this; } }
 
     public enum CurveAtType
     { Parameter, Distance }
 
+    IInnerSegment ISegment.InnerSegment() => InnerCurve();
     public abstract InnerCurve InnerCurve();
 
     public override abstract bool EqualGeometry(IGeometry other);
 
-    public IList<IPoint> Linearize(double offset)
-    {
-      return Linearize(offset, true);
-    }
-    internal virtual IList<IPoint> Linearize(double offset, bool includeFirstPoint)
+    public IList<IPoint> Linearize(double offset, bool includeFirstPoint = true) => LinearizeCore(offset, includeFirstPoint);
+    protected virtual IList<IPoint> LinearizeCore(double offset, bool includeFirstPoint)
     {
       List<IPoint> points = new List<IPoint>();
       if (includeFirstPoint)
@@ -83,16 +109,22 @@ namespace Basics.Geom
 
     public abstract IPoint Start { get; }
     public abstract IPoint End { get; }
-    protected abstract Curve Clone_();
-    public Curve Clone()
-    { return Clone_(); }
+
+    public Curve Clone() => CloneCore();
+    ISegment ISegment.Clone() => CloneCore();
+    protected abstract Curve CloneCore();
+
+    IPoint ISegment.PointAt(double param) => PointAt(param);
     public abstract Point PointAt(double param);
-    public abstract Point TangentAt(double t);
+
+    IPoint ISegment.TangentAt(double param) => TangentAt(param);
+    public abstract Point TangentAt(double param);
+
     public abstract double ParamAt(double distance);
     public abstract double Length();
 
-    public Curve Subpart(double t0, double t1)
-    { return SubpartCurve(t0, t1); }
+    ISegment ISegment.Subpart(double t0, double t1) => Subpart(t0, t1);
+    public Curve Subpart(double t0, double t1) => SubpartCurve(t0, t1);
     protected abstract Curve SubpartCurve(double t0, double t1);
 
     IBox IParamGeometry.ParameterRange
@@ -364,7 +396,7 @@ namespace Basics.Geom
 
       if ((ident & 1) != 0) // Start0 == Start1
       {
-        Debug.Assert((ident & 6) == 0);
+        if (!((ident & 6) == 0)) throw new InvalidOperationException($"Expected ident & 6 == 0, got {ident & 6}");
         list1[0] = list0[0];
       }
       else if ((ident & 2) != 0) // Start0 == End1
@@ -372,7 +404,7 @@ namespace Basics.Geom
 
       if ((ident & 4) != 0) // End0 == Start1
       {
-        Debug.Assert((ident & 9) == 0);
+        if (!((ident & 9) == 0)) throw new InvalidOperationException($"Expected ident & 9 == 0, got {ident & 9}");
         list1[0] = list0[list0.Count - 1];
       }
       else if ((ident & 8) != 0) // End0 == End1
@@ -395,13 +427,10 @@ namespace Basics.Geom
       return result;
     }
 
-    protected abstract IList<Curve> SplitCore(IList<ParamGeometryRelation> splits);
-    public IList<Curve> Split(IList<ParamGeometryRelation> splits)
-    { return SplitCore(splits); }
-    protected abstract double Parameter(ParamGeometryRelation split);
-    protected static IList<T> GetSplitArray<T>(T curve, IList<ParamGeometryRelation> splits) where T : Curve
+    //protected abstract double Parameter(ParamGeometryRelation split);
+    public static List<double> GetSplitAts(ISegment curve, IList<ParamGeometryRelation> splits)
     {
-      List<double> paramList = new List<double>(splits.Count);
+      List<double> atList = new List<double>(splits.Count);
       foreach (var rel in splits)
       {
         ParamGeometryRelation r = rel.GetChildRelation(curve);
@@ -409,38 +438,43 @@ namespace Basics.Geom
         if (r == null)
         { g = rel.XParam[0]; }
         else
-        { g = curve.Parameter(r); }
+        {
+          g = ((IMultipartSegment)curve).Parameter(r);
+        }
 
-        paramList.Add(g);
+        atList.Add(g);
       }
-      paramList.Sort();
+      atList.Sort();
+      return atList;
+    }
 
-      List<T> result = new List<T>();
-      T part;
+    public static List<ISegment> GetSplitSegments(ISegment curve, IEnumerable<double> atList)
+    {
+      List<ISegment> result = new List<ISegment>();
+      ISegment part;
       double min = 0;
-      foreach (var param in paramList)
+      foreach (var at in atList)
       {
-        if (param < min)
+        if (at < min)
         { throw new InvalidOperationException(); }
-        if (param > 1)
+        if (at > 1)
         { throw new InvalidOperationException(); }
 
-        if (min < param)
-        { part = (T)curve.Subpart(min, param); }
+        if (min < at)
+        { part = curve.Subpart(min, at); }
         else
         { part = null; }
         result.Add(part);
 
-        min = param;
+        min = at;
       }
       if (min < 1)
-      { part = (T)curve.Subpart(min, 1); }
+      { part = curve.Subpart(min, 1); }
       else
       { part = null; }
       result.Add(part);
 
-      return result.ToArray();
-
+      return result;
     }
 
     IBox IGeometry.Extent
@@ -461,12 +495,9 @@ namespace Basics.Geom
     IGeometry IGeometry.Border
     { get { return Border; } }
 
-    public new Curve Project(IProjection projection)
-    { return (Curve)Project_(projection); }
-
     #endregion
 
-    internal static Curve Create(IPoint start, IPoint end, InnerCurve innerCurve)
+    internal static ISegment Create(IPoint start, IPoint end, IInnerSegment innerCurve)
     {
       if (innerCurve == null)
       { return new Line(start, end); }
@@ -474,15 +505,21 @@ namespace Basics.Geom
       { return innerCurve.Complete(start, end); }
     }
 
-    ICurve ICurve.Invert() { return Invert(); }
-    public Curve Invert()
-    { return Invert_(); }
+    ICurve ICurve.Invert() => InvertCore();
+    ISegment ISegment.Invert() => InvertCore();
+    protected abstract Curve InvertCore();
 
-    protected abstract Curve Invert_();
+    ISegment ISegment.Project(IProjection prj) => (ISegment)ProjectCore(prj);
   }
 
-  public abstract class InnerCurve
+  public interface IInnerSegment
   {
+    ISegment Complete(IPoint start, IPoint end);
+  }
+  public abstract class InnerCurve : IInnerSegment
+  {
+    ISegment IInnerSegment.Complete(IPoint start, IPoint end)
+    { return Complete(start, end); }
     public abstract Curve Complete(IPoint start, IPoint end);
   }
 }

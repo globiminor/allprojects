@@ -118,9 +118,9 @@ namespace Basics.Geom.Network
       box.Max.X = xMax + 1;
       box.Min.X = xMax;
 
-      Curve pre = null;
-      Curve at = null;
-      Curve next = null;
+      ISegment pre = null;
+      ISegment at = null;
+      ISegment next = null;
       foreach (var seg in _line.Segments)
       {
         if (at != null)
@@ -148,8 +148,8 @@ namespace Basics.Geom.Network
 
       if (at.PointAt(1).X == xMax)   // if all curves are linear, and in several other cases
       {  
-        Point atTan = at.TangentAt(1);
-        Point nextTan = next.TangentAt(0);
+        IPoint atTan = at.TangentAt(1);
+        IPoint nextTan = next.TangentAt(0);
         double p = PointOperator.VectorProduct(atTan, nextTan);
         int sign = Math.Sign(p);
         if (sign < 0)
@@ -163,10 +163,9 @@ namespace Basics.Geom.Network
       }
       else
       {
-        IRelParamGeometry g = at;
-        IBox range = g.ParameterRange;
-        IPoint s = g.PointAt(range.Min);
-        IPoint e = g.PointAt(range.Max);
+        IBox range = at.ParameterRange;
+        IPoint s = at.PointAt(range.Min);
+        IPoint e = at.PointAt(range.Max);
 
         throw new NotImplementedException();
         //g.NormedMaxOffset;

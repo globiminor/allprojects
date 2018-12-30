@@ -37,7 +37,7 @@ namespace Asvz.Sola
           SolaCategorie cat = (SolaCategorie)o;
           if ((cat.Typ & Kategorie.Default) == Kategorie.Default)
           {
-            Debug.Assert(cat.Strecke != null);
+            if (!(cat.Strecke != null)) throw new InvalidOperationException($"Cat {cat}: Strecke == null");
             continue;
           }
 
@@ -132,8 +132,8 @@ namespace Asvz.Sola
         else if (elem.Symbol == SymT.Teer)
         { Teer.Add((Area)elem.Geometry); }
       }
-      Debug.Assert(strecken.Count == Ddx.Strecken.Count);
-      Debug.Assert(nummern.Count == Ddx.Strecken.Count);
+      if (!(strecken.Count == Ddx.Strecken.Count)) throw new InvalidOperationException($"#strecken ({strecken.Count}) != #Ddx.Strecken ({Ddx.Strecken.Count})");
+      if (!(nummern.Count == Ddx.Strecken.Count)) throw new InvalidOperationException($"#nummern ({nummern.Count}) != #Ddx.Strecken ({Ddx.Strecken.Count})");
 
       SortDefaultStrecken(strecken, nummern);
     }

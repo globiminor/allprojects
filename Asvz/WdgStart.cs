@@ -1167,11 +1167,11 @@ namespace Asvz
       using (OcadReader reader = OcadReader.Open(ocdFile))
       {
         Setup setup = reader.ReadSetup();
-        foreach (var si in reader.ReadStringParamIndices())
+        foreach (var index in reader.ReadStringParamIndices())
         {
-          if (si.Type != StringType.Template)
+          if (index.Type != StringType.Template)
           { continue; }
-          string s = reader.ReadStringParam(si);
+          string s = reader.ReadStringParam(index);
           TemplatePar p = new TemplatePar(s);
           string name = Path.GetFileNameWithoutExtension(p.Name);
           if (!name.EndsWith("_"))

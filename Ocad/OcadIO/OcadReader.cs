@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using Basics.Geom;
 using Ocad.StringParams;
+using System.Linq;
 
 namespace Ocad
 {
@@ -98,7 +99,7 @@ namespace Ocad
             { return false; }
             _current.Index = elemIndex.Index;
             if (_current.Geometry == null) { }
-            Debug.Assert(_current.IsGeometryProjected == false);
+            if (!(_current.IsGeometryProjected == false)) throw new InvalidOperationException("Geometry is projected");
           }
           _iRecord++;
         } while (_current == null || _current.Symbol == 0); // Deleted Element
@@ -125,8 +126,6 @@ namespace Ocad
       }
     }
     #endregion
-
-    internal event StringIndexEventHandler StringIndexRead;
 
     private EndianReader _reader;
     protected FileParam _fileParam;
@@ -234,40 +233,40 @@ namespace Ocad
       return idxList;
     }
 
-    public IList<CategoryPar> GetCategories(IList<StringParamIndex> paramList = null)
+    public IList<CategoryPar> GetCategories(IList<StringParamIndex> indexList = null)
     {
-      paramList = paramList ?? ReadStringParamIndices();
+      IList<StringParamIndex> indexEnum = indexList ?? EnumStringParamIndices().ToList();
 
       List<CategoryPar> catNames = new List<CategoryPar>();
-      foreach (var par in paramList)
+      foreach (var index in indexEnum)
       {
-        if (par.Type == StringType.Class)
+        if (index.Type == StringType.Class)
         {
-          CategoryPar candidate = new CategoryPar(ReadStringParam(par));
+          CategoryPar candidate = new CategoryPar(ReadStringParam(index));
           catNames.Add(candidate);
         }
       }
       return catNames;
     }
 
-    public IList<string> GetCourseCategories(string courseName, IList<StringParamIndex> paramList = null)
+    public IList<string> GetCourseCategories(string courseName, IList<StringParamIndex> indexList = null)
     {
-      paramList = paramList ?? ReadStringParamIndices();
+      IEnumerable<StringParamIndex> indexEnum = indexList ?? ReadStringParamIndices();
       List<string> catNames = new List<string>();
-      foreach (var par in paramList)
+      foreach (var index in indexEnum)
       {
-        if (par.Type == StringType.Class)
+        if (index.Type == StringType.Class)
         {
-          CategoryPar candidate = new CategoryPar(ReadStringParam(par));
+          CategoryPar candidate = new CategoryPar(ReadStringParam(index));
           if (candidate.CourseName == courseName)
           {
             catNames.Add(candidate.Name);
           }
         }
 
-        if (par.Type == StringType.Course)
+        if (index.Type == StringType.Course)
         {
-          CoursePar candidate = new CoursePar(ReadStringParam(par));
+          CoursePar candidate = new CoursePar(ReadStringParam(index));
           if (candidate.Name == courseName)
           {
             catNames.Add(candidate.Name);
@@ -660,17 +659,20 @@ namespace Ocad
       return sResult;
     }
 
-    public IList<StringParamIndex> ReadStringParamIndices()
+    public List<StringParamIndex> ReadStringParamIndices()
+    {
+      return new List<StringParamIndex>(EnumStringParamIndices());
+    }
+
+    internal IEnumerable<StringParamIndex> EnumStringParamIndices()
     {
       int iNextStrIdxBlk;
-      List<StringParamIndex> indexList;
 
       if (this is Ocad8Reader && _fileParam.SectionMark != 3)
       {
-        return null;
+        yield break;
       }
       _reader.BaseStream.Seek(_fileParam.FirstStrIdxBlock, SeekOrigin.Begin);
-      indexList = new List<StringParamIndex>();
 
       do
       {
@@ -688,15 +690,7 @@ namespace Ocad
             ElemNummer = _reader.ReadInt32()
           };
 
-          indexList.Add(index);
-
-          if (StringIndexRead != null)
-          {
-            StringIndexEventArgs args = new StringIndexEventArgs(index);
-            StringIndexRead(this, args);
-            if (args.Cancel)
-            { return indexList; }
-          }
+          yield return index;
 
           j++;
         }
@@ -708,8 +702,6 @@ namespace Ocad
         }
       }
       while (iNextStrIdxBlk > 0);
-
-      return indexList;
     }
 
     public string ReadCourseTemplateName()
@@ -747,16 +739,13 @@ namespace Ocad
       return null;
     }
 
-    public IList<Control> ReadControls()
+    public IList<Control> ReadControls(IList<StringParamIndex> indexList = null)
     {
-      IList<StringParamIndex> indexList = ReadStringParamIndices();
-      return ReadControls(indexList);
-    }
-    public IList<Control> ReadControls(IList<StringParamIndex> indexList)
-    {
+      IList<StringParamIndex> indexEnum = indexList ?? ReadStringParamIndices();
+
       Dictionary<Control, StringParamIndex> controls =
         new Dictionary<Control, StringParamIndex>();
-      foreach (var index in indexList)
+      foreach (var index in indexEnum)
       {
         if (index.Type != StringType.Control)
         { continue; }
@@ -776,21 +765,19 @@ namespace Ocad
       return result;
     }
 
-    public string ReadCourseName(int course)
+    public string ReadCourseName(int course, IList<StringParamIndex> indexList = null)
     {
       int iCourse;
-      IList<StringParamIndex> pList = ReadStringParamIndices();
-      if (pList == null)
-      { return null; }
+      IList<StringParamIndex> indexEnum = indexList ?? ReadStringParamIndices();
 
       iCourse = 0;
-      foreach (var pIndex in pList)
+      foreach (var index in indexList)
       {
-        if (pIndex.Type == StringType.Course)
+        if (index.Type == StringType.Course)
         {
           if (iCourse == course)
           {
-            return ReadCourseName(pIndex);
+            return ReadCourseName(index);
           }
           iCourse++;
         }
@@ -975,24 +962,18 @@ namespace Ocad
         if (index.Type == StringType.Course)
         {
           string courseName = ReadCourseName(index);
-          Course course = ReadCourse(courseName);
+          Course course = ReadCourse(courseName, idxList);
           yield return course;
         }
       }
     }
 
-    public Course ReadCourse(string courseName)
+    public Course ReadCourse(string courseName, IList<StringParamIndex> indexList = null)
     {
       if (courseName == null)
       { return null; }
 
-      IList<StringParamIndex> pIndexList = ReadStringParamIndices();
-
-      return ReadCourse(courseName, pIndexList);
-    }
-
-    public Course ReadCourse(string courseName, IList<StringParamIndex> indexList)
-    {
+      indexList = indexList ?? ReadStringParamIndices();
       foreach (var idx in indexList)
       {
         if (idx.Type == StringType.Course)

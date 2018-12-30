@@ -4,7 +4,6 @@ using Basics.Geom;
 using Ocad.StringParams;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 
@@ -61,8 +60,8 @@ namespace Ocad
 
     public override IEnumerable<ColorInfo> ReadColorInfos()
     {
-      IList<StringParamIndex> strIdxs = ReadStringParamIndices();
-      foreach (var strIdx in strIdxs)
+      IList<StringParamIndex> indexEnum = ReadStringParamIndices();
+      foreach (var strIdx in indexEnum)
       {
         if (strIdx.Type == StringType.Color)
         {
@@ -78,20 +77,20 @@ namespace Ocad
     public override Setup ReadSetup()
     {
       Setup setup = new Setup();
-      IList<StringParamIndex> pIndexList = ReadStringParamIndices();
+      IList<StringParamIndex> indexList = ReadStringParamIndices();
 
       using (new InvariantCulture())
       {
-        foreach (var pIndex in pIndexList)
+        foreach (var index in indexList)
         {
-          if (pIndex.Type == StringType.ScalePar)
+          if (index.Type == StringType.ScalePar)
           {
-            BaseReader.BaseStream.Seek(pIndex.FilePosition, SeekOrigin.Begin);
+            BaseReader.BaseStream.Seek(index.FilePosition, SeekOrigin.Begin);
             ReadTab(255, out char e1);
 
             char e0 = e1;
             string name = ReadTab(255, out e1);
-            while (name != "" && BaseReader.BaseStream.Position < pIndex.FilePosition + pIndex.Size)
+            while (name != "" && BaseReader.BaseStream.Position < index.FilePosition + index.Size)
             {
               if (e0 != '\t')
               { }
@@ -118,7 +117,7 @@ namespace Ocad
         }
         if (setup.PrjTrans.X == 0 && setup.PrjTrans.Y == 0 && setup.PrjRotation == 0)
         {
-          foreach (var pIndex in pIndexList)
+          foreach (var pIndex in indexList)
           {
             if (pIndex.Type == StringType.Template)
             {

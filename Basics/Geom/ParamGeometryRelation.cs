@@ -778,7 +778,8 @@ namespace Basics.Geom
       }
       else
       {
-        parts = ((Curve)y).Split(sortY);
+        ISegment seg = (ISegment)y;
+        parts = Curve.GetSplitSegments(seg, Curve.GetSplitAts(seg, sortY));
       }
 
       int i = 0;

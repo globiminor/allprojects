@@ -366,8 +366,8 @@ namespace OcadTest
     [TestMethod]
     public void CanRunBoxTree()
     {
-      BoxTree<Curve> t1;
-      BoxTree<Curve> t2;
+      BoxTree<ISegment> t1;
+      BoxTree<ISegment> t2;
       using (OcadReader reader = OcadReader.Open(@"C:\daten\felix\kapreolo\karten\stadlerberg\Stadlerberg_2007_ocd11.ocd"))
       {
         Element h1 = reader.ReadElement(326);
@@ -413,7 +413,7 @@ namespace OcadTest
 
     private class CurveInfo
     {
-      public Curve Curve;
+      public ISegment Curve;
       public int Index;
       public int NbCount;
       public int TreeCount;
@@ -483,9 +483,9 @@ namespace OcadTest
       }
     }
 
-    private BoxTree<Curve> CreateTree(Polyline line)
+    private BoxTree<ISegment> CreateTree(Polyline line)
     {
-      BoxTree<Curve> t = new BoxTree<Curve>(2, 1, true);
+      BoxTree<ISegment> t = new BoxTree<ISegment>(2, 1, true);
       t.InitSize(new IGeometry[] { line });
 
       foreach (var segment in line.Segments)

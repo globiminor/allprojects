@@ -404,31 +404,31 @@ namespace Asvz.Sola
 
       foreach (var iPos in pIndexList)
       {
-        Ocad.Symbol.BaseSymbol pSymbol = reader.ReadSymbol(iPos);
-        if (pSymbol == null)
+        Ocad.Symbol.BaseSymbol symbol = reader.ReadSymbol(iPos);
+        if (symbol == null)
         { continue; }
 
-        if (pSymbol.Number == SymD.TextGross)
-        { _textSymbol = (Ocad.Symbol.TextSymbol)pSymbol; }
-        if (pSymbol.Number == SymD.UeTextLegende)
-        { _legendText = (Ocad.Symbol.TextSymbol)pSymbol; }
-        if (pSymbol.Number == SymD.UeLegendeBox)
-        { _legendBox = (Ocad.Symbol.PointSymbol)pSymbol; }
+        if (symbol.Number == SymD.TextGross)
+        { _textSymbol = (Ocad.Symbol.TextSymbol)symbol; }
+        if (symbol.Number == SymD.UeTextLegende)
+        { _legendText = (Ocad.Symbol.TextSymbol)symbol; }
+        if (symbol.Number == SymD.UeLegendeBox)
+        { _legendBox = (Ocad.Symbol.PointSymbol)symbol; }
 
-        if (pSymbol.Number == SymD.Uebergabe)
+        if (symbol.Number == SymD.Uebergabe)
         {
-          Debug.Assert(pSymbol.Graphics.Count == 1);
-          _symUebergabe = (Polyline)pSymbol.Graphics[0].Geometry.Project(pSetup.Map2Prj);
+          if (!(symbol.Graphics.Count == 1)) throw new InvalidOperationException($"Expected 1 'Uebergabe', got {symbol.Graphics.Count}");
+          _symUebergabe = (Polyline)symbol.Graphics[0].Geometry.Project(pSetup.Map2Prj);
         }
-        else if (pSymbol.Number == SymD.UeCircle)
+        else if (symbol.Number == SymD.UeCircle)
         {
-          Debug.Assert(pSymbol.Graphics.Count == 1);
-          _symUeCircle = (Polyline)pSymbol.Graphics[0].Geometry.Project(pSetup.Map2Prj);
+          if (!(symbol.Graphics.Count == 1)) throw new InvalidOperationException($"Expected 1 'UeCircle', got {symbol.Graphics.Count}");
+          _symUeCircle = (Polyline)symbol.Graphics[0].Geometry.Project(pSetup.Map2Prj);
         }
-        else if (pSymbol.Number == SymD.UeNeustart)
+        else if (symbol.Number == SymD.UeNeustart)
         {
-          Debug.Assert(pSymbol.Graphics.Count == 1);
-          _symUeNeustart = (Polyline)pSymbol.Graphics[0].Geometry.Project(pSetup.Map2Prj);
+          if (!(symbol.Graphics.Count == 1)) throw new InvalidOperationException($"Expected 1 'UeNeuStart', got {symbol.Graphics.Count}");
+          _symUeNeustart = (Polyline)symbol.Graphics[0].Geometry.Project(pSetup.Map2Prj);
         }
       }
     }

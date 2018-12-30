@@ -76,7 +76,7 @@ namespace TMap
       return col;
     }
 
-    protected bool IsPointVisible(Basics.Geom.Point p, IDrawable drawable)
+    protected bool IsPointVisible(IPoint p, IDrawable drawable)
     {
       if (p == null)
       { return false; }

@@ -202,7 +202,7 @@ namespace Asvz.Sola
 
         if (symbol.Number == SymD.Detail)
         {
-          Debug.Assert(symbol.Graphics.Count == 1);
+          if (!(symbol.Graphics.Count == 1)) throw new InvalidOperationException($"Expected 1 'Detail', got {symbol.Graphics.Count}");
           _symUebergabe = (Polyline)symbol.Graphics[0].Geometry.Project(setup.Map2Prj);
         }
       }
@@ -218,7 +218,7 @@ namespace Asvz.Sola
       double dDist = -1;
       foreach (var pnt in border.Points)
       {
-        double d2 = Point.Dist2(pnt, rawPosition);
+        double d2 = Point2D.DistXY2(pnt, rawPosition);
         if (dDist < 0 || dDist > d2)
         {
           dDist = d2;

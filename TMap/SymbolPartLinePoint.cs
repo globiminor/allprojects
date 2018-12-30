@@ -63,8 +63,8 @@ namespace TMap
         {
           if (first)
           {
-            Point p = curve.PointAt(0);
-            Point t = curve.TangentAt(0);
+            IPoint p = curve.PointAt(0);
+            IPoint t = curve.TangentAt(0);
             double rot = 0;
             if (t.X != 0 || t.Y != 0)
             { rot = Math.Atan2(t.Y, t.X); }
@@ -101,10 +101,10 @@ namespace TMap
         }
         double d = dash[iDash] - offset;
 
-        IEnumerator<Curve> curves = line.Segments.GetEnumerator();
+        IEnumerator<ISegment> curves = line.Segments.GetEnumerator();
         curves.Reset();
         curves.MoveNext();
-        Curve c = curves.Current;
+        ISegment c = curves.Current;
         double l = c.Length();
         while (true)
         {
@@ -121,8 +121,8 @@ namespace TMap
             { break; }
           }
           double par = c.ParamAt(d);
-          Point p = c.PointAt(par);
-          Point t = c.TangentAt(par);
+          IPoint p = c.PointAt(par);
+          IPoint t = c.TangentAt(par);
 
           double rot = 0;
           if (t.X != 0 || t.Y != 0)

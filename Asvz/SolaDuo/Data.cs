@@ -155,7 +155,7 @@ namespace Asvz
       while (iKm < lengthMeas)
       {
         double[] param = cat.GetLineParams(iKm * 1000.0);
-        Point p = line.Segments[(int)param[0]].PointAt(param[1]);
+        IPoint p = line.Segments[(int)param[0]].PointAt(param[1]);
 
         p = p.Project(prj);
 

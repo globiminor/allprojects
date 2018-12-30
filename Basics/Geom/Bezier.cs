@@ -8,7 +8,7 @@ namespace Basics.Geom
   /// <summary>
   /// Summary description for Bezier.
   /// </summary>
-  public class Bezier : Curve, IMultipartGeometry
+  public class Bezier : Curve, IMultipartSegment, ISegment<Bezier>
   {
     #region nested classes
     private class _InnerCurve : InnerCurve
@@ -203,17 +203,16 @@ namespace Basics.Geom
     public override bool IsLinear
     { get { return false; } }
 
+    protected override Curve CloneCore()
+    { return Clone(); }
     public new Bezier Clone()
-    { return (Bezier)Clone_(); }
-    protected override Curve Clone_()
-    { return Clone__(); }
-    private Bezier Clone__()
     {
       return new Bezier(Point.Create(_pStart), Point.Create(_p1),
         Point.Create(_p2), Point.Create(_pEnd));
     }
 
-    protected override double Parameter(ParamGeometryRelation split)
+    double IMultipartSegment.Parameter(ParamGeometryRelation split) => Parameter(split);
+    private double Parameter(ParamGeometryRelation split)
     {
       if (HasSubparts == false)
       { throw new InvalidProgramException(); }
@@ -246,11 +245,8 @@ namespace Basics.Geom
       return equal;
     }
 
-    public new Bezier Invert()
-    { return (Bezier)Invert_(); }
-    protected override Curve Invert_()
-    { return Invert__(); }
-    private Bezier Invert__()
+    protected override Curve InvertCore() => Invert();
+    public Bezier Invert()
     {
       return new Bezier(_pEnd, _p2, _p1, _pStart);
     }
@@ -316,6 +312,7 @@ namespace Basics.Geom
 
       return numMath.SolveNewton(fct.LengthAt, LengthFactor, distance / Length());
     }
+    [Obsolete("use ParamAt")]
     public double ParamAt_(double distance)
     {
       double dEpsi = 1e-5;
@@ -361,28 +358,18 @@ namespace Basics.Geom
       return lMean;
     }
 
-    private Bezier Project__(IProjection projection)
+    protected override IGeometry ProjectCore(IProjection projection) => Project(projection);
+    public Bezier Project(IProjection projection)
     {
       return new Bezier(Start.Project(projection),
         _p1.Project(projection), _p2.Project(projection),
         End.Project(projection));
     }
-    protected override Geometry Project_(IProjection projection)
-    { return Project__(projection); }
-    public new Bezier Project(IProjection projection)
-    { return (Bezier)Project_(projection); }
 
     public override InnerCurve InnerCurve()
     {
       return new _InnerCurve(_p1, _p2);
     }
-
-    public new Bezier[] Split(IList<ParamGeometryRelation> splits)
-    { return (Bezier[])SplitCore(splits); }
-    protected override IList<Curve> SplitCore(IList<ParamGeometryRelation> splits)
-    { return Split__(splits); }
-    private Bezier[] Split__(IList<ParamGeometryRelation> splits)
-    { return (Bezier[])GetSplitArray(this, splits); }
 
     public new Bezier Subpart(double t0, double t1)
     {

@@ -4,7 +4,7 @@ using PntOp = Basics.Geom.PointOperator;
 
 namespace Basics.Geom
 {
-  public class Arc : Curve, IMultipartGeometry
+  public class Arc : Curve, IMultipartSegment, ISegment<Arc>
   {
     #region nested classes
     private class _InnerCurve : InnerCurve
@@ -65,11 +65,9 @@ namespace Basics.Geom
       _isQuadrant = isQuadrant;
     }
 
+    protected override Curve CloneCore()
+    { return Clone(); }
     public new Arc Clone()
-    { return (Arc)Clone_(); }
-    protected override Curve Clone_()
-    { return Clone__(); }
-    private Arc Clone__()
     {
       return new Arc(Point.Create(_center), _radius, _dirStart, _angle);
     }
@@ -189,6 +187,28 @@ namespace Basics.Geom
 
     }
 
+    double IMultipartSegment.Parameter(ParamGeometryRelation split) => Parameter(split);
+    private double Parameter(ParamGeometryRelation split)
+    {
+      if (HasSubparts == false)
+      { throw new InvalidProgramException(); }
+
+      double angle = 0;
+      foreach (var subpart in Subparts())
+      {
+        if (split.CurrentX.EqualGeometry(subpart))
+        {
+          double p = split.XParam[0];
+
+          angle += p * subpart._angle;
+
+          return angle / _angle;
+        }
+        angle += subpart._angle;
+      }
+      throw new InvalidProgramException();
+    }
+
     public IPoint Center { get { return _center; } }
 
     public double Radius { get { return _radius; } }
@@ -219,16 +239,7 @@ namespace Basics.Geom
       }
     }
 
-    public new IList<Arc> Split(IList<ParamGeometryRelation> splits)
-    { return (IList<Arc>)SplitCore(splits); }
-    protected override IList<Curve> SplitCore(IList<ParamGeometryRelation> splits)
-    { return Split__(splits); }
-    private Arc[] Split__(IList<ParamGeometryRelation> splits)
-    { throw new NotImplementedException("TODO"); }
-    protected override double Parameter(ParamGeometryRelation split)
-    { throw new NotImplementedException("TODO"); }
-
-    internal override IList<IPoint> Linearize(double offset, bool includeFirstPoint)
+    protected override IList<IPoint> LinearizeCore(double offset, bool includeFirstPoint)
     {
       if (offset > _radius)
       { return new IPoint[] { Start, PointAt(0.5), End }; }
@@ -315,20 +326,14 @@ namespace Basics.Geom
       }
     }
 
-    public new Arc Invert()
-    { return (Arc)Invert_(); }
-    protected override Curve Invert_()
-    { return Invert__(); }
-    private Arc Invert__()
+    protected override Curve InvertCore() => Invert();
+    public Arc Invert()
     {
       return new Arc(_center, _radius, _dirStart + _angle, -_angle);
     }
 
-    public new Arc Project(IProjection projection)
-    { return (Arc)Project_(projection); }
-    protected override Geometry Project_(IProjection projection)
-    { return Project__(projection); }
-    private Arc Project__(IProjection projection)
+    protected override IGeometry ProjectCore(IProjection projection) => Project(projection);
+    public Arc Project(IProjection projection)
     { // TODO
       // only valid if only scaled and rotation
       IPoint center = _center.Project(projection);
@@ -549,7 +554,7 @@ namespace Basics.Geom
         {
           next = (1 + Math.Floor(dDir / (0.5 * Math.PI))) * 0.5 * Math.PI;
           next = Math.Min(next, dirEnd);
-          yield return new Arc(_center, _radius, dDir, next, isQuadrant: true);
+          yield return new Arc(_center, _radius, dDir, next - dDir, isQuadrant: true);
         }
       }
       else
@@ -560,7 +565,7 @@ namespace Basics.Geom
         {
           next = (Math.Ceiling(dDir / (0.5 * Math.PI)) - 1) * 0.5 * Math.PI;
           next = Math.Max(next, dirEnd);
-          yield return new Arc(_center, _radius, dDir, next, isQuadrant: true);
+          yield return new Arc(_center, _radius, dDir, next - dDir, isQuadrant: true);
         }
       }
     }

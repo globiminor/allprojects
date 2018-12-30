@@ -238,8 +238,8 @@ namespace OcadScratch
             { break; }
 
             double[] pars = line.ParamAt(posUnscaled);
-            Basics.Geom.Curve seg = line.Segments[(int)pars[0]];
-            Basics.Geom.Point tan = seg.TangentAt(pars[1]);
+            Basics.Geom.ISegment seg = line.Segments[(int)pars[0]];
+            Basics.Geom.IPoint tan = seg.TangentAt(pars[1]);
 
             double azimuth = Math.Atan2(tan.X, tan.Y) + Math.PI / 2;
             TransferPoint(seg.PointAt(pars[1]), azimuth, new[] { sym }, color, w);

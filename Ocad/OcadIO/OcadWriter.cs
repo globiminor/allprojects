@@ -1,8 +1,8 @@
-using System;
-using System.IO;
-using System.Collections.Generic;
 using Basics.Geom;
 using Ocad.StringParams;
+using System;
+using System.Collections.Generic;
+using System.IO;
 // ReSharper disable RedundantCast
 
 namespace Ocad
@@ -561,14 +561,6 @@ namespace Ocad
   #region OCAD9
   public class Ocad9Writer : OcadWriter
   {
-    private int _removeNIndex;
-
-    private StringType _removeType;
-
-    private StringType _overwriteType;
-
-    private StringParamIndex _overwriteIndex;
-
     public static Ocad9Writer AppendTo(string file)
     {
       return AppendTo(new FileStream(file, FileMode.Open,
@@ -623,50 +615,15 @@ namespace Ocad
     public void Remove(StringType type)
     {
       Init();
-      _removeNIndex = 0;
-      _removeType = type;
-      OcdReader.StringIndexRead += Remove_StringIndexRead;
-      OcdReader.ReadStringParamIndices();
-      OcdReader.StringIndexRead -= Remove_StringIndexRead;
-    }
+      foreach (StringParamIndex index in OcdReader.EnumStringParamIndices())
+      {
+        if (index.Type != type)
+        { continue; }
 
-    private void Remove_StringIndexRead(object sender, StringIndexEventArgs args)
-    {
-      if (args.Index.Type != _removeType)
-      { return; }
-
-      Writer.BaseStream.Seek(-8, SeekOrigin.Current);
-
-      Writer.Write((int)-1);
-
-      Writer.BaseStream.Seek(4, SeekOrigin.Current);
-
-      //if (args.Index.Type == _removeType)
-      //{
-      //  _removeNIndex++;
-      //}
-      //else if (_removeNIndex > 0)
-      //{
-      //  long iPos = _reader.BaseStream.Position;
-      //  _writer.BaseStream.Seek(-(_removeNIndex + 1) * 16, SeekOrigin.Current);
-
-      //  _writer.Write((int)args.Index.FilePosition);
-      //  _writer.Write((int)args.Index.Size);
-      //  _writer.Write((int)args.Index.Type);
-      //  _writer.Write((int)args.Index.ElemNummer);
-
-      //  _reader.BaseStream.Seek(iPos, SeekOrigin.Begin);
-      //}
-
-      //if (_removeNIndex > 0)
-      //{
-      //  _writer.BaseStream.Seek(-16, SeekOrigin.Current);
-
-      //  _writer.Write((int)0);
-      //  _writer.Write((int)0);
-      //  _writer.Write((int)0);
-      //  _writer.Write((int)0);
-      //}
+        Writer.BaseStream.Seek(-8, SeekOrigin.Current);
+        Writer.Write((int)-1);
+        Writer.BaseStream.Seek(4, SeekOrigin.Current);
+      }
     }
 
     public void Append(StringType type, int elemNummer, string stringParam)
@@ -705,48 +662,43 @@ namespace Ocad
       _reader.BaseStream.Seek(0, SeekOrigin.End);
       int iPos = (int)_reader.BaseStream.Position;
 
-      _overwriteType = type;
-      _overwriteIndex = null;
+      StringParamIndex overwriteIndex = null;
 
-      OcdReader.StringIndexRead += Overwrite_StringIndexRead;
-      OcdReader.ReadStringParamIndices();
-      OcdReader.StringIndexRead -= Overwrite_StringIndexRead;
-
-      if (_overwriteIndex == null)
+      foreach (var index in OcdReader.EnumStringParamIndices())
       {
-        _overwriteIndex = new StringParamIndex
+        if (index.Type == type)
+        {
+          overwriteIndex = index;
+          break;
+        }
+      }
+
+      if (overwriteIndex == null)
+      {
+        overwriteIndex = new StringParamIndex
         {
           Type = type,
           ElemNummer = elemNummer,
           Size = stringParam.Length
         };
-        Append(_overwriteIndex);
+        Append(overwriteIndex);
       }
       else
       {
         _reader.BaseStream.Seek(-16, SeekOrigin.Current);
-        _overwriteIndex.Size = stringParam.Length;
-        _overwriteIndex.FilePosition = iPos;
+        overwriteIndex.Size = stringParam.Length;
+        overwriteIndex.FilePosition = iPos;
 
-        Writer.Write((int)_overwriteIndex.FilePosition);
-        Writer.Write((int)_overwriteIndex.Size);
-        Writer.Write((int)_overwriteIndex.Type);
-        Writer.Write((int)_overwriteIndex.ElemNummer);
+        Writer.Write((int)overwriteIndex.FilePosition);
+        Writer.Write((int)overwriteIndex.Size);
+        Writer.Write((int)overwriteIndex.Type);
+        Writer.Write((int)overwriteIndex.ElemNummer);
       }
 
-      _reader.BaseStream.Seek(_overwriteIndex.FilePosition, SeekOrigin.Begin);
+      _reader.BaseStream.Seek(overwriteIndex.FilePosition, SeekOrigin.Begin);
       int n = stringParam.Length;
       for (int i = 0; i < n; i++)
       { Writer.Write((byte)stringParam[i]); }
-    }
-
-    private void Overwrite_StringIndexRead(object sender, StringIndexEventArgs args)
-    {
-      if (args.Index.Type == _overwriteType)
-      {
-        args.Cancel = true;
-        _overwriteIndex = args.Index;
-      }
     }
 
     private void Append(StringParamIndex index)

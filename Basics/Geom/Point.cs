@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Basics.Geom
 {
@@ -99,9 +100,10 @@ namespace Basics.Geom
     /// <summary>
     /// Vector product
     /// </summary>
-    public double VectorProduct(IPoint p1)
+    public double VectorProduct(IPoint p1) => VectorProduct(this, p1);
+    public static double VectorProduct(IPoint p0, IPoint p1)
     {
-      double v = X * p1.Y - Y * p1.X;
+      double v = p0.X * p1.Y - p0.Y * p1.X;
       return v;
     }
 
@@ -124,21 +126,14 @@ namespace Basics.Geom
       get { return this; }
     }
 
-    [Obsolete("refactor")]
-    private Point Project__(IProjection projection)
+    IGeometry IGeometry.Project(IProjection projection) => Project(projection);
+    IPoint IPoint.Project(IProjection projection) => Project(projection);
+    protected override IGeometry ProjectCore(IProjection projection) => Project(projection);
+    public Point Project(IProjection projection)
     {
       IPoint p = projection.Project(this);
-
       return CastOrCreate(p);
     }
-    IGeometry IGeometry.Project(IProjection projection)
-    { return Project(projection); }
-    IPoint IPoint.Project(IProjection projection)
-    { return Project(projection); }
-    protected override Geometry Project_(IProjection projection)
-    { return Project__(projection); }
-    public new Point Project(IProjection projection)
-    { return (Point)Project_(projection); }
 
     public Point Clone()
     {
@@ -182,11 +177,11 @@ namespace Basics.Geom
     {
       return Dist2(this, point);
     }
-    public static double Dist2(IPoint p0, IPoint p1)
+    public static double Dist2(IPoint p0, IPoint p1, IEnumerable<int> dimensions = null)
     {
-      int iDim = Math.Min(p0.Dimension, p1.Dimension);
+      IEnumerable<int> dims = dimensions ?? Enumerable.Range(0, Math.Min(p0.Dimension, p1.Dimension));
       double dDist2 = 0;
-      for (int i = 0; i < iDim; i++)
+      foreach (int i in dims)
       {
         double d = p0[i] - p1[i];
         dDist2 += d * d;
@@ -244,7 +239,13 @@ namespace Basics.Geom
       return new Box(Clone(), Clone());
     }
 
+    public static Point operator +(Point p0, Point p1)
+    { return Add(p0, p1); }
     public static Point operator +(IPoint p0, Point p1)
+    { return Add(p0, p1); }
+    public static Point operator +(Point p0, IPoint p1)
+    { return Add(p0, p1); }
+    public static Point Add(IPoint p0, IPoint p1)
     {
       int iDim = Math.Min(p0.Dimension, p1.Dimension);
       Point sum = Create(iDim);
@@ -284,6 +285,8 @@ namespace Basics.Geom
     /// scalar product
     /// </summary>
     public static Point operator *(double f, Point p)
+    { return Scale(f, p); }
+    public static Point Scale(double f, IPoint p)
     {
       int iDim = p.Dimension;
       Point skalar = Create(iDim);
@@ -293,12 +296,13 @@ namespace Basics.Geom
       return skalar;
     }
 
-    public double SkalarProduct(IPoint p1)
+    public double SkalarProduct(IPoint p1) => SkalarProduct(this, p1);
+    public static double SkalarProduct(IPoint p0, IPoint p1)
     {
       double prod = 0;
-      int maxDim = Math.Min(Dimension, p1.Dimension);
+      int maxDim = Math.Min(p0.Dimension, p1.Dimension);
       for (int iDim = 0; iDim < maxDim; iDim++)
-      { prod += this[iDim] * p1[iDim]; }
+      { prod += p0[iDim] * p1[iDim]; }
 
       return prod;
     }
@@ -372,7 +376,7 @@ namespace Basics.Geom
     { return string.Format("{0};{1}", X, Y); }
     #endregion
 
-    public static double Dist2(IPoint p0, IPoint p1)
+    public static double DistXY2(IPoint p0, IPoint p1)
     {
       double d2 = 0;
       double d = p0.X - p1.X;
@@ -505,7 +509,7 @@ namespace Basics.Geom
     { return v0.Add(v1); }
     public Vector Add(Vector v1)
     {
-      Debug.Assert(Dimension == v1.Dimension);
+      if (!(Dimension == v1.Dimension)) throw new InvalidOperationException($"Dimensions differ {Dimension} != {v1.Dimension}");
       int iDim = Dimension;
       Vector v = new Vector(iDim);
       for (int i = 0; i < iDim; i++)
@@ -517,7 +521,7 @@ namespace Basics.Geom
     { return v0.Sub(v1); }
     public Vector Sub(Vector v1)
     {
-      Debug.Assert(Dimension == v1.Dimension);
+      if (!(Dimension == v1.Dimension)) throw new InvalidOperationException($"Dimensions differ {Dimension} != {v1.Dimension}");
       int iDim = Dimension;
       Vector v = new Vector(iDim);
       for (int i = 0; i < iDim; i++)
@@ -527,7 +531,7 @@ namespace Basics.Geom
 
     public double Dist2(Vector v)
     {
-      Debug.Assert(Dimension == v.Dimension);
+      if (!(Dimension == v.Dimension)) throw new InvalidOperationException($"Dimensions differ {Dimension} != {v.Dimension}");
       double d2 = 0;
       for (int i = 0; i < Dimension; i++)
       {

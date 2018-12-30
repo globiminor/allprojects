@@ -87,20 +87,20 @@ namespace TMap
       if (nSeg == 0)
       { return; }
 
-      Curve pLine = null;
+      ISegment segment = null;
       Polyline drawLine = null;
       foreach (var curve in line.Segments)
       {
-        if (pLine == null)
+        if (segment == null)
         {
-          pLine = curve;
+          segment = curve;
           drawLine = new Polyline();
           drawLine.Add(curve);
         }
-        else if (curve.GetType() != pLine.GetType())
+        else if (curve.GetType() != segment.GetType())
         {
           drawable.DrawLine(drawLine.Project(drawable.Projection), this);
-          pLine = curve;
+          segment = curve;
           drawLine = new Polyline();
           drawLine.Add(curve);
         }

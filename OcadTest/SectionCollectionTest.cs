@@ -2526,7 +2526,7 @@ namespace OcadTest
           if (list[0] == ',')
           { list = list.Substring(1).TrimStart(); }
         }
-        Debug.Assert(list[0] == '}');
+        if (!(list[0] == '}')) throw new InvalidOperationException($"Expected {'}'}, got {list[0]}");
         rest = list.Substring(1).TrimStart();
         ret = f;
       }
@@ -2541,7 +2541,7 @@ namespace OcadTest
           if (list[0] == ',')
           { list = list.Substring(1).TrimStart(); }
         }
-        Debug.Assert(list[0] == ')');
+        if (!(list[0] == ')')) throw new InvalidOperationException($"Expected {')'}, got {list[0]}");
         rest = list.Substring(1).TrimStart();
         ret = v;
       }

@@ -88,7 +88,7 @@ namespace Basics.Geom
       { return false; }
     }
 
-    private int Intersects(IPoint isInside, Point isInsideDown, Curve curve, IBox extent,
+    private int Intersects(IPoint isInside, Point isInsideDown, ISegment curve, IBox extent,
       ref double? xPre)
     {
       if (curve is IMultipartGeometry multi && multi.HasSubparts)
@@ -97,7 +97,7 @@ namespace Basics.Geom
         foreach (var part in multi.Subparts())
         {
           IBox partExtent = part.Extent;
-          Curve subCurve = (Curve)part;
+          ISegment subCurve = (ISegment)part;
 
           if (VerifyExtent(isInside, partExtent) == false)
           { continue; }
@@ -136,7 +136,8 @@ namespace Basics.Geom
         { return 1; }
 
         isInsideDown.Y = extent.Min.Y;
-        GeometryCollection intersects = curve.Intersection(new Line(isInside, isInsideDown));
+
+        GeometryCollection intersects = GeometryOperator.Intersection(curve, new Line(isInside, isInsideDown));
         if (intersects != null)
         {
           if (intersects.Count > 1)
@@ -148,7 +149,7 @@ namespace Basics.Geom
       }
     }
 
-    private int GetFromPreviousSide(IPoint isInside, Curve curve, ref double? xPre)
+    private int GetFromPreviousSide(IPoint isInside, ISegment curve, ref double? xPre)
     {
       IPoint p, q;
       double x = isInside.X;
@@ -216,7 +217,7 @@ namespace Basics.Geom
         { line.Add(line.Points.First.Value); }
         foreach (var eCurve in line.SpatialIndex.Search(searchBox))
         {
-          Curve curve = eCurve.Value;
+          ISegment curve = eCurve.Value;
           bool within = IsWithinCurve(p, curve, max, searchLine, ref near, ref onRightSide);
           if (within)
           { return true; }
@@ -225,7 +226,7 @@ namespace Basics.Geom
       return onRightSide;
     }
 
-    private bool IsWithinCurve(IPoint p, Curve curve, Point2D max, Line searchLine,
+    private bool IsWithinCurve(IPoint p, ISegment curve, Point2D max, Line searchLine,
       ref IPoint near, ref bool onRightSide)
     {
       bool within = false;
@@ -233,7 +234,7 @@ namespace Basics.Geom
       {
         foreach (var part in parts.Subparts())
         {
-          Curve subCurve = (Curve)part;
+          ISegment subCurve = (ISegment)part;
           within = IsWithinCurve(p, subCurve, max, searchLine,
             ref near, ref onRightSide);
           if (within)
@@ -249,7 +250,7 @@ namespace Basics.Geom
     }
 
     private bool IsWithinCurveSimple(IPoint p, Point2D max,
-      ref IPoint near, ref bool onRightSide, Line searchLine, Curve curve)
+      ref IPoint near, ref bool onRightSide, Line searchLine, ISegment curve)
     {
       if (curve.Start.Y == p.Y)
       {
@@ -266,13 +267,13 @@ namespace Basics.Geom
       { OnRightSide(p, max, curve.End, curve.Start, false, ref near, ref onRightSide); }
       else
       {
-        GeometryCollection cutList = curve.Intersection(searchLine);
+        GeometryCollection cutList = GeometryOperator.Intersection(curve, searchLine);
 
         if (cutList == null)
         { return false; }
 
         Point2D cut = (Point2D)cutList[0];
-        System.Diagnostics.Debug.Assert(cut.X >= p.X && cut.X <= max.X);
+        if (!(cut.X >= p.X && cut.X <= max.X)) throw new InvalidOperationException($"unexptected cut.X");
 
         max.X = cut.X;
         onRightSide = (curve.Start.Y > p.Y);
@@ -312,16 +313,13 @@ namespace Basics.Geom
     protected override IGeometry BorderGeom => Border;
     IGeometry IGeometry.Border => Border;
 
-    private Area Project__(IProjection projection)
+
+    IGeometry IGeometry.Project(IProjection projection) => Project(projection);
+    protected override IGeometry ProjectCore(IProjection projection) => Project(projection);
+    public Area Project(IProjection projection)
     {
       return new Area(Lines.Project(projection));
     }
-    protected override Geometry Project_(IProjection projection)
-    { return Project__(projection); }
-    public new Area Project(IProjection projection)
-    { return (Area)Project_(projection); }
-    IGeometry IGeometry.Project(IProjection projection)
-    { return Project(projection); }
 
     #endregion
 

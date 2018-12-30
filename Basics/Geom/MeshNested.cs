@@ -711,14 +711,14 @@ namespace Basics.Geom
           { lL1._baseLine.LeftTri = null; }
           else
           {
-            Debug.Assert(lL1._baseLine.RightTri == lTri);
+            if (!(lL1._baseLine.RightTri == lTri)) throw new InvalidProgramException("L1.RightTri != LeftTri");
             lL1._baseLine.RightTri = null;
           }
           if (lL2._baseLine.LeftTri == lTri)
           { lL2._baseLine.LeftTri = null; }
           else
           {
-            Debug.Assert(lL2._baseLine.RightTri == lTri);
+            if (!(lL2._baseLine.RightTri == lTri)) throw new InvalidProgramException("L2.RightTri != LeftTri");
             lL2._baseLine.RightTri = null;
           }
           lL1.StartPointEx.IndexLine = lL1;
@@ -781,7 +781,7 @@ namespace Basics.Geom
         get { return _indexLine; }
         set
         {
-          Debug.Assert(value.StartPointEx == this);
+          if (!(value.StartPointEx == this)) throw new InvalidOperationException("invalid StartPointEx");
           _indexLine = value;
         }
       }

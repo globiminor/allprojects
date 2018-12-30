@@ -79,7 +79,7 @@ namespace TMap
 
     public override void Draw(IGeometry geometry, DataRow properties, IDrawable drawable)
     {
-      Point p = geometry as Point;
+      IPoint p = geometry as IPoint;
       if (drawable.Extent == null || IsPointVisible(p, drawable))
       {
         double dScale = 1;
@@ -93,7 +93,7 @@ namespace TMap
       }
     }
 
-    public void Draw(Point p, IDrawable drawable,
+    public void Draw(IPoint p, IDrawable drawable,
                      double scale, double rotate)
     {
       _projection = new _Projection();

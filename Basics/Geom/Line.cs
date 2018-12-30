@@ -7,7 +7,7 @@ namespace Basics.Geom
   /// <summary>
   /// Summary description for Line
   /// </summary>
-  public class Line : Curve
+  public class Line : Curve, ISegment<Line>
   {
     private IPoint _start;
     private IPoint _end;
@@ -85,11 +85,9 @@ namespace Basics.Geom
       get { return _end; }
     }
 
+    protected override Curve CloneCore()
+    { return Clone(); }
     public new Line Clone()
-    { return (Line)Clone_(); }
-    protected override Curve Clone_()
-    { return Clone__(); }
-    private Line Clone__()
     {
       return new Line(Point.Create(_start), Point.Create(_end));
     }
@@ -573,34 +571,18 @@ namespace Basics.Geom
     protected override IGeometry BorderGeom
     { get { return Border; } }
 
-    public new Line Invert()
-    { return (Line)Invert_(); }
-    protected override Curve Invert_()
-    { return Invert__(); }
-    private Line Invert__()
+    protected override Curve InvertCore() => Invert();
+    public Line Invert()
     {
       return new Line(_end, _start);
     }
 
-    public new Line Project(IProjection projection)
-    { return (Line)Project_(projection); }
-    protected override Geometry Project_(IProjection projection)
-    { return Project__(projection); }
-    private Line Project__(IProjection projection)
+    protected override IGeometry ProjectCore(IProjection projection) => Project(projection);
+    public Line Project(IProjection projection)
     {
       return new Line(_start.Project(projection),
         _end.Project(projection));
     }
-
-    public new IList<Line> Split(IList<ParamGeometryRelation> splits)
-    { return (IList<Line>)SplitCore(splits); }
-    protected override IList<Curve> SplitCore(IList<ParamGeometryRelation> splits)
-    { return Split__(splits); }
-    private Line[] Split__(IList<ParamGeometryRelation> splits)
-    { return (Line[])GetSplitArray(this, splits); }
-    protected override double Parameter(ParamGeometryRelation split)
-    { throw new InvalidProgramException("handle somewhere else"); }
-
 
     #endregion
   }

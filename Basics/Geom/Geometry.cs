@@ -151,11 +151,10 @@ namespace Basics.Geom
     public abstract int Dimension { get; }
     public abstract int Topology { get; }
     //public abstract bool Intersects(IBox box, IList<int> calcDimensions);
-    protected abstract Geometry Project_(IProjection projection);
-    public Geometry Project(IProjection projection)
-    { return Project_(projection); }
+    protected abstract IGeometry ProjectCore(IProjection projection);
+
     IGeometry IGeometry.Project(IProjection projection)
-    { return Project_(projection); }
+    { return ProjectCore(projection); }
     protected abstract IGeometry BorderGeom { get; }
     IGeometry IGeometry.Border
     { get { return BorderGeom; } }

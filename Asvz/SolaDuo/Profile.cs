@@ -239,10 +239,10 @@ namespace Asvz
       int iPoint = 0;
       double dTeerStart = 0;
       double dTeerEnd = dTeerStart - 1;
-      foreach (var pSeg in profile.Segments)
+      foreach (var seg in profile.Segments)
       {
-        double dStart = pSeg.Start.X + sumDist;
-        double dEnd = pSeg.End.X + sumDist;
+        double dStart = seg.Start.X + sumDist;
+        double dEnd = seg.End.X + sumDist;
 
         if (bWald[iPoint] == false && bWald[iPoint + 1])
         { nextWald = Math.Max(nextWald, dEnd - _wald0); }
@@ -253,8 +253,8 @@ namespace Asvz
         if (bWald[iPoint] && bWald[iPoint + 1] && dEnd > nextWald)
         {
           double dX = nextWald;
-          double dH = pSeg.Start.Y +
-            (pSeg.End.Y - pSeg.Start.Y) * (dX - dStart) / (dEnd - dStart);
+          double dH = seg.Start.Y +
+            (seg.End.Y - seg.Start.Y) * (dX - dStart) / (dEnd - dStart);
           nextWald = dX + (_dWald1 - _wald0);
           nextHaus = dX + (_dWald1 - _haus0);
 
@@ -268,8 +268,8 @@ namespace Asvz
         else if (bSied[iPoint] && bSied[iPoint + 1] && dEnd > nextHaus)
         {
           double dX = nextHaus;
-          double dH = pSeg.Start.Y +
-            (pSeg.End.Y - pSeg.Start.Y) * (dX - dStart) / (dEnd - dStart);
+          double dH = seg.Start.Y +
+            (seg.End.Y - seg.Start.Y) * (dX - dStart) / (dEnd - dStart);
 
           nextWald = dX + (_dHaus1 - _wald0);
           nextHaus = dX + (_dHaus1 - _haus0);
@@ -284,8 +284,8 @@ namespace Asvz
         if (bTeer[iPoint] && bTeer[iPoint + 1])
         {
           if (dTeerEnd < dTeerStart)
-          { dTeerStart = pSeg.Start.X; }
-          dTeerEnd = pSeg.End.X;
+          { dTeerStart = seg.Start.X; }
+          dTeerEnd = seg.End.X;
         }
         else
         {
@@ -413,7 +413,6 @@ namespace Asvz
 
     private void ReadStringParams(Ocad9Reader template)
     {
-      Debug.Assert(template != null);
       IList<StringParamIndex> strIdxList = template.ReadStringParamIndices();
       foreach (var strIdx in strIdxList)
       {

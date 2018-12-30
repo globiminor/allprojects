@@ -5,7 +5,7 @@ namespace Basics.Geom
   /// <summary>
   /// Summary description for SegmentList.
   /// </summary>
-  public class SegmentList : IEnumerable<Curve>
+  public class SegmentList : IEnumerable<ISegment>
   {
     private Polyline _polyline;
 
@@ -23,35 +23,35 @@ namespace Basics.Geom
 
     #endregion
 
-    public Curve this[int index]
+    public ISegment this[int index]
     {
       get
       {
-        _polyline.InitNode(out LinkedListNode<IPoint> p0, out LinkedListNode<InnerCurve> c);
+        _polyline.InitNode(out LinkedListNode<IPoint> p0, out LinkedListNode<IInnerSegment> c);
 
         for (int i = 0; i < index; i++)
         { _polyline.NextNodes(ref p0, ref c); }
         return Curve.Create(p0.Value, p0.Next.Value, c?.Value);
       }
     }
-    public Curve First
+    public ISegment First
     {
       get
       {
-        _polyline.InitNode(out LinkedListNode<IPoint> p0, out LinkedListNode<InnerCurve> c);
+        _polyline.InitNode(out LinkedListNode<IPoint> p0, out LinkedListNode<IInnerSegment> c);
 
-        InnerCurve ic = null;
+        IInnerSegment ic = null;
         if (c != null)
         { ic = c.Value; }
         return Curve.Create(p0.Value, p0.Next.Value, ic);
       }
     }
-    public Curve Last
+    public ISegment Last
     {
       get
       {
         LinkedListNode<IPoint> p0 = _polyline.Points.Last;
-        LinkedList<InnerCurve> c = _polyline.SegmentParts;
+        LinkedList<IInnerSegment> c = _polyline.SegmentParts;
 
         return Curve.Create(p0.Previous.Value, p0.Value, c?.Last.Value);
       }
@@ -60,13 +60,13 @@ namespace Basics.Geom
 
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
     { return GetEnumerator(); }
-    public IEnumerator<Curve> GetEnumerator()
+    public IEnumerator<ISegment> GetEnumerator()
     {
       if (_polyline.Points.Count < 2)
       { yield break; }
 
-      LinkedListNode<InnerCurve> innerNode = null;
-      InnerCurve innerCurve = null;
+      LinkedListNode<IInnerSegment> innerNode = null;
+      IInnerSegment innerCurve = null;
       if (_polyline.InnerCurves != null)
       {
         innerNode = _polyline.InnerCurves.First;
