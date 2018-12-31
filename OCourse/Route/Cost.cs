@@ -1,7 +1,7 @@
-using System;
 using Ocad;
-using System.Collections.Generic;
 using OCourse.Ext;
+using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace OCourse.Route
@@ -121,9 +121,48 @@ namespace OCourse.Route
     {
       get { return _sectionList; }
     }
-    public IReadOnlyList <CostBase> Parts
+    public IReadOnlyList<CostBase> Parts
     { get { return _parts; } }
 
+    public static IEnumerable<CostSectionlist> GetCostSectionLists(
+      IEnumerable<ViewModels.PermutationVm> permutations, string courseName)
+    {
+      foreach (var permut in permutations)
+      {
+        int iLeg = 0;
+        string sLeg = string.Empty;
+        SectionList sections = null;
+        foreach (var next in permut.Permutation.NextControls)
+        {
+          if (next.Control == SectionList.LegStart)
+          {
+            if (sections != null)
+            {
+              iLeg++;
+              sLeg = $".{iLeg}";
+              yield return new CostSectionlist(new CostSum(0, 0, 0, 0), sections)
+              { Name = $"{permut.StartNr}{sLeg}" };
+              sLeg = $".{iLeg + 1}";
+            }
+            sections = null;
+            continue;
+          }
+          if (next.Control.Code == ControlCode.TextBlock
+            && next.Control.Text.StartsWith("where ", StringComparison.InvariantCultureIgnoreCase))
+          { continue; }
+
+          if (sections == null)
+          { sections = new SectionList(next); }
+          else
+          { sections.Add(next); }
+        }
+        if (sections != null)
+        {
+          yield return new CostSectionlist(new CostSum(0, 0, 0, 0), sections)
+          { Name = $"{permut.StartNr}{sLeg}" };
+        }
+      }
+    }
     public static IEnumerable<CostSectionlist> GetUniqueCombs(IEnumerable<ICost> costs)
     {
       Dictionary<CostSectionlist, CostSectionlist> uniques = new Dictionary<CostSectionlist, CostSectionlist>();

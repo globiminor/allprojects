@@ -1,14 +1,13 @@
-﻿using System;
+﻿using GuiUtils;
+using Ocad;
+using OCourse.Ext;
+using OCourse.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
-using Ocad;
-using Ocad.StringParams;
-using OCourse.Ext;
 using Control = Ocad.Control;
-using OCourse.ViewModels;
-using Basics;
-using GuiUtils;
 
 namespace OCourse.Gui
 {
@@ -135,7 +134,9 @@ namespace OCourse.Gui
         foreach (var nextControl in pair.Value.List)
         {
           NextControl tc = nextControl;
-          ControlLabel tg = _lblDict[tc];
+          if (!_lblDict.TryGetValue(tc, out ControlLabel tg))
+          { continue; }
+
           Label tl = tg.Lbl;
 
           if (fg.Pos < tg.Pos)
@@ -281,7 +282,7 @@ namespace OCourse.Gui
 
       Dictionary<NextControl, NextControlList> nextDict = Clone(_nextDict);
       List<SectionList> permuts = new List<SectionList>();
-      SectionList permut = new SectionList(new  NextControl(_startControl.Control));
+      SectionList permut = new SectionList(new NextControl(_startControl.Control));
       NextControl startNext = new NextControl(_startControl.Control);
       NextControl endNext = new NextControl(_endControl.Control);
       GetPermuts(permut, nextDict, startNext, endNext, permuts);
@@ -429,15 +430,16 @@ namespace OCourse.Gui
       string name = string.Format("{0};{1}", where, ctr.Name);
       Control uniqueCtr = ctr;
 
-      if ((ctr.Text == null || !ctr.Text.StartsWith("where ", StringComparison.InvariantCultureIgnoreCase))
+      if (ctr.Code == ControlCode.TextBlock || ctr.Code == ControlCode.MapChange)
+      { }
+      else if ((ctr.Text == null || !ctr.Text.StartsWith("where ", StringComparison.InvariantCultureIgnoreCase))
           && uniqueDict.TryGetValue(name, out uniqueCtr) == false)
       {
         uniqueCtr = ctr;
         uniqueDict.Add(name, uniqueCtr);
       }
 
-      if (oldNew.ContainsKey(ctr) == false)
-      { oldNew.Add(ctr, uniqueCtr); }
+      oldNew[ctr] = uniqueCtr;
     }
 
     IList<SectionsBuilder.IDisplayControl> SecBuilder_AddingBranch(int leg, ISection section, IList<SectionsBuilder.IDisplayControl> fromControls,
@@ -484,14 +486,15 @@ namespace OCourse.Gui
       }
 
       SectionCollection list = new SectionCollection();
-      list.AddLast(course);
-      if (!(course.First.Value is Control s))
-      {
-        s = new Control("--", ControlCode.TextBlock);
-        list.AddFirst(s);
-      }
+      list.AddLast(course.Clone());
+      Control startWrapper = VariationBuilder.GetWrapperControl("++", list);
+      list.AddFirst(startWrapper);
+      Control endWrapper = VariationBuilder.GetWrapperControl("--", list);
+      list.AddLast(endWrapper);
 
       Dictionary<NextControl, NextControlList> next = AssembleNextSections(list);
+      startWrapper = GetControl(next, startWrapper.Name);
+      endWrapper = GetControl(next, endWrapper.Name);
 
       NextControl start = null;
       foreach (var key in next.Keys)
@@ -506,7 +509,7 @@ namespace OCourse.Gui
         new Dictionary<NextControl, ControlLabel>(next.Count,
         new NextControl.EqualControlComparer());
       BuildTree(next, dict, new List<NextControl>(),
-         start, 0);
+         start, 0, new List<Control> { startWrapper, endWrapper });
 
       _nextDict = next;
       _lblDict = dict;
@@ -530,6 +533,10 @@ namespace OCourse.Gui
 
             CLabel lbl = new CLabel(this, ctrLbl.Control);
             lbl.Text = ctrLbl.Control.Name;
+            if (ctrLbl.Control.Code == ControlCode.MapChange)
+            {
+              lbl.Text = "\u2341>\u2342";
+            }
             lbl.AutoSize = true;
             lbl.Top = h0;
 
@@ -543,7 +550,9 @@ namespace OCourse.Gui
             {
               foreach (var info in nextList.List)
               {
-                ControlLabel nl = dict[info];
+                if (!dict.TryGetValue(info, out ControlLabel nl))
+                { continue; }
+
                 int ni;
                 if (nl.Pos > i)
                 { ni = nl.Pos; }
@@ -592,19 +601,38 @@ namespace OCourse.Gui
       Invalidate();
     }
 
+    private Control GetControl(Dictionary<NextControl, NextControlList> nextDict, string name)
+    {
+      foreach (var pair in nextDict)
+      {
+        if (pair.Key.Control.Name == name)
+        { return pair.Key.Control; }
+
+        foreach (var next in pair.Value.List)
+        {
+          if (next.Control.Name == name)
+          { return next.Control; }
+        }
+      }
+      return null;
+    }
+
     private void BuildTree(Dictionary<NextControl, NextControlList> next,
       Dictionary<NextControl, ControlLabel> dict,
       IList<NextControl> preList,
-      NextControl c, int pos0)
+      NextControl c, int pos0, IList<Control> wrapperControls)
     {
       int pos = pos0;
 
       if (!dict.TryGetValue(c, out ControlLabel controlLabel))
       {
-        controlLabel = new ControlLabel();
-        controlLabel.Control = c.Control;
-        controlLabel.Pos = pos;
-        dict.Add(c, controlLabel);
+        if (!wrapperControls.Contains(c.Control))
+        {
+          controlLabel = new ControlLabel();
+          controlLabel.Control = c.Control;
+          controlLabel.Pos = pos;
+          dict.Add(c, controlLabel);
+        }
       }
       else
       {
@@ -636,7 +664,7 @@ namespace OCourse.Gui
       { return; }
       foreach (var info in list.List)
       {
-        BuildTree(next, dict, nextPres, info, pos + 1);
+        BuildTree(next, dict, nextPres, info, pos + 1, wrapperControls);
       }
     }
 
@@ -654,7 +682,9 @@ namespace OCourse.Gui
       { return; }
       foreach (var info in list.List)
       {
-        ControlLabel n = dict[info];
+        if (!dict.TryGetValue(info, out ControlLabel n))
+        { continue; }
+
         if (n.RecPos > 0)
         {
           n.RecPos = Math.Max(n.RecPos, pos + 1);
@@ -721,6 +751,11 @@ namespace OCourse.Gui
           ForeColor = System.Drawing.Color.Blue;
         }
         else if (Control.Code == ControlCode.TextBlock)
+        {
+          Font = new Font(Font, baseStyle | FontStyle.Regular);
+          base.ForeColor = System.Drawing.Color.Blue;
+        }
+        else if (Control.Code == ControlCode.MapChange)
         {
           Font = new Font(Font, baseStyle | FontStyle.Regular);
           base.ForeColor = System.Drawing.Color.Blue;

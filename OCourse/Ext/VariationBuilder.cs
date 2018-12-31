@@ -23,19 +23,13 @@ namespace OCourse.Ext
     {
       _origCourse = course;
 
-      SectionCollection init = course;
-      if (!(init.First.Value is Control))
-      {
-        init = init.Clone();
-        _startWrapper = GetWrapperControl("++", init);
-        init.AddFirst(_startWrapper);
-      }
-      if (!(init.Last.Value is Control))
-      {
-        init = init.Clone();
-        _endWrapper = GetWrapperControl("--", init);
-        init.AddLast(_endWrapper);
-      }
+      SectionCollection init = course.Clone();
+
+      _startWrapper = GetWrapperControl("++", init);
+      init.AddFirst(_startWrapper);
+
+      _endWrapper = GetWrapperControl("--", init);
+      init.AddLast(_endWrapper);
 
       _course = init;
     }
@@ -56,10 +50,9 @@ namespace OCourse.Ext
       { return permutations; }
 
       List<SectionList> reduceds = new List<SectionList>();
-      IList<Control> toRemove = new[] { _startWrapper, _endWrapper };
       foreach (var variation in permutations)
       {
-        SectionList reduced = RemoveControls(variation, toRemove);
+        SectionList reduced = RemoveControls(variation, _startWrapper, _endWrapper);
         reduceds.Add(reduced);
       }
 
@@ -67,7 +60,7 @@ namespace OCourse.Ext
     }
 
 
-    private Control GetWrapperControl(string template, SectionCollection course)
+    public static Control GetWrapperControl(string template, SectionCollection course)
     {
       string key = template;
 
@@ -132,12 +125,17 @@ namespace OCourse.Ext
       VariationAdded?.Invoke(this, variation);
     }
 
-    private static SectionList RemoveControls(SectionList variation, IList<Control> removes)
+    private static SectionList RemoveControls(SectionList variation, Control startWrapper, Control endWrapper)
     {
       SectionList reduced = null;
       foreach (var control in variation.NextControls)
       {
-        if (removes.Contains(control.Control))
+        if (control.Control == startWrapper)
+        {
+          reduced?.Add(new NextControl(SectionList.LegStart));
+          continue;
+        }
+        if (control.Control == endWrapper)
         { continue; }
 
         if (reduced == null)
@@ -1563,7 +1561,7 @@ namespace OCourse.Ext
       }
 
       private bool ExistsVariation<T>(T variation, NextControl next, WhereInfo where)
-        where T: ISectionList, ICloneable<T>
+        where T : ISectionList, ICloneable<T>
       {
         T candidate = variation.Clone();
         bool exists = false;
@@ -1751,6 +1749,9 @@ namespace OCourse.Ext
 
       protected static Control GetUniqueControl(Dictionary<string, Control> controls, Control control)
       {
+        if (control.Code == ControlCode.TextBlock || control.Code == ControlCode.MapChange)
+        { return control; }
+
         if (controls.TryGetValue(control.Name, out Control unique) == false)
         {
           unique = control;

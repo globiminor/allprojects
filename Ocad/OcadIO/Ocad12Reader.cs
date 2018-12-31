@@ -9,7 +9,9 @@ namespace Ocad
   {
     public override Element ReadElement()
     {
-      ElementV9 elem = new ElementV9(false) { Symbol = BaseReader.ReadInt32() };
+      ElementV9 elem = new ElementV9(false);
+
+      elem.Symbol = BaseReader.ReadInt32();
       if (elem.Symbol < -4 || elem.Symbol == 0)
       { return null; }
 
@@ -47,9 +49,12 @@ namespace Ocad
       { elem.Text = BaseReader.ReadUnicodeString(); }
       if (nObjectString > 0)
       {
-        //byte[] objectText = BaseReader.ReadBytes(nObjectString);
-        //System.Text.UnicodeEncoding unicode = new System.Text.UnicodeEncoding();
-        //elem.ObjectString = unicode.GetString(objectText);
+        if (nText > 0)
+        {
+          int n = nText * 8;
+          for (int i = elem.Text.Length * 2 + 2; i < n; i++)
+          { BaseReader.BaseStream.ReadByte(); }
+        }
 
         elem.ObjectString = BaseReader.ReadUnicodeString();
       }
@@ -140,12 +145,9 @@ namespace Ocad
       writer.Write((double)element.ModificationDate.ToOADate());
 
       writer.Write((int)element.PointCount()); //nItem
-      int nText = 0;
-      if (element.Text.Length > 0)
-      { nText = ElementV9.TextCount(element.Text) / 8; }
-      writer.Write((short)nText); // nText
+      writer.Write((short)(ElementV9.TextCountV9(element.Text) / 8)); // nText
 
-      writer.Write(element.ObjectStringCount()); // nObjectString
+      writer.Write((short)(ElementV9.TextCountV9(element.ObjectString) / 8)); // nObjectString
       writer.Write((short)0); // nDatabaseString
       writer.Write((byte)elem9.ObjectStringType); // ObjectStringType
       writer.Write((byte)0); // reserved
@@ -164,31 +166,33 @@ namespace Ocad
     }
     public override int CalcElementLength(Element element)
     {
-      int length = 56 + 8 * element.PointCount() + element.TextCount() + element.ObjectStringCount();
+      int length = 56 + 8 * element.PointCount() + element.TextCount(element.Text) + element.TextCount(element.ObjectString);
       return length;
     }
 
-    private IList<Element> _controlElements;
+    private IList<Element> _courseSettingElements;
+    private IList<Element> CourseSettingElements => _courseSettingElements ?? (_courseSettingElements = GetCourseSettingElements());
+    private IList<Element> GetCourseSettingElements()
+    {
+      List<Element> csElements = new List<Element>();
+      foreach (var elem in Elements(false, null))
+      {
+        if (elem.ObjectStringType == ObjectStringType.None)
+        { continue; }
+
+        csElements.Add(elem);
+      }
+      return csElements;
+    }
+
+
     public override Element ReadControlGeometry(Control control, IList<StringParamIndex> settingIndexList)
     {
-      if (_controlElements == null)
-      {
-        List<Element> controlElements = new List<Element>();
-        foreach (var elem in Elements(false, null))
-        {
-          if (elem.ObjectStringType == ObjectStringType.None)
-          { continue; }
-
-          controlElements.Add(elem);
-        }
-        _controlElements = controlElements;
-      }
-
       Element match = null;
       string search = control.Name;
       while (search.Length < 3) search = $"0{search}";
 
-      foreach (var e in _controlElements)
+      foreach (var e in CourseSettingElements)
       {
         if (e.ObjectStringType != ObjectStringType.CsObject)
         { continue; }

@@ -74,6 +74,9 @@ namespace OCourse.Ext
 
     private string _preName;
 
+    private static Control _legStart;
+    public static Control LegStart => _legStart ?? (_legStart = new Control(string.Empty, ControlCode.Start));
+
     public SectionList(NextControl start)
     {
       _nextControls.Add(start);
@@ -151,7 +154,7 @@ namespace OCourse.Ext
       return full;
     }
 
-    public List<SectionList> GetParts()
+    public List<SectionList> GetParts(bool byLegs = false)
     {
       List<SectionList> parts = new List<SectionList>();
       SectionList current = null;
@@ -159,22 +162,29 @@ namespace OCourse.Ext
       {
         if (next.Control.Code == ControlCode.Start)
         {
-          if (current != null)
+          if (current == null 
+            || (byLegs && next.Control == LegStart)
+            || (!byLegs))
           {
-            parts.Add(current);
+            if (current != null)
+            {
+              parts.Add(current);
+            }
+            if (next.Control == LegStart)
+            { current = null; }
+            else
+            { current = new SectionList(next); }
+            continue;
           }
-          current = new SectionList(next);
+        }
+
+        if (current != null)
+        {
+          current.Add(next);
         }
         else
-        {
-          if (current != null)
-          {
-            current.Add(next);
-          }
-          else
-          { // funny course !?!
-            current = new SectionList(next);
-          }
+        { // funny course !?!
+          current = new SectionList(next);
         }
       }
       parts.Add(current);

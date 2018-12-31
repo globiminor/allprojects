@@ -151,11 +151,11 @@ namespace Ocad
       return index;
     }
 
-    public override int TextCount()
-    { return TextCount(Text); }
-    public static int TextCount(string text)
+    public override int TextCount(string text)
+    { return TextCountV9(text); }
+    public static int TextCountV9(string text)
     {
-      if (text.Length > 0)
+      if (text?.Length > 0)
       {
         int nText = ((text.Length * 2 / 64) + 1) * 64;
         return nText;
@@ -259,21 +259,15 @@ namespace Ocad
       return nPoints;
     }
 
-    public virtual int TextCount()
+    public virtual int TextCount(string text)
     {
-      if (Text == null || Text.Length == 0)
+      if (text == null || text.Length == 0)
       { return 0; }
 
       if (UnicodeText)
-      { return Text.Length / 4 + 1; }
+      { return text.Length / 4 + 1; }
       else
-      { return Text.Length / 8 + 1; }
-    }
-    public short ObjectStringCount()
-    {
-      if ((ObjectString?.Length ?? 0) == 0)
-      { return 0; }
-      return (short)new System.Text.UnicodeEncoding().GetByteCount(ObjectString);
+      { return text.Length / 8 + 1; }
     }
 
     public int Index { get; set; }

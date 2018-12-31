@@ -182,7 +182,7 @@ namespace Ocad
       writer.Write((byte)element.Type);
       writer.Write((byte)(element.UnicodeText ? 1 : 0));
       writer.Write((short)element.PointCount());
-      writer.Write((short)element.TextCount());
+      writer.Write((short)element.TextCount(element.Text));
       writer.Write((short)(element.Angle * 180 / Math.PI)); // 1 Degrees
       writer.Write((short)0);
       if (element is ElementV8 elem8)
@@ -217,7 +217,7 @@ namespace Ocad
 
     public override int CalcElementLength(Element element)
     {
-      int length = element.PointCount() + element.TextCount();
+      int length = element.PointCount() + element.TextCount(element.Text);
       return length;
     }
   }

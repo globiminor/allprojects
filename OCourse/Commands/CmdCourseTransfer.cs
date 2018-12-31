@@ -129,7 +129,7 @@ namespace OCourse.Commands
         if (string.IsNullOrEmpty(comb.Name))
         { name = prefix; }
         else
-        { name = string.Format("{0}{1}", prefix, comb.Name); }
+        { name = $"{prefix}.{comb.Name}"; }
         course.Name = name;
         Export(course, (int)Basics.Utils.Round(comb.Climb, 5), customLayoutCourse);
       }
@@ -139,6 +139,11 @@ namespace OCourse.Commands
     {
       Export(course, climb);
 
+      ExportCourseView(course, customLayoutCourse);
+    }
+
+    private void ExportCourseView(Course course, string customLayoutCourse)
+    {
       foreach (var pair in CourseViewDict)
       {
         CourseViewPar par = pair.Value;
@@ -158,6 +163,7 @@ namespace OCourse.Commands
         }
       }
     }
+
     private int GetElemIdx(StringParamIndex oldIdx)
     {
       if (!_oldNewElemDict.TryGetValue(oldIdx.ElemNummer, out int newIdx))

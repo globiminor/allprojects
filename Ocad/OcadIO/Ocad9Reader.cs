@@ -488,10 +488,7 @@ namespace Ocad
       writer.Write((short)(element.Angle * 1800 / Math.PI)); // 0.1 Degrees
 
       writer.Write((int)element.PointCount());
-      int nText = 0;
-      if (element.Text.Length > 0)
-      { nText = ElementV9.TextCount(element.Text) / 8; }
-      writer.Write((short)nText);
+      writer.Write((short)(ElementV9.TextCountV9(element.Text) / 8));
       writer.Write((short)0); // reserved
 
       if (element is ElementV9 elem9)
@@ -523,7 +520,7 @@ namespace Ocad
       if (element.Text != "")
       {
         writer.WriteUnicodeString(element.Text);
-        int n = ElementV9.TextCount(element.Text);
+        int n = ElementV9.TextCountV9(element.Text);
         for (int i = element.Text.Length * 2; i < n; i++)
         { writer.BaseStream.WriteByte(0); }
       }
@@ -531,7 +528,7 @@ namespace Ocad
 
     public override int CalcElementLength(Element element)
     {
-      int length = 40 + 8 * element.PointCount() + element.TextCount();
+      int length = 40 + 8 * element.PointCount() + element.TextCount(element.Text);
       return length;
     }
   }

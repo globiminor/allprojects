@@ -18,6 +18,7 @@ namespace OCourse.ViewModels
     }
 
     public IReadOnlyList<SectionList> Parts => _parts;
+    public SectionList Permutation => _permutation;
     public int StartNr { get; set; }
     public int Index { get; set; }
   }

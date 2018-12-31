@@ -43,23 +43,19 @@
       this.btnBackCalc = new System.Windows.Forms.Button();
       this.chkOnTop = new System.Windows.Forms.CheckBox();
       this.pnlCourse = new System.Windows.Forms.Panel();
-      this._cntSection = new OCourse.Gui.CntSection();
       this.btnExport = new System.Windows.Forms.Button();
       this.btnImport = new System.Windows.Forms.Button();
       this.dlgSave = new System.Windows.Forms.SaveFileDialog();
       this.splCourse = new System.Windows.Forms.SplitContainer();
       this.splVars = new System.Windows.Forms.SplitContainer();
       this.btnRefreshSection = new System.Windows.Forms.Button();
-      this.btnExportCsv = new System.Windows.Forms.Button();
       this.lblVariations = new System.Windows.Forms.Label();
       this._lstVarBuilders = new System.Windows.Forms.ComboBox();
-      this.btnExportCourses = new System.Windows.Forms.Button();
       this.dgvInfo = new System.Windows.Forms.DataGridView();
       this.lblEstime = new System.Windows.Forms.Label();
       this.txtEstimate = new System.Windows.Forms.TextBox();
       this.lblCat = new System.Windows.Forms.Label();
       this._lstCats = new System.Windows.Forms.ComboBox();
-      this.btnExportPermut = new System.Windows.Forms.Button();
       this._txtMax = new System.Windows.Forms.TextBox();
       this.lblMax = new System.Windows.Forms.Label();
       this.lblMin = new System.Windows.Forms.Label();
@@ -83,6 +79,15 @@
       this.mniSaveAs = new System.Windows.Forms.ToolStripMenuItem();
       this._cntConfig = new LeastCostPathUI.CntConfigView();
       this.splModelCourse = new System.Windows.Forms.SplitContainer();
+      this.mnuVarExport = new System.Windows.Forms.MenuStrip();
+      this.mniVarExport = new System.Windows.Forms.ToolStripMenuItem();
+      this.mniVarExpOcad = new System.Windows.Forms.ToolStripMenuItem();
+      this.mniVarExpCsv = new System.Windows.Forms.ToolStripMenuItem();
+      this._cntSection = new OCourse.Gui.CntSection();
+      this.mnuPermExport = new System.Windows.Forms.MenuStrip();
+      this.mniPermExport = new System.Windows.Forms.ToolStripMenuItem();
+      this.mniPermExpOcad = new System.Windows.Forms.ToolStripMenuItem();
+      this.varPermExpCsv = new System.Windows.Forms.ToolStripMenuItem();
       this.pnlCourse.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.splCourse)).BeginInit();
       this.splCourse.Panel1.SuspendLayout();
@@ -99,12 +104,14 @@
       this.splModelCourse.Panel1.SuspendLayout();
       this.splModelCourse.Panel2.SuspendLayout();
       this.splModelCourse.SuspendLayout();
+      this.mnuVarExport.SuspendLayout();
+      this.mnuPermExport.SuspendLayout();
       this.SuspendLayout();
       // 
       // btnCourse
       // 
       this.btnCourse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-      this.btnCourse.Location = new System.Drawing.Point(707, 25);
+      this.btnCourse.Location = new System.Drawing.Point(780, 25);
       this.btnCourse.Name = "btnCourse";
       this.btnCourse.Size = new System.Drawing.Size(26, 23);
       this.btnCourse.TabIndex = 8;
@@ -118,7 +125,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
       this._txtCourse.Location = new System.Drawing.Point(88, 27);
       this._txtCourse.Name = "_txtCourse";
-      this._txtCourse.Size = new System.Drawing.Size(613, 20);
+      this._txtCourse.Size = new System.Drawing.Size(686, 20);
       this._txtCourse.TabIndex = 7;
       // 
       // label3
@@ -195,17 +202,6 @@
       this.pnlCourse.Size = new System.Drawing.Size(236, 218);
       this.pnlCourse.TabIndex = 19;
       // 
-      // _cntSection
-      // 
-      this._cntSection.BackColor = System.Drawing.SystemColors.Window;
-      this._cntSection.BoldCombination = null;
-      this._cntSection.Course = null;
-      this._cntSection.Location = new System.Drawing.Point(1, 1);
-      this._cntSection.Name = "_cntSection";
-      this._cntSection.Size = new System.Drawing.Size(160, 271);
-      this._cntSection.TabIndex = 18;
-      this._cntSection.Vm = null;
-      // 
       // btnExport
       // 
       this.btnExport.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
@@ -244,7 +240,7 @@
       // splCourse.Panel2
       // 
       this.splCourse.Panel2.Controls.Add(this.splVars);
-      this.splCourse.Size = new System.Drawing.Size(612, 248);
+      this.splCourse.Size = new System.Drawing.Size(685, 248);
       this.splCourse.SplitterDistance = 236;
       this.splCourse.TabIndex = 22;
       // 
@@ -258,19 +254,18 @@
       // splVars.Panel1
       // 
       this.splVars.Panel1.Controls.Add(this.btnRefreshSection);
-      this.splVars.Panel1.Controls.Add(this.btnExportCsv);
       this.splVars.Panel1.Controls.Add(this.lblVariations);
       this.splVars.Panel1.Controls.Add(this._lstVarBuilders);
-      this.splVars.Panel1.Controls.Add(this.btnExportCourses);
       this.splVars.Panel1.Controls.Add(this.dgvInfo);
+      this.splVars.Panel1.Controls.Add(this.mnuVarExport);
       // 
       // splVars.Panel2
       // 
+      this.splVars.Panel2.Controls.Add(this.mnuPermExport);
       this.splVars.Panel2.Controls.Add(this.lblEstime);
       this.splVars.Panel2.Controls.Add(this.txtEstimate);
       this.splVars.Panel2.Controls.Add(this.lblCat);
       this.splVars.Panel2.Controls.Add(this._lstCats);
-      this.splVars.Panel2.Controls.Add(this.btnExportPermut);
       this.splVars.Panel2.Controls.Add(this._txtMax);
       this.splVars.Panel2.Controls.Add(this.lblMax);
       this.splVars.Panel2.Controls.Add(this.lblMin);
@@ -278,7 +273,7 @@
       this.splVars.Panel2.Controls.Add(this.lblPermuts);
       this.splVars.Panel2.Controls.Add(this.btnCalcPermut);
       this.splVars.Panel2.Controls.Add(this.dgvPermut);
-      this.splVars.Size = new System.Drawing.Size(372, 248);
+      this.splVars.Size = new System.Drawing.Size(445, 248);
       this.splVars.SplitterDistance = 141;
       this.splVars.TabIndex = 1;
       // 
@@ -287,24 +282,13 @@
       this.btnRefreshSection.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
       this.btnRefreshSection.Enabled = false;
       this.btnRefreshSection.Image = global::OCourse.Properties.Resources.calc_recalc;
-      this.btnRefreshSection.Location = new System.Drawing.Point(349, 3);
+      this.btnRefreshSection.Location = new System.Drawing.Point(422, 3);
       this.btnRefreshSection.Name = "btnRefreshSection";
       this.btnRefreshSection.Size = new System.Drawing.Size(22, 23);
       this.btnRefreshSection.TabIndex = 39;
       this.ttp.SetToolTip(this.btnRefreshSection, "Reset calculated route for selected section");
       this.btnRefreshSection.UseVisualStyleBackColor = true;
       this.btnRefreshSection.Click += new System.EventHandler(this.BtnRefreshSection_Click);
-      // 
-      // btnExportCsv
-      // 
-      this.btnExportCsv.Image = global::OCourse.Properties.Resources.exp_csv;
-      this.btnExportCsv.Location = new System.Drawing.Point(198, 3);
-      this.btnExportCsv.Name = "btnExportCsv";
-      this.btnExportCsv.Size = new System.Drawing.Size(22, 23);
-      this.btnExportCsv.TabIndex = 38;
-      this.ttp.SetToolTip(this.btnExportCsv, "Export selected courses");
-      this.btnExportCsv.UseVisualStyleBackColor = true;
-      this.btnExportCsv.Click += new System.EventHandler(this.BtnExportCsv_Click);
       // 
       // lblVariations
       // 
@@ -323,17 +307,6 @@
       this._lstVarBuilders.Name = "_lstVarBuilders";
       this._lstVarBuilders.Size = new System.Drawing.Size(102, 21);
       this._lstVarBuilders.TabIndex = 36;
-      // 
-      // btnExportCourses
-      // 
-      this.btnExportCourses.Image = global::OCourse.Properties.Resources.exp_course;
-      this.btnExportCourses.Location = new System.Drawing.Point(170, 3);
-      this.btnExportCourses.Name = "btnExportCourses";
-      this.btnExportCourses.Size = new System.Drawing.Size(22, 23);
-      this.btnExportCourses.TabIndex = 35;
-      this.ttp.SetToolTip(this.btnExportCourses, "Export selected courses");
-      this.btnExportCourses.UseVisualStyleBackColor = true;
-      this.btnExportCourses.Click += new System.EventHandler(this.BtnExportCourses_Click);
       // 
       // dgvInfo
       // 
@@ -372,7 +345,7 @@
       this.dgvInfo.RowHeadersDefaultCellStyle = dataGridViewCellStyle3;
       this.dgvInfo.RowHeadersVisible = false;
       this.dgvInfo.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-      this.dgvInfo.Size = new System.Drawing.Size(372, 108);
+      this.dgvInfo.Size = new System.Drawing.Size(445, 108);
       this.dgvInfo.TabIndex = 0;
       this.dgvInfo.CurrentCellChanged += new System.EventHandler(this.DgvInfo_CurrentCellChanged);
       // 
@@ -412,17 +385,6 @@
       this._lstCats.Name = "_lstCats";
       this._lstCats.Size = new System.Drawing.Size(103, 21);
       this._lstCats.TabIndex = 17;
-      // 
-      // btnExportPermut
-      // 
-      this.btnExportPermut.Image = global::OCourse.Properties.Resources.exp_course;
-      this.btnExportPermut.Location = new System.Drawing.Point(349, 23);
-      this.btnExportPermut.Name = "btnExportPermut";
-      this.btnExportPermut.Size = new System.Drawing.Size(22, 22);
-      this.btnExportPermut.TabIndex = 16;
-      this.ttp.SetToolTip(this.btnExportPermut, "Export selected permutations");
-      this.btnExportPermut.UseVisualStyleBackColor = true;
-      this.btnExportPermut.Click += new System.EventHandler(this.BtnExportPermut_Click);
       // 
       // _txtMax
       // 
@@ -484,7 +446,7 @@
       this.dgvPermut.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
       this.dgvPermut.Location = new System.Drawing.Point(0, 51);
       this.dgvPermut.Name = "dgvPermut";
-      this.dgvPermut.Size = new System.Drawing.Size(372, 52);
+      this.dgvPermut.Size = new System.Drawing.Size(445, 52);
       this.dgvPermut.TabIndex = 0;
       this.ttp.SetToolTip(this.dgvPermut, "Select combinations to be shown in map");
       this.dgvPermut.SelectionChanged += new System.EventHandler(this.DgvVars_SelectionChanged);
@@ -558,7 +520,7 @@
       // btnCancel
       // 
       this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-      this.btnCancel.Location = new System.Drawing.Point(587, 422);
+      this.btnCancel.Location = new System.Drawing.Point(660, 422);
       this.btnCancel.Name = "btnCancel";
       this.btnCancel.Size = new System.Drawing.Size(113, 23);
       this.btnCancel.TabIndex = 34;
@@ -582,7 +544,7 @@
             this.mniSettings});
       this.mnuAll.Location = new System.Drawing.Point(0, 0);
       this.mnuAll.Name = "mnuAll";
-      this.mnuAll.Size = new System.Drawing.Size(745, 24);
+      this.mnuAll.Size = new System.Drawing.Size(818, 24);
       this.mnuAll.TabIndex = 36;
       this.mnuAll.Text = "menuStrip1";
       // 
@@ -623,7 +585,7 @@
       this._cntConfig.Dock = System.Windows.Forms.DockStyle.Fill;
       this._cntConfig.Location = new System.Drawing.Point(0, 0);
       this._cntConfig.Name = "_cntConfig";
-      this._cntConfig.Size = new System.Drawing.Size(612, 115);
+      this._cntConfig.Size = new System.Drawing.Size(685, 115);
       this._cntConfig.TabIndex = 33;
       // 
       // splModelCourse
@@ -643,15 +605,98 @@
       // splModelCourse.Panel2
       // 
       this.splModelCourse.Panel2.Controls.Add(this.splCourse);
-      this.splModelCourse.Size = new System.Drawing.Size(612, 367);
+      this.splModelCourse.Size = new System.Drawing.Size(685, 367);
       this.splModelCourse.SplitterDistance = 115;
       this.splModelCourse.TabIndex = 37;
+      // 
+      // mnuVarExport
+      // 
+      this.mnuVarExport.Dock = System.Windows.Forms.DockStyle.None;
+      this.mnuVarExport.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.mniVarExport});
+      this.mnuVarExport.Location = new System.Drawing.Point(169, 3);
+      this.mnuVarExport.Name = "mnuVarExport";
+      this.mnuVarExport.Size = new System.Drawing.Size(60, 24);
+      this.mnuVarExport.TabIndex = 40;
+      this.mnuVarExport.Text = "menuStrip1";
+      // 
+      // mniVarExport
+      // 
+      this.mniVarExport.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.mniVarExpOcad,
+            this.mniVarExpCsv});
+      this.mniVarExport.Name = "mniVarExport";
+      this.mniVarExport.Size = new System.Drawing.Size(52, 20);
+      this.mniVarExport.Text = "Export";
+      // 
+      // mniVarExpOcad
+      // 
+      this.mniVarExpOcad.Image = global::OCourse.Properties.Resources.exp_course;
+      this.mniVarExpOcad.Name = "mniVarExpOcad";
+      this.mniVarExpOcad.Size = new System.Drawing.Size(116, 22);
+      this.mniVarExpOcad.Text = "OCAD...";
+      this.mniVarExpOcad.Click += new System.EventHandler(this.BtnExportCourses_Click);
+      // 
+      // mniVarExpCsv
+      // 
+      this.mniVarExpCsv.Image = global::OCourse.Properties.Resources.exp_csv;
+      this.mniVarExpCsv.Name = "mniVarExpCsv";
+      this.mniVarExpCsv.Size = new System.Drawing.Size(116, 22);
+      this.mniVarExpCsv.Text = "Text...";
+      this.mniVarExpCsv.Click += new System.EventHandler(this.BtnExportCsv_Click);
+      // 
+      // _cntSection
+      // 
+      this._cntSection.BackColor = System.Drawing.SystemColors.Window;
+      this._cntSection.BoldCombination = null;
+      this._cntSection.Course = null;
+      this._cntSection.Location = new System.Drawing.Point(1, 1);
+      this._cntSection.Name = "_cntSection";
+      this._cntSection.Size = new System.Drawing.Size(160, 271);
+      this._cntSection.TabIndex = 18;
+      this._cntSection.Vm = null;
+      // 
+      // mnuPermExport
+      // 
+      this.mnuPermExport.Dock = System.Windows.Forms.DockStyle.None;
+      this.mnuPermExport.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.mniPermExport});
+      this.mnuPermExport.Location = new System.Drawing.Point(346, 21);
+      this.mnuPermExport.Name = "mnuPermExport";
+      this.mnuPermExport.Size = new System.Drawing.Size(180, 24);
+      this.mnuPermExport.TabIndex = 41;
+      this.mnuPermExport.Text = "menuStrip1";
+      // 
+      // mniPermExport
+      // 
+      this.mniPermExport.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.mniPermExpOcad,
+            this.varPermExpCsv});
+      this.mniPermExport.Name = "mniPermExport";
+      this.mniPermExport.Size = new System.Drawing.Size(52, 20);
+      this.mniPermExport.Text = "Export";
+      // 
+      // mniPermExpOcad
+      // 
+      this.mniPermExpOcad.Image = global::OCourse.Properties.Resources.exp_course;
+      this.mniPermExpOcad.Name = "mniPermExpOcad";
+      this.mniPermExpOcad.Size = new System.Drawing.Size(180, 22);
+      this.mniPermExpOcad.Text = "OCAD...";
+      this.mniPermExpOcad.Click += new System.EventHandler(this.BtnExportPermutOcad_Click);
+      // 
+      // varPermExpCsv
+      // 
+      this.varPermExpCsv.Image = global::OCourse.Properties.Resources.exp_csv;
+      this.varPermExpCsv.Name = "varPermExpCsv";
+      this.varPermExpCsv.Size = new System.Drawing.Size(180, 22);
+      this.varPermExpCsv.Text = "Text...";
+      this.varPermExpCsv.Click += new System.EventHandler(this.BtnExportPermutCsv_Click);
       // 
       // WdgOCourse
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-      this.ClientSize = new System.Drawing.Size(745, 449);
+      this.ClientSize = new System.Drawing.Size(818, 449);
       this.Controls.Add(this.splModelCourse);
       this.Controls.Add(this.btnCourse);
       this.Controls.Add(this._txtCourse);
@@ -695,6 +740,10 @@
       this.splModelCourse.Panel2.ResumeLayout(false);
       ((System.ComponentModel.ISupportInitialize)(this.splModelCourse)).EndInit();
       this.splModelCourse.ResumeLayout(false);
+      this.mnuVarExport.ResumeLayout(false);
+      this.mnuVarExport.PerformLayout();
+      this.mnuPermExport.ResumeLayout(false);
+      this.mnuPermExport.PerformLayout();
       this.ResumeLayout(false);
       this.PerformLayout();
 
@@ -729,20 +778,17 @@
     private System.Windows.Forms.Button btnCreateScripts;
     private LeastCostPathUI.CntConfigView _cntConfig;
     private System.Windows.Forms.Button btnCancel;
-    private System.Windows.Forms.Button btnExportCourses;
     private System.Windows.Forms.TextBox _txtMax;
     private System.Windows.Forms.Label lblMax;
     private System.Windows.Forms.Label lblMin;
     private System.Windows.Forms.TextBox _txtMin;
     private System.Windows.Forms.Label lblPermuts;
     private System.Windows.Forms.Button btnCalcPermut;
-    private System.Windows.Forms.Button btnExportPermut;
     private System.Windows.Forms.Label lblCat;
     private System.Windows.Forms.ComboBox _lstCats;
     private System.Windows.Forms.ComboBox _lstVarBuilders;
     private System.Windows.Forms.Label lblVariations;
     private System.Windows.Forms.ComboBox _lstDisplayType;
-    private System.Windows.Forms.Button btnExportCsv;
     private System.Windows.Forms.Label lblEstime;
     private System.Windows.Forms.TextBox txtEstimate;
     private System.Windows.Forms.MenuStrip mnuAll;
@@ -752,6 +798,14 @@
     private System.Windows.Forms.ToolStripMenuItem mniSaveAs;
     private System.Windows.Forms.Button btnRefreshSection;
     private System.Windows.Forms.SplitContainer splModelCourse;
+    private System.Windows.Forms.MenuStrip mnuVarExport;
+    private System.Windows.Forms.ToolStripMenuItem mniVarExport;
+    private System.Windows.Forms.ToolStripMenuItem mniVarExpOcad;
+    private System.Windows.Forms.ToolStripMenuItem mniVarExpCsv;
+    private System.Windows.Forms.MenuStrip mnuPermExport;
+    private System.Windows.Forms.ToolStripMenuItem mniPermExport;
+    private System.Windows.Forms.ToolStripMenuItem mniPermExpOcad;
+    private System.Windows.Forms.ToolStripMenuItem varPermExpCsv;
   }
 }
 

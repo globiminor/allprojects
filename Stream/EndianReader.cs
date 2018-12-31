@@ -124,25 +124,19 @@ namespace System.IO
     public string ReadUnicodeString()
     {
       byte b0, b1;
-      ArrayList pList = new ArrayList();
+      Collections.Generic.List<byte> bytes = new Collections.Generic.List<byte>();
       do
       {
         b0 = ReadByte();
         b1 = ReadByte();
         if (b0 != 0 || b1 != 0)
         {
-          pList.Add(b0);
-          pList.Add(b1);
+          bytes.Add(b0);
+          bytes.Add(b1);
         }
       } while (b0 != 0 || b1 != 0);
 
-      int iNBytes = pList.Count;
-      byte[] pBytes = new byte[iNBytes];
-      for (int iByte = 0; iByte < iNBytes; iByte++)
-      { pBytes[iByte] = (byte)pList[iByte]; }
-
-      UnicodeEncoding unicode = new UnicodeEncoding();
-      return unicode.GetString(pBytes);
+      return Encoding.Unicode.GetString(bytes.ToArray());
     }
   }
 }

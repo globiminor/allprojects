@@ -116,6 +116,10 @@ namespace OCourse.ViewModels
     public string Title { get { return $"OCourse {SettingsName}"; } }
     public bool CanSave { get { return _settingsName != null; } }
 
+    public bool CanVariationExport { get { return _info?.Count > 0; } }
+
+    public bool CanPermutationExport { get { return _permutations?.Count > 0; } }
+
     public void LoadSettings(string settingsPath)
     {
       using (TextReader r = new StreamReader(settingsPath))
@@ -913,15 +917,9 @@ namespace OCourse.ViewModels
       RunAsync(pb);
     }
 
-    internal void PermutationsExport(System.Collections.IEnumerable selectedRows, string file)
+    internal void PermutationsExport(IEnumerable<PermutationVm> selectedRows, string file)
     {
-      List<PermutationVm> permutations = new List<PermutationVm>();
-
-      foreach (var o in selectedRows)
-      {
-        PermutationVm permutation = (PermutationVm)o;
-        permutations.Add(permutation);
-      }
+      List<PermutationVm> permutations = new List<PermutationVm>(selectedRows);
 
       using (TextWriter writer = new StreamWriter(file, append: true))
       {

@@ -1,19 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.IO;
-using System.Windows.Forms;
-using LeastCostPathUI;
+﻿using Basics.Forms;
 using Basics.Geom;
+using Basics.Views;
+using GuiUtils;
+using LeastCostPathUI;
 using Ocad;
 using OCourse.Commands;
 using OCourse.Ext;
 using OCourse.Route;
 using OCourse.ViewModels;
-using Basics.Views;
-using Basics;
-using GuiUtils;
-using Basics.Forms;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
 
 namespace OCourse.Gui
 {
@@ -83,6 +83,12 @@ namespace OCourse.Gui
           dgvInfo.Bind(x => x.DataSource, _bindingSource, nameof(_vm.Info),
               true, DataSourceUpdateMode.Never);
 
+          mnuVarExport.Bind(x => x.Enabled, _bindingSource, nameof(_vm.CanVariationExport),
+            false, DataSourceUpdateMode.Never);
+
+          mnuPermExport.Bind(x => x.Enabled, _bindingSource, nameof(_vm.CanPermutationExport),
+            false, DataSourceUpdateMode.Never);
+
           {
             _lstCourses.DataSource = _vm.CourseNames;
             _lstCourses.Bind(x => x.SelectedItem, _bindingSource, nameof(_vm.CourseName),
@@ -142,10 +148,10 @@ namespace OCourse.Gui
       {
         if (_working && value)
         {
-          if ((dgvInfo.FirstDisplayedCell?.RowIndex ?? short.MaxValue) 
-            + dgvInfo.DisplayedRowCount(includePartialRow:false) < dgvInfo.RowCount)
+          if ((dgvInfo.FirstDisplayedCell?.RowIndex ?? short.MaxValue)
+            + dgvInfo.DisplayedRowCount(includePartialRow: false) < dgvInfo.RowCount)
           {
-            dgvInfo.FirstDisplayedCell = dgvInfo.Rows[dgvInfo.RowCount - dgvInfo.DisplayedRowCount(includePartialRow: false)].Cells[0]; 
+            dgvInfo.FirstDisplayedCell = dgvInfo.Rows[dgvInfo.RowCount - dgvInfo.DisplayedRowCount(includePartialRow: false)].Cells[0];
           }
         }
         if (_working == value)
@@ -693,12 +699,12 @@ namespace OCourse.Gui
 
     private void BtnExportCourses_Click(object sender, EventArgs e)
     {
-      IEnumerable<CostSectionlist> selectedCombs = CostSectionlist.GetUniqueCombs(GetSeletedCombs());
-
       WdgExport wdg = new WdgExport { TemplateFile = _vm.CourseFile };
       if (wdg.ShowDialog(this) != DialogResult.OK)
       { return; }
 
+      IEnumerable<ICost> selectedCosts = DataGridViewUtils.GetSelectedItems(dgvInfo).Cast<ICost>();
+      IEnumerable<CostSectionlist> selectedCombs = CostSectionlist.GetUniqueCombs(selectedCosts);
       string courseName = null;
       if (_vm.Course != null)
       { courseName = PermutationUtils.GetCoreCourseName(_vm.Course.Name); }
@@ -716,7 +722,8 @@ namespace OCourse.Gui
       { return; }
 
       string fileName = dlg.FileName;
-      IEnumerable<CostSectionlist> selectedCombs = CostSectionlist.GetUniqueCombs(GetSeletedCombs());
+      IEnumerable<ICost> selectedCosts = DataGridViewUtils.GetSelectedItems(dgvInfo).Cast<ICost>();
+      IEnumerable<CostSectionlist> selectedCombs = CostSectionlist.GetUniqueCombs(selectedCosts);
       List<Course> courses = new List<Course>();
       using (TextWriter w = new StreamWriter(fileName))
       {
@@ -771,20 +778,6 @@ namespace OCourse.Gui
       }
     }
 
-    private IEnumerable<ICost> GetSeletedCombs()
-    {
-      foreach (var o in dgvInfo.Rows)
-      {
-        DataGridViewRow row = (DataGridViewRow)o;
-        if (!row.Selected)
-        { continue; }
-        if (!(row.DataBoundItem is ICost comb))
-        { continue; }
-
-        yield return comb;
-      }
-    }
-
     private void BtnCalcPermut_Click(object sender, EventArgs e)
     {
       try
@@ -800,7 +793,24 @@ namespace OCourse.Gui
       { dgvPermut.ResumeLayout(); }
     }
 
-    private void BtnExportPermut_Click(object sender, EventArgs e)
+    private void BtnExportPermutOcad_Click(object sender, EventArgs e)
+    {
+      WdgExport wdg = new WdgExport { TemplateFile = _vm.CourseFile };
+      if (wdg.ShowDialog(this) != DialogResult.OK)
+      { return; }
+
+      string courseName = null;
+      if (_vm.Course != null)
+      { courseName = PermutationUtils.GetCoreCourseName(_vm.Course.Name); }
+      IEnumerable<PermutationVm> selectedPermuts = DataGridViewUtils.GetSelectedItems(dgvPermut).Cast<PermutationVm>();
+      IEnumerable<CostSectionlist> selectedCombs = CostSectionlist.GetCostSectionLists(selectedPermuts, courseName);
+      using (CmdCourseTransfer cmd = new CmdCourseTransfer(wdg.ExportFile, wdg.TemplateFile, _vm.CourseFile))
+      {
+        cmd.Export(courseName, selectedCombs, courseName);
+      }
+    }
+
+    private void BtnExportPermutCsv_Click(object sender, EventArgs e)
     {
       if (_vm == null)
       { return; }
@@ -816,7 +826,7 @@ namespace OCourse.Gui
         exportFile = dlg.FileName;
       }
 
-        _vm.PermutationsExport(DataGridViewUtils.GetSelectedItems(dgvPermut), exportFile);
+      _vm.PermutationsExport(DataGridViewUtils.GetSelectedItems(dgvPermut).Cast<PermutationVm>(), exportFile);
     }
 
 
