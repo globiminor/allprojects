@@ -516,12 +516,16 @@ namespace Ocad
     public override void WriteElementContent(EndianWriter writer, Element element)
     {
       OcadWriter.Write(writer, element.Geometry);
+      WriteUnicodeString(writer, element.Text);
+    }
 
-      if (element.Text != "")
+    protected static void WriteUnicodeString(EndianWriter writer, string text)
+    {
+      if (!string.IsNullOrEmpty(text))
       {
-        writer.WriteUnicodeString(element.Text);
-        int n = ElementV9.TextCountV9(element.Text);
-        for (int i = element.Text.Length * 2; i < n; i++)
+        writer.WriteUnicodeString(text);
+        int n = ElementV9.TextCountV9(text);
+        for (int i = text.Length * 2 + 2; i < n; i++)
         { writer.BaseStream.WriteByte(0); }
       }
     }

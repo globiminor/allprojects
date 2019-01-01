@@ -802,8 +802,15 @@ namespace OCourse.Gui
       string courseName = null;
       if (_vm.Course != null)
       { courseName = PermutationUtils.GetCoreCourseName(_vm.Course.Name); }
+      Setup setup;
+      using (OcadReader reader = OcadReader.Open(_vm.CourseFile))
+      {
+        setup = reader.ReadSetup();
+      }
+
       IEnumerable<PermutationVm> selectedPermuts = DataGridViewUtils.GetSelectedItems(dgvPermut).Cast<PermutationVm>();
-      IEnumerable<CostSectionlist> selectedCombs = CostSectionlist.GetCostSectionLists(selectedPermuts, courseName);
+      IEnumerable<CostSectionlist> selectedCombs =
+        CostSectionlist.GetCostSectionLists(selectedPermuts, _vm.RouteCalculator, _vm.LcpConfig.Resolution, setup);
       using (CmdCourseTransfer cmd = new CmdCourseTransfer(wdg.ExportFile, wdg.TemplateFile, _vm.CourseFile))
       {
         cmd.Export(courseName, selectedCombs, courseName);

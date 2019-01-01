@@ -29,7 +29,7 @@ namespace OCourse.Route
       _steps = steps;
       _tvmCalc = tvmCalc ?? new TvmCalc();
 
-      _calcList = new Dictionary<CostFromTo, CostFromTo>(new CostFromTo.SectionComparer());
+      _calcList = new Dictionary<CostFromTo, CostFromTo>(new CostFromTo.GeometryComparer());
     }
 
     public string VeloPath => _veloPath;

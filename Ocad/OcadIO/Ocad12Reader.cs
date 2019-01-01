@@ -156,13 +156,7 @@ namespace Ocad
     public override void WriteElementContent(EndianWriter writer, Element element)
     {
       base.WriteElementContent(writer, element);
-
-      if (element.ObjectString?.Length > 0)
-      {
-        System.Text.UnicodeEncoding unicode = new System.Text.UnicodeEncoding();
-        byte[] bytes = unicode.GetBytes(element.ObjectString);
-        writer.Write(bytes);
-      }
+      WriteUnicodeString(writer, element.ObjectString);
     }
     public override int CalcElementLength(Element element)
     {

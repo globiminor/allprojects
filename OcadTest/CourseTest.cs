@@ -82,6 +82,34 @@ namespace OcadTest
     }
 
     [TestMethod]
+    public void StadlerBerg()
+    {
+      using (OcadReader r0 = OcadReader.Open(@"C:\daten\felix\kapreolo\karten\stadlerberg\2017\5er_staffel_End_FAR.ocd"))
+      using (OcadReader r1 = OcadReader.Open(@"C:\daten\felix\kapreolo\karten\stadlerberg\2017\5er_staffel_End_Exp.ocd"))
+      using (OcadReader r2 = OcadReader.Open(@"C:\daten\felix\kapreolo\karten\stadlerberg\2017\5er_staffel_End_Exp_.ocd"))
+      {
+        var i0 = r0.GetIndices();
+        var i1 = r1.GetIndices();
+        var i2 = r2.GetIndices();
+
+        for (int i = i0.Count; i < i1.Count; i++)
+        {
+          var e1 = r1.ReadElement(i1[i]);
+          if (e1.ObjectStringType != ObjectStringType.CsPreview)
+          { continue; }
+
+          foreach (var i2_ in i2)
+          {
+            var e2 = r2.ReadElement(i2_);
+            if (e2.ObjectString == e1.ObjectString)
+            {
+
+            }
+          }
+        }
+      }
+    }
+    [TestMethod]
     public void CanAnalyzeCourse()
     {
       Course course = new Course("Test");

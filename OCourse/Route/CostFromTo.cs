@@ -7,7 +7,7 @@ namespace OCourse.Route
 {
   internal class CostFromTo : CostBase, ICost
   {
-    public class SectionComparer : IComparer<CostFromTo>, IEqualityComparer<CostFromTo>
+    public class GeometryComparer : IComparer<CostFromTo>, IEqualityComparer<CostFromTo>
     {
       public bool Equals(CostFromTo x, CostFromTo y)
       {
@@ -60,7 +60,7 @@ namespace OCourse.Route
     public IPoint Start { get; private set; }
     public IPoint End { get; private set; }
     public double Resolution { get; set; }
-    private Polyline _route;
+    private readonly Polyline _route;
 
     public CostFromTo(Control ctrlFrom, Control ctrlTo,
       IPoint start, IPoint end, double resolution,

@@ -148,6 +148,10 @@ namespace Ocad
       else
       { index.Color = (short)Color; }
 
+      index.ViewType = (byte)ObjectStringType;
+      if (ObjectStringType == ObjectStringType.CsPreview)
+      { index.Status = 2; }
+
       return index;
     }
 

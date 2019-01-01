@@ -545,7 +545,7 @@ namespace OCourse.ViewModels
       {
         _info.RaiseListChangedEvents = false;
         Dictionary<CostFromTo, CostFromTo> costDict =
-          new Dictionary<CostFromTo, CostFromTo>(new CostFromTo.SectionComparer());
+          new Dictionary<CostFromTo, CostFromTo>(new CostFromTo.GeometryComparer());
         foreach (var cost in routes)
         {
           if (cost is CostFromTo costFromTo)

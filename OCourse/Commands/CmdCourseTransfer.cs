@@ -99,6 +99,27 @@ namespace OCourse.Commands
         return _courseViewDict;
       }
     }
+
+    private List<Element> _courseElements;
+    private List<Element> CourseElements
+    {
+      get
+      {
+        if (_courseElements == null)
+        {
+          List<Element> courseElements = new List<Element>();
+          foreach (Element element in Reader.Elements(false, null))
+          {
+            if (element.ObjectStringType != ObjectStringType.CsPreview)
+            { continue; }
+            courseElements.Add(element);
+          }
+          _courseElements = courseElements;
+        }
+        return _courseElements;
+      }
+    }
+
     private Ocad9Writer Writer
     {
       get
@@ -139,10 +160,15 @@ namespace OCourse.Commands
     {
       Export(course, climb);
 
-      ExportCourseView(course, customLayoutCourse);
+      ExportCourseStringParamViews(course, customLayoutCourse);
+
+      ExportCourseElementViews(course, customLayoutCourse);
     }
 
-    private void ExportCourseView(Course course, string customLayoutCourse)
+    /// <summary>
+    /// Export -OCAD11
+    /// </summary>
+    private void ExportCourseStringParamViews(Course course, string customLayoutCourse)
     {
       foreach (var pair in CourseViewDict)
       {
@@ -163,6 +189,33 @@ namespace OCourse.Commands
         }
       }
     }
+
+    /// <summary>
+    /// Export -OCAD11
+    /// </summary>
+    private void ExportCourseElementViews(Course course, string customLayoutCourse)
+    {
+      foreach (var elem in CourseElements)
+      {
+        string origObjectString = elem.ObjectString ?? string.Empty;
+        if (!origObjectString.StartsWith(customLayoutCourse))
+        { continue; }
+
+        MultiParam par = new ExportPar(origObjectString);
+        if (par.Name != customLayoutCourse)
+        { continue; }
+
+        par.Name = course.Name;
+        try
+        {
+          elem.ObjectString = par.StringPar.Trim('\t');
+          Writer.Append(elem);
+        }
+        finally
+        { elem.ObjectString = origObjectString; }
+      }
+    }
+
 
     private int GetElemIdx(StringParamIndex oldIdx)
     {

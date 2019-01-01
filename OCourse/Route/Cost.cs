@@ -124,8 +124,9 @@ namespace OCourse.Route
     public IReadOnlyList<CostBase> Parts
     { get { return _parts; } }
 
-    public static IEnumerable<CostSectionlist> GetCostSectionLists(
-      IEnumerable<ViewModels.PermutationVm> permutations, string courseName)
+    internal static IEnumerable<CostSectionlist> GetCostSectionLists(
+      IEnumerable<ViewModels.PermutationVm> permutations, 
+      RouteCalculator routeCalc, double resol, Setup setup)
     {
       foreach (var permut in permutations)
       {
@@ -140,8 +141,9 @@ namespace OCourse.Route
             {
               iLeg++;
               sLeg = $".{iLeg}";
-              yield return new CostSectionlist(new CostSum(0, 0, 0, 0), sections)
-              { Name = $"{permut.StartNr}{sLeg}" };
+              CostSectionlist cost = routeCalc.GetCourseInfo(sections, resol, setup);
+              cost.Name = $"{permut.StartNr}{sLeg}";
+              yield return cost;
               sLeg = $".{iLeg + 1}";
             }
             sections = null;
@@ -158,8 +160,9 @@ namespace OCourse.Route
         }
         if (sections != null)
         {
-          yield return new CostSectionlist(new CostSum(0, 0, 0, 0), sections)
-          { Name = $"{permut.StartNr}{sLeg}" };
+          CostSectionlist cost = routeCalc.GetCourseInfo(sections, resol, setup);
+          cost.Name = $"{permut.StartNr}{sLeg}";
+          yield return cost;
         }
       }
     }
