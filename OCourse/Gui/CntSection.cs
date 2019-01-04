@@ -469,7 +469,6 @@ namespace OCourse.Gui
       public Control Display { get; }
     }
 
-    [Obsolete("refactor --")]
     public void SetCourse(Course course)
     {
       Controls.Clear();

@@ -54,6 +54,8 @@
     <Compile Include="Ext\Grafics.cs" />
     <Compile Include="Ext\NextControl.cs" />
     <Compile Include="Ext\NextControlList.cs" />
+    <Compile Include="Ext\VariationBuilder.Nested.cs" />
+    <Compile Include="Ext\VariationBuilder.PermutationBuilder.cs" />
     <Compile Include="Ext\PermutationUtils.cs" />
     <Compile Include="Ext\RelayAdapt.cs" />
     <Compile Include="Ext\SectionList.cs" />
