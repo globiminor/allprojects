@@ -1,62 +1,77 @@
-﻿using System;
+﻿using Ocad.StringParams;
+using Ocad.Symbol;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using Ocad.StringParams;
 
 namespace Ocad
 {
-  public class Ocad12Reader : Ocad11Reader
+  internal class Ocad12Io : OcadIo //Ocad11Reader
   {
+    public Ocad12Io(Stream stream)
+      : base(stream)
+    { }
+
+    public override Setup ReadSetup() => Ocad9Io.ReadSetup(this);
+    public override string ReadDescription() => Ocad11Io.ReadDescription(this);
+    public override BaseSymbol ReadSymbol() => Ocad11Io.ReadSymbol(this);
+    public override IEnumerable<ColorInfo> ReadColorInfos() => Ocad9Io.ReadColorInfos(this);
+    public override ElementIndex ReadIndex(int i) => Ocad9Io.ReadIndex(this, i);
+    public override int ReadElementLength() => Ocad9Io.ReadElementLength(this);
+    public override int GetElementTextCount(Element element, string text) => Ocad9Io.TextCountV9(text);
+    public override ElementIndex GetIndex(Element element) => Ocad9Io.GetIndex(this, element);
+    public override void Write(ElementIndex index) => Ocad9Io.Write(this, index);
+    public override void WriteElementSymbol(int symbol) => Ocad9Io.WriteElementSymbol(this, symbol);
     public override Element ReadElement()
     {
-      ElementV9 elem = new ElementV9(false);
+      Element elem = new Element(false);
 
-      elem.Symbol = BaseReader.ReadInt32();
+      elem.Symbol = Reader.ReadInt32();
       if (elem.Symbol < -4 || elem.Symbol == 0)
       { return null; }
 
-      elem.Type = (GeomType)BaseReader.ReadByte();
+      elem.Type = (GeomType)Reader.ReadByte();
       if (elem.Type == 0)
       { return null; }
 
-      BaseReader.ReadByte(); // reserved
+      Reader.ReadByte(); // reserved
 
-      elem.Angle = BaseReader.ReadInt16() * Math.PI / 1800.0; // 0.1 Degrees
+      elem.Angle = Reader.ReadInt16() * Math.PI / 1800.0; // 0.1 Degrees
 
-      elem.Color = BaseReader.ReadInt32();
-      elem.LineWidth = BaseReader.ReadInt16();
-      elem.Flags = BaseReader.ReadInt16();
-      elem.ServerObjectId = BaseReader.ReadInt32();
-      double height256MM = BaseReader.ReadInt32();
+      elem.Color = Reader.ReadInt32();
+      elem.LineWidth = Reader.ReadInt16();
+      elem.Flags = Reader.ReadInt16();
+      elem.ServerObjectId = Reader.ReadInt32();
+      double height256MM = Reader.ReadInt32();
       elem.Height = height256MM / (256.0 * 1000.0);
-      elem.CreationDate = DateTime.FromOADate(BaseReader.ReadDouble());
-      elem.MultirepresenationId = BaseReader.ReadInt32();
-      elem.ModificationDate = DateTime.FromOADate(BaseReader.ReadDouble());
+      elem.CreationDate = DateTime.FromOADate(Reader.ReadDouble());
+      elem.MultirepresenationId = Reader.ReadInt32();
+      elem.ModificationDate = DateTime.FromOADate(Reader.ReadDouble());
 
-      int nPoint = BaseReader.ReadInt32();
-      int nText = BaseReader.ReadInt16();
-      int nObjectString = BaseReader.ReadInt16();
-      int nDatabaseString = BaseReader.ReadInt16();
-      byte objectStringType = BaseReader.ReadByte();
+      int nPoint = Reader.ReadInt32();
+      int nText = Reader.ReadInt16();
+      int nObjectString = Reader.ReadInt16();
+      int nDatabaseString = Reader.ReadInt16();
+      byte objectStringType = Reader.ReadByte();
 
       elem.ObjectStringType = (ObjectStringType)objectStringType;
 
-      BaseReader.ReadByte();
+      Reader.ReadByte();
 
       List<Coord> coords = ReadCoords(nPoint);
-      elem.Geometry = GetGeometry(elem.Type, coords);
+      elem.Geometry = Coord.GetGeometry(elem.Type, coords);
       if (nText > 0)
-      { elem.Text = BaseReader.ReadUnicodeString(); }
+      { elem.Text = Reader.ReadUnicodeString(); }
       if (nObjectString > 0)
       {
         if (nText > 0)
         {
           int n = nText * 8;
           for (int i = elem.Text.Length * 2 + 2; i < n; i++)
-          { BaseReader.BaseStream.ReadByte(); }
+          { Reader.BaseStream.ReadByte(); }
         }
 
-        elem.ObjectString = BaseReader.ReadUnicodeString();
+        elem.ObjectString = Reader.ReadUnicodeString();
       }
 
       return elem;
@@ -64,103 +79,89 @@ namespace Ocad
 
     protected override FileParam Init(int sectionMark, int version)
     {
-      FileParamV12 fileParam = new FileParamV12
-      {
-        SectionMark = sectionMark,
-        Version = version,
-        SubVersion = BaseReader.ReadInt16(),
-        FirstSymbolBlock = BaseReader.ReadInt32(),
-        FirstIndexBlock = BaseReader.ReadInt32(),
-        OfflineSyncSerial = BaseReader.ReadInt32(),
-        CurrentFileVersion = BaseReader.ReadInt32()
-      };
-      BaseReader.ReadInt32(); // reserved
-      BaseReader.ReadInt32(); // reserved
-      fileParam.FirstStrIdxBlock = BaseReader.ReadInt32();
-      fileParam.FileNamePosition = BaseReader.ReadInt32();
-      fileParam.FileNameSize = BaseReader.ReadInt32();
-      BaseReader.ReadInt32(); // reserved
-      BaseReader.ReadInt32(); // reserved
-      BaseReader.ReadInt32(); // reserved
-      fileParam.MrStartBlockPosition = BaseReader.ReadInt32();
+      FileParamV12 fileParam = new FileParamV12();
 
-      _fileParam = fileParam;
-      _symbol = ReadSymbolData();
+      fileParam.SectionMark = sectionMark;
+      fileParam.Version = version;
+      fileParam.SubVersion = Reader.ReadInt16();
+      fileParam.FirstSymbolBlock = Reader.ReadInt32();
+      fileParam.FirstIndexBlock = Reader.ReadInt32();
+      fileParam.OfflineSyncSerial = Reader.ReadInt32();
+      fileParam.CurrentFileVersion = Reader.ReadInt32();
+
+      Reader.ReadInt32(); // reserved
+      Reader.ReadInt32(); // reserved
+      fileParam.FirstStrIdxBlock = Reader.ReadInt32();
+      fileParam.FileNamePosition = Reader.ReadInt32();
+      fileParam.FileNameSize = Reader.ReadInt32();
+      Reader.ReadInt32(); // reserved
+      Reader.ReadInt32(); // reserved
+      Reader.ReadInt32(); // reserved
+      fileParam.MrStartBlockPosition = Reader.ReadInt32();
 
       return fileParam;
     }
 
-    protected override void ReadAreaSymbol(Symbol.AreaSymbol symbol)
+    public override void ReadAreaSymbol(AreaSymbol symbol)
     {
-      symbol.BorderSym = BaseReader.ReadInt32();
-      symbol.FillColor = BaseReader.ReadInt16();
-      symbol.HatchMode = (Symbol.AreaSymbol.EHatchMode)BaseReader.ReadInt16();
-      symbol.HatchColor = BaseReader.ReadInt16();
-      symbol.HatchLineWidth = BaseReader.ReadInt16();
-      symbol.HatchLineDist = BaseReader.ReadInt16();
-      symbol.HatchAngle1 = BaseReader.ReadInt16();
-      symbol.HatchAngle2 = BaseReader.ReadInt16();
-      symbol.FillOn = Convert.ToBoolean(BaseReader.ReadByte());
-      symbol.BorderOn = Convert.ToBoolean(BaseReader.ReadByte());
-      symbol.StructMode = (Symbol.AreaSymbol.EStructMode)BaseReader.ReadByte();
-      symbol.StructDraw = (Symbol.AreaSymbol.EStructDraw)BaseReader.ReadByte();
-      symbol.StructWidth = BaseReader.ReadInt16();
-      symbol.StructHeight = BaseReader.ReadInt16();
-      symbol.StructAngle = BaseReader.ReadInt16();
-      symbol.StructIrregularVarX = BaseReader.ReadByte();
-      symbol.StructIrregularVarY = BaseReader.ReadByte();
-      symbol.StructIrregularMinDist = BaseReader.ReadInt16();
-      BaseReader.ReadInt16(); // reserved
+      symbol.BorderSym = Reader.ReadInt32();
+      symbol.FillColor = Reader.ReadInt16();
+      symbol.HatchMode = (AreaSymbol.EHatchMode)Reader.ReadInt16();
+      symbol.HatchColor = Reader.ReadInt16();
+      symbol.HatchLineWidth = Reader.ReadInt16();
+      symbol.HatchLineDist = Reader.ReadInt16();
+      symbol.HatchAngle1 = Reader.ReadInt16();
+      symbol.HatchAngle2 = Reader.ReadInt16();
+      symbol.FillOn = Convert.ToBoolean(Reader.ReadByte());
+      symbol.BorderOn = Convert.ToBoolean(Reader.ReadByte());
+      symbol.StructMode = (AreaSymbol.EStructMode)Reader.ReadByte();
+      symbol.StructDraw = (AreaSymbol.EStructDraw)Reader.ReadByte();
+      symbol.StructWidth = Reader.ReadInt16();
+      symbol.StructHeight = Reader.ReadInt16();
+      symbol.StructAngle = Reader.ReadInt16();
+      symbol.StructIrregularVarX = Reader.ReadByte();
+      symbol.StructIrregularVarY = Reader.ReadByte();
+      symbol.StructIrregularMinDist = Reader.ReadInt16();
+      Reader.ReadInt16(); // reserved
 
-      BaseReader.ReadInt16();
+      Reader.ReadInt16();
     }
 
-    public override void WriteElementHeader(EndianWriter writer, Element element)
+    public override void WriteElementHeader(Element element)
     {
-      ElementV9 elem9 = element as ElementV9;
+      WriteElementSymbol(element.Symbol);
+      Writer.Write((byte)element.Type);
+      Writer.Write((byte)0);
 
-      WriteElementSymbol(writer, element.Symbol);
-      writer.Write((byte)element.Type);
-      writer.Write((byte)0);
+      Writer.Write((short)(element.Angle * 1800 / Math.PI)); // 0.1 Degrees
 
-      writer.Write((short)(element.Angle * 1800 / Math.PI)); // 0.1 Degrees
+      Writer.Write((int)element.Color);
+      Writer.Write((short)element.LineWidth);
+      Writer.Write((short)element.Flags);
 
-      if (elem9 != null)
-      {
-        writer.Write((int)elem9.Color);
-        writer.Write((short)elem9.LineWidth);
-        writer.Write((short)elem9.Flags);
-      }
-      else
-      {
-        writer.Write((int)0);
-        writer.Write((short)0);
-        writer.Write((short)0);
-      }
+      Writer.Write((int)element.ServerObjectId);
+      Writer.Write((int)(element.Height * 256 * 1000));
+      Writer.Write((double)element.CreationDate.ToOADate());
+      Writer.Write((int)element.MultirepresenationId);
+      Writer.Write((double)element.ModificationDate.ToOADate());
 
-      writer.Write((int)element.ServerObjectId);
-      writer.Write((int)(element.Height * 256 * 1000));
-      writer.Write((double)element.CreationDate.ToOADate());
-      writer.Write((int)element.MultirepresenationId);
-      writer.Write((double)element.ModificationDate.ToOADate());
+      Writer.Write((int)element.PointCount()); //nItem
+      Writer.Write((short)(Ocad9Io.TextCountV9(element.Text) / 8)); // nText
 
-      writer.Write((int)element.PointCount()); //nItem
-      writer.Write((short)(ElementV9.TextCountV9(element.Text) / 8)); // nText
-
-      writer.Write((short)(ElementV9.TextCountV9(element.ObjectString) / 8)); // nObjectString
-      writer.Write((short)0); // nDatabaseString
-      writer.Write((byte)elem9.ObjectStringType); // ObjectStringType
-      writer.Write((byte)0); // reserved
+      Writer.Write((short)(Ocad9Io.TextCountV9(element.ObjectString) / 8)); // nObjectString
+      Writer.Write((short)0); // nDatabaseString
+      Writer.Write((byte)element.ObjectStringType); // ObjectStringType
+      Writer.Write((byte)0); // reserved
     }
 
-    public override void WriteElementContent(EndianWriter writer, Element element)
+    public override void WriteElementContent(Element element)
     {
-      base.WriteElementContent(writer, element);
-      WriteUnicodeString(writer, element.ObjectString);
+      Ocad9Io.WriteElementContent(this, element);
+      WriteUnicodeString(Writer, element.ObjectString);
     }
     public override int CalcElementLength(Element element)
     {
-      int length = 56 + 8 * element.PointCount() + element.TextCount(element.Text) + element.TextCount(element.ObjectString);
+      int length = 56 + 8 * element.PointCount() + GetElementTextCount(element, element.Text) + GetElementTextCount(element, element.ObjectString);
       return length;
     }
 
@@ -169,8 +170,10 @@ namespace Ocad
     private IList<Element> GetCourseSettingElements()
     {
       List<Element> csElements = new List<Element>();
-      foreach (var elem in Elements(false, null))
+      IEnumerator<Element> elems = new ElementEnumerator(this, null, false, null);
+      while (elems.MoveNext())
       {
+        Element elem = elems.Current;
         if (elem.ObjectStringType == ObjectStringType.None)
         { continue; }
 

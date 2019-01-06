@@ -66,13 +66,13 @@ namespace Ocad.Data
       int whereIdx = (int)whereParam.Value;
 
       OcadTransaction trans = Transaction;
-      Ocad9Writer w;
+      OcadWriter w;
       if (trans != null)
       { w = trans.Writer; }
       else
-      { w = Ocad9Writer.AppendTo(Connection.ConnectionString); }
-      ElementIndex elemIdx = w.Reader.ReadIndex(whereIdx);
-      Element elem = w.Reader.ReadElement(elemIdx);
+      { w = OcadWriter.AppendTo(Connection.ConnectionString); }
+      ElementIndex elemIdx = w.Io.ReadIndex(whereIdx);
+      Element elem = w.Io.ReadElement(elemIdx);
 
       foreach (var pInfo in update.UpdateParameterInfos)
       {
@@ -120,7 +120,7 @@ namespace Ocad.Data
       { trans.Deletes.Add(id); }
       else
       {
-        using (Ocad9Writer w = Ocad9Writer.AppendTo(Connection.ConnectionString))
+        using (OcadWriter w = OcadWriter.AppendTo(Connection.ConnectionString))
         {
           DeleteIndices dels = new DeleteIndices();
           dels.Add(id);

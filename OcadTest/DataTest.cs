@@ -23,7 +23,7 @@ namespace OcadTest
       {
         foreach (var idx in r.GetIndices())
         {
-          ElementV9 e = (ElementV9)r.ReadElement(idx);
+          Element e = r.ReadElement(idx);
           if (e == null)
           { continue; }
           byte[] color = BitConverter.GetBytes(e.Color);
@@ -223,10 +223,10 @@ namespace OcadTest
     [TestMethod]
     public void TestWriteBildObjekte()
     {
-      using (OcadWriter w = Ocad9Writer.AppendTo(@"C:\daten\felix\kapreolo\scool\regensdorf_ruggenacher\test.ocd"))
+      using (OcadWriter w = OcadWriter.AppendTo(@"C:\daten\felix\kapreolo\scool\regensdorf_ruggenacher\test.ocd"))
       {
         {
-          ElementV9 elem = new ElementV9(true)
+          Element elem = new Element(true)
           {
             Type = GeomType.unformattedText,
             Color = Color.ColorToCmyk(System.Drawing.Color.Blue).ToNumber(),
@@ -239,7 +239,7 @@ namespace OcadTest
         }
 
         {
-          ElementV9 elem = new ElementV9(true)
+          Element elem = new Element(true)
           {
             Type = GeomType.line,
             Color = Color.ColorToCmyk(System.Drawing.Color.Green).ToNumber(),
@@ -262,7 +262,7 @@ namespace OcadTest
       {
         foreach (var idx in r.GetIndices())
         {
-          ElementV9 e = (ElementV9)r.ReadElement(idx);
+          Element e = r.ReadElement(idx);
           if (!string.IsNullOrWhiteSpace(e.Text))
           {
           }
@@ -273,10 +273,10 @@ namespace OcadTest
     [TestMethod]
     public void SetColor()
     {
-      using (OcadWriter w = Ocad9Writer.AppendTo(@"C:\daten\ASVZ\SOLA\2015\OCAD Vorlagen\sola10k - Kopie.ocd"))
+      using (OcadWriter w = OcadWriter.AppendTo(@"C:\daten\ASVZ\SOLA\2015\OCAD Vorlagen\sola10k - Kopie.ocd"))
       {
-        ElementIndex idx = w.Reader.ReadIndex(264);
-        ElementV9 elem = (ElementV9)w.Reader.ReadElement(idx);
+        ElementIndex idx = w.ReadIndex(264);
+        Element elem = (Element)w.ReadElement(idx);
         uint c = 0xff000000;
         elem.Color = (int)c;
         w.Overwrite(elem, 264);
@@ -286,11 +286,11 @@ namespace OcadTest
     [TestMethod]
     public void SetRasterOrientation()
     {
-      using (OcadWriter w = Ocad9Writer.AppendTo(@"C:\daten\felix\kapreolo\karten\hardwald\2016\Hardwald_2016.ocd"))
+      using (OcadWriter w = OcadWriter.AppendTo(@"C:\daten\felix\kapreolo\karten\hardwald\2016\Hardwald_2016.ocd"))
       {
-        foreach (var idx in w.Reader.GetIndices())
+        foreach (var idx in w.GetIndices())
         {
-          ElementV9 elem = (ElementV9)w.Reader.ReadElement(idx);
+          Element elem = w.ReadElement(idx);
           if (elem != null && elem.Geometry is Area)
           {
             elem.Angle = 0;

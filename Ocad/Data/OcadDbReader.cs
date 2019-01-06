@@ -14,7 +14,7 @@ namespace Ocad.Data
     private class ElemsEnumerator : IEnumerator<Element>
     {
       private readonly OcadDbReader _reader;
-      private OcadReader.ElementEnumerator _enumerator;
+      private OcadIo.ElementEnumerator _enumerator;
       private Element _currentElem;
       IGeometry _intersect = null;
 
@@ -32,7 +32,7 @@ namespace Ocad.Data
           }
         }
 
-        _enumerator = new OcadReader.ElementEnumerator(ocad, extent, true);
+        _enumerator = new OcadIo.ElementEnumerator(ocad, extent, true);
       }
 
       #region IEnumerator Members

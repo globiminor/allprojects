@@ -21,7 +21,7 @@ namespace OCourse.Ext
       {
         public string Id;
         public string FileName;
-        public Ocad9Writer Writer;
+        public OcadWriter Writer;
       }
 
       private LayoutHelper _default;
@@ -57,14 +57,14 @@ namespace OCourse.Ext
         _list.Add(helper);
       }
 
-      public Ocad9Writer GetWriterFromFullName(string fullName)
+      public OcadWriter GetWriterFromFullName(string fullName)
       {
         string layoutId = GetLayoutId(fullName);
         LayoutHelper layout = GetLayoutHelper(layoutId);
         if (layout == null)
         { return null; }
 
-        if (layout.Writer == null) layout.Writer = Ocad9Writer.AppendTo(layout.FileName);
+        if (layout.Writer == null) layout.Writer = OcadWriter.AppendTo(layout.FileName);
 
         return layout.Writer;
       }
@@ -105,7 +105,7 @@ namespace OCourse.Ext
     }
 
 
-    private static void WriteCourseParts(Ocad9Writer writer, IList<Course> courseParts,
+    private static void WriteCourseParts(OcadWriter writer, IList<Course> courseParts,
       RouteCalculator routeCalc, double resolution, Setup setup)
     {
       foreach (var comb in courseParts)
@@ -139,7 +139,7 @@ namespace OCourse.Ext
       if (combi != null)
       {
         File.Copy(orig, combi, true);
-        using (Ocad9Writer writer = Ocad9Writer.AppendTo(combi))
+        using (OcadWriter writer = OcadWriter.AppendTo(combi))
         {
           writer.SymbolsSetState(null, Ocad.Symbol.SymbolStatus.Hidden);
           AdaptCourseFiles(orig, rawDir, cleanDir, courseNames, writer, showNr, showCodes);
@@ -151,7 +151,7 @@ namespace OCourse.Ext
       }
     }
     private static void AdaptCourseFiles(string orig, string rawDir, string cleanDir,
-      IList<string> courseNames, Ocad9Writer combiWriter, bool showNr, bool showCodes)
+      IList<string> courseNames, OcadWriter combiWriter, bool showNr, bool showCodes)
     {
       using (OcadReader reader = OcadReader.Open(orig))
       {
@@ -248,7 +248,7 @@ namespace OCourse.Ext
                 }
               }
             }
-            using (Ocad9Writer writer = Ocad9Writer.AppendTo(teamPartFile))
+            using (OcadWriter writer = OcadWriter.AppendTo(teamPartFile))
             {
               writer.DeleteElements(new int[] { 17011 });
               foreach (var element in startNrElements)
@@ -498,7 +498,7 @@ namespace OCourse.Ext
         File.Copy(orig, export, true);
 
         using (OcadReader reader = OcadReader.Open(orig))
-        using (Ocad9Writer writer = Ocad9Writer.AppendTo(export))
+        using (OcadWriter writer = OcadWriter.AppendTo(export))
         {
           Setup setup = reader.ReadSetup();
 
@@ -518,7 +518,7 @@ namespace OCourse.Ext
 
             WriteCourseParts(writer, parts, routeCalc, resolution, setup);
 
-            Ocad9Writer layoutWriter = layoutList.GetWriterFromFullName(fullCourseName);
+            OcadWriter layoutWriter = layoutList.GetWriterFromFullName(fullCourseName);
             if (layoutWriter != null)
             { WriteCourseParts(layoutWriter, parts, routeCalc, resolution, setup); }
           }
@@ -538,7 +538,7 @@ namespace OCourse.Ext
 
       File.Copy(tmpl, trans, true);
 
-      using (Ocad9Writer writer = Ocad9Writer.AppendTo(trans))
+      using (OcadWriter writer = OcadWriter.AppendTo(trans))
       {
         writer.DeleteElements(new int[] { 701000, 70200, 705000, 706000, 709000 });
 
@@ -721,13 +721,13 @@ namespace OCourse.Ext
       Polyline clippedStart = ClipStart(controls[0], controls[controls.Count - 2], setup, symbols[ControlCode.Start], symbols[ControlCode.Control]);
 
       File.Copy(fileName, cleanName, true);
-      using (Ocad9Writer writer = Ocad9Writer.AppendTo(cleanName))
+      using (OcadWriter writer = OcadWriter.AppendTo(cleanName))
       {
         writer.DeleteElements(new int[] { 703000, titleSymbol, variationSymbol });
         if (clippedStart != null)
         {
           writer.DeleteElements(new int[] { 701000 });
-          ElementV9 start = new ElementV9(true)
+          Element start = new Element(true)
           {
             Symbol = 704000,
             Geometry = clippedStart,
@@ -959,7 +959,7 @@ namespace OCourse.Ext
     public static void CompleteResult(string courseFile, string inResult, string outResult)
     {
       Dictionary<string, Course> courses = new Dictionary<string, Course>();
-      using (OcadReader reader = Ocad9Reader.Open(courseFile))
+      using (OcadReader reader = OcadReader.Open(courseFile))
       {
         foreach (var course in reader.ReadCourses())
         {
@@ -1045,7 +1045,7 @@ namespace OCourse.Ext
       string starts, string normalized, bool createChoice, RouteCalculator calculator)
     {
       Dictionary<string, Course> courses = new Dictionary<string, Course>();
-      using (OcadReader reader = Ocad9Reader.Open(courseFile))
+      using (OcadReader reader = OcadReader.Open(courseFile))
       {
         foreach (var course in reader.ReadCourses())
         {

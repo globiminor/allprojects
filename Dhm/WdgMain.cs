@@ -906,19 +906,19 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
 
     private void ExportOcd(string file, List<Contour> contours)
     {
-      Ocad.Ocad9Writer writer = null;
+      Ocad.OcadWriter writer = null;
       try
       {
         System.IO.File.Copy(_ocadFile, file, true);
-        writer = Ocad.Ocad9Writer.AppendTo(file);
-        writer.DeleteElements(null);
+        writer = Ocad.OcadWriter.AppendTo(file);
+        writer.DeleteElements((IList<int>)null);
 
         foreach (var contour in contours)
         {
           Polyline line = contour.Polyline;
           if (contour.Orientation == Orientation.RightSideDown)
           { line = line.Invert(); }
-          Ocad.Element element = new Ocad.ElementV9(true)
+          Ocad.Element element = new Ocad.Element(true)
           {
             Geometry = line,
             Type = Ocad.GeomType.line,

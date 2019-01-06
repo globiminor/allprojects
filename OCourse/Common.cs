@@ -35,7 +35,7 @@ namespace OCourse
     }
     public static void ChangeSymbol()
     {
-      OcadWriter w = Ocad9Writer.AppendTo(@"D:\daten\felix\OL\wm2010\Henriksåsen\Henriksåsen2008_v.ocd");
+      OcadWriter w = OcadWriter.AppendTo(@"D:\daten\felix\OL\wm2010\Henriksåsen\Henriksåsen2008_v.ocd");
       try
       {
         w.ChangeSymbols(NewSymbol);

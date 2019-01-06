@@ -666,7 +666,7 @@ namespace TData
     #region nested classes
     private class Enumerator : IEnumerator<DataRow>
     {
-      private Ocad.OcadReader.ElementEnumerator _enumerator;
+      private IEnumerator<Ocad.Element> _enumerator;
       private OcadReader _schema;
       private DataRow _currentRow;
 
@@ -685,8 +685,7 @@ namespace TData
           }
         }
 
-        _enumerator = new Ocad.OcadReader.ElementEnumerator(ocad,
-          box, true, schema.IndexList);
+        _enumerator = ocad.Elements(box, true, schema.IndexList).GetEnumerator();
         _schema = schema;
       }
 

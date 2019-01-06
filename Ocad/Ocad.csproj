@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="Color.cs" />
     <Compile Include="Control.cs" />
+    <Compile Include="Coord.cs" />
     <Compile Include="Course.cs" />
     <Compile Include="CourseXmlDocument.cs" />
     <Compile Include="Data\OcadAdapter.cs">

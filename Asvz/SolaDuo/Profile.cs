@@ -43,9 +43,9 @@ namespace Asvz
       _data = data;
     }
 
-    protected void WriteLayout(Ocad9Writer writer, double sumDist)
+    protected void WriteLayout(OcadWriter writer, double sumDist)
     {
-      Element elem = new ElementV9(true);
+      Element elem = new Element(true);
       elem.Symbol = ProfileSymbol.Grenze;
       elem.Geometry = Polyline.Create(new []
           {
@@ -73,7 +73,7 @@ namespace Asvz
       double dRaster = 0;
       while (dRaster < sumDist)
       {
-        elem = new ElementV9(true);
+        elem = new Element(true);
         elem.Symbol = ProfileSymbol.Raster;
         elem.Geometry = Polyline.Create(new []
           {
@@ -87,7 +87,7 @@ namespace Asvz
       }
 
 
-      elem = new ElementV9(true);
+      elem = new Element(true);
       elem.Symbol = ProfileSymbol.Raster;
       elem.Geometry = Polyline.Create(new []
           {
@@ -97,7 +97,7 @@ namespace Asvz
       elem.Type = GeomType.line;
       writer.Append(elem);
 
-      elem = new ElementV9(true);
+      elem = new Element(true);
       elem.Symbol = ProfileSymbol.Raster;
       elem.Geometry = Polyline.Create(new []
           {
@@ -109,7 +109,7 @@ namespace Asvz
 
       for (dRaster = 100 * (int)(1 + _teerOben / 100); dRaster < 950; dRaster += 100)
       {
-        elem = new ElementV9(true);
+        elem = new Element(true);
         elem.Symbol = ProfileSymbol.Raster;
         elem.Geometry = Polyline.Create(new []
           {
@@ -126,7 +126,7 @@ namespace Asvz
       nextHaus = -_haus0;
       nextWald = -_wald0;
     }
-    protected void WriteStart(Ocad9Writer writer, string text, double distStart, double sumDist)
+    protected void WriteStart(OcadWriter writer, string text, double distStart, double sumDist)
     {
       string sText = string.Format("{0:" + FormatDist + "} km", distStart / 1000.0);
       Element elem = Common.CreateText(sText, (sumDist + 100.0) / _fHeight,
@@ -138,14 +138,14 @@ namespace Asvz
       writer.Append(elem);
     }
 
-    protected void WriteEnd(Ocad9Writer writer, string text, double sumDist)
+    protected void WriteEnd(OcadWriter writer, string text, double sumDist)
     {
       Element elem = Common.CreateText(text, sumDist / _fHeight,
         _topStrecke, _symTextStrecke, _templateSetup);
       writer.Append(elem);
     }
 
-    protected void WriteParams(Ocad9Writer writer, double sumDist)
+    protected void WriteParams(OcadWriter writer, double sumDist)
     {
       if (_printParam == null)
       { _printParam = new PrintPar(); }
@@ -161,7 +161,7 @@ namespace Asvz
         writer.Overwrite(StringType.PrintPar, 0, _printParam.StringPar);
       }
     }
-    protected void WriteProfile(Ocad9Writer writer, Polyline profile, double sumDist)
+    protected void WriteProfile(OcadWriter writer, Polyline profile, double sumDist)
     {
       double dist = profile.Points.Last.Value.X;
 
@@ -180,7 +180,7 @@ namespace Asvz
       }
       Area area = new Area(Polyline.Create(points));
 
-      Element elem = new ElementV9(true);
+      Element elem = new Element(true);
       elem.Symbol = ProfileSymbol.Profile;
       elem.Geometry = area;
       elem.Type = GeomType.area;
@@ -188,7 +188,7 @@ namespace Asvz
       writer.Append(elem);
     }
 
-    protected void WriteLayoutStrecke(Ocad9Writer writer, Categorie cat, string startName,
+    protected void WriteLayoutStrecke(OcadWriter writer, Categorie cat, string startName,
       string zielName, double sumDist, double distStart)
     {
       double dist = cat.DispLength;
@@ -206,7 +206,7 @@ namespace Asvz
         _topStrecke, _symTextStrecke, _templateSetup);
       writer.Append(elem);
 
-      elem = new ElementV9(true);
+      elem = new Element(true);
       elem.Symbol = ProfileSymbol.Grenze;
       elem.Geometry = Polyline.Create(new []
           {
@@ -229,7 +229,7 @@ namespace Asvz
       writer.Append(elem);
     }
 
-    protected void WriteUmgebung(Ocad9Writer writer, Polyline strecke, Polyline profile,
+    protected void WriteUmgebung(OcadWriter writer, Polyline strecke, Polyline profile,
       double sumDist, Random random, ref double nextWald, ref double nextHaus)
     {
       bool[] bWald = Intersect(strecke, _data.Wald);
@@ -258,7 +258,7 @@ namespace Asvz
           nextWald = dX + (_dWald1 - _wald0);
           nextHaus = dX + (_dWald1 - _haus0);
 
-          elem = new ElementV9(true);
+          elem = new Element(true);
           elem.Symbol = ProfileSymbol.Baum + random.Next(2);
           elem.Geometry = new Point2D(dX / _fHeight, dH);
           elem.Type = GeomType.point;
@@ -274,7 +274,7 @@ namespace Asvz
           nextWald = dX + (_dHaus1 - _wald0);
           nextHaus = dX + (_dHaus1 - _haus0);
 
-          elem = new ElementV9(true);
+          elem = new Element(true);
           elem.Symbol = ProfileSymbol.Haus;
           elem.Geometry = new Point2D(dX / _fHeight, dH);
           elem.Type = GeomType.point;
@@ -306,9 +306,9 @@ namespace Asvz
       }
     }
 
-    private void WriteTeer(Ocad9Writer writer, double start, double end, int symbol)
+    private void WriteTeer(OcadWriter writer, double start, double end, int symbol)
     {
-      Element pElem = new ElementV9(true);
+      Element pElem = new Element(true);
       pElem.Symbol = symbol;
       pElem.Geometry = new Area(Polyline.Create(new []
         {
@@ -342,7 +342,7 @@ namespace Asvz
       return inside;
     }
 
-    protected void ReadTemplate(Ocad9Reader template)
+    protected void ReadTemplate(OcadReader template)
     {
       _templateSetup = template.ReadSetup();
 
@@ -351,7 +351,7 @@ namespace Asvz
       ReadStringParams(template);
     }
 
-    private void ReadObjects(Ocad9Reader template)
+    private void ReadObjects(OcadReader template)
     {
       ElementIndex elemIdx;
       IList<ElementIndex> indexList = new List<ElementIndex>();
@@ -411,7 +411,7 @@ namespace Asvz
       }
     }
 
-    private void ReadStringParams(Ocad9Reader template)
+    private void ReadStringParams(OcadReader template)
     {
       IList<StringParamIndex> strIdxList = template.ReadStringParamIndices();
       foreach (var strIdx in strIdxList)

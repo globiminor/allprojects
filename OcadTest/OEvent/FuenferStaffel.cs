@@ -283,17 +283,17 @@ namespace OcadTest.OEvent
 
     private void AdaptBahn2015(string fileName)
     {
-      using (OcadWriter w = Ocad9Writer.AppendTo(fileName))
+      using (OcadWriter w = OcadWriter.AppendTo(fileName))
       {
-        Setup setup = w.Reader.ReadSetup();
-        IList<ElementIndex> indices = w.Reader.GetIndices();
+        Setup setup = w.ReadSetup();
+        IList<ElementIndex> indices = w.GetIndices();
 
         ElementIndex delIndex = null;
         ElementIndex controlIndex = null;
         Element replaceElem = null;
         foreach (var e in indices)
         {
-          Element elem = w.Reader.ReadElement(e);
+          Element elem = w.ReadElement(e);
           if (elem == null)
           { continue; }
 
@@ -340,16 +340,16 @@ namespace OcadTest.OEvent
       if (!fileName.Contains(".2.ocd") && !fileName.Contains(".5.ocd"))
       { return; }
 
-      using (OcadWriter w = Ocad9Writer.AppendTo(fileName))
+      using (OcadWriter w = OcadWriter.AppendTo(fileName))
       {
-        Setup setup = w.Reader.ReadSetup();
-        IList<ElementIndex> indices = w.Reader.GetIndices();
+        Setup setup = w.ReadSetup();
+        IList<ElementIndex> indices = w.GetIndices();
 
         ElementIndex delIndex = null;
         Element replaceElem = null;
         foreach (var e in indices)
         {
-          Element elem = w.Reader.ReadElement(e);
+          Element elem = w.ReadElement(e);
           if (elem == null)
           { continue; }
 

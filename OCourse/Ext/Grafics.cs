@@ -226,7 +226,7 @@ namespace OCourse.Ext
         if (index.Symbol != _parent.ReplaceSymbol)
         { return false; }
 
-        Element elem = _writer.Reader.ReadElement(index);
+        Element elem = _writer.ReadElement(index);
 
         if (_parent.IsConnection(elem, null) == false)
         { return false; }

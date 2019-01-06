@@ -17,7 +17,7 @@ namespace OCourse.Commands
     private Dictionary<StringParamIndex, CourseViewPar> _courseViewDict;
     private readonly Dictionary<int, int> _oldNewElemDict = new Dictionary<int, int>();
 
-    private Ocad9Writer _writer;
+    private OcadWriter _writer;
     private Setup _setup;
 
     private bool _disposed;
@@ -120,7 +120,7 @@ namespace OCourse.Commands
       }
     }
 
-    private Ocad9Writer Writer
+    private OcadWriter Writer
     {
       get
       {
@@ -129,7 +129,7 @@ namespace OCourse.Commands
           if (_disposed) throw new InvalidOperationException("disposed");
 
           System.IO.File.Copy(_templateFile, _exportFile, true);
-          _writer = Ocad9Writer.AppendTo(_exportFile);
+          _writer = OcadWriter.AppendTo(_exportFile);
 
           if (_origFile != _templateFile)
           {
@@ -237,7 +237,7 @@ namespace OCourse.Commands
     }
 
 
-    public static void TransferCourseSetting(Ocad9Writer writer, OcadReader reader)
+    public static void TransferCourseSetting(OcadWriter writer, OcadReader reader)
     {
       // TODO do not use when controls exist in writer
       writer.DeleteElements(new int[] { 701000, 70200, 705000, 706000, 709000 });

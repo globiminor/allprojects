@@ -6,10 +6,10 @@ namespace Asvz
 {
   public static class Common
   {
-    internal static ElementV9 CreateText(string text, double x, double y, Ocad.Symbol.TextSymbol symbol, Setup setup)
+    internal static Element CreateText(string text, double x, double y, Ocad.Symbol.TextSymbol symbol, Setup setup)
     {
       bool project = setup != null;
-      ElementV9 elem = new ElementV9(project);
+      Element elem = new Element(project);
       elem.Symbol = symbol.Number;
       elem.UnicodeText = true;
 

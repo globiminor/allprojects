@@ -81,7 +81,7 @@ namespace OcadScratch
       _prj = _map.GetGlobalPrj();
       _symbolScale = _map.SymbolScale;
 
-      using (Ocad9Writer w = Ocad9Writer.AppendTo(_ocdFile))
+      using (OcadWriter w = OcadWriter.AppendTo(_ocdFile))
       {
         foreach (var elem in _elems)
         {
@@ -104,7 +104,7 @@ namespace OcadScratch
     {
       return (int)(width * _symbolScale * 100000 / w.Setup.Scale);
     }
-    private void Transfer(Elem e, Ocad9Writer w)
+    private void Transfer(Elem e, OcadWriter w)
     {
       IDrawable eGeom = e.Geometry;
       if (eGeom == null)
@@ -127,7 +127,7 @@ namespace OcadScratch
         }
         else
         {
-          ElementV9 elem = new ElementV9(true);
+          Element elem = new Element(true);
           elem.Type = GeomType.unformattedText;
           elem.Color = color;
           Basics.Geom.PointCollection points = new Basics.Geom.PointCollection();
@@ -181,7 +181,7 @@ namespace OcadScratch
       return curves;
     }
 
-    private void TransferLine(Basics.Geom.Polyline line, IEnumerable<SymbolCurve> symParts, int color, Ocad9Writer w)
+    private void TransferLine(Basics.Geom.Polyline line, IEnumerable<SymbolCurve> symParts, int color, OcadWriter w)
     {
       foreach (var sym in symParts)
       {
@@ -189,7 +189,7 @@ namespace OcadScratch
         {
           if (sym.Dash == null)
           {
-            ElementV9 elem = new ElementV9(true);
+            Element elem = new Element(true);
             elem.Type = GeomType.line;
             elem.LineWidth = GetLineWidth(w, sym.LineWidth);
             elem.Color = color;
@@ -212,7 +212,7 @@ namespace OcadScratch
               {
                 Basics.Geom.Polyline dash = line.SubPart(pre, Math.Min(posUnscaled, lUnscaled) - pre);
 
-                ElementV9 elem = new ElementV9(true);
+                Element elem = new Element(true);
                 elem.Type = GeomType.line;
                 elem.LineWidth = GetLineWidth(w, sym.LineWidth);
                 elem.Color = color;
@@ -248,7 +248,7 @@ namespace OcadScratch
       }
 
     }
-    private void TransferPoint(Basics.Geom.IPoint pnt, double? azimuth, IEnumerable<SymbolCurve> symParts, int color, Ocad9Writer w)
+    private void TransferPoint(Basics.Geom.IPoint pnt, double? azimuth, IEnumerable<SymbolCurve> symParts, int color, OcadWriter w)
     {
       MyPrjRotate rotate = null;
       if (azimuth != null) { rotate = new MyPrjRotate(azimuth.Value); }
@@ -263,7 +263,7 @@ namespace OcadScratch
       }
     }
 
-    private void TransferLocal(Basics.Geom.Polyline localLine, double lineWidth, Basics.Geom.IPoint pnt, int color, Ocad9Writer w)
+    private void TransferLocal(Basics.Geom.Polyline localLine, double lineWidth, Basics.Geom.IPoint pnt, int color, OcadWriter w)
     {
       Basics.Geom.Polyline line = localLine.Project(new MyPrjLocal(pnt, _symbolScale));
       if (line.HasNonBezier())
@@ -271,7 +271,7 @@ namespace OcadScratch
 
       GeomType geomType;
 
-      ElementV9 elem = new ElementV9(true);
+      Element elem = new Element(true);
       if (lineWidth <= 0)
       {
         elem.Geometry = new Basics.Geom.Area(line);

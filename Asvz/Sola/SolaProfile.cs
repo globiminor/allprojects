@@ -25,10 +25,10 @@ namespace Asvz.Sola
       { Directory.CreateDirectory(dir); }
       File.Copy(template, result, true);
 
-      using (Ocad9Writer writer = Ocad9Writer.AppendTo(result))
+      using (OcadWriter writer = OcadWriter.AppendTo(result))
       {
 
-        Ocad9Reader pTemplate = (Ocad9Reader)OcadReader.Open(template);
+        OcadReader pTemplate = OcadReader.Open(template);
         ReadTemplate(pTemplate);
         pTemplate.Close();
 

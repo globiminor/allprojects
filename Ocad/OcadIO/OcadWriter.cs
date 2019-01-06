@@ -10,57 +10,33 @@ namespace Ocad
   /// <summary>
   /// Summary description for OcadWriter.
   /// </summary>
-  public abstract class OcadWriter : IDisposable
+  public sealed class OcadWriter : OcadReader
   {
     public delegate T ElementIndexDlg<T>(ElementIndex element);
 
-    public EndianWriter Writer { get; protected set; }
-    protected FileParam Param { get; set; }
-    protected OcadReader OcdReader { get; set; }
-    protected EndianReader _reader;
-    protected Setup _setup;
-
-    protected abstract void Init();
-
-    public OcadReader Reader
-    {
-      get
-      {
-        if (OcdReader == null)
-        { Init(); }
-        return OcdReader;
-      }
-    }
-
-    public Setup Setup
-    {
-      get
-      {
-        Init();
-        return _setup;
-      }
-    }
+    private OcadWriter(Stream ocadStream, int ocadVersion = 0)
+      : base(OcadIo.GetIo(ocadStream, ocadVersion))
+    { }
 
     public void Overwrite(Element element, int index)
     {
-      Init();
       IGeometry prj = null;
 
       if (element.IsGeometryProjected)
       {
         prj = element.Geometry;
-        element.Geometry = element.Geometry.Project(_setup.Prj2Map);
+        element.Geometry = element.Geometry.Project(Io.Setup.Prj2Map);
         element.IsGeometryProjected = false;
       }
 
-      ElementIndex idx = element.GetIndex(Reader);
-      idx.Position = (int)_reader.BaseStream.Seek(0, SeekOrigin.End);
+      ElementIndex idx = Io.GetIndex(element);
+      idx.Position = (int)BaseStream.Seek(0, SeekOrigin.End);
 
-      if (!Reader.SeekIndex(index))
+      if (!Io.SeekIndex(index))
       { throw new InvalidOperationException("Invalid Index " + index); }
-      Write(idx);
+      Io.Write(idx);
 
-      Writer.BaseStream.Seek(idx.Position, SeekOrigin.Begin);
+      BaseStream.Seek(idx.Position, SeekOrigin.Begin);
       Write(element);
 
       if (prj != null)
@@ -75,9 +51,8 @@ namespace Ocad
     /// <param name="index"></param>
     private int Append(ElementIndex index)
     {
-      Init();
       int i;
-      long p = Param.FirstIndexBlock;
+      long p = Io.FileParam.FirstIndexBlock;
       long p0 = p;
 
       int indexNr = 0;
@@ -85,8 +60,8 @@ namespace Ocad
       while (p > 0)
       {
         p0 = p;
-        Writer.BaseStream.Seek(p, SeekOrigin.Begin);
-        p = _reader.ReadInt32();
+        BaseStream.Seek(p, SeekOrigin.Begin);
+        p = Io.Reader.ReadInt32();
 
         if (p > 0)
         {
@@ -96,12 +71,12 @@ namespace Ocad
       if (p0 > 0)
       {
         p = p0 + 4;
-        _reader.BaseStream.Seek(p + 16, SeekOrigin.Begin); /* index->pos */
+        BaseStream.Seek(p + 16, SeekOrigin.Begin); /* index->pos */
         i = 0;
-        while (_reader.ReadInt32() != 0 && i < FileParam.N_IN_ELEM_BLOCK)
+        while (Io.Reader.ReadInt32() != 0 && i < FileParam.N_IN_ELEM_BLOCK)
         {
-          p += Param.INDEX_LENGTH;
-          _reader.BaseStream.Seek(p + 16, SeekOrigin.Begin);
+          p += Io.FileParam.INDEX_LENGTH;
+          BaseStream.Seek(p + 16, SeekOrigin.Begin);
           i++;
         }
         indexNr = indexNr + i;
@@ -113,34 +88,34 @@ namespace Ocad
       }
       if (i == FileParam.N_IN_ELEM_BLOCK)
       { /* new index block */
-        Writer.BaseStream.Seek(0, SeekOrigin.End);
-        p = Writer.BaseStream.Position;
-        Writer.Write((int)0);
-        int n = FileParam.N_IN_ELEM_BLOCK * Param.INDEX_LENGTH;
+        BaseStream.Seek(0, SeekOrigin.End);
+        p = BaseStream.Position;
+        Io.Writer.Write((int)0);
+        int n = FileParam.N_IN_ELEM_BLOCK * Io.FileParam.INDEX_LENGTH;
         for (int j = 0; j < n; j++)
-        { Writer.Write((byte)0); }
+        { Io.Writer.Write((byte)0); }
         if (p0 > 0)
         {
-          Writer.BaseStream.Seek(p0, SeekOrigin.Begin);
+          BaseStream.Seek(p0, SeekOrigin.Begin);
         }
         else
         {
-          Writer.BaseStream.Seek(12, SeekOrigin.Begin); /* first Index Block position */
-          Param.FirstIndexBlock = (int)p;
+          BaseStream.Seek(12, SeekOrigin.Begin); /* first Index Block position */
+          Io.FileParam.FirstIndexBlock = (int)p;
         }
-        Writer.Write((int)p);
+        Io.Writer.Write((int)p);
         p += 4;
 
         index.Position = (int)p + n;
       }
       else
       {
-        Writer.BaseStream.Seek(0, SeekOrigin.End);
-        index.Position = (int)Writer.BaseStream.Position;
+        Io.Writer.BaseStream.Seek(0, SeekOrigin.End);
+        index.Position = (int)BaseStream.Position;
       }
-      Writer.BaseStream.Seek(p, SeekOrigin.Begin);
+      Io.Writer.BaseStream.Seek(p, SeekOrigin.Begin);
 
-      Write(index);
+      Io.Write(index);
 
       return indexNr;
     }
@@ -150,8 +125,7 @@ namespace Ocad
       if (element == null)
       { return -1; }
 
-      Init();
-      ElementIndex index = element.GetIndex(Reader);
+      ElementIndex index = Io.GetIndex(element);
 
       int pos = Append(element, index);
       return pos;
@@ -163,14 +137,14 @@ namespace Ocad
       if (element.IsGeometryProjected)
       {
         prj = element.Geometry;
-        element.Geometry = element.Geometry.Project(_setup.Prj2Map);
+        element.Geometry = element.Geometry.Project(Io.Setup.Prj2Map);
         index.SetBox(element.Geometry.Extent);
         element.IsGeometryProjected = false;
       }
 
       int pos = Append(index);
 
-      Writer.BaseStream.Seek(index.Position, SeekOrigin.Begin);
+      Io.Writer.BaseStream.Seek(index.Position, SeekOrigin.Begin);
       Write(element);
 
       if (prj != null)
@@ -183,21 +157,7 @@ namespace Ocad
       return pos;
     }
 
-    protected virtual void Write(ElementIndex index)
-    {
-      Coord pCoord = Coord.Create(index.Box.Min, 0);
-      Writer.Write((int)pCoord.Ox);
-      Writer.Write((int)pCoord.Oy);
-      pCoord = Coord.Create(index.Box.Max, 0);
-      Writer.Write((int)pCoord.Ox);
-      Writer.Write((int)pCoord.Oy);
-    }
-
-    protected abstract void Write(Element element);
-    protected abstract void WriteElementHeader(Element element);
-    protected abstract void WriteElementSymbol(int symbol);
-
-    public static void Write(EndianWriter writer, IGeometry geometry)
+    internal static void Write(EndianWriter writer, IGeometry geometry)
     {
       Coord pCoord;
 
@@ -238,21 +198,21 @@ namespace Ocad
       if (graphics == null)
       { return; }
 
-      Writer.Write((short)graphics.Type);
+      Io.Writer.Write((short)graphics.Type);
       ushort iFlags = 0;
       if (graphics.RoundEnds)
       { iFlags |= 1; }
-      Writer.Write((short)iFlags);
-      Writer.Write((short)graphics.Color);
+      Io.Writer.Write((short)iFlags);
+      Io.Writer.Write((short)graphics.Color);
 
-      Writer.Write((short)graphics.LineWidth);
-      Writer.Write((short)graphics.Diameter);
+      Io.Writer.Write((short)graphics.LineWidth);
+      Io.Writer.Write((short)graphics.Diameter);
 
-      Writer.Write((short)Element.PointCount(graphics.Geometry));
-      Writer.Write((short)0); // reserved
-      Writer.Write((short)0); // reserved
+      Io.Writer.Write((short)Element.PointCount(graphics.Geometry));
+      Io.Writer.Write((short)0); // reserved
+      Io.Writer.Write((short)0); // reserved
 
-      Write(Writer, graphics.Geometry);
+      Write(Io.Writer, graphics.Geometry);
     }
 
     private static void Write(EndianWriter Writer, Polyline polyline, bool isInnerRing)
@@ -294,40 +254,40 @@ namespace Ocad
 
     public void WriteHeader(FileParam data)
     {
-      Writer.BaseStream.Seek(0, SeekOrigin.Begin);
+      Io.Writer.BaseStream.Seek(0, SeekOrigin.Begin);
 
-      Writer.Write((short)FileParam.OCAD_MARK);
-      Writer.Write((short)data.SectionMark);
-      Writer.Write((short)data.Version);
-      Writer.Write((short)data.SubVersion);
-      Writer.Write((int)data.FirstSymbolBlock);
-      Writer.Write((int)data.FirstIndexBlock);
-      Writer.Write((int)data.SetupPosition);
-      Writer.Write((int)data.SetupSize);
-      Writer.Write((int)data.InfoPosition);
-      Writer.Write((int)data.InfoSize);
-      Writer.Write((int)data.FirstStrIdxBlock);
-      Writer.Write((int)data.FileNamePosition);
-      Writer.Write((int)data.FileNameSize);
-      Writer.Write((int)0); // reserved 4
+      Io.Writer.Write((short)FileParam.OCAD_MARK);
+      Io.Writer.Write((short)data.SectionMark);
+      Io.Writer.Write((short)data.Version);
+      Io.Writer.Write((short)data.SubVersion);
+      Io.Writer.Write((int)data.FirstSymbolBlock);
+      Io.Writer.Write((int)data.FirstIndexBlock);
+      Io.Writer.Write((int)data.SetupPosition);
+      Io.Writer.Write((int)data.SetupSize);
+      Io.Writer.Write((int)data.InfoPosition);
+      Io.Writer.Write((int)data.InfoSize);
+      Io.Writer.Write((int)data.FirstStrIdxBlock);
+      Io.Writer.Write((int)data.FileNamePosition);
+      Io.Writer.Write((int)data.FileNameSize);
+      Io.Writer.Write((int)0); // reserved 4
     }
 
     public void WriteSymData(SymbolData sym, FileParam fileParam)
     {
-      Writer.BaseStream.Seek(fileParam.HEADER_LENGTH, SeekOrigin.Begin);
+      BaseStream.Seek(fileParam.HEADER_LENGTH, SeekOrigin.Begin);
 
-      Writer.Write((short)sym.ColorCount);
-      Writer.Write((short)sym.ColorSeparationCount);
-      Writer.Write((short)sym.CyanFreq);
-      Writer.Write((short)sym.CyanAngle);
-      Writer.Write((short)sym.MagentaFreq);
-      Writer.Write((short)sym.MagentaAngle);
-      Writer.Write((short)sym.YellowFreq);
-      Writer.Write((short)sym.YellowAngle);
-      Writer.Write((short)sym.BlackFreq);
-      Writer.Write((short)sym.BlackAngle);
-      Writer.Write((short)0); // reserved 1
-      Writer.Write((short)0); // reserved 2
+      Io.Writer.Write((short)sym.ColorCount);
+      Io.Writer.Write((short)sym.ColorSeparationCount);
+      Io.Writer.Write((short)sym.CyanFreq);
+      Io.Writer.Write((short)sym.CyanAngle);
+      Io.Writer.Write((short)sym.MagentaFreq);
+      Io.Writer.Write((short)sym.MagentaAngle);
+      Io.Writer.Write((short)sym.YellowFreq);
+      Io.Writer.Write((short)sym.YellowAngle);
+      Io.Writer.Write((short)sym.BlackFreq);
+      Io.Writer.Write((short)sym.BlackAngle);
+      Io.Writer.Write((short)0); // reserved 1
+      Io.Writer.Write((short)0); // reserved 2
     }
 
     public void WriteSetup(Setup setup, int length)
@@ -335,24 +295,24 @@ namespace Ocad
       int i;
 
       int l = 0;
-      Writer.Write((int)setup.Offset.X); l += 4;
-      Writer.Write((int)setup.Offset.Y); l += 4;
+      Io.Writer.Write((int)setup.Offset.X); l += 4;
+      Io.Writer.Write((int)setup.Offset.Y); l += 4;
 
-      Writer.Write((double)setup.GridDistance); l += 8;
+      Io.Writer.Write((double)setup.GridDistance); l += 8;
 
-      Writer.Write((short)setup.WorkMode); l += 2;
-      Writer.Write((short)setup.LineMode); l += 2;
-      Writer.Write((short)setup.EditMode); l += 2;
-      Writer.Write((short)setup.Symbol); l += 2;
-      Writer.Write((double)setup.Scale); l += 8;
+      Io.Writer.Write((short)setup.WorkMode); l += 2;
+      Io.Writer.Write((short)setup.LineMode); l += 2;
+      Io.Writer.Write((short)setup.EditMode); l += 2;
+      Io.Writer.Write((short)setup.Symbol); l += 2;
+      Io.Writer.Write((double)setup.Scale); l += 8;
 
-      Writer.Write((double)setup.PrjTrans.X); l += 8;
-      Writer.Write((double)setup.PrjTrans.Y); l += 8;
-      Writer.Write((double)setup.PrjRotation); l += 8;
-      Writer.Write((double)setup.PrjGrid); l += 8;
+      Io.Writer.Write((double)setup.PrjTrans.X); l += 8;
+      Io.Writer.Write((double)setup.PrjTrans.Y); l += 8;
+      Io.Writer.Write((double)setup.PrjRotation); l += 8;
+      Io.Writer.Write((double)setup.PrjGrid); l += 8;
 
       for (i = l; i < length; i++)
-      { Writer.Write((char)0); }
+      { Io.Writer.Write((char)0); }
     }
 
     public int WriteDefaultHeaderV7(double scale)
@@ -413,183 +373,124 @@ namespace Ocad
       for (i = 0; i < FileParam.MAX_COLORS; i++)
       {
         for (j = 0; j < FileParam.COLORINFO_LENGTH; j++)
-        { Writer.Write((char)0); }
+        { Io.Writer.Write((char)0); }
       }
 
       /* separations */
       for (i = 0; i < FileParam.MAX_SEPS; i++)
       {
         for (j = 0; j < FileParam.COLORSEP_LENGTH; j++)
-        { Writer.Write((char)0); }
+        { Io.Writer.Write((char)0); }
       }
 
       WriteSetup(setup, data.SetupSize);
 
       /* symbol indices */
-      Writer.Write((int)0);
+      Io.Writer.Write((int)0);
       for (i = 0; i < FileParam.N_IN_SYMBOL_BLOCK; i++)
       {
-        Writer.Write((int)0);
+        Io.Writer.Write((int)0);
       }
 
       /* elements */
       return 0;
     }
 
-    public void Dispose()
-    {
-      if (Writer != null)
-      { Writer.Close(); }
-      Writer = null;
-    }
-
-    public void Close()
-    {
-      Writer.Close();
-    }
-
     public int DeleteElements(ElementIndexDlg<bool> checkDelete)
     {
-      Init();
-
       int n = 0;
       int iIndex = 0;
-      ElementIndex pIndex = OcdReader.ReadIndex(iIndex);
+      ElementIndex pIndex = Io.ReadIndex(iIndex);
       while (pIndex != null)
       {
-        long pos = Writer.BaseStream.Position;
+        long pos = BaseStream.Position;
         if (checkDelete(pIndex))
         {
           pIndex.Status = ElementIndex.StatusDeleted;
-          Writer.BaseStream.Seek(pos - Param.INDEX_LENGTH, SeekOrigin.Begin);
-          Write(pIndex);
+          BaseStream.Seek(pos - Io.FileParam.INDEX_LENGTH, SeekOrigin.Begin);
+          Io.Write(pIndex);
 
           n++;
         }
 
         iIndex++;
-        pIndex = OcdReader.ReadIndex(iIndex);
+        pIndex = Io.ReadIndex(iIndex);
       }
       return n;
     }
 
     public int ChangeSymbols(ElementIndexDlg<int> changeSymbol)
     {
-      Init();
-
       int n = 0;
       int iIndex = 0;
-      ElementIndex pIndex = OcdReader.ReadIndex(iIndex);
+      ElementIndex pIndex = Io.ReadIndex(iIndex);
       List<ElementIndex> changedElements = new List<ElementIndex>();
       while (pIndex != null)
       {
-        long pos = Writer.BaseStream.Position;
+        long pos = Io.Writer.BaseStream.Position;
         int newSymbol = changeSymbol(pIndex);
         if (newSymbol != pIndex.Symbol)
         {
           pIndex.Symbol = newSymbol;
-          Writer.BaseStream.Seek(pos - Param.INDEX_LENGTH, SeekOrigin.Begin);
-          Write(pIndex);
+          Io.Writer.BaseStream.Seek(pos - Io.FileParam.INDEX_LENGTH, SeekOrigin.Begin);
+          Io.Write(pIndex);
 
           changedElements.Add(pIndex);
           n++;
         }
 
         iIndex++;
-        pIndex = OcdReader.ReadIndex(iIndex);
+        pIndex = Io.ReadIndex(iIndex);
       }
 
       foreach (var index in changedElements)
       {
-        Writer.BaseStream.Seek(index.Position, SeekOrigin.Begin);
+        BaseStream.Seek(index.Position, SeekOrigin.Begin);
         // Assumption: Symbol and ObjectType is at the start position!
-        WriteElementSymbol(index.Symbol);
-        Writer.Write((byte)index.ObjectType);
+        Io.WriteElementSymbol(index.Symbol);
+        Io.Writer.Write((byte)index.ObjectType);
       }
       return n;
     }
 
-  }
-  #region OCAD8
-  public class Ocad8Writer : OcadWriter
-  {
-    public Ocad8Writer(Stream ocadStream)
+    #region OCAD8
+
+    private void Write(ElementIndex index)
     {
-      Writer = new EndianWriter(ocadStream);
-      Param = new FileParamV8();
+      Io.Write(index);
     }
 
-    protected override void Init()
+    public void Write(Element element)
     {
-      if (OcdReader == null)
-      {
-        OcdReader = new Ocad8Reader(Writer.BaseStream);
-        _reader = new EndianReader(Writer.BaseStream, true);
-        Param = OcdReader.FileParam;
-        _setup = OcdReader.ReadSetup();
-      }
+      Io.WriteElementHeader(element);
+
+      Io.WriteElementContent(element);
     }
 
-    protected override void Write(ElementIndex index)
+    private void WriteElementHeader(Element element)
     {
-      base.Write(index);
-
-      Writer.Write((int)index.Position);
-      Writer.Write((short)index.Length);
-      Writer.Write((short)index.Symbol);
+      Io.WriteElementHeader(element);
     }
 
-    protected override void Write(Element element)
+    private void WriteElementSymbol(int symbol)
     {
-      WriteElementHeader(element);
-
-      OcdReader.WriteElementContent(Writer, element);
+      Io.WriteElementSymbol(symbol);
     }
+    #endregion
 
-    protected override void WriteElementHeader(Element element)
-    {
-      OcdReader.WriteElementHeader(Writer, element);
-    }
-
-    protected override void WriteElementSymbol(int symbol)
-    {
-      OcdReader.WriteElementSymbol(Writer, symbol);
-    }
-  }
-  #endregion
-
-  #region OCAD9
-  public class Ocad9Writer : OcadWriter
-  {
-    public static Ocad9Writer AppendTo(string file)
+    public static OcadWriter AppendTo(string file)
     {
       return AppendTo(new FileStream(file, FileMode.Open,
          FileAccess.ReadWrite));
     }
-    public static Ocad9Writer AppendTo(Stream ocadStream)
+    public static OcadWriter AppendTo(Stream ocadStream, int ocadVersion = 0)
     {
-      Ocad9Writer ocd = new Ocad9Writer
-      {
-        Writer = new EndianWriter(ocadStream),
-        Param = new FileParamV9()
-      };
+      OcadWriter ocd = new OcadWriter(ocadStream, ocadVersion);
       return ocd;
-    }
-
-    protected override void Init()
-    {
-      if (OcdReader == null)
-      {
-        _reader = new EndianReader(Writer.BaseStream, System.Text.Encoding.UTF7, true);
-        OcdReader = OcadReader.Open(Writer.BaseStream);  //new Ocad9Reader(_writer.BaseStream);
-        Param = OcdReader.FileParam;
-        _setup = OcdReader.ReadSetup();
-      }
     }
 
     public void DeleteElements(IList<int> symbols)
     {
-      Init();
       List<int> symSort = null;
       if (symbols != null)
       {
@@ -598,39 +499,37 @@ namespace Ocad
       }
 
       int iIndex = 0;
-      ElementIndex pIndex = OcdReader.ReadIndex(iIndex);
+      ElementIndex pIndex = Io.ReadIndex(iIndex);
       while (pIndex != null)
       {
         if (symSort == null || symSort.BinarySearch(pIndex.Symbol) >= 0)
         {
           pIndex.Status = ElementIndex.StatusDeleted;
-          Writer.BaseStream.Seek(-Param.INDEX_LENGTH, SeekOrigin.Current);
-          Write(pIndex);
+          BaseStream.Seek(-Io.FileParam.INDEX_LENGTH, SeekOrigin.Current);
+          Io.Write(pIndex);
         }
         iIndex++;
-        pIndex = OcdReader.ReadIndex(iIndex);
+        pIndex = Io.ReadIndex(iIndex);
       }
     }
 
     public void Remove(StringType type)
     {
-      Init();
-      foreach (StringParamIndex index in OcdReader.EnumStringParamIndices())
+      foreach (StringParamIndex index in Io.EnumStringParamIndices())
       {
         if (index.Type != type)
         { continue; }
 
-        Writer.BaseStream.Seek(-8, SeekOrigin.Current);
-        Writer.Write((int)-1);
-        Writer.BaseStream.Seek(4, SeekOrigin.Current);
+        BaseStream.Seek(-8, SeekOrigin.Current);
+        Io.Writer.Write((int)-1);
+        BaseStream.Seek(4, SeekOrigin.Current);
       }
     }
 
     public void Append(StringType type, int elemNummer, string stringParam)
     {
-      Init();
-      _reader.BaseStream.Seek(0, SeekOrigin.End);
-      int iPos = (int)_reader.BaseStream.Position;
+      BaseStream.Seek(0, SeekOrigin.End);
+      int iPos = (int)BaseStream.Position;
 
       StringParamIndex overwriteIndex = new StringParamIndex
       {
@@ -643,28 +542,27 @@ namespace Ocad
       Overwrite(overwriteIndex, stringParam);
 
       for (int i = 0; i < 64; i++) // same reason as above
-      { Writer.Write((byte)0); }
+      { Io.Writer.Write((byte)0); }
     }
 
     public void Overwrite(StringParamIndex overwriteIndex, string stringParam)
     {
       if (stringParam.Length > overwriteIndex.Size)
       { }
-      _reader.BaseStream.Seek(overwriteIndex.FilePosition, SeekOrigin.Begin);
+      BaseStream.Seek(overwriteIndex.FilePosition, SeekOrigin.Begin);
       int n = stringParam.Length;
       for (int i = 0; i < n; i++)
-      { Writer.Write((byte)stringParam[i]); }
+      { Io.Writer.Write((byte)stringParam[i]); }
     }
 
     public void Overwrite(StringType type, int elemNummer, string stringParam)
     {
-      Init();
-      _reader.BaseStream.Seek(0, SeekOrigin.End);
-      int iPos = (int)_reader.BaseStream.Position;
+      BaseStream.Seek(0, SeekOrigin.End);
+      int iPos = (int)BaseStream.Position;
 
       StringParamIndex overwriteIndex = null;
 
-      foreach (var index in OcdReader.EnumStringParamIndices())
+      foreach (var index in Io.EnumStringParamIndices())
       {
         if (index.Type == type)
         {
@@ -685,46 +583,45 @@ namespace Ocad
       }
       else
       {
-        _reader.BaseStream.Seek(-16, SeekOrigin.Current);
+        BaseStream.Seek(-16, SeekOrigin.Current);
         overwriteIndex.Size = stringParam.Length;
         overwriteIndex.FilePosition = iPos;
 
-        Writer.Write((int)overwriteIndex.FilePosition);
-        Writer.Write((int)overwriteIndex.Size);
-        Writer.Write((int)overwriteIndex.Type);
-        Writer.Write((int)overwriteIndex.ElemNummer);
+        Io.Writer.Write((int)overwriteIndex.FilePosition);
+        Io.Writer.Write((int)overwriteIndex.Size);
+        Io.Writer.Write((int)overwriteIndex.Type);
+        Io.Writer.Write((int)overwriteIndex.ElemNummer);
       }
 
-      _reader.BaseStream.Seek(overwriteIndex.FilePosition, SeekOrigin.Begin);
+      BaseStream.Seek(overwriteIndex.FilePosition, SeekOrigin.Begin);
       int n = stringParam.Length;
       for (int i = 0; i < n; i++)
-      { Writer.Write((byte)stringParam[i]); }
+      { Io.Writer.Write((byte)stringParam[i]); }
     }
 
     private void Append(StringParamIndex index)
     {
-      Init();
       int i;
-      long p = Param.FirstStrIdxBlock;
+      long p = Io.FileParam.FirstStrIdxBlock;
       long p0 = p;
       while (p > 0)
       {
         p0 = p;
-        Writer.BaseStream.Seek(p, SeekOrigin.Begin);
-        p = _reader.ReadInt32();
+        Io.Writer.BaseStream.Seek(p, SeekOrigin.Begin);
+        p = Io.Reader.ReadInt32();
       }
       if (p0 > 0)
       {
         p = p0 + 4;
-        _reader.BaseStream.Seek(p, SeekOrigin.Begin); /* index->pos */
+        BaseStream.Seek(p, SeekOrigin.Begin); /* index->pos */
         StringParamIndex pIndex = new StringParamIndex { FilePosition = 1 };
         i = 0;
         while (pIndex.FilePosition > 0 && i < FileParam.N_IN_STRINGPARAM_BLOCK)
         {
-          pIndex.FilePosition = _reader.ReadInt32();
-          pIndex.Size = _reader.ReadInt32();
-          pIndex.Type = (StringType)_reader.ReadInt32();
-          pIndex.ElemNummer = _reader.ReadInt32();
+          pIndex.FilePosition = Io.Reader.ReadInt32();
+          pIndex.Size = Io.Reader.ReadInt32();
+          pIndex.Type = (StringType)Io.Reader.ReadInt32();
+          pIndex.ElemNummer = Io.Reader.ReadInt32();
 
           p += 16;
           i++;
@@ -736,89 +633,55 @@ namespace Ocad
       }
       if (i == FileParam.N_IN_STRINGPARAM_BLOCK)
       { /* new index block */
-        Writer.BaseStream.Seek(0, SeekOrigin.End);
-        p = Writer.BaseStream.Position;
-        Writer.Write((int)0);
+        Io.Writer.BaseStream.Seek(0, SeekOrigin.End);
+        p = BaseStream.Position;
+        Io.Writer.Write((int)0);
         int n = FileParam.N_IN_STRINGPARAM_BLOCK * 16;
         for (int j = 0; j < n; j++)
-        { Writer.Write((byte)0); }
+        { Io.Writer.Write((byte)0); }
         if (p0 > 0)
         {
-          Writer.BaseStream.Seek(p0, SeekOrigin.Begin);
+          Io.Writer.BaseStream.Seek(p0, SeekOrigin.Begin);
         }
         else
         {
-          Writer.BaseStream.Seek(32, SeekOrigin.Begin); /* first String Index Block position */
-          Param.FirstStrIdxBlock = (int)p;
+          Io.Writer.BaseStream.Seek(32, SeekOrigin.Begin); /* first String Index Block position */
+          Io.FileParam.FirstStrIdxBlock = (int)p;
         }
-        Writer.Write((int)p);
+        Io.Writer.Write((int)p);
         p += 4;
 
         index.FilePosition = (int)p + n;
       }
       else
       {
-        Writer.BaseStream.Seek(0, SeekOrigin.End);
-        index.FilePosition = (int)Writer.BaseStream.Position;
+        BaseStream.Seek(0, SeekOrigin.End);
+        index.FilePosition = (int)BaseStream.Position;
         p -= 16;
       }
-      Writer.BaseStream.Seek(p, SeekOrigin.Begin);
+      BaseStream.Seek(p, SeekOrigin.Begin);
 
-      Writer.Write((int)index.FilePosition);
-      Writer.Write((int)index.Size);
-      Writer.Write((int)index.Type);
-      Writer.Write((int)index.ElemNummer);
-    }
-
-    protected override void Write(ElementIndex index)
-    {
-      base.Write(index);
-
-      Writer.Write((int)index.Position);
-      Writer.Write((int)index.Length);
-      Writer.Write((int)index.Symbol);
-
-      Writer.Write((sbyte)index.ObjectType);
-      Writer.Write((sbyte)0); // reserved
-      Writer.Write((sbyte)index.Status);
-      Writer.Write((sbyte)index.ViewType);
-      Writer.Write((short)index.Color);
-      Writer.Write((short)0); // reserved
-      Writer.Write((short)index.ImportLayer);
-      Writer.Write((short)0); // reserved
+      Io.Writer.Write((int)index.FilePosition);
+      Io.Writer.Write((int)index.Size);
+      Io.Writer.Write((int)index.Type);
+      Io.Writer.Write((int)index.ElemNummer);
     }
 
     public static void Write(Element element, Stream stream)
     {
-      Ocad9Writer writer = AppendTo(stream);
+      OcadWriter writer = AppendTo(stream);
       writer.Write(element);
     }
-    protected override void Write(Element element)
-    {
-      WriteElementHeader(element);
 
-      OcdReader.WriteElementContent(Writer, element);
-    }
-
-    protected override void WriteElementHeader(Element element)
-    {
-      OcdReader.WriteElementHeader(Writer, element);
-    }
-
-    protected override void WriteElementSymbol(int symbol)
-    {
-      OcdReader.WriteElementSymbol(Writer, symbol);
-    }
 
     public void WriteSymbolStatus(Symbol.SymbolStatus status, int symbolStartPosition)
     {
-      _reader.BaseStream.Seek(symbolStartPosition + 11, SeekOrigin.Begin);
-      Writer.Write((byte)status);
+      BaseStream.Seek(symbolStartPosition + 11, SeekOrigin.Begin);
+      Io.Writer.Write((byte)status);
     }
 
     public void SymbolsSetState(IList<int> symbols, Symbol.SymbolStatus state)
     {
-      Init();
       List<int> sortSymbols = null;
       if (symbols != null)
       {
@@ -829,8 +692,8 @@ namespace Ocad
       List<int> symPos = new List<int>();
 
       int iSymbol = 0;
-      for (int posIndex = OcdReader.ReadSymbolPosition(iSymbol);
-        posIndex > 0; posIndex = OcdReader.ReadSymbolPosition(iSymbol))
+      for (int posIndex = Io.ReadSymbolPosition(iSymbol);
+        posIndex > 0; posIndex = Io.ReadSymbolPosition(iSymbol))
       {
         symPos.Add(posIndex);
 
@@ -839,7 +702,7 @@ namespace Ocad
 
       foreach (var posIndex in symPos)
       {
-        Symbol.BaseSymbol symbol = OcdReader.ReadSymbol(posIndex);
+        Symbol.BaseSymbol symbol = Io.ReadSymbol(posIndex);
         if (symbols == null || sortSymbols.BinarySearch(symbol.Number) >= 0)
         {
           WriteSymbolStatus(state, posIndex);
@@ -847,5 +710,4 @@ namespace Ocad
       }
     }
   }
-  #endregion
 }

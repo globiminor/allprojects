@@ -675,18 +675,18 @@ namespace Asvz
         }
 
         // read clipboard
-        Ocad9Reader pReader = new Ocad9Reader((Stream)pData, true);
-        Element elem = pReader.ReadElement();
+        OcadReader reader = OcadReader.Open((Stream)pData, ocadVersion: 9);
+        Element elem = reader.ReadElement();
         int size = 0;
         while (elem != null)
         {
           size += elem.PointCount() * 8 + 40;
           pInList.Add(elem);
-          elem = pReader.ReadElement();
+          elem = reader.ReadElement();
         }
 
         MemoryStream memStream = new MemoryStream(size);
-        Ocad9Writer pWriter = Ocad9Writer.AppendTo(memStream);
+        OcadWriter pWriter = OcadWriter.AppendTo(memStream, 9);
 
         foreach (var pElem in pInList)
         {
@@ -722,7 +722,7 @@ namespace Asvz
         }
 
         // read clipboard
-        Ocad9Reader pReader = new Ocad9Reader((Stream)pData);
+        OcadReader pReader = OcadReader.Open((Stream)pData, 9);
         Element elem = pReader.ReadElement();
         while (elem != null)
         {
@@ -794,7 +794,8 @@ namespace Asvz
         }
 
         MemoryStream memStream = new MemoryStream(maxElement.PointCount() * 8 + 40);
-        Ocad9Writer.Write(maxElement, memStream);
+        OcadWriter writer = OcadWriter.AppendTo(memStream, ocadVersion: 9);
+        writer.Write(maxElement);
         for (int i = 0; i < 40; i++)
         { memStream.WriteByte(0); }
 

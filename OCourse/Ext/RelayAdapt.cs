@@ -57,7 +57,7 @@ namespace OCourse.Ext
       string copy = _origOcd + "1.ocd";
       File.Copy(_origOcd, copy, true);
       File.SetAttributes(copy, FileAttributes.Normal);
-      Ocad9Writer writer = Ocad9Writer.AppendTo(copy);
+      OcadWriter writer = OcadWriter.AppendTo(copy);
       writer.Remove(StringType.Class);
       writer.Remove(StringType.Course);
 
@@ -99,7 +99,7 @@ namespace OCourse.Ext
 
       string copy = _origOcd + "1.ocd";
       File.Copy(_origOcd, copy, true);
-      Ocad9Writer writer = Ocad9Writer.AppendTo(copy);
+      OcadWriter writer = OcadWriter.AppendTo(copy);
       writer.Remove(StringType.Class);
       writer.Remove(StringType.Course);
 
@@ -447,7 +447,7 @@ namespace OCourse.Ext
         File.Copy(bahn, outFile.ToString(), true);
 
         double climb = Climb(controlList, routeCosts);
-        using (Ocad9Writer writer = Ocad9Writer.AppendTo(outFile.ToString()))
+        using (OcadWriter writer = OcadWriter.AppendTo(outFile.ToString()))
         {
           AdaptTeamName(writer, mapInfo, mappedTeam, fileLeg);
           int iClimb = (int)Basics.Utils.Round(climb, 5);
@@ -696,7 +696,7 @@ namespace OCourse.Ext
         if (index.Symbol != _parent._symPoBeTitle)
         { return false; }
 
-        Element elem = _writer.Reader.ReadElement(index);
+        Element elem = _writer.ReadElement(index);
         if (elem.Text == null || elem.Text.EndsWith(" m") == false)
         { return false; }
 
@@ -727,13 +727,13 @@ namespace OCourse.Ext
         {
           if (StartNr != null)
           { throw new InvalidOperationException("Multiple StartNr"); }
-          StartNr = _writer.Reader.ReadElement(index);
+          StartNr = _writer.ReadElement(index);
         }
         else if (index.Symbol == _parent._symVariant)
         {
           if (Combination != null)
           { throw new InvalidOperationException("Multiple Combination"); }
-          Combination = _writer.Reader.ReadElement(index);
+          Combination = _writer.ReadElement(index);
         }
         else
         { return false; }

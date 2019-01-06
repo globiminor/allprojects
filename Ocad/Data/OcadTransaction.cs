@@ -11,7 +11,7 @@ namespace Ocad.Data
     private OcadConnection _connection;
     private readonly IsolationLevel _level;
     private string _transFile;
-    private Ocad9Writer _writer;
+    private OcadWriter _writer;
     private OcadCommand.DeleteIndices _deletes;
 
     public static OcadTransaction Start(OcadConnection connection,
@@ -30,14 +30,14 @@ namespace Ocad.Data
       _level = isolationLevel;
     }
 
-    internal Ocad9Writer Writer
+    internal OcadWriter Writer
     {
       get
       {
         if (_writer == null)
         {
           File.Copy(Connection.ConnectionString, _transFile);
-          _writer = Ocad9Writer.AppendTo(_transFile);
+          _writer = OcadWriter.AppendTo(_transFile);
         }
         return _writer;
       }

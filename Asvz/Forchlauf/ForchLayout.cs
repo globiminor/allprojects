@@ -39,7 +39,7 @@ namespace Asvz.Forchlauf
       Update(categorie, UpdateCatecorie);
     }
 
-    private void UpdateCatecorie(Ocad9Writer writer, ForchCategorie baseCategorie)
+    private void UpdateCatecorie(OcadWriter writer, ForchCategorie baseCategorie)
     {
       ForchCategorie cat = baseCategorie;
 
@@ -60,7 +60,7 @@ namespace Asvz.Forchlauf
       Polyline startClip = InitStart(writer, start);
       Polyline part = ReducedStrecke(cat.Strecke, startClip);
 
-      Element elem = new ElementV9(true);
+      Element elem = new Element(true);
       elem.Geometry = part;
       elem.Symbol = symStrecke;
       elem.Type = GeomType.line;
@@ -82,18 +82,18 @@ namespace Asvz.Forchlauf
       }, Ocad.Symbol.SymbolStatus.Protected);
     }
 
-    private void WriteVerpf(Ocad9Writer writer, Polyline line, Data data)
+    private void WriteVerpf(OcadWriter writer, Polyline line, Data data)
     {
       List<Data.VerpflegungSym> verpfList = data.Verpflegung(line);
       foreach (var verpf in verpfList)
       {
-        Element elem = new ElementV9(true);
+        Element elem = new Element(true);
         elem.Geometry = verpf.Symbol;
         elem.Symbol = SymF.Verpflegung;
         elem.Type = GeomType.point;
         writer.Append(elem);
 
-        elem = new ElementV9(true);
+        elem = new Element(true);
         elem.Geometry = verpf.Index;
         elem.Symbol = SymF.LinieBreit;
         elem.Type = GeomType.line;
@@ -106,7 +106,7 @@ namespace Asvz.Forchlauf
       Update(data, UpdateData);
     }
 
-    private void UpdateData(Ocad9Writer writer, ForchData data)
+    private void UpdateData(OcadWriter writer, ForchData data)
     {
       writer.DeleteElements(new[]
           {
@@ -126,7 +126,7 @@ namespace Asvz.Forchlauf
         Polyline strecke = (Polyline)dataElement.Geometry;
         strecke = ReducedStrecke(strecke, startClip);
 
-        Element elem = new ElementV9(true);
+        Element elem = new Element(true);
         elem.Geometry = strecke;
         elem.Symbol = dataElement.Symbol;
         elem.Type = GeomType.line;
@@ -258,7 +258,7 @@ namespace Asvz.Forchlauf
       //}
     }
 
-    private IPoint WriteText(Ocad9Writer writer, string name, Ocad.Symbol.TextSymbol symText,
+    private IPoint WriteText(OcadWriter writer, string name, Ocad.Symbol.TextSymbol symText,
       ForchCategorie categorie, IPoint above)
     {
       IPoint min = above;
@@ -286,7 +286,7 @@ namespace Asvz.Forchlauf
       return result;
     }
 
-    private void WriteBackground(Ocad9Writer writer, IPoint max, IPoint min)
+    private void WriteBackground(OcadWriter writer, IPoint max, IPoint min)
     {
       IPoint prjMax = max.Project(Setup.Prj2Map);
       IPoint prjMin = min.Project(Setup.Prj2Map);
@@ -305,7 +305,7 @@ namespace Asvz.Forchlauf
 
       Area area = new Area(border);
 
-      Element elem = new ElementV9(false);
+      Element elem = new Element(false);
       elem.Geometry = area;
       elem.Type = GeomType.area;
       elem.Symbol = SymF.Deckweiss;
@@ -324,9 +324,9 @@ namespace Asvz.Forchlauf
       return full;
     }
 
-    private Polyline InitStart(Ocad9Writer writer, IPoint start)
+    private Polyline InitStart(OcadWriter writer, IPoint start)
     {
-      Element elem = new ElementV9(true);
+      Element elem = new Element(true);
 
       elem.Geometry = start;
       elem.Symbol = _startSymbol.Number;

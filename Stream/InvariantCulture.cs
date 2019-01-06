@@ -1,4 +1,3 @@
-using System;
 using System.Globalization;
 using System.Threading;
 
@@ -6,8 +5,9 @@ namespace System.IO
 {
   public class InvariantCulture : IDisposable
   {
-    private CultureInfo _culture;
-    private Thread _thread;
+    private readonly CultureInfo _culture;
+    private readonly Thread _thread;
+
     public InvariantCulture()
     {
       _thread = Thread.CurrentThread;

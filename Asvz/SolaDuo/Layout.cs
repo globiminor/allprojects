@@ -15,15 +15,15 @@ namespace Asvz
       _fileName = fileName;
     }
 
-    protected delegate void Function<T>(Ocad9Writer writer, T data);
+    protected delegate void Function<T>(OcadWriter writer, T data);
 
     protected void Update<T>(T data, Function<T> function)
     {
-      Ocad9Reader update = (Ocad9Reader)OcadReader.Open(_fileName);
+      OcadReader update = OcadReader.Open(_fileName);
       ReadUpdate(update);
       update.Close();
 
-      using (Ocad9Writer writer = Ocad9Writer.AppendTo(_fileName))
+      using (OcadWriter writer = OcadWriter.AppendTo(_fileName))
       {
         function(writer, data);
         writer.Close();
@@ -35,7 +35,7 @@ namespace Asvz
       get { return _templateSetup; }
     }
 
-    private void ReadUpdate(Ocad9Reader template)
+    private void ReadUpdate(OcadReader template)
     {
       _templateSetup = template.ReadSetup();
 
@@ -91,7 +91,7 @@ namespace Asvz
         }
         kmElem.Text = elem;
 
-        elem = new ElementV9(true);
+        elem = new Element(true);
         elem.Geometry = p;
         elem.Angle = wSetup.PrjRotation + Math.Atan2(t.X, -t.Y);
         elem.Symbol = KmStrichSymbol;

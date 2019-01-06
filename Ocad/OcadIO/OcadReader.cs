@@ -1,20 +1,20 @@
-using System;
-using System.Diagnostics;
-using System.IO;
-using System.Collections.Generic;
-using System.Text;
 using Basics.Geom;
 using Ocad.StringParams;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace Ocad
 {
-  public abstract class OcadReader : IDisposable
+  internal abstract class OcadIo : IDisposable
   {
     #region nested classes
     public class ElementEnumerator : IEnumerator<Element>
     {
-      private OcadReader _reader;
+      private OcadIo _reader;
       private readonly bool _disposable;
       private Setup _setup;
       private Element _current;
@@ -27,7 +27,7 @@ namespace Ocad
 
       public ElementEnumerator(OcadElemsInfo ocad, IBox extentIntersect, bool projected)
       {
-        _reader = ocad.CreateReader();
+        _reader = ocad.CreateReader().Io;
         _disposable = true;
         _projected = projected;
         _extent = extentIntersect;
@@ -38,7 +38,7 @@ namespace Ocad
         Init();
       }
 
-      public ElementEnumerator(OcadReader ocad, IBox extentIntersect,
+      public ElementEnumerator(OcadIo ocad, IBox extentIntersect,
         bool projected, IList<ElementIndex> indexList)
       {
         _reader = ocad;
@@ -127,97 +127,93 @@ namespace Ocad
     }
     #endregion
 
-    private EndianReader _reader;
-    protected FileParam _fileParam;
-    protected SymbolData _symbol;
+    private readonly EndianReader _reader;
+    private readonly Stream _stream;
 
-    internal EndianReader BaseReader
-    {
-      get { return _reader; }
-    }
-    public static OcadReader Open(Stream stream)
-    {
-      EndianReader reader = new EndianReader(stream, Encoding.UTF7);
-      Version(reader, out int iSectionMark, out int iVersion);
-      OcadReader ocdReader = Reader(iVersion);
-      ocdReader._reader = reader;
-      ocdReader.Init(iSectionMark, iVersion);
-      return ocdReader;
-    }
-    public static OcadReader Open(string name)
-    {
-      string ocdName = OcdName(name);
-      EncodingInfo[] codings = Encoding.GetEncodings();
-      EndianReader reader = new EndianReader(
-        new FileStream(ocdName, FileMode.Open, FileAccess.Read), Encoding.UTF7);
+    private EndianWriter _writer;
+    public EndianWriter Writer => _writer ?? (_writer = new EndianWriter(_reader.BaseStream));
 
-      Version(reader, out int iSectionMark, out int iVersion);
-      OcadReader ocdReader = Reader(iVersion);
-      ocdReader._reader = reader;
-      ocdReader.Init(iSectionMark, iVersion);
-      ocdReader.ReadSetup();
-      return ocdReader;
-    }
+    internal Stream BaseStream => _stream;
+    internal EndianReader Reader => _reader;
+    internal FileParam FileParam { get; private set; }
+    internal SymbolData SymbolData { get; private set; }
+    internal Setup Setup { get; private set; }
 
-    protected OcadReader(Stream ocadStream)
+
+    public static OcadIo GetIo(Stream stream, int ocdVersion = 0, Encoding encoding = null)
     {
-      _reader = new EndianReader(ocadStream);
-    }
-    protected OcadReader(Stream ocadStream, Encoding encoding)
-    {
-      _reader = new EndianReader(ocadStream, encoding);
+      encoding = encoding ?? Encoding.UTF7;
+
+      EndianReader reader = new EndianReader(stream, encoding);
+      int iVersion = ocdVersion;
+      OcadIo ocadIo;
+      if (iVersion == 0)
+      {
+        Version(reader, out int iSectionMark, out iVersion);
+        ocadIo = GetIo(stream, iVersion);
+        ocadIo.FileParam = ocadIo.Init(iSectionMark, iVersion);
+        ocadIo.SymbolData = ocadIo.ReadSymbolData();
+        ocadIo.Setup = ocadIo.ReadSetup();
+      }
+      else
+      {
+        ocadIo = GetIo(stream, iVersion);
+      }
+
+      return ocadIo;
     }
 
-    internal protected OcadReader()
-    { }
-    public void Dispose()
+    private static OcadIo GetIo(Stream stream, int version)
     {
-      Close();
-      _reader = null;
-    }
-    protected static void Version(EndianReader pReader, out int sectionMark, out int version)
-    {
-      pReader.BaseStream.Seek(0, SeekOrigin.Begin);
-
-      if (pReader.ReadInt16() != FileParam.OCAD_MARK)
-      { throw new Exception("Invalid OCAD File"); }
-
-      sectionMark = pReader.ReadInt16();
-      version = pReader.ReadInt16();
-    }
-    private static OcadReader Reader(int version)
-    {
-      OcadReader reader;
+      OcadIo reader;
       if (version == 6 || version == 7 || version == 8)
-      { reader = new Ocad8Reader(); }
+      { reader = new Ocad8Io(stream); }
       else if (version == 9 || version == 10)
-      { reader = new Ocad9Reader(); }
+      { reader = new Ocad9Io(stream); }
       else if (version == 11)
-      { reader = new Ocad11Reader(); }
+      { reader = new Ocad11Io(stream); }
       else if (version == 12)
-      { reader = new Ocad12Reader(); }
+      { reader = new Ocad12Io(stream); }
       else if (version == 2018)
-      { reader = new Ocad12Reader(); }
+      { reader = new Ocad12Io(stream); }
       else
       { throw new Exception("Invalid OCAD File"); }
 
       return reader;
     }
 
-    protected abstract FileParam Init(int sectionMark, int version);
-    public abstract Setup ReadSetup();
-
-    public abstract void WriteElementHeader(EndianWriter writer, Element element);
-    public abstract void WriteElementContent(EndianWriter writer, Element element);
-    public abstract void WriteElementSymbol(EndianWriter writer, int symbol);
-    public abstract int ReadElementLength();
-    public abstract int CalcElementLength(Element element);
-
-    protected static string OcdName(string name)
+    protected OcadIo(Stream ocadStream, Encoding encoding = null)
     {
-      return Path.GetDirectoryName(Path.GetFullPath(name)) +
-        Path.DirectorySeparatorChar +
-        Path.GetFileNameWithoutExtension(name) + ".ocd";
+      encoding = encoding ?? Encoding.UTF7;
+      _stream = ocadStream;
+      _reader = new EndianReader(ocadStream, encoding);
+    }
+
+    protected static void Version(EndianReader reader, out int sectionMark, out int version)
+    {
+      reader.BaseStream.Seek(0, SeekOrigin.Begin);
+
+      if (reader.ReadInt16() != FileParam.OCAD_MARK)
+      { throw new Exception("Invalid OCAD File"); }
+
+      sectionMark = reader.ReadInt16();
+      version = reader.ReadInt16();
+    }
+
+    public int ReadSymbolPosition(int i)
+    {
+      int p = FileParam.FirstSymbolBlock;
+      while (i >= FileParam.N_IN_SYMBOL_BLOCK && p > 0)
+      {
+        _reader.BaseStream.Seek(p, SeekOrigin.Begin);
+        p = _reader.ReadInt32();
+        i -= FileParam.N_IN_ELEM_BLOCK;
+      }
+      if (p == 0)
+      { return 0; }
+
+      _reader.BaseStream.Seek(4 * i + p + 4, SeekOrigin.Begin);
+      return _reader.ReadInt32();
     }
 
     public IList<ElementIndex> GetIndices()
@@ -233,446 +229,11 @@ namespace Ocad
       return idxList;
     }
 
-    public IList<CategoryPar> GetCategories(IList<StringParamIndex> indexList = null)
-    {
-      IList<StringParamIndex> indexEnum = indexList ?? EnumStringParamIndices().ToList();
-
-      List<CategoryPar> catNames = new List<CategoryPar>();
-      foreach (var index in indexEnum)
-      {
-        if (index.Type == StringType.Class)
-        {
-          CategoryPar candidate = new CategoryPar(ReadStringParam(index));
-          catNames.Add(candidate);
-        }
-      }
-      return catNames;
-    }
-
-    public IList<string> GetCourseCategories(string courseName, IList<StringParamIndex> indexList = null)
-    {
-      IEnumerable<StringParamIndex> indexEnum = indexList ?? ReadStringParamIndices();
-      List<string> catNames = new List<string>();
-      foreach (var index in indexEnum)
-      {
-        if (index.Type == StringType.Class)
-        {
-          CategoryPar candidate = new CategoryPar(ReadStringParam(index));
-          if (candidate.CourseName == courseName)
-          {
-            catNames.Add(candidate.Name);
-          }
-        }
-
-        if (index.Type == StringType.Course)
-        {
-          CoursePar candidate = new CoursePar(ReadStringParam(index));
-          if (candidate.Name == courseName)
-          {
-            catNames.Add(candidate.Name);
-          }
-        }
-      }
-      return catNames;
-    }
-
-    public static bool Exists(string name)
-    {
-      string ext = Path.GetExtension(name);
-      if (ext != "" && ext != ".ocd")
-      { return false; }
-
-      if (File.Exists(OcdName(name)) == false)
-      { return false; }
-
-      return true;
-    }
-
-    public FileParam FileParam
-    {
-      get
-      { return _fileParam; }
-    }
-
-    public IEnumerable<Element> Elements(IBox extentIntersect, bool projected,
-      IList<ElementIndex> indexList)
-    {
-      ElementEnumerator elements = new ElementEnumerator(this,
-        extentIntersect, projected, indexList);
-
-      while (elements.MoveNext())
-      {
-        yield return elements.Current;
-      }
-    }
-
-    public IEnumerable<Element> Elements(bool projected, IList<ElementIndex> indexList)
-    {
-      return Elements(null, projected, indexList);
-    }
-
-    public void Close()
-    {
-      if (_reader != null)
-      {
-        _reader.Close();
-      }
-    }
-
-    internal static int FLength(Element element)
-    {
-      return 32 + element.PointCount() * 8 + element.Text.Length;
-    }
-
-    public int ReadSymbolPosition(int i)
-    {
-      int p = _fileParam.FirstSymbolBlock;
-      while (i >= FileParam.N_IN_SYMBOL_BLOCK && p > 0)
-      {
-        _reader.BaseStream.Seek(p, SeekOrigin.Begin);
-        p = _reader.ReadInt32();
-        i -= FileParam.N_IN_ELEM_BLOCK;
-      }
-      if (p == 0)
-      { return 0; }
-
-      _reader.BaseStream.Seek(4 * i + p + 4, SeekOrigin.Begin);
-      return _reader.ReadInt32();
-    }
-
-    public abstract ElementIndex ReadIndex(int i);
-
-    List<int> _indexBlockStarts;
-
-    internal bool SeekIndex(int id)
-    {
-      if (id < 0)
-      { return false; }
-      if (_indexBlockStarts == null)
-      {
-        _indexBlockStarts = new List<int>
-        {          _fileParam.FirstIndexBlock        };
-      }
-      int iBlock = 0;
-      int p = _indexBlockStarts[iBlock];
-      int blockPos = id;
-      while (blockPos >= FileParam.N_IN_ELEM_BLOCK && p > 0)
-      {
-        iBlock++;
-        if (iBlock == _indexBlockStarts.Count)
-        {
-          _reader.BaseStream.Seek(p, SeekOrigin.Begin);
-          p = _reader.ReadInt32();
-          _indexBlockStarts.Add(p);
-        }
-        else
-        {
-          p = _indexBlockStarts[iBlock];
-        }
-        blockPos -= FileParam.N_IN_ELEM_BLOCK;
-      }
-      if (p == 0)
-      { return false; }
-
-      _reader.BaseStream.Seek(_fileParam.INDEX_LENGTH * blockPos + p + 4, SeekOrigin.Begin);
-      return true;
-    }
-
-    protected ElementIndex ReadIndexPart(int id)
-    {
-      if (SeekIndex(id) == false)
-      { return null; }
-
-      ElementIndex index = new ElementIndex(id);
-
-      index.Box.Min.X = Coord.GetGeomPart(_reader.ReadInt32());
-      index.Box.Min.Y = Coord.GetGeomPart(_reader.ReadInt32());
-      index.Box.Max.X = Coord.GetGeomPart(_reader.ReadInt32());
-      index.Box.Max.Y = Coord.GetGeomPart(_reader.ReadInt32());
-
-      return index;
-    }
-
-    public Element ReadElement(int i)
-    {
-      return ReadElement(ReadIndex(i));
-    }
-
-    public Element ReadElement(ElementIndex index)
-    {
-      if (index == null)
-      { return null; }
-      if (index.Position == 0)
-      { return null; }
-
-      _reader.BaseStream.Seek(index.Position, SeekOrigin.Begin);
-
-      Element elem = ReadElement();
-      if (this is Ocad8Reader && index.Symbol == 0)
-      {
-        elem.DeleteSymbol = elem.Symbol;
-        elem.Symbol = 0;
-      }
-      return elem;
-    }
-
-    public abstract Element ReadElement();
-
-    protected List<Coord> ReadCoords(int nPoints)
-    {
-      List<Coord> coords = new List<Coord>(nPoints);
-      for (int iPoint = 0; iPoint < nPoints; iPoint++)
-      {
-        coords.Add(ReadCoord());
-      }
-      return coords;
-    }
-
-    public static IGeometry GetGeometry(GeomType type, IList<Coord> coords)
-    {
-      if (type == GeomType.point || type == GeomType.unformattedText ||
-        type == GeomType.formattedText)
-      {
-        if (coords.Count == 1)
-        { return coords[0].GetPoint(); }
-        else
-        {
-          PointCollection points = new PointCollection();
-          foreach (var coord in coords)
-          { points.Add(coord.GetPoint()); }
-          return points;
-        }
-      }
-      else if (type == GeomType.line || type == GeomType.lineText)
-      {
-        Polyline line = GetPolyline(coords);
-        return line;
-      }
-      else if (type == GeomType.rectangle)
-      {
-        Polyline line = GetPolyline(coords);
-        return line;
-      }
-      else if (type == GeomType.area)
-      {
-        Area pArea = GetArea(coords);
-        return pArea;
-      }
-      else
-      { // unknown geometry type
-        return null;
-      }
-    }
-
-    public static Area GetArea(IList<Coord> coords)
-    {
-      int iPoint = 0;
-      Area pArea = new Area(GetPolylineCore(coords, ref iPoint));
-      while (iPoint < coords.Count) // read holes / inner rings
-      { pArea.Border.Add(GetPolylineCore(coords, ref iPoint)); }
-      return pArea;
-    }
-    public static Polyline GetPolyline(IList<Coord> coords)
-    {
-      int iPoint = 0;
-      Polyline line = GetPolylineCore(coords, ref iPoint);
-
-      if (coords.Count != iPoint)
-      { throw new InvalidOperationException($"Expected Points {coords.Count} <> {iPoint}"); }
-
-      return line;
-    }
-    private static Polyline GetPolylineCore(IList<Coord> coords, ref int iPoint)
-    {
-      int nPoints = coords.Count;
-      Point p0;
-      Polyline line = new Polyline();
-
-      p0 = coords[iPoint].GetPoint();
-      iPoint++;
-      while (iPoint < nPoints)
-      {
-        Curve seg;
-        Point p1;
-
-        Coord coord1 = coords[iPoint];
-        if (coord1.IsNewRing)
-        {
-          break;
-        }
-
-        iPoint++;
-        if (coord1.IsBezier)
-        {
-          Coord coord2 = coords[iPoint];
-          iPoint++;
-          Coord coord3 = coords[iPoint];
-          iPoint++;
-          p1 = coord3.GetPoint();
-          seg = new Bezier(p0, coord1.GetPoint(),
-            coord2.GetPoint(), p1);
-        }
-        else
-        {
-          p1 = coord1.GetPoint();
-          seg = new Line(p0, p1);
-        }
-        line.Add(seg);
-
-        p0 = p1;
-      }
-
-      return line;
-    }
-
-    protected Coord ReadCoord()
-    {
-      return new Coord(_reader.ReadInt32(), _reader.ReadInt32());
-    }
-
-    protected void ReadGpsAdjust()
-    {
-      ReadCoord();
-      _reader.ReadDouble();
-      _reader.ReadDouble();
-      _reader.ReadChars(16);
-    }
-
-
-    public abstract IEnumerable<ColorInfo> ReadColorInfos();
-
-    public ColorSeparation ReadColorSeparation(int index)
-    {
-      if (index >= _symbol.ColorSeparationCount)
-      { return null; }
-
-      ColorSeparation sep = new ColorSeparation();
-
-      _reader.BaseStream.Seek(FileParam.HEADER_LENGTH +
-        FileParam.SYM_BLOCK_LENGTH +
-        FileParam.MAX_COLORS * FileParam.COLORINFO_LENGTH +
-        index * FileParam.COLORSEP_LENGTH, SeekOrigin.Begin);
-
-      sep.Name = _reader.ReadChars(16).ToString();
-
-      sep.Color.Cyan = _reader.ReadByte();
-      sep.Color.Magenta = _reader.ReadByte();
-      sep.Color.Yellow = _reader.ReadByte();
-      sep.Color.Black = _reader.ReadByte();
-
-      sep.RasterFreq = _reader.ReadInt16();
-      sep.RasterAngle = _reader.ReadInt16();
-
-      return sep;
-    }
-
-    protected virtual SymbolData ReadSymbolData()
-    {
-      SymbolData sym = new SymbolData();
-      _reader.BaseStream.Seek(FileParam.HEADER_LENGTH, SeekOrigin.Begin);
-      sym.ColorCount = _reader.ReadInt16();
-      sym.ColorSeparationCount = _reader.ReadInt16();
-      sym.CyanFreq = _reader.ReadInt16();
-      sym.CyanAngle = _reader.ReadInt16();
-      sym.MagentaFreq = _reader.ReadInt16();
-      sym.MagentaAngle = _reader.ReadInt16();
-      sym.YellowFreq = _reader.ReadInt16();
-      sym.YellowAngle = _reader.ReadInt16();
-      sym.BlackFreq = _reader.ReadInt16();
-      sym.BlackAngle = _reader.ReadInt16();
-      _reader.ReadInt16(); // reserve 1
-      _reader.ReadInt16(); // reserve 2
-
-      return sym;
-    }
-
-    public Symbol.BaseSymbol ReadSymbol(int position)
-    {
-      _reader.BaseStream.Seek(position, SeekOrigin.Begin);
-      return ReadSymbol();
-    }
-    public abstract Symbol.BaseSymbol ReadSymbol();
-
-    public IEnumerable<Symbol.BaseSymbol> ReadSymbols()
-    {
-      List<int> symPos = new List<int>();
-      int iSymbol = 0;
-      for (int posIndex = ReadSymbolPosition(iSymbol);
-           posIndex > 0;
-           posIndex = ReadSymbolPosition(iSymbol))
-      {
-        symPos.Add(posIndex);
-
-        iSymbol++;
-      }
-
-      foreach (var posIndex in symPos)
-      {
-        Symbol.BaseSymbol symbol = ReadSymbol(posIndex);
-        yield return symbol;
-      }
-    }
-
-    #region course setting
-
-    protected string ReadTab(int max, out char endChar)
-    {
-      string sName = "";
-      endChar = '\0';
-      if (_reader.BaseStream.Position < _reader.BaseStream.Length)
-      {
-        int i = 0;
-        endChar = _reader.ReadChar();
-        while (endChar != '\t' && endChar != 0 && endChar != '\n' && i + 1 < max &&
-          _reader.BaseStream.Position < _reader.BaseStream.Length)
-        {
-          sName = sName + endChar;
-          endChar = (char)_reader.ReadByte();
-          i++;
-        }
-      }
-      return sName;
-    }
-
-    public string ReadStringParam(StringParamIndex index)
-    {
-      _reader.BaseStream.Seek(index.FilePosition, SeekOrigin.Begin);
-      string sResult = ReadTab(255, out char e1);
-
-      int max = index.Size;
-      char e0 = e1;
-      string sNext = ReadTab(255, out e1);
-      while (sNext != "")
-      {
-        if (sResult.Length + 1 + sNext.Length > max)
-        {
-          break;
-        }
-        sResult = sResult + e0 + sNext;
-        e0 = e1;
-        if (e0 == 0)
-        {
-          break;
-        }
-        sNext = ReadTab(255, out e1);
-      }
-      return sResult;
-    }
-
-    public List<StringParamIndex> ReadStringParamIndices()
-    {
-      return new List<StringParamIndex>(EnumStringParamIndices());
-    }
-
-    internal IEnumerable<StringParamIndex> EnumStringParamIndices()
+    internal virtual IEnumerable<StringParamIndex> EnumStringParamIndices()
     {
       int iNextStrIdxBlk;
 
-      if (this is Ocad8Reader && _fileParam.SectionMark != 3)
-      {
-        yield break;
-      }
-      _reader.BaseStream.Seek(_fileParam.FirstStrIdxBlock, SeekOrigin.Begin);
+      _reader.BaseStream.Seek(FileParam.FirstStrIdxBlock, SeekOrigin.Begin);
 
       do
       {
@@ -704,16 +265,131 @@ namespace Ocad
       while (iNextStrIdxBlk > 0);
     }
 
+    public string ReadStringParam(StringParamIndex index, int nTabs = 0)
+    {
+      int iTab = 0;
+      _reader.BaseStream.Seek(index.FilePosition, SeekOrigin.Begin);
+      StringBuilder sResult = new StringBuilder(ReadTab(255, out char e1));
+      iTab++;
+      if (iTab == nTabs) return sResult.ToString();
+
+
+      int max = index.Size;
+      char e0 = e1;
+      string sNext = ReadTab(255, out e1);
+      while (sNext != "")
+      {
+        if (sResult.Length + 1 + sNext.Length > max)
+        {
+          break;
+        }
+        sResult.Append(e0);
+        sResult.Append(sNext);
+        iTab++;
+        if (iTab == nTabs) return sResult.ToString();
+
+        e0 = e1;
+        if (e0 == 0)
+        {
+          break;
+        }
+        sNext = ReadTab(255, out e1);
+      }
+      return sResult.ToString();
+    }
+
+    public string ReadTab(int max, out char endChar)
+    {
+      string sName = "";
+      endChar = '\0';
+      if (_reader.BaseStream.Position < _reader.BaseStream.Length)
+      {
+        int i = 0;
+        endChar = _reader.ReadChar();
+        while (endChar != '\t' && endChar != 0 && endChar != '\n' && i + 1 < max &&
+          _reader.BaseStream.Position < _reader.BaseStream.Length)
+        {
+          sName = sName + endChar;
+          endChar = (char)_reader.ReadByte();
+          i++;
+        }
+      }
+      return sName;
+    }
+
+    public void Dispose()
+    {
+      Close();
+    }
+    public void Close()
+    {
+      _reader?.Close();
+    }
+
+    internal static int FLength(Element element)
+    {
+      return 32 + element.PointCount() * 8 + element.Text.Length;
+    }
+
+    List<int> _indexBlockStarts;
+    internal bool SeekIndex(int id)
+    {
+      if (id < 0)
+      { return false; }
+      if (_indexBlockStarts == null)
+      {
+        _indexBlockStarts = new List<int> { FileParam.FirstIndexBlock };
+      }
+      int iBlock = 0;
+      int p = _indexBlockStarts[iBlock];
+      int blockPos = id;
+      while (blockPos >= FileParam.N_IN_ELEM_BLOCK && p > 0)
+      {
+        iBlock++;
+        if (iBlock == _indexBlockStarts.Count)
+        {
+          _reader.BaseStream.Seek(p, SeekOrigin.Begin);
+          p = _reader.ReadInt32();
+          _indexBlockStarts.Add(p);
+        }
+        else
+        {
+          p = _indexBlockStarts[iBlock];
+        }
+        blockPos -= FileParam.N_IN_ELEM_BLOCK;
+      }
+      if (p == 0)
+      { return false; }
+
+      _reader.BaseStream.Seek(FileParam.INDEX_LENGTH * blockPos + p + 4, SeekOrigin.Begin);
+      return true;
+    }
+
     public string ReadCourseTemplateName()
     {
-      if (_fileParam.SectionMark != 3)
+      if (FileParam.SectionMark != 3)
       {
         return null;
       }
-      _reader.BaseStream.Seek(_fileParam.FirstStrIdxBlock + 4, SeekOrigin.Begin);
+      _reader.BaseStream.Seek(FileParam.FirstStrIdxBlock + 4, SeekOrigin.Begin);
       _reader.BaseStream.Seek(_reader.ReadInt32(), SeekOrigin.Begin);
 
       return ReadTab(1024, out char e);
+    }
+
+    public ElementIndex ReadIndexPart(int id)
+    {
+      if (SeekIndex(id) == false)
+      { return null; }
+
+      ElementIndex index = new ElementIndex(id);
+
+      index.Box.Min.X = Coord.GetGeomPart(_reader.ReadInt32());
+      index.Box.Min.Y = Coord.GetGeomPart(_reader.ReadInt32());
+      index.Box.Max.X = Coord.GetGeomPart(_reader.ReadInt32());
+      index.Box.Max.Y = Coord.GetGeomPart(_reader.ReadInt32());
+
+      return index;
     }
 
     public virtual Element ReadControlGeometry(Control control,
@@ -739,6 +415,339 @@ namespace Ocad
       return null;
     }
 
+    public Element ReadElement(int i)
+    {
+      return ReadElement(ReadIndex(i));
+    }
+    public Element ReadElement(ElementIndex index)
+    {
+      if (index == null)
+      { return null; }
+      if (index.Position == 0)
+      { return null; }
+
+      _reader.BaseStream.Seek(index.Position, SeekOrigin.Begin);
+
+      Element elem = ReadElement();
+      VerifyExists(elem, index);
+
+      return elem;
+    }
+
+    protected virtual void VerifyExists(Element element, ElementIndex index)
+    { }
+
+    public List<Coord> ReadCoords(int nPoints)
+    {
+      List<Coord> coords = new List<Coord>(nPoints);
+      for (int iPoint = 0; iPoint < nPoints; iPoint++)
+      {
+        coords.Add(ReadCoord());
+      }
+      return coords;
+    }
+
+    protected Coord ReadCoord()
+    {
+      return new Coord(_reader.ReadInt32(), _reader.ReadInt32());
+    }
+
+    protected void ReadGpsAdjust()
+    {
+      ReadCoord();
+      _reader.ReadDouble();
+      _reader.ReadDouble();
+      _reader.ReadChars(16);
+    }
+
+    public void WriteIndexBox(ElementIndex index)
+    {
+      Coord coord = Coord.Create(index.Box.Min, 0);
+      Writer.Write((int)coord.Ox);
+      Writer.Write((int)coord.Oy);
+      coord = Coord.Create(index.Box.Max, 0);
+      Writer.Write((int)coord.Ox);
+      Writer.Write((int)coord.Oy);
+    }
+
+    public abstract IEnumerable<ColorInfo> ReadColorInfos();
+
+    public ColorSeparation ReadColorSeparation(int index)
+    {
+      if (index >= SymbolData.ColorSeparationCount)
+      { return null; }
+
+      ColorSeparation sep = new ColorSeparation();
+
+      _reader.BaseStream.Seek(FileParam.HEADER_LENGTH +
+        FileParam.SYM_BLOCK_LENGTH +
+        FileParam.MAX_COLORS * FileParam.COLORINFO_LENGTH +
+        index * FileParam.COLORSEP_LENGTH, SeekOrigin.Begin);
+
+      sep.Name = _reader.ReadChars(16).ToString();
+
+      sep.Color.Cyan = _reader.ReadByte();
+      sep.Color.Magenta = _reader.ReadByte();
+      sep.Color.Yellow = _reader.ReadByte();
+      sep.Color.Black = _reader.ReadByte();
+
+      sep.RasterFreq = _reader.ReadInt16();
+      sep.RasterAngle = _reader.ReadInt16();
+
+      return sep;
+    }
+
+    public virtual SymbolData ReadSymbolData()
+    {
+      SymbolData sym = new SymbolData();
+      _reader.BaseStream.Seek(FileParam.HEADER_LENGTH, SeekOrigin.Begin);
+      sym.ColorCount = _reader.ReadInt16();
+      sym.ColorSeparationCount = _reader.ReadInt16();
+      sym.CyanFreq = _reader.ReadInt16();
+      sym.CyanAngle = _reader.ReadInt16();
+      sym.MagentaFreq = _reader.ReadInt16();
+      sym.MagentaAngle = _reader.ReadInt16();
+      sym.YellowFreq = _reader.ReadInt16();
+      sym.YellowAngle = _reader.ReadInt16();
+      sym.BlackFreq = _reader.ReadInt16();
+      sym.BlackAngle = _reader.ReadInt16();
+      _reader.ReadInt16(); // reserve 1
+      _reader.ReadInt16(); // reserve 2
+
+      return sym;
+    }
+
+
+    public Symbol.BaseSymbol ReadSymbol(int position)
+    {
+      _reader.BaseStream.Seek(position, SeekOrigin.Begin);
+      return ReadSymbol();
+    }
+    public abstract Symbol.BaseSymbol ReadSymbol();
+
+    public IEnumerable<Symbol.BaseSymbol> ReadSymbols()
+    {
+      List<int> symPos = new List<int>();
+      int iSymbol = 0;
+      for (int posIndex = ReadSymbolPosition(iSymbol);
+           posIndex > 0;
+           posIndex = ReadSymbolPosition(iSymbol))
+      {
+        symPos.Add(posIndex);
+
+        iSymbol++;
+      }
+
+      foreach (var posIndex in symPos)
+      {
+        Symbol.BaseSymbol symbol = ReadSymbol(posIndex);
+        yield return symbol;
+      }
+    }
+
+    protected static void WriteUnicodeString(EndianWriter writer, string text)
+    {
+      if (!string.IsNullOrEmpty(text))
+      {
+        writer.WriteUnicodeString(text);
+        int n = Ocad9Io.TextCountV9(text);
+        for (int i = text.Length * 2 + 2; i < n; i++)
+        { writer.BaseStream.WriteByte(0); }
+      }
+    }
+
+    public abstract Element ReadElement();
+
+    protected abstract FileParam Init(int sectionMark, int version);
+
+    public abstract Setup ReadSetup();
+
+    public abstract ElementIndex ReadIndex(int i);
+    public abstract int ReadElementLength();
+
+    // Symbol description
+    public abstract string ReadDescription();
+    public abstract void ReadAreaSymbol(Symbol.AreaSymbol symbol);
+
+    public abstract ElementIndex GetIndex(Element element);
+    public abstract int GetElementTextCount(Element element, string text);
+    public abstract void Write(ElementIndex index);
+
+    public abstract void WriteElementHeader(Element element);
+    public abstract void WriteElementContent(Element element);
+    public abstract void WriteElementSymbol(int symbol);
+
+    public abstract int CalcElementLength(Element element);
+  }
+  public class OcadReader : IDisposable
+  {
+    private OcadIo _io;
+
+    internal OcadReader(OcadIo io)
+    {
+      _io = io;
+    }
+
+    internal OcadIo Io => _io;
+    internal Stream BaseStream => _io.BaseStream;
+
+    public static OcadReader Open(Stream stream, int ocadVersion)
+    {
+      return new OcadReader(OcadIo.GetIo(stream, ocadVersion));
+    }
+    public static OcadReader Open(string name)
+    {
+      string ocdName = OcdName(name);
+      return Open(new FileStream(ocdName, FileMode.Open, FileAccess.Read), 0);
+    }
+
+    public void Dispose()
+    {
+      Close();
+      _io = null;
+    }
+
+    public Setup ReadSetup()
+    {
+      return _io.ReadSetup();
+    }
+
+    public Setup Setup => _io.Setup;
+
+    protected static string OcdName(string name)
+    {
+      return Path.Combine(Path.GetDirectoryName(Path.GetFullPath(name)),
+        Path.GetFileNameWithoutExtension(name) + ".ocd");
+    }
+
+    public IList<ElementIndex> GetIndices()
+    {
+      return _io.GetIndices();
+    }
+
+    public ElementIndex ReadIndex(int i)
+    {
+      return _io.ReadIndex(i);
+    }
+
+    public Element ReadElement(ElementIndex index)
+    {
+      return _io.ReadElement(index);
+    }
+    public Element ReadElement(int index)
+    {
+      return _io.ReadElement(index);
+    }
+    public Element ReadElement()
+    {
+      return _io.ReadElement();
+    }
+
+    public IEnumerable<ColorInfo> ReadColorInfos()
+    {
+      return _io.ReadColorInfos();
+    }
+    public IEnumerable<Symbol.BaseSymbol> ReadSymbols()
+    {
+      return _io.ReadSymbols();
+    }
+    public int ReadSymbolPosition(int idx)
+    {
+      return _io.ReadSymbolPosition(idx);
+    }
+    public Symbol.BaseSymbol ReadSymbol(int position)
+    {
+      return _io.ReadSymbol(position);
+    }
+
+    public string ReadStringParam(StringParamIndex idx)
+    {
+      return _io.ReadStringParam(idx);
+    }
+    public IList<CategoryPar> GetCategories(IList<StringParamIndex> indexList = null)
+    {
+      IList<StringParamIndex> indexEnum = indexList ?? _io.EnumStringParamIndices().ToList();
+
+      List<CategoryPar> catNames = new List<CategoryPar>();
+      foreach (var index in indexEnum)
+      {
+        if (index.Type == StringType.Class)
+        {
+          CategoryPar candidate = new CategoryPar(_io.ReadStringParam(index));
+          catNames.Add(candidate);
+        }
+      }
+      return catNames;
+    }
+
+    public IList<string> GetCourseCategories(string courseName, IList<StringParamIndex> indexList = null)
+    {
+      IEnumerable<StringParamIndex> indexEnum = indexList ?? ReadStringParamIndices();
+      List<string> catNames = new List<string>();
+      foreach (var index in indexEnum)
+      {
+        if (index.Type == StringType.Class)
+        {
+          CategoryPar candidate = new CategoryPar(_io.ReadStringParam(index));
+          if (candidate.CourseName == courseName)
+          {
+            catNames.Add(candidate.Name);
+          }
+        }
+
+        if (index.Type == StringType.Course)
+        {
+          CoursePar candidate = new CoursePar(_io.ReadStringParam(index));
+          if (candidate.Name == courseName)
+          {
+            catNames.Add(candidate.Name);
+          }
+        }
+      }
+      return catNames;
+    }
+
+    public static bool Exists(string name)
+    {
+      string ext = Path.GetExtension(name);
+      if (ext != "" && ext != ".ocd")
+      { return false; }
+
+      if (File.Exists(OcdName(name)) == false)
+      { return false; }
+
+      return true;
+    }
+
+    public IEnumerable<Element> Elements(IBox extentIntersect, bool projected,
+      IList<ElementIndex> indexList)
+    {
+      OcadIo.ElementEnumerator elements = new OcadIo.ElementEnumerator(_io,
+        extentIntersect, projected, indexList);
+
+      while (elements.MoveNext())
+      {
+        yield return elements.Current;
+      }
+    }
+
+    public IEnumerable<Element> Elements(bool projected, IList<ElementIndex> indexList)
+    {
+      return Elements(null, projected, indexList);
+    }
+
+    public void Close()
+    {
+      _io?.Close();
+    }
+
+    #region course setting
+
+    public List<StringParamIndex> ReadStringParamIndices()
+    {
+      return new List<StringParamIndex>(_io.EnumStringParamIndices());
+    }
+
     public IList<Control> ReadControls(IList<StringParamIndex> indexList = null)
     {
       IList<StringParamIndex> indexEnum = indexList ?? ReadStringParamIndices();
@@ -750,7 +759,7 @@ namespace Ocad
         if (index.Type != StringType.Control)
         { continue; }
 
-        string stringParam = ReadStringParam(index);
+        string stringParam = _io.ReadStringParam(index);
 
         Control control = Control.FromStringParam(stringParam);
 
@@ -759,7 +768,7 @@ namespace Ocad
 
       foreach (var pair in controls)
       {
-        pair.Key.Element = ReadElement(pair.Value.ElemNummer - 1);
+        pair.Key.Element = _io.ReadElement(pair.Value.ElemNummer - 1);
       }
       IList<Control> result = new List<Control>(controls.Keys);
       return result;
@@ -793,8 +802,7 @@ namespace Ocad
         ". Expected " + StringType.Course);
       }
 
-      _reader.BaseStream.Seek(courseIndex.FilePosition, SeekOrigin.Begin);
-      return ReadTab(256, out char e);
+      return _io.ReadStringParam(courseIndex, nTabs: 1);
     }
 
     protected static SectionCollection ReadSectionList(IList<string> parts, ref int partIdx)
@@ -939,7 +947,7 @@ namespace Ocad
       {
         if (section is Control)
         {
-          ReadControlGeometry((Control)section, indexList);
+          _io.ReadControlGeometry((Control)section, indexList);
         }
         else if (section is SplitSection fork)
         {
@@ -978,8 +986,7 @@ namespace Ocad
       {
         if (idx.Type == StringType.Course)
         {
-          _reader.BaseStream.Seek(idx.FilePosition, SeekOrigin.Begin);
-          string sName = ReadTab(courseName.Length + 2, out char e);
+          string sName = _io.ReadStringParam(idx, nTabs: 1);
 
           if (sName == courseName)
           {
@@ -994,7 +1001,7 @@ namespace Ocad
 
     public Course ReadCourse(StringParamIndex courseIndex, IList<StringParamIndex> indexList)
     {
-      string courseParam = ReadStringParam(courseIndex);
+      string courseParam = _io.ReadStringParam(courseIndex);
       IList<string> parts = courseParam.Split('\t');
 
       Course course = ReadCourse(parts);

@@ -16,17 +16,17 @@ namespace Asvz.SolaDuo
 
     public void WriteProfile(string template, string result, Kategorie kategorie)
     {
-      Ocad9Writer writer;
+      OcadWriter writer;
       string dir = Path.GetDirectoryName(result);
       if (Directory.Exists(dir) == false)
       { Directory.CreateDirectory(dir); }
       File.Copy(template, result, true);
 
-      writer = Ocad9Writer.AppendTo(result);
+      writer = OcadWriter.AppendTo(result);
       try
       {
         writer.DeleteElements( new int[] { 301005, 101000, 103000 } );
-        Ocad9Reader pTemplate = (Ocad9Reader)OcadReader.Open(template);
+        OcadReader pTemplate = OcadReader.Open(template);
         ReadTemplate(pTemplate);
         pTemplate.Close();
 

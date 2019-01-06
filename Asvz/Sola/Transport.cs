@@ -243,7 +243,7 @@ namespace Asvz.Sola
       UebergabeTransport t = new UebergabeTransport(null, strecke);
       string template = Ddx.Uebergabe[strecke].Vorlage;
 
-      Ocad9Reader pTemplate = (Ocad9Reader)OcadReader.Open(template);
+      OcadReader pTemplate = OcadReader.Open(template);
       t.ReadTemplate(pTemplate);
 
       box = t._transportBox;
@@ -311,7 +311,7 @@ namespace Asvz.Sola
         {
           string template = uebergabe.Vorlage;
 
-          Ocad9Reader pTemplate = (Ocad9Reader)OcadReader.Open(template);
+          OcadReader pTemplate = OcadReader.Open(template);
           ReadTransport(pTemplate);
           pTemplate.Close();
         }
@@ -323,9 +323,9 @@ namespace Asvz.Sola
       string template = Ddx.Uebergabe[_strecke].Vorlage;
 
       File.Copy(template, outFile, true);
-      Ocad9Writer writer = Ocad9Writer.AppendTo(outFile);
+      OcadWriter writer = OcadWriter.AppendTo(outFile);
 
-      Ocad9Reader pTemplate = (Ocad9Reader)OcadReader.Open(template);
+      OcadReader pTemplate = OcadReader.Open(template);
       ReadTemplate(pTemplate);
       pTemplate.Close();
       if (_transportBox == null)
@@ -349,7 +349,7 @@ namespace Asvz.Sola
           new[] { SymD.TrAusschnitt,
             SymD.Abfahrt, SymD.AbfahrtU, SymD.Anfahrt, SymD.AnfahrtU});
 
-        DelElements del = new DelElements(writer.Reader);
+        DelElements del = new DelElements(writer);
         writer.DeleteElements(del.DeleteSpecificElements);
 
         if (_transportBox != null)
@@ -403,7 +403,7 @@ namespace Asvz.Sola
       }
     }
 
-    private void WriteKarte(Ocad9Writer writer)
+    private void WriteKarte(OcadWriter writer)
     {
       TemplatePar tplPar;
 
@@ -445,7 +445,7 @@ namespace Asvz.Sola
       writer.Overwrite(StringType.Template, 0, tplPar.StringPar);
     }
 
-    private void WriteParams(Ocad9Writer writer, Polyline border)
+    private void WriteParams(OcadWriter writer, Polyline border)
     {
       if (_viewParam != null)
       {
@@ -484,7 +484,7 @@ namespace Asvz.Sola
     private void WriteStartEnd(OcadWriter writer,
       IPoint centerStart, IPoint centerEnd, Polyline transportBox)
     {
-      Element pElem = new ElementV9(true);
+      Element pElem = new Element(true);
       if (centerEnd != null)
       {
         pElem.Geometry = centerEnd;
@@ -516,7 +516,7 @@ namespace Asvz.Sola
           { continue; }
           foreach (var part in col)
           {
-            pElem = new ElementV9(true);
+            pElem = new Element(true);
             pElem.Geometry = part;
             pElem.Type = GeomType.line;
             if (elem.Symbol == SymT.Transport)
@@ -540,7 +540,7 @@ namespace Asvz.Sola
           { continue; }
           foreach (var part in col)
           {
-            pElem = new ElementV9(true);
+            pElem = new Element(true);
             pElem.Geometry = part;
             pElem.Type = GeomType.line;
             if (elem.Symbol == SymT.Transport)
@@ -634,7 +634,7 @@ namespace Asvz.Sola
       return _symUeCircle.Project(centerPrj.Map2Prj);
     }
 
-    private void ReadTransport(Ocad9Reader template)
+    private void ReadTransport(OcadReader template)
     {
       template.ReadSetup();
       Dictionary<int, Ocad.Symbol.BaseSymbol> symbols = ReadTransportSymbols(template);
@@ -642,7 +642,7 @@ namespace Asvz.Sola
       GetGepaeck(symbols, elements);
     }
 
-    private void ReadTemplate(Ocad9Reader template)
+    private void ReadTemplate(OcadReader template)
     {
       _templateSetup = template.ReadSetup();
 
@@ -651,7 +651,7 @@ namespace Asvz.Sola
       ReadStringParams(template);
     }
 
-    private void ReadObjects(Ocad9Reader template)
+    private void ReadObjects(OcadReader template)
     {
       ElementIndex pIndex;
       IList<ElementIndex> pIndexList = new List<ElementIndex>();
@@ -683,7 +683,7 @@ namespace Asvz.Sola
       }
     }
 
-    private List<Element> ReadTransportObjects(Ocad9Reader template)
+    private List<Element> ReadTransportObjects(OcadReader template)
     {
       ElementIndex pIndex;
       IList<ElementIndex> pIndexList = new List<ElementIndex>();
@@ -849,7 +849,7 @@ namespace Asvz.Sola
       }
     }
 
-    private void ReadStringParams(Ocad9Reader template)
+    private void ReadStringParams(OcadReader template)
     {
       IList<StringParamIndex> pStrIdxList = template.ReadStringParamIndices();
       foreach (var pStrIdx in pStrIdxList)
@@ -872,7 +872,7 @@ namespace Asvz.Sola
       }
     }
 
-    private void AdaptText(Ocad9Writer writer, Setup setup,
+    private void AdaptText(OcadWriter writer, Setup setup,
       IList<Element> textList, Ocad.Symbol.TextSymbol textSymbol)
     {
       Ocad.Symbol.TextSymbol.RectFraming pFrame = (Ocad.Symbol.TextSymbol.RectFraming)textSymbol.Frame;
@@ -881,7 +881,7 @@ namespace Asvz.Sola
       double dx1 = pFrame.Right;
       double dy0 = pFrame.Bottom - (2.0 / 3.0) * textSymbol.Size;
       double dy1 = pFrame.Top - textSymbol.Size;
-      Element pElem = new ElementV9(true);
+      Element pElem = new Element(true);
 
       foreach (var pText in textList)
       {
@@ -909,7 +909,7 @@ namespace Asvz.Sola
     {
       IPoint edge = null;
 
-      Element pElem = new ElementV9(true);
+      Element pElem = new Element(true);
       pElem.Symbol = SymD.TrMassstab;
       pElem.Geometry = border;
       pElem.Type = GeomType.line;
@@ -961,19 +961,19 @@ namespace Asvz.Sola
         pPos1.Y = pPos0.Y;
       }
 
-      pElem = new ElementV9(true);
+      pElem = new Element(true);
       pElem.Geometry = pPos0.Project(_templateSetup.Map2Prj);
       pElem.Symbol = SymD.TrLegendeBox;
       pElem.Type = GeomType.point;
       writer.Append(pElem);
 
-      pElem = new ElementV9(true);
+      pElem = new Element(true);
       pElem.Geometry = pPos1.Project(_templateSetup.Map2Prj);
       pElem.Symbol = SymD.TrLegendeBox;
       pElem.Type = GeomType.point;
       writer.Append(pElem);
 
-      pElem = new ElementV9(true);
+      pElem = new Element(true);
       pElem.Geometry = pPos0.Project(_templateSetup.Map2Prj);
       pElem.Angle = _templateSetup.PrjRotation;
       pElem.Symbol = SymD.TrNordpfeil;
@@ -994,7 +994,7 @@ namespace Asvz.Sola
       pScale.Add(new Point2D(pPos1.X + dx, pPos1.Y - dy / 5.0));
       pScale.Add(new Point2D(pPos1.X + dx, pPos1.Y - dy / 10.0));
 
-      pElem = new ElementV9(true);
+      pElem = new Element(true);
       pElem.Geometry = pScale.Project(_templateSetup.Map2Prj);
       pElem.Symbol = SymD.TrMassstab;
       pElem.Type = GeomType.line;

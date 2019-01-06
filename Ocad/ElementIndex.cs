@@ -49,12 +49,12 @@ namespace Ocad
 
     internal int Position { get; set; }
     internal int Length { get; private set; }
-    internal int ReadElementLength(OcadReader reader)
+    internal int ReadElementLength(OcadIo reader)
     {
       Length = reader.ReadElementLength();
       return Length;
     }
-    internal int CalcElementLength(OcadReader reader, Element elem)
+    internal int CalcElementLength(OcadIo reader, Element elem)
     {
       Length = reader.CalcElementLength(elem);
       return Length;

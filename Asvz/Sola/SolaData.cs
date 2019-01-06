@@ -359,8 +359,8 @@ namespace Asvz.Sola
     {
       List<Element> elemList = new List<Element>();
 
-      ElementV9 elem;
-      elem = new ElementV9(true);
+      Element elem;
+      elem = new Element(true);
       elem.Geometry = trans;
       elem.Type = GeomType.line;
       elem.Symbol = symbol;
@@ -397,7 +397,7 @@ namespace Asvz.Sola
 
           if (next)
           {
-            elem = new ElementV9(true);
+            elem = new Element(true);
             elem.Geometry = p;
             elem.Type = GeomType.line;
             elem.Symbol = symbol;

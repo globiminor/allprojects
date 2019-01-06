@@ -66,16 +66,16 @@ namespace Asvz.Sola
     {
       bool verkuerzt = (kat == Kategorie.Damen);
 
-      Ocad9Reader pUpdate = (Ocad9Reader)OcadReader.Open(_template);
+      OcadReader pUpdate = OcadReader.Open(_template);
       ReadTemplate(pUpdate);
       pUpdate.Close();
 
       string updateFile = _data.Strecken[_iStrecke - 1].Vorlage;
-      pUpdate = (Ocad9Reader)OcadReader.Open(updateFile);
+      pUpdate = OcadReader.Open(updateFile);
       ReadUpdate(pUpdate);
       pUpdate.Close();
 
-      Ocad9Writer writer = Ocad9Writer.AppendTo(updateFile);
+      OcadWriter writer = OcadWriter.AppendTo(updateFile);
 
       try
       {
@@ -108,7 +108,7 @@ namespace Asvz.Sola
         foreach (var o in _data.Strecken[_iStrecke - 1].Categories)
         {
           SolaCategorie cat = (SolaCategorie)o;
-          Element pElem = new ElementV9(true);
+          Element pElem = new Element(true);
           pElem.Geometry = cat.Strecke;
           if (first)
           { pElem.Symbol = SymS.Strecke; }
@@ -147,9 +147,9 @@ namespace Asvz.Sola
       string templateName = _data.Strecken[_iStrecke - 1].Vorlage;
 
       File.Copy(templateName, outFile, true);
-      Ocad9Writer writer = Ocad9Writer.AppendTo(outFile);
+      OcadWriter writer = OcadWriter.AppendTo(outFile);
 
-      Ocad9Reader template = (Ocad9Reader)OcadReader.Open(templateName);
+      OcadReader template = OcadReader.Open(templateName);
       ReadExport(template);
       Setup setup = template.ReadSetup();
       template.Close();
@@ -208,7 +208,7 @@ namespace Asvz.Sola
       return 3 * _rahmenBorder;
     }
 
-    private void AdaptStreckenNr(Ocad9Writer writer, IList<Element> elemStrecke,
+    private void AdaptStreckenNr(OcadWriter writer, IList<Element> elemStrecke,
       Ocad.Symbol.PointSymbol symNrBack, IList<Element> elemInfo, Setup setup)
     {
       if (elemStrecke.Count > 1 || elemInfo.Count > 1)
@@ -243,10 +243,10 @@ namespace Asvz.Sola
       }
     }
 
-    private void DrawStreckenNrBack(Ocad9Writer writer, IPoint point, Setup setup,
+    private void DrawStreckenNrBack(OcadWriter writer, IPoint point, Setup setup,
       Ocad.Symbol.PointSymbol symNrBack)
     {
-      Element elem = new ElementV9(true);
+      Element elem = new Element(true);
 
       point = point.Project(setup.Prj2Map);
 
@@ -268,7 +268,7 @@ namespace Asvz.Sola
       writer.Append(elem);
     }
 
-    private void WriteBewilligung(Ocad9Writer writer, string bewilligung)
+    private void WriteBewilligung(OcadWriter writer, string bewilligung)
     {
       string sText = bewilligung;
       double xMap = _printParam.Right * 100;
@@ -285,7 +285,7 @@ namespace Asvz.Sola
       writer.Append(elem);
     }
 
-    private ColorPar WriteColors(Ocad9Writer writer, Dictionary<StringParamIndex, ColorPar> colors)
+    private ColorPar WriteColors(OcadWriter writer, Dictionary<StringParamIndex, ColorPar> colors)
     {
       ColorPar topRed = null;
       int max = int.MinValue;
@@ -309,7 +309,7 @@ namespace Asvz.Sola
       writer.Append(StringType.Color, 0, pre.StringPar);
       return topRed;
     }
-    private void WriteScale(Ocad9Writer writer, IList<Element> infoElems, ColorPar topRed)
+    private void WriteScale(OcadWriter writer, IList<Element> infoElems, ColorPar topRed)
     {
       Point pMin = null;
       foreach (var infoElem in infoElems)
@@ -328,11 +328,11 @@ namespace Asvz.Sola
       double dy = 0.3 * dx;
 
       Point2D p0 = new Point2D(pMin.X + 0.12 * dx, pMin.Y - dy);
-      ElementV9 elem = Common.CreateText("0 km", p0.X, p0.Y + 0.3 * dy, _kmTxtSymbol, null);
+      Element elem = Common.CreateText("0 km", p0.X, p0.Y + 0.3 * dy, _kmTxtSymbol, null);
       writer.Append(elem);
 
       double strichOffset = -_kmStrichSymbol.Graphics[0].Geometry.Extent.Max.X;
-      elem = new ElementV9(false);
+      elem = new Element(false);
       elem.Geometry = new Point2D(p0.X, p0.Y - strichOffset);
       elem.Angle = 3.0 * Math.PI / 2.0;
       elem.Symbol = SymS.KmStrich;
@@ -342,14 +342,14 @@ namespace Asvz.Sola
       elem = Common.CreateText("1 km", p0.X + dx, p0.Y + 0.3 * dy, _kmTxtSymbol, null);
       writer.Append(elem);
 
-      elem = new ElementV9(false);
+      elem = new Element(false);
       elem.Geometry = new Point2D(p0.X + dx, p0.Y - strichOffset);
       elem.Angle = 3.0 * Math.PI / 2.0;
       elem.Symbol = SymS.KmStrich;
       elem.Type = GeomType.point;
       writer.Append(elem);
 
-      elem = new ElementV9(false);
+      elem = new Element(false);
       elem.Geometry = Polyline.Create(new[] { new Point2D(p0.X, p0.Y), new Point2D(p0.X + dx, p0.Y) });
       elem.Symbol = -2;
       elem.LineWidth = _symStrecke.LineWidth;
@@ -365,7 +365,7 @@ namespace Asvz.Sola
       double x1 = p0.X + dx + (p0.X - pMin.X);
       double y1 = pMin.Y;
       double y0 = p0.Y - 0.3 * dy;
-      elem = new ElementV9(false);
+      elem = new Element(false);
       elem.Geometry = new Area(
         Polyline.Create(new[] { new Point2D(x0, y0), new Point2D(x1, y0),
         new Point2D(x1, y1), new Point2D(x0, y1), new Point2D(x0, y0)}));
@@ -374,7 +374,7 @@ namespace Asvz.Sola
       writer.Append(elem);
     }
 
-    private List<Element> AdaptText(Ocad9Writer writer, Setup setup,
+    private List<Element> AdaptText(OcadWriter writer, Setup setup,
       IList<Element> textList, Ocad.Symbol.TextSymbol textSymbol)
     {
       Ocad.Symbol.TextSymbol.RectFraming frame = (Ocad.Symbol.TextSymbol.RectFraming)textSymbol.Frame;
@@ -398,7 +398,7 @@ namespace Asvz.Sola
         line.Add(new Point2D(txtGeom[4].X - dx0, txtGeom[4].Y + dy1));
         line.Add(new Point2D(txtGeom[1].X - dx0, txtGeom[1].Y - dy0));
 
-        Element elem = new ElementV9(false);
+        Element elem = new Element(false);
         // line = line.Project(setup.Map2Prj);
 
         elem.Geometry = line;
@@ -412,20 +412,20 @@ namespace Asvz.Sola
       return elems;
     }
 
-    private void WriteVerpf(Ocad9Writer writer)
+    private void WriteVerpf(OcadWriter writer)
     {
       Polyline line = _data.Strecken[_iStrecke - 1].GetCategorie(Kategorie.Default).Strecke;
 
       List<Data.VerpflegungSym> verpfList = _data.Verpflegung(line);
       foreach (var verpf in verpfList)
       {
-        Element pElem = new ElementV9(true);
+        Element pElem = new Element(true);
         pElem.Geometry = verpf.Symbol;
         pElem.Symbol = SymS.Verpflegung;
         pElem.Type = GeomType.point;
         writer.Append(pElem);
 
-        pElem = new ElementV9(true);
+        pElem = new Element(true);
         pElem.Geometry = verpf.Index;
         pElem.Symbol = SymS.LinieBreit;
         pElem.Type = GeomType.line;
@@ -457,7 +457,7 @@ namespace Asvz.Sola
         else
         { strecke = parts[parts.Count - 1]; }
 
-        pElem = new ElementV9(true);
+        pElem = new Element(true);
         pElem.Geometry = strecke;
         pElem.Symbol = SymS.VorherNachher;
         pElem.Type = GeomType.line;
@@ -476,7 +476,7 @@ namespace Asvz.Sola
         {
           if (e.Geometry.Extent.Intersects(box))
           {
-            pElem = new ElementV9(true);
+            pElem = new Element(true);
             pElem.Geometry = e.Geometry;
             pElem.Symbol = SymS.UebergabeTeil;
             pElem.Type = GeomType.line;
@@ -487,7 +487,7 @@ namespace Asvz.Sola
         {
           if (e.Geometry.Extent.Intersects(box))
           {
-            pElem = new ElementV9(true);
+            pElem = new Element(true);
             pElem.Geometry = e.Geometry;
             pElem.Symbol = SymS.ZielTeil;
             pElem.Type = GeomType.line;
@@ -550,7 +550,7 @@ namespace Asvz.Sola
         }
         writer.Append(textKm);
 
-        textKm = new ElementV9(true);
+        textKm = new Element(true);
         textKm.Geometry = p;
         textKm.Angle = writer.Setup.PrjRotation + Math.Atan2(t.X, -t.Y);
         textKm.Symbol = SymS.KmStrich;
@@ -584,14 +584,14 @@ namespace Asvz.Sola
     public void Write(string outFile)
     {
       File.Copy(_template, outFile, true);
-      Ocad9Writer writer = Ocad9Writer.AppendTo(outFile);
+      OcadWriter writer = OcadWriter.AppendTo(outFile);
 
       try
       {
         writer.SymbolsSetState(null, Ocad.Symbol.SymbolStatus.Hidden);
         writer.SymbolsSetState(new[] { 1 }, Ocad.Symbol.SymbolStatus.Protected);
 
-        Element elem = new ElementV9(true);
+        Element elem = new Element(true);
         elem.Geometry = _strecke;
         elem.Symbol = 1;
         elem.Type = GeomType.line;
@@ -604,12 +604,12 @@ namespace Asvz.Sola
       }
     }
 
-    private void ReadTemplate(Ocad9Reader template)
+    private void ReadTemplate(OcadReader template)
     {
       ReadTplObjects(template);
     }
 
-    private void ReadTplObjects(Ocad9Reader template)
+    private void ReadTplObjects(OcadReader template)
     {
       ElementIndex pIndex;
       List<ElementIndex> pIndexList = new List<ElementIndex>();
@@ -629,7 +629,7 @@ namespace Asvz.Sola
       }
     }
 
-    private void ReadExport(Ocad9Reader template)
+    private void ReadExport(OcadReader template)
     {
       _templateSetup = template.ReadSetup();
 
@@ -638,7 +638,7 @@ namespace Asvz.Sola
       ReadUpStringParams(template);
     }
 
-    private void ReadUpdate(Ocad9Reader template)
+    private void ReadUpdate(OcadReader template)
     {
       _templateSetup = template.ReadSetup();
 
@@ -647,7 +647,7 @@ namespace Asvz.Sola
       ReadUpStringParams(template);
     }
 
-    private void ReadUpObjects(Ocad9Reader template)
+    private void ReadUpObjects(OcadReader template)
     {
       ElementIndex pIndex;
       List<ElementIndex> pIndexList = new List<ElementIndex>();
@@ -741,7 +741,7 @@ namespace Asvz.Sola
       _symStrecke = (Ocad.Symbol.LineSymbol)symbols[SymS.Strecke];
     }
 
-    private void ReadUpStringParams(Ocad9Reader template)
+    private void ReadUpStringParams(OcadReader template)
     {
       IList<StringParamIndex> indexEnum = template.ReadStringParamIndices();
       _colors = new Dictionary<StringParamIndex, ColorPar>();
@@ -767,7 +767,7 @@ namespace Asvz.Sola
       return printExtent;
     }
 
-    private void WritePrintParam(Ocad9Writer writer, Polyline border)
+    private void WritePrintParam(OcadWriter writer, Polyline border)
     {
       if (_printParam == null)
       { _printParam = new PrintPar(); }

@@ -50,11 +50,11 @@ namespace Asvz.SolaDuo
         new Symbol( "Fluss", 401000)
       };
 
-    Ocad9Writer _writer;
+    OcadWriter _writer;
 
     public DuoMap(string ocdFile)
     {
-      _writer = Ocad9Writer.AppendTo(ocdFile);
+      _writer = OcadWriter.AppendTo(ocdFile);
     }
 
     ~DuoMap()
@@ -200,7 +200,7 @@ namespace Asvz.SolaDuo
       foreach (var row in reader)
       {
 
-        ElementV9 elem = new ElementV9(true);
+        Element elem = new Element(true);
 
         string val = ((string)row[objTyp]).Trim();
 

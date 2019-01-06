@@ -49,7 +49,7 @@ namespace Asvz.Sola
       ViewPar viewPar = null;
       PrintPar printPar = null;
 
-      Ocad9Reader tplReader = (Ocad9Reader)OcadReader.Open(template);
+      OcadReader tplReader = OcadReader.Open(template);
       try
       {
         IList<Element> textList = new List<Element>();
@@ -108,7 +108,7 @@ namespace Asvz.Sola
       { return; }
 
       File.Copy(template, outFile, true);
-      Ocad9Writer writer = Ocad9Writer.AppendTo(outFile);
+      OcadWriter writer = OcadWriter.AppendTo(outFile);
       try
       {
         Polyline border = GetBorder(_detail);
@@ -258,19 +258,19 @@ namespace Asvz.Sola
         pos1.Y = pos0.Y;
       }
 
-      Element elem = new ElementV9(true);
+      Element elem = new Element(true);
       elem.Geometry = pos0.Project(_templateSetup.Map2Prj);
       elem.Symbol = SymD.DtLegendeBox;
       elem.Type = GeomType.point;
       writer.Append(elem);
 
-      elem = new ElementV9(true);
+      elem = new Element(true);
       elem.Geometry = pos1.Project(_templateSetup.Map2Prj);
       elem.Symbol = SymD.DtLegendeBox;
       elem.Type = GeomType.point;
       writer.Append(elem);
 
-      elem = new ElementV9(true);
+      elem = new Element(true);
       elem.Geometry = pos0.Project(_templateSetup.Map2Prj);
       elem.Angle = _templateSetup.PrjRotation;
       elem.Symbol = SymD.DtNordpfeil;
@@ -291,7 +291,7 @@ namespace Asvz.Sola
       scale.Add(new Point2D(pos1.X + dx, pos1.Y - dy / 5.0));
       scale.Add(new Point2D(pos1.X + dx, pos1.Y - dy / 10.0));
 
-      elem = new ElementV9(true);
+      elem = new Element(true);
       elem.Geometry = scale.Project(_templateSetup.Map2Prj);
       elem.Symbol = SymD.DtMassstab;
       elem.Type = GeomType.line;

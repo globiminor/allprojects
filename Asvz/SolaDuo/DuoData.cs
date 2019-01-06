@@ -313,7 +313,7 @@ namespace Asvz.SolaDuo
           ISegment c = str.Segments.First;
           IPoint tangent = c.TangentAt(0);
 
-          element = new ElementV9(true);
+          element = new Element(true);
           element.Geometry = Point.Create(c.Start);
           element.Angle = -Math.Atan2(tangent.X, tangent.Y);
           element.Symbol = SymDD.Start;
@@ -324,7 +324,7 @@ namespace Asvz.SolaDuo
         }
         else
         {
-          element = new ElementV9(true);
+          element = new Element(true);
           element.Geometry = Point.Create(str.Points.First.Value);
           element.Symbol = SymDD.Uebergabe;
           element.Type = GeomType.point;
@@ -335,7 +335,7 @@ namespace Asvz.SolaDuo
 
         if (iStrecke == nStrecken - 1)
         {
-          element = new ElementV9(true);
+          element = new Element(true);
           element.Geometry = Point.Create(str.Points.Last.Value);
           element.Symbol = SymDD.Ziel;
           element.Type = GeomType.point;
@@ -354,7 +354,7 @@ namespace Asvz.SolaDuo
         foreach (var helfer in Helfer)
         {
         }
-        element = new ElementV9(true);
+        element = new Element(true);
         element.Geometry = str;
         element.Symbol = SymDD.Strecke;
         element.Type = GeomType.line;
@@ -364,7 +364,7 @@ namespace Asvz.SolaDuo
 
       foreach (var verzweigung in Verzweigung)
       {
-        element = new ElementV9(true);
+        element = new Element(true);
         element.Geometry = verzweigung;
         element.Symbol = SymDD.Verzweigung;
         element.Type = GeomType.point;
@@ -374,7 +374,7 @@ namespace Asvz.SolaDuo
 
       foreach (var helfer in Helfer)
       {
-        element = new ElementV9(true);
+        element = new Element(true);
         element.Geometry = helfer;
         element.Symbol = SymDD.Helfer;
         element.Type = GeomType.point;
@@ -411,7 +411,7 @@ namespace Asvz.SolaDuo
       IList<Element> elements, IBox extent)
     {
       File.Copy(template, outFile, true);
-      Ocad9Writer writer = Ocad9Writer.AppendTo(outFile);
+      OcadWriter writer = OcadWriter.AppendTo(outFile);
 
       OcadReader pTemplate = OcadReader.Open(template);
       Setup setup;
