@@ -20,6 +20,9 @@ namespace Ocad.StringParams
     public const char VarStartKey = 'b';
     public const char VarEndKey = 'p';
 
+    public const char StartNrObject = 'u';
+    public const char CourseNameObject = 'c';
+
     public CoursePar(string para)
       : base(para)
     { }

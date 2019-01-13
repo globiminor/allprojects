@@ -1,9 +1,8 @@
-using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using Ocad;
 using Basics.Geom;
+using Ocad;
 using Ocad.StringParams;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Asvz
@@ -45,41 +44,39 @@ namespace Asvz
 
     protected void WriteLayout(OcadWriter writer, double sumDist)
     {
-      Element elem = new Element(true);
-      elem.Symbol = ProfileSymbol.Grenze;
-      elem.Geometry = Polyline.Create(new []
+      Element elem = new GeoElement(Polyline.Create(new[]
           {
             new Point2D(sumDist / _fHeight, _bottomDist),
             new Point2D(sumDist / _fHeight, _topDist)
-          });
+          }));
+      elem.Symbol = ProfileSymbol.Grenze;
       elem.Type = GeomType.line;
       writer.Append(elem);
 
-      elem = Common.CreateText("MüM", -50, 1000, _symTextH, _templateSetup);
+      elem = Common.CreateText("MüM", -50, 1000, _templateSetup, _symTextH);
       writer.Append(elem);
-      elem = Common.CreateText("900", -50, 900, _symTextH, _templateSetup);
+      elem = Common.CreateText("900", -50, 900, _templateSetup, _symTextH);
       writer.Append(elem);
-      elem = Common.CreateText("800", -50, 800, _symTextH, _templateSetup);
+      elem = Common.CreateText("800", -50, 800, _templateSetup, _symTextH);
       writer.Append(elem);
-      elem = Common.CreateText("700", -50, 700, _symTextH, _templateSetup);
+      elem = Common.CreateText("700", -50, 700, _templateSetup, _symTextH);
       writer.Append(elem);
-      elem = Common.CreateText("600", -50, 600, _symTextH, _templateSetup);
+      elem = Common.CreateText("600", -50, 600, _templateSetup, _symTextH);
       writer.Append(elem);
-      elem = Common.CreateText("500", -50, 500, _symTextH, _templateSetup);
+      elem = Common.CreateText("500", -50, 500, _templateSetup, _symTextH);
       writer.Append(elem);
-      elem = Common.CreateText("400", -50, 400, _symTextH, _templateSetup);
+      elem = Common.CreateText("400", -50, 400, _templateSetup, _symTextH);
       writer.Append(elem);
 
       double dRaster = 0;
       while (dRaster < sumDist)
       {
-        elem = new Element(true);
-        elem.Symbol = ProfileSymbol.Raster;
-        elem.Geometry = Polyline.Create(new []
+        elem = new GeoElement(Polyline.Create(new[]
           {
             new Point2D(dRaster / _fHeight, 300.0),
             new Point2D(dRaster / _fHeight, 900.0)
-          });
+          }));
+        elem.Symbol = ProfileSymbol.Raster;
         elem.Type = GeomType.line;
         writer.Append(elem);
 
@@ -87,35 +84,32 @@ namespace Asvz
       }
 
 
-      elem = new Element(true);
-      elem.Symbol = ProfileSymbol.Raster;
-      elem.Geometry = Polyline.Create(new []
+      elem = new GeoElement(Polyline.Create(new[]
           {
             new Point2D(0,_teerUnten),
             new Point2D(sumDist / _fHeight, _teerUnten)
-          });
+          }));
+      elem.Symbol = ProfileSymbol.Raster;
       elem.Type = GeomType.line;
       writer.Append(elem);
 
-      elem = new Element(true);
-      elem.Symbol = ProfileSymbol.Raster;
-      elem.Geometry = Polyline.Create(new []
+      elem = new GeoElement(Polyline.Create(new[]
           {
             new Point2D(0,_teerOben),
             new Point2D(sumDist / _fHeight, _teerOben)
-          });
+          }));
+      elem.Symbol = ProfileSymbol.Raster;
       elem.Type = GeomType.line;
       writer.Append(elem);
 
       for (dRaster = 100 * (int)(1 + _teerOben / 100); dRaster < 950; dRaster += 100)
       {
-        elem = new Element(true);
-        elem.Symbol = ProfileSymbol.Raster;
-        elem.Geometry = Polyline.Create(new []
+        elem = new GeoElement(Polyline.Create(new[]
           {
             new Point2D(0,dRaster),
             new Point2D(sumDist / _fHeight, dRaster)
-          });
+          }));
+        elem.Symbol = ProfileSymbol.Raster;
         elem.Type = GeomType.line;
         writer.Append(elem);
       }
@@ -130,18 +124,18 @@ namespace Asvz
     {
       string sText = string.Format("{0:" + FormatDist + "} km", distStart / 1000.0);
       Element elem = Common.CreateText(sText, (sumDist + 100.0) / _fHeight,
-        _bottomDist, _symTextDist, _templateSetup);
+        _bottomDist, _templateSetup, _symTextDist);
       writer.Append(elem);
 
       sText = text;
-      elem = Common.CreateText(sText, sumDist, _bottomOrt, _symTextOrt, _templateSetup);
+      elem = Common.CreateText(sText, sumDist, _bottomOrt, _templateSetup, _symTextOrt);
       writer.Append(elem);
     }
 
     protected void WriteEnd(OcadWriter writer, string text, double sumDist)
     {
       Element elem = Common.CreateText(text, sumDist / _fHeight,
-        _topStrecke, _symTextStrecke, _templateSetup);
+        _topStrecke, _templateSetup, _symTextStrecke);
       writer.Append(elem);
     }
 
@@ -180,9 +174,8 @@ namespace Asvz
       }
       Area area = new Area(Polyline.Create(points));
 
-      Element elem = new Element(true);
+      Element elem = new GeoElement(area);
       elem.Symbol = ProfileSymbol.Profile;
-      elem.Geometry = area;
       elem.Type = GeomType.area;
 
       writer.Append(elem);
@@ -198,21 +191,20 @@ namespace Asvz
       string text = string.Format("{0:" + FormatDist + "} km" + Environment.NewLine +
                                   "{1} m\u2191", dist / 1000.0, iSteigung5M);
       Element elem = Common.CreateText(text, (sumDist + _dOffsetDist) / _fHeight,
-        _topDist, _symTextDist, _templateSetup);
+        _topDist, _templateSetup, _symTextDist);
       writer.Append(elem);
 
       text = string.Format("{0}", startName);
       elem = Common.CreateText(text, sumDist / _fHeight,
-        _topStrecke, _symTextStrecke, _templateSetup);
+        _topStrecke, _templateSetup, _symTextStrecke);
       writer.Append(elem);
 
-      elem = new Element(true);
-      elem.Symbol = ProfileSymbol.Grenze;
-      elem.Geometry = Polyline.Create(new []
+      elem = new GeoElement(Polyline.Create(new[]
           {
             new Point2D(sumDist / _fHeight, _bottomDist),
             new Point2D(sumDist / _fHeight, _topDist)
-          });
+          }));
+      elem.Symbol = ProfileSymbol.Grenze;
       elem.Type = GeomType.line;
       writer.Append(elem);
 
@@ -220,12 +212,12 @@ namespace Asvz
 
       text = string.Format("{0:" + FormatDist + "} km", (distStart + sumDist) / 1000.0);
       elem = Common.CreateText(text, (sumDist + _dOffsetDist) / _fHeight,
-        _bottomDist, _symTextDist, _templateSetup);
+        _bottomDist, _templateSetup, _symTextDist);
       writer.Append(elem);
 
       text = zielName;
       elem = Common.CreateText(text, sumDist / _fHeight,
-        _bottomOrt, _symTextOrt, _templateSetup);
+        _bottomOrt, _templateSetup, _symTextOrt);
       writer.Append(elem);
     }
 
@@ -258,9 +250,8 @@ namespace Asvz
           nextWald = dX + (_dWald1 - _wald0);
           nextHaus = dX + (_dWald1 - _haus0);
 
-          elem = new Element(true);
+          elem = new GeoElement(new Point2D(dX / _fHeight, dH));
           elem.Symbol = ProfileSymbol.Baum + random.Next(2);
-          elem.Geometry = new Point2D(dX / _fHeight, dH);
           elem.Type = GeomType.point;
 
           writer.Append(elem);
@@ -274,9 +265,8 @@ namespace Asvz
           nextWald = dX + (_dHaus1 - _wald0);
           nextHaus = dX + (_dHaus1 - _haus0);
 
-          elem = new Element(true);
+          elem = new GeoElement(new Point2D(dX / _fHeight, dH));
           elem.Symbol = ProfileSymbol.Haus;
-          elem.Geometry = new Point2D(dX / _fHeight, dH);
           elem.Type = GeomType.point;
 
           writer.Append(elem);
@@ -308,16 +298,15 @@ namespace Asvz
 
     private void WriteTeer(OcadWriter writer, double start, double end, int symbol)
     {
-      Element pElem = new Element(true);
-      pElem.Symbol = symbol;
-      pElem.Geometry = new Area(Polyline.Create(new []
+      Element pElem = new GeoElement(new Area(Polyline.Create(new[]
         {
           new Point2D(start, _teerUnten),
           new Point2D(end, _teerUnten),
           new Point2D(end, _teerOben),
           new Point2D(start, _teerOben),
           new Point2D(start, _teerUnten)
-        }));
+        })));
+      pElem.Symbol = symbol;
       pElem.Type = GeomType.area;
 
       writer.Append(pElem);
@@ -362,7 +351,7 @@ namespace Asvz
         iIndex++;
       }
 
-      foreach (var elem in template.Elements(true, indexList))
+      foreach (var elem in template.EnumGeoElements(indexList))
       {
         // nothing needed yet
       }

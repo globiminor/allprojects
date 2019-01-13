@@ -106,24 +106,24 @@ namespace OCourse.Ext
 
 
     private static void WriteCourseParts(OcadWriter writer, IList<Course> courseParts,
-      RouteCalculator routeCalc, double resolution, Setup setup)
+      RouteCalculator routeCalc, double resolution)
     {
       foreach (var comb in courseParts)
       {
         CoursePar coursePar = CoursePar.Create(comb);
-        coursePar.Climb = GetClimb(comb, routeCalc, resolution, setup);
+        coursePar.Climb = GetClimb(comb, routeCalc, resolution);
         writer.Append(StringType.Course, -1, coursePar.StringPar);
       }
     }
 
     private static int? GetClimb(Course course,
-      RouteCalculator routeCalc, double resolution, Setup setup)
+      RouteCalculator routeCalc, double resolution)
     {
       if (routeCalc == null)
       { return null; }
 
       List<CostSectionlist> sections =
-        routeCalc.CalcCourse(course, resolution, setup); // replace resolution
+        routeCalc.CalcCourse(course, resolution); // replace resolution
       int climb = 0;
       foreach (var section in sections)
       {
@@ -169,7 +169,7 @@ namespace OCourse.Ext
           }
 
           string courseFileName = GetFileName(rawDir, "*" + courseName + ".ocd");
-          Dictionary<string, IList<Element>> layouts = GetLayouts(courseFileName);
+          Dictionary<string, IList<GeoElement>> layouts = GetLayouts(courseFileName);
 
           List<string> cleanNames = new List<string>(parts.Count);
           foreach (var part in parts)
@@ -240,7 +240,7 @@ namespace OCourse.Ext
             List<Element> startNrElements = new List<Element>();
             using (OcadReader partReader = OcadReader.Open(teamPartFile))
             {
-              foreach (var element in partReader.Elements(false, null))
+              foreach (var element in partReader.EnumMapElements(null))
               {
                 if (element.Symbol == 17011)
                 {
@@ -430,18 +430,18 @@ namespace OCourse.Ext
       return courseBuilder.ToString();
     }
 
-    private static Dictionary<string, IList<Element>> GetLayouts(string courseFileName)
+    private static Dictionary<string, IList<GeoElement>> GetLayouts(string courseFileName)
     {
       using (OcadReader reader = OcadReader.Open(courseFileName))
       {
-        Dictionary<string, IList<Element>> dict = new Dictionary<string, IList<Element>>();
-        foreach (var element in reader.Elements(false, null))
+        Dictionary<string, IList<GeoElement>> dict = new Dictionary<string, IList<GeoElement>>();
+        foreach (var element in reader.EnumGeoElements(null))
         {
           if (element.Symbol == 703000)
           {
-            if (dict.TryGetValue(element.Text, out IList<Element> layouts) == false)
+            if (dict.TryGetValue(element.Text, out IList<GeoElement> layouts) == false)
             {
-              layouts = new List<Element>();
+              layouts = new List<GeoElement>();
               dict.Add(element.Text, layouts);
             }
             layouts.Add(element);
@@ -500,8 +500,6 @@ namespace OCourse.Ext
         using (OcadReader reader = OcadReader.Open(orig))
         using (OcadWriter writer = OcadWriter.AppendTo(export))
         {
-          Setup setup = reader.ReadSetup();
-
           List<CoursePar> climbs = new List<CoursePar>();
           foreach (var fullCourseName in courseNames)
           {
@@ -511,16 +509,16 @@ namespace OCourse.Ext
               string coreName = GetCoreCourseName(fullCourseName);
               CoursePar climb = CoursePar.Create(course);
               climb.Name = coreName + "._height";
-              climb.Climb = GetClimb(course, routeCalc, resolution, setup);
+              climb.Climb = GetClimb(course, routeCalc, resolution);
               climbs.Add(climb);
             }
             IList<Course> parts = null; // PermutationBuilder.CreateDistinctParts(course);
 
-            WriteCourseParts(writer, parts, routeCalc, resolution, setup);
+            WriteCourseParts(writer, parts, routeCalc, resolution);
 
             OcadWriter layoutWriter = layoutList.GetWriterFromFullName(fullCourseName);
             if (layoutWriter != null)
-            { WriteCourseParts(layoutWriter, parts, routeCalc, resolution, setup); }
+            { WriteCourseParts(layoutWriter, parts, routeCalc, resolution); }
           }
           foreach (var climb in climbs)
           {
@@ -562,7 +560,7 @@ namespace OCourse.Ext
           }
           foreach (var control in controls)
           {
-            Element elem = reader.ReadElement(control.ParIndex.ElemNummer - 1);
+            reader.ReadElement(control.ParIndex.ElemNummer - 1, out GeoElement elem);
             control.ElementIndex = writer.Append(elem);
           }
 
@@ -573,7 +571,7 @@ namespace OCourse.Ext
 
 
           IList<int> transferSymbols = new int[] { 709000 };
-          foreach (var element in reader.Elements(false, null))
+          foreach (var element in reader.EnumMapElements(null))
           {
             if (transferSymbols.Contains(element.Symbol))
             {
@@ -593,23 +591,23 @@ namespace OCourse.Ext
     }
 
     private static void SetLayouts(string cleanName, string fileName, Course course,
-      Dictionary<string, IList<Element>> layouts, Dictionary<string, IList<Grafics>> grafics,
+      Dictionary<string, IList<GeoElement>> layouts, Dictionary<string, IList<Grafics>> grafics,
       bool showNr, bool showCodes)
     {
       int titleSymbol = 17003;
       int variationSymbol = 17010;
 
-      Dictionary<string, Element> controlNames = new Dictionary<string, Element>();
+      Dictionary<string, GeoElement> controlNames = new Dictionary<string, GeoElement>();
       Dictionary<ControlCode, GeometryCollection> symbols = new Dictionary<ControlCode, GeometryCollection>();
       List<Element> titleElements = new List<Element>();
       List<Element> variElements = new List<Element>();
-      Element startElem = null;
+      GeoElement startElem = null;
 
       Setup setup;
       using (OcadReader reader = OcadReader.Open(fileName))
       {
         setup = reader.ReadSetup();
-        foreach (var element in reader.Elements(false, null))
+        foreach (var element in reader.EnumGeoElements(null))
         {
           if (element.Symbol == 703000) // Postennummer
           {
@@ -667,7 +665,7 @@ namespace OCourse.Ext
 
         controlIdx++;
 
-        if (controlNames.TryGetValue(control.Name, out Element element) == false)
+        if (controlNames.TryGetValue(control.Name, out GeoElement element) == false)
         { continue; }
         if (showNr)
         {
@@ -727,10 +725,9 @@ namespace OCourse.Ext
         if (clippedStart != null)
         {
           writer.DeleteElements(new int[] { 701000 });
-          Element start = new Element(true)
+          Element start = new GeoElement(clippedStart)
           {
             Symbol = 704000,
-            Geometry = clippedStart,
             Type = GeomType.line
           };
           writer.Append(start);
@@ -759,8 +756,8 @@ namespace OCourse.Ext
           Control to = FindControl(appl.ToName, controls);
           GeometryCollection fromSymbol = symbols[from.Code];
           GeometryCollection toSymbol = symbols[to.Code];
-          Polyline geom = appl.Clip((Polyline)appl.Geometry, from.Element, fromSymbol, Grafics.ClipParam.AtStart, setup);
-          geom = appl.Clip(geom, to.Element, toSymbol, Grafics.ClipParam.AtEnd, setup);
+          Polyline geom = appl.Clip((Polyline)appl.Geometry, from.Element, fromSymbol, Grafics.ClipParam.AtStart);
+          geom = appl.Clip(geom, to.Element, toSymbol, Grafics.ClipParam.AtEnd);
           appl.Apply(writer, geom);
         }
       }
@@ -774,10 +771,10 @@ namespace OCourse.Ext
       if (lastControl.Code == ControlCode.MarkedRoute)
       { return null; }
 
-      Element startElem = startControl.Element;
+      GeoElement startElem = startControl.Element;
       GeometryCollection startColl = Ocad.Utils.SymbolGeometry(startSymbol, (IPoint)startElem.Geometry.Project(setup.Map2Prj), startElem.Angle);
       Polyline startGeom = (Polyline)startColl[0];
-      Element controlElem = lastControl.Element;
+      GeoElement controlElem = lastControl.Element;
       GeometryCollection controlGeom = Ocad.Utils.SymbolGeometry(controlSymbol, (IPoint)controlElem.Geometry.Project(setup.Map2Prj), 0);
 
       IList<ParamGeometryRelation> cuts =

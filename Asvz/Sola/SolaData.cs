@@ -74,7 +74,7 @@ namespace Asvz.Sola
       IPoint start = defaultStrecke.Points.First.Value;
       IPoint end = defaultStrecke.Points.Last.Value;
       Polyline line0 = null;
-      foreach (var elem in reader.Elements(true, indexList))
+      foreach (var elem in reader.EnumGeoElements(indexList))
       {
         Polyline line = (Polyline)elem.Geometry;
         if (PointOperator.Dist2(line.Points.First.Value, start) < 100 &&
@@ -101,12 +101,12 @@ namespace Asvz.Sola
         iIndex++;
       }
 
-      IList<Element> strecken = new List<Element>();
-      IList<Element> nummern = new List<Element>();
+      IList<GeoElement> strecken = new List<GeoElement>();
+      IList<GeoElement> nummern = new List<GeoElement>();
 
       _transport = new Dictionary<Polyline, int>();
 
-      foreach (var elem in reader.Elements(true, pIndexList))
+      foreach (var elem in reader.EnumGeoElements(pIndexList))
       {
         if (elem.Symbol == SymT.Strecke)
         { strecken.Add(elem); }
@@ -176,7 +176,7 @@ namespace Asvz.Sola
       dc.AppendChild(style);
     }
 
-    private void SortDefaultStrecken(IList<Element> strecken, IList<Element> nummern)
+    private void SortDefaultStrecken(IList<GeoElement> strecken, IList<GeoElement> nummern)
     {
       foreach (var rawStrecke in Ddx.Strecken)
       {
@@ -194,7 +194,7 @@ namespace Asvz.Sola
 
       for (int i = 0; i < Strecken.Count; i++)
       {
-        Element pStrecke = nummern[i];
+        GeoElement pStrecke = nummern[i];
         int iStrecke = Convert.ToInt32(pStrecke.Text);
         Point pNummer = 0.5 * (pStrecke.Geometry.Extent.Max +
           (Point)pStrecke.Geometry.Extent.Min);
@@ -222,7 +222,7 @@ namespace Asvz.Sola
         }
 
         Strecken[iStrecke - 1].GetCategorie(Kategorie.Default).SetGeometry(
-          (Polyline)((Element)strecken[iMin]).Geometry, this);
+          (Polyline)(strecken[iMin]).Geometry, this);
       }
     }
 
@@ -355,13 +355,12 @@ namespace Asvz.Sola
       return Strecken[strecke].GetCategorie(kategorie);
     }
 
-    private IList<Element> CombineTransport(Polyline trans, int symbol)
+    private IList<GeoElement> CombineTransport(Polyline trans, int symbol)
     {
-      List<Element> elemList = new List<Element>();
+      List<GeoElement> elemList = new List<GeoElement>();
 
-      Element elem;
-      elem = new Element(true);
-      elem.Geometry = trans;
+      GeoElement elem;
+      elem = new GeoElement(trans);
       elem.Type = GeomType.line;
       elem.Symbol = symbol;
       elemList.Add(elem);
@@ -397,8 +396,7 @@ namespace Asvz.Sola
 
           if (next)
           {
-            elem = new Element(true);
-            elem.Geometry = p;
+            elem = new GeoElement(p);
             elem.Type = GeomType.line;
             elem.Symbol = symbol;
             elemList.Add(elem);

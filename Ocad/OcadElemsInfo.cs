@@ -40,7 +40,7 @@ namespace Ocad
         Box extent = null;
         foreach (var idx in GetIndexList())
         {
-          Box box = idx.Box;
+          IBox box = idx.MapBox;
           if (extent == null)
           { extent = new Box(box); }
           else

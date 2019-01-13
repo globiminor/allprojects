@@ -160,8 +160,8 @@ namespace TMap
           part.LineWidth = graphic.LineWidth * Ocad.FileParam.OCAD_UNIT * setup.Scale;
           if (colors.TryGetValue(graphic.Color, out Ocad.ColorInfo color))
           { part.LineColor = GetColor(color.Color); }
-          if (graphic.Geometry is Basics.Geom.Polyline) part.SymbolLine = (Basics.Geom.Polyline)graphic.Geometry.Project(setup.Map2Prj);
-          else if (graphic.Geometry is Basics.Geom.Area) part.SymbolLine = ((Basics.Geom.Area)graphic.Geometry).Border[0].Project(setup.Map2Prj);
+          if (graphic.MapGeometry is Basics.Geom.Polyline) part.SymbolLine = (Basics.Geom.Polyline)graphic.MapGeometry.Project(setup.Map2Prj);
+          else if (graphic.MapGeometry is Basics.Geom.Area) part.SymbolLine = ((Basics.Geom.Area)graphic.MapGeometry).Border[0].Project(setup.Map2Prj);
           else throw new System.NotImplementedException();
 
           part.DrawLevel = 0;

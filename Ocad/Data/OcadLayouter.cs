@@ -21,7 +21,7 @@ namespace Ocad.Data
 
     private class Match
     {
-      public Element Element { get; set; }
+      public GeoElement Element { get; set; }
       public ElementIndex Index { get; set; }
 
       public List<Offset> Targets { get; } = new List<Offset>();
@@ -85,7 +85,7 @@ namespace Ocad.Data
         {
           if (idx.Status == ElementIndex.StatusDeleted)
           { continue; }
-          Element elem = reader.ReadElement(idx);
+          reader.ReadElement(idx, out GeoElement elem);
 
           if (elem == null)
           { continue; }
@@ -129,7 +129,7 @@ namespace Ocad.Data
         Box search = new Box(min, max);
         foreach (var tileEntry in tree.Search(search))
         {
-          Element elem = tileEntry.Value.Element;
+          GeoElement elem = tileEntry.Value.Element;
           if (elem.Symbol != nb.Element.Symbol)
           { continue; }
 

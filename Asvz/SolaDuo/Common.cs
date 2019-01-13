@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Basics.Geom;
 using Ocad;
 
@@ -6,27 +7,39 @@ namespace Asvz
 {
   public static class Common
   {
-    internal static Element CreateText(string text, double x, double y, Ocad.Symbol.TextSymbol symbol, Setup setup)
+    internal static GeoElement CreateText(string text, double x, double y, Setup setup, Ocad.Symbol.TextSymbol symbol)
     {
-      bool project = setup != null;
-      Element elem = new Element(project);
-      elem.Symbol = symbol.Number;
-      elem.UnicodeText = true;
-
       Point p = new Point2D(x, y);
-      if (project)
-      {  p = p.Project(setup.Prj2Map);}
-
+      p = p.Project(setup.Prj2Map);
       IGeometry geom = GetGeometry(text, p, symbol);
-      if (project) 
-      { geom = geom.Project(setup.Map2Prj); }
+      geom = geom.Project(setup.Map2Prj);
 
-      elem.Geometry = geom;
-      elem.Type = GeomType.unformattedText;
-      elem.Text = text;
+      GeoElement elem = new GeoElement(geom);
+      AssignText(elem, text, symbol);
 
       return elem;
     }
+
+    internal static MapElement CreateText(string text, double x, double y, Ocad.Symbol.TextSymbol symbol)
+    {
+      Point p = new Point2D(x, y);
+      IGeometry geom = GetGeometry(text, p, symbol);
+      List<Coord> coords = new List<Coord>(Coord.EnumCoords(geom));
+
+      MapElement elem = new MapElement(coords);
+      AssignText(elem, text, symbol);
+
+      return elem;
+    }
+
+    private static void AssignText(Element elem, string text, Ocad.Symbol.TextSymbol symbol)
+    {
+      elem.Symbol = symbol.Number;
+      elem.UnicodeText = true;
+      elem.Type = GeomType.unformattedText;
+      elem.Text = text;
+    }
+
 
     public static PointCollection GetGeometry(string text, IPoint position, Ocad.Symbol.TextSymbol symbol)
     {

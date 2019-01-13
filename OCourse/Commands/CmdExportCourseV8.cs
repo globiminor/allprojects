@@ -14,12 +14,11 @@ namespace OCourse.Commands
     private readonly Course _course;
     private readonly TextWriter _writer;
     private readonly IReadOnlyList<PermutationVm> _permutations;
-    private readonly Setup _setup;
-    public CmdExportCourseV8(Course course, IReadOnlyList<PermutationVm> permutations, Setup setup, TextWriter writer)
+
+    public CmdExportCourseV8(Course course, IReadOnlyList<PermutationVm> permutations, TextWriter writer)
     {
       _course = course;
       _permutations = permutations;
-      _setup = setup;
       _writer = writer;
     }
 
@@ -79,7 +78,7 @@ namespace OCourse.Commands
           IPoint p0 = null;
           if (pre != null)
           {
-            IGeometry geom = pre.Element.Geometry.Project(_setup.Map2Prj);
+            IGeometry geom = pre.Element.Geometry;
             if (!(geom is IPoint p))
             {
               if (geom is Polyline l)
@@ -93,7 +92,7 @@ namespace OCourse.Commands
           }
           if (c.Element != null)
           {
-            IGeometry geom = c.Element.Geometry.Project(_setup.Map2Prj);
+            IGeometry geom = c.Element.Geometry;
             if (!(geom is IPoint p1))
             {
               if (geom is Polyline l)

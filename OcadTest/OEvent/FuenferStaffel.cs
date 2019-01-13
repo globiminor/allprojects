@@ -290,10 +290,10 @@ namespace OcadTest.OEvent
 
         ElementIndex delIndex = null;
         ElementIndex controlIndex = null;
-        Element replaceElem = null;
+        GeoElement replaceElem = null;
         foreach (var e in indices)
         {
-          Element elem = w.ReadElement(e);
+          w.ReadElement(e, out GeoElement elem);
           if (elem == null)
           { continue; }
 
@@ -328,7 +328,7 @@ namespace OcadTest.OEvent
           { new Point2D(693503.4,  260320.9),
             new Point2D(693431.4,  260347.1),
             new Point2D(693058.2,  260252.2) });
-          replaceElem.Geometry = replace.Project(setup.Prj2Map);
+          replaceElem.Geometry = replace;
 
           w.Append(replaceElem);
         }
@@ -346,10 +346,10 @@ namespace OcadTest.OEvent
         IList<ElementIndex> indices = w.GetIndices();
 
         ElementIndex delIndex = null;
-        Element replaceElem = null;
+        GeoElement replaceElem = null;
         foreach (var e in indices)
         {
-          Element elem = w.ReadElement(e);
+          w.ReadElement(e, out GeoElement elem);
           if (elem == null)
           { continue; }
 
@@ -364,8 +364,7 @@ namespace OcadTest.OEvent
         }
         if (delIndex != null)
         {
-          w.DeleteElements(delegate (ElementIndex i)
-          { return i.Index == delIndex.Index; });
+          w.DeleteElements((i) => { return i.Index == delIndex.Index; });
 
           PointCollection replace = new PointCollection
           {
@@ -375,7 +374,7 @@ namespace OcadTest.OEvent
             new Point2D(2675726.4, 1266287.6),
             new Point2D(2675554.3, 1266287.6)
           };
-          replaceElem.Geometry = replace.Project(setup.Prj2Map);
+          replaceElem.Geometry = replace;
 
           w.Append(replaceElem);
         }

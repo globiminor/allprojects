@@ -166,11 +166,11 @@ namespace Ocad
       return Reader.ReadInt16();
     }
 
-    public override Element ReadElement()
+    public override T ReadElement<T>(out T element)
     {
       int nPoint;
       int nText;
-      Element elem = new Element(false);
+      T elem = new T();
       elem.Symbol = Reader.ReadInt16();
       elem.Type = (GeomType)Reader.ReadByte();
       elem.UnicodeText = Reader.ReadByte() != 0;
@@ -182,7 +182,7 @@ namespace Ocad
       Reader.ReadChars(16); // reserve ID
 
       List<Coord> coords = ReadCoords(nPoint);
-      elem.Geometry = Coord.GetGeometry(elem.Type, coords);
+      elem.InitGeometry(coords, Setup);
       if (nText > 0)
       {
         if (elem.UnicodeText)
@@ -191,7 +191,8 @@ namespace Ocad
         { elem.Text = Reader.ReadChars(nText).ToString(); }
       }
 
-      return elem;
+      element = elem;
+      return element;
     }
 
     public override BaseSymbol ReadSymbol()
@@ -206,7 +207,9 @@ namespace Ocad
 
     public override ElementIndex GetIndex(Element element)
     {
-      ElementIndex index = new ElementIndex(element.Geometry.Extent);
+      ElementIndex index = new ElementIndex(-1);
+      index.SetMapBox(element.GetExent(Setup));
+
       index.Symbol = element.Symbol;
       index.CalcElementLength(this, element);
 
@@ -235,7 +238,7 @@ namespace Ocad
 
     public override void WriteElementContent(Element element)
     {
-      OcadWriter.Write(Writer, element.Geometry);
+      WriteElementGeometry(element);
 
       if (element.Text != "")
       {

@@ -6,6 +6,46 @@ namespace Ocad
 {
   public class Coord
   {
+
+    public class CodePoint : Point2D
+    {
+      public CodePoint(double x, double y)
+        : base(x, y)
+      { }
+      public Flags Flags { get; set; }
+      protected override IGeometry ProjectCore(IProjection projection) => Project(projection);
+      public new CodePoint Project(IProjection projection)
+      {
+        IPoint p1 = base.Project(projection);
+        CodePoint d = new CodePoint(p1.X, p1.Y) { Flags = Flags };
+        return d;
+      }
+    }
+    public class PartPoint : Point2D
+    {
+      public PartPoint(double x, double y)
+        : base(x, y)
+      { }
+      public List<Coord> Angles { get; set; }
+      protected override IGeometry ProjectCore(IProjection projection) => Project(projection);
+      public new PartPoint Project(IProjection projection)
+      {
+        IPoint p1 = base.Project(projection);
+        // TODO: rotate angles
+        PartPoint d = new PartPoint(p1.X, p1.Y) { Angles = new List<Coord>(Angles) };
+        return d;
+      }
+
+      public static PartPoint Create(IList<Coord> coords)
+      {
+        Point p = coords[0].GetPoint();
+        List<Coord> angles = new List<Coord>(coords);
+        angles.RemoveAt(0);
+        PartPoint pp = new PartPoint(p.X, p.Y) { Angles = angles };
+        return pp;
+      }
+    }
+
     [Flags]
     public enum Flags
     {
@@ -47,21 +87,22 @@ namespace Ocad
 
     public Point2D GetPoint()
     {
-      Point2D p = new Point2D
-      {
-        X = GetGeomPart(_ix),
-        Y = GetGeomPart(_iy)
-      };
+      Flags remove = Flags.firstBezierPoint | Flags.secondBezierPoint | Flags.firstHolePoint;
+      Flags c = Code() | remove;
+      Flags code = c ^ remove;
+      double x = GetGeomPart(_ix);
+      double y = GetCodePart(_iy);
+      Point2D p = code == 0 ? new Point2D(x, y) : new CodePoint(x, y) { Flags = code };
       return p;
     }
 
     public bool IsBezier => (_ix & 1) == 1;
     public bool IsNewRing => (_iy & 2) == 2;
 
-    public int Code()
+    public Flags Code()
     {
       int code = GetCodePart(_ix);
-      return code | (GetCodePart(_iy) << 8);
+      return (Flags)(code | (GetCodePart(_iy) << 8));
     }
 
     public static int GetGeomPart(int coord)
@@ -111,6 +152,8 @@ namespace Ocad
       {
         if (coords.Count == 1)
         { return coords[0].GetPoint(); }
+        else if (type == GeomType.point)
+        { return PartPoint.Create(coords); }
         else
         {
           PointCollection points = new PointCollection();
@@ -200,5 +243,71 @@ namespace Ocad
 
       return line;
     }
+
+    public static IEnumerable<Coord> EnumCoords(IGeometry geometry)
+    {
+      if (geometry is Point pt)
+      {
+        yield return Coord.Create(pt, Coord.Flags.none);
+        if (pt is PartPoint ppt)
+        {
+          foreach (Coord angle in ppt.Angles)
+          { yield return angle; }
+        }
+      }
+      else if (geometry is PointCollection pts)
+      {
+        foreach (var p in pts)
+        { yield return Coord.Create(p, Coord.Flags.none); }
+      }
+      else if (geometry is Polyline line)
+      {
+        foreach (var coord in EnumLineCoords(line, false))
+        { yield return coord; }
+      }
+      else if (geometry is Area area)
+      {
+        bool isInnerRing = false;
+        foreach (var border in area.Border)
+        {
+          foreach (var coord in EnumLineCoords(border, isInnerRing))
+          { yield return coord; }
+          isInnerRing = true;
+        }
+      }
+      else
+      { throw new Exception("Unhandled geometry type " + geometry.GetType()); }
+    }
+
+    private static IEnumerable<Coord> EnumLineCoords(Polyline polyline, bool isInnerRing)
+    {
+      Coord coord;
+
+      if (polyline.Points.Count < 1)
+      { yield break; }
+
+      if (isInnerRing)
+      { coord = Coord.Create(polyline.Points.First.Value, Coord.Flags.firstHolePoint); }
+      else
+      { coord = Coord.Create(polyline.Points.First.Value, Coord.Flags.none); }
+      yield return coord;
+
+      foreach (var seg in polyline.Segments)
+      {
+        if (seg is Bezier bezier)
+        {
+          coord = Coord.Create(bezier.P1, Coord.Flags.firstBezierPoint);
+          yield return coord;
+
+          coord = Coord.Create(bezier.P2, Coord.Flags.secondBezierPoint);
+          yield return coord;
+        }
+
+        coord = Coord.Create(seg.End, Coord.Flags.none);
+        yield return coord;
+      }
+
+    }
+
   }
 }

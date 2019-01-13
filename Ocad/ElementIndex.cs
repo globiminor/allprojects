@@ -6,7 +6,7 @@ namespace Ocad
   {
     public const int StatusDeleted = 3;
 
-    private int _index;
+    private readonly int _index;
     private Box _box;
     private int _symbol;
     // Version 9
@@ -22,18 +22,12 @@ namespace Ocad
       _box = new Box(new Point2D(), new Point2D());
     }
 
-    public ElementIndex(IBox box)
-    {
-      _index = -1;
-      SetBox(box);
-    }
-
     public int Index
     {
       get { return _index; }
     }
 
-    internal void SetBox(IBox box)
+    internal void SetMapBox(IBox box)
     {
       if (box is Box)
       { _box = (Box)box; }
@@ -41,10 +35,9 @@ namespace Ocad
       { _box = new Box(Point.Create(box.Min), Point.Create(box.Max)); }
     }
 
-    public Box Box
+    public IBox MapBox
     {
       get { return _box; }
-      internal set { _box = value; }
     }
 
     internal int Position { get; set; }

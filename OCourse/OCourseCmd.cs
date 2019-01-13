@@ -225,7 +225,6 @@ namespace OCourse.Gui
         else
         { throw new InvalidOperationException("Unhandle control geometry " + g.GetType()); }
 
-        p = p.Project(_wdg.Vm.Setup.Map2Prj);
         line.Add(p);
 
         return p;

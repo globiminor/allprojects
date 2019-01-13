@@ -81,7 +81,7 @@ namespace Ocad
 
     public int Symbol { get; set; }
 
-    public Element Element { get; set; }
+    public GeoElement Element { get; set; }
 
     public string Text { get; set; }
 

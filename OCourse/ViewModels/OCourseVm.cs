@@ -47,7 +47,6 @@ namespace OCourse.ViewModels
     private VelocityType _veloType;
     private VarBuilderType _varBuilderType;
     private DisplayType _displayType;
-    private Setup _setup;
 
     private Course _course;
     private int _permutEstimate;
@@ -367,11 +366,6 @@ namespace OCourse.ViewModels
       get { return _varBuilderTypes; }
     }
 
-    public Setup Setup
-    {
-      get { return _setup; }
-    }
-
     public DisplayType DisplayType
     {
       get { return _displayType; }
@@ -412,7 +406,7 @@ namespace OCourse.ViewModels
       DrawingCourse?.Invoke();
     }
 
-    public List<CostSectionlist> CalcCourse(IList<SectionList> permuts, Setup setup)
+    public List<CostSectionlist> CalcCourse(IList<SectionList> permuts)
     {
       InitHeightVelo();
 
@@ -421,7 +415,7 @@ namespace OCourse.ViewModels
       try
       {
         Working = true;
-        courseInfo = RouteCalculator.GetCourseInfo(permuts, resol, setup);
+        courseInfo = RouteCalculator.GetCourseInfo(permuts, resol);
       }
       finally
       {
@@ -658,7 +652,6 @@ namespace OCourse.ViewModels
           Course course;
           using (OcadReader reader = OcadReader.Open(CourseFile))
           {
-            _setup = reader.ReadSetup();
             course = reader.ReadCourse(CourseName);
 
             IList<string> catNames;
@@ -705,7 +698,7 @@ namespace OCourse.ViewModels
         _selectedRoute.Clear();
         _info.Clear();
         RouteCalculator.AccessCurrentCalcList((l) => l.Clear());
-        CalcCourseInit(Course, _setup);
+        CalcCourseInit(Course);
       }
       finally
       { _settingCourse = false; }
@@ -774,14 +767,14 @@ namespace OCourse.ViewModels
       }
     }
 
-    private void CalcCourseInit(Course course, Setup setup)
+    private void CalcCourseInit(Course course)
     {
       InitHeightVelo();
 
       double resol = LcpConfig.Resolution;
 
       Working = true;
-      CourseCalculator courseCalc = new CourseCalculator(this, RouteCalculator, course, resol, setup);
+      CourseCalculator courseCalc = new CourseCalculator(this, RouteCalculator, course, resol);
       RunAsync(courseCalc);
     }
 
@@ -895,7 +888,6 @@ namespace OCourse.ViewModels
         Course course;
         using (OcadReader reader = OcadReader.Open(CourseFile))
         {
-          _setup = reader.ReadSetup();
           course = reader.ReadCourse(CourseName);
         }
 
@@ -923,7 +915,7 @@ namespace OCourse.ViewModels
 
       using (TextWriter writer = new StreamWriter(file, append: true))
       {
-        CmdExportCourseV8 cmd = new CmdExportCourseV8(_course, permutations, _setup, writer);
+        CmdExportCourseV8 cmd = new CmdExportCourseV8(_course, permutations, writer);
         cmd.Execute();
       }
     }
@@ -934,22 +926,20 @@ namespace OCourse.ViewModels
       private readonly RouteCalculator _routeCalculator;
       private readonly Course _course;
       private readonly double _resol;
-      private readonly Setup _setup;
       private List<CostSectionlist> _courseInfo;
 
       public CourseCalculator(OCourseVm parent, RouteCalculator routeCalculator, Course course,
-        double resol, Setup setup)
+        double resol)
       {
         _parent = parent;
         _routeCalculator = routeCalculator;
         _course = course;
         _resol = resol;
-        _setup = setup;
       }
 
       public bool Start()
       {
-        _courseInfo = _routeCalculator.CalcCourse(_course, _resol, _setup);
+        _courseInfo = _routeCalculator.CalcCourse(_course, _resol);
         return true;
       }
 
@@ -1036,7 +1026,6 @@ namespace OCourse.ViewModels
         List<CostSectionlist> allCosts = new List<CostSectionlist>();
         using (OcadReader reader = OcadReader.Open(_courseFile))
         {
-          Setup setup = reader.ReadSetup();
           IList<StringParamIndex> idxList = reader.ReadStringParamIndices();
 
           IList<string> courseList = Utils.GetCourseList(reader, idxList);
@@ -1047,7 +1036,7 @@ namespace OCourse.ViewModels
             Course adapted = _parent.AdaptCourse(course, _varBuildType);
 
             List<CostSectionlist> courseCosts =
-              _calc.CalcCourse(adapted, _resol, setup);
+              _calc.CalcCourse(adapted, _resol);
 
             foreach (var pair in courseCosts)
             {

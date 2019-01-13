@@ -12,21 +12,21 @@ namespace Asvz.Sola
 {
   public class Transport
   {
-    private List<Element> _sorted;
+    private List<GeoElement> _sorted;
     private Polyline _combined;
 
     public int From { get; private set; }
     public int To { get; private set; }
-    public List<Element> Elements { get; private set; }
+    public List<GeoElement> Elements { get; private set; }
 
     public Polyline Combined { get { return _combined ?? (_combined = GetCombined()); } }
-    public List<Element> SortedElements { get { return _sorted ?? (_sorted = SortElements()); } }
+    public List<GeoElement> SortedElements { get { return _sorted ?? (_sorted = SortElements()); } }
 
     public Transport(int from, int to)
     {
       From = from;
       To = to;
-      Elements = new List<Element>();
+      Elements = new List<GeoElement>();
     }
 
     private Polyline GetCombined()
@@ -42,13 +42,13 @@ namespace Asvz.Sola
       return combined;
     }
 
-    private List<Element> SortElements()
+    private List<GeoElement> SortElements()
     {
-      Dictionary<Element, Element> lines = new Dictionary<Element, Element>();
+      Dictionary<Element, GeoElement> lines = new Dictionary<Element, GeoElement>();
       foreach (var elem in Elements)
       { lines.Add(elem, null); }
 
-      List<Element> startLines = new List<Element>();
+      List<GeoElement> startLines = new List<GeoElement>();
       foreach (var elem in Elements)
       {
         Point start = Point.CastOrCreate(((Polyline)elem.Geometry).Points.First.Value);
@@ -74,8 +74,8 @@ namespace Asvz.Sola
       if (startLines.Count > 1)
       { throw new InvalidOperationException(string.Format("Found {0} start elements", startLines.Count)); }
 
-      List<Element> sorted = new List<Element>();
-      Element next = startLines[0];
+      List<GeoElement> sorted = new List<GeoElement>();
+      GeoElement next = startLines[0];
       while (next != null)
       {
         if (sorted.Contains(next))
@@ -195,7 +195,7 @@ namespace Asvz.Sola
     private Ocad.Symbol.TextSymbol _legendText;
     private Ocad.Symbol.PointSymbol _legendBox;
 
-    private IList<Element> _textList;
+    private IList<GeoElement> _textList;
 
     // string parameters
     private ViewPar _viewParam;
@@ -393,7 +393,7 @@ namespace Asvz.Sola
 
         if (elemIdx.Symbol == SymD.TextMittel)
         {
-          Element element = _reader.ReadElement(elemIdx);
+          _reader.ReadElement(elemIdx, out MapElement element);
           if (element.Text.StartsWith("von"))
           { return true; }
           if (element.Text.StartsWith("nach"))
@@ -484,17 +484,16 @@ namespace Asvz.Sola
     private void WriteStartEnd(OcadWriter writer,
       IPoint centerStart, IPoint centerEnd, Polyline transportBox)
     {
-      Element pElem = new Element(true);
       if (centerEnd != null)
       {
-        pElem.Geometry = centerEnd;
+        Element pElem = new GeoElement(centerEnd);
         pElem.Symbol = SymD.UeCircle;
         pElem.Type = GeomType.point;
         writer.Append(pElem);
       }
       if (centerStart != null && centerStart != centerEnd)
       {
-        pElem.Geometry = centerStart;
+        Element pElem = new GeoElement(centerStart);
         pElem.Symbol = SymD.UeCircle;
         pElem.Type = GeomType.point;
         writer.Append(pElem);
@@ -516,8 +515,7 @@ namespace Asvz.Sola
           { continue; }
           foreach (var part in col)
           {
-            pElem = new Element(true);
-            pElem.Geometry = part;
+            GeoElement pElem = new GeoElement(part);
             pElem.Type = GeomType.line;
             if (elem.Symbol == SymT.Transport)
             { pElem.Symbol = SymD.Anfahrt; }
@@ -540,8 +538,7 @@ namespace Asvz.Sola
           { continue; }
           foreach (var part in col)
           {
-            pElem = new Element(true);
-            pElem.Geometry = part;
+            GeoElement pElem = new GeoElement(part);
             pElem.Type = GeomType.line;
             if (elem.Symbol == SymT.Transport)
             { pElem.Symbol = SymD.Abfahrt; }
@@ -613,7 +610,7 @@ namespace Asvz.Sola
       }
     }
 
-    private Polyline BorderGeometry(Element border)
+    private Polyline BorderGeometry(GeoElement border)
     {
       Setup pSetup = new Setup();
       Point p = (Point)border.Geometry;
@@ -638,7 +635,7 @@ namespace Asvz.Sola
     {
       template.ReadSetup();
       Dictionary<int, Ocad.Symbol.BaseSymbol> symbols = ReadTransportSymbols(template);
-      IList<Element> elements = ReadTransportObjects(template);
+      IList<GeoElement> elements = ReadTransportObjects(template);
       GetGepaeck(symbols, elements);
     }
 
@@ -664,9 +661,9 @@ namespace Asvz.Sola
 
       _transportBox = null;
       _legendPos = null;
-      _textList = new List<Element>();
+      _textList = new List<GeoElement>();
 
-      foreach (var elem in template.Elements(true, pIndexList))
+      foreach (var elem in template.EnumGeoElements(pIndexList))
       {
         if (elem.Symbol == SymD.TrAusschnitt)
         {
@@ -683,7 +680,7 @@ namespace Asvz.Sola
       }
     }
 
-    private List<Element> ReadTransportObjects(OcadReader template)
+    private List<GeoElement> ReadTransportObjects(OcadReader template)
     {
       ElementIndex pIndex;
       IList<ElementIndex> pIndexList = new List<ElementIndex>();
@@ -694,9 +691,9 @@ namespace Asvz.Sola
         iIndex++;
       }
 
-      List<Element> list = new List<Element>();
+      List<GeoElement> list = new List<GeoElement>();
 
-      foreach (var elem in template.Elements(true, pIndexList))
+      foreach (var elem in template.EnumGeoElements(pIndexList))
       {
         int symbol = elem.Symbol;
         if (symbol == SymD.GepVon || symbol == SymD.GepNach || symbol == SymD.GepBleibt
@@ -708,16 +705,16 @@ namespace Asvz.Sola
       return list;
     }
 
-    private void GetGepaeck(Dictionary<int, Ocad.Symbol.BaseSymbol> symbols, IList<Element> elements)
+    private void GetGepaeck(Dictionary<int, Ocad.Symbol.BaseSymbol> symbols, IList<GeoElement> elements)
     {
       GetGepaeck(symbols, elements, SymD.GepVon);
       GetGepaeck(symbols, elements, SymD.GepNach);
       GetGepaeck(symbols, elements, SymD.GepBleibt);
     }
 
-    private void GetGepaeck(Dictionary<int, Ocad.Symbol.BaseSymbol> symbols, IList<Element> elements, int symbol)
+    private void GetGepaeck(Dictionary<int, Ocad.Symbol.BaseSymbol> symbols, IList<GeoElement> elements, int symbol)
     {
-      Element gepaeck = null;
+      GeoElement gepaeck = null;
       foreach (var elem in elements)
       {
         if (elem.Symbol == symbol)
@@ -751,7 +748,7 @@ namespace Asvz.Sola
       }
 
     }
-    private Element FindIndexElement(IPoint p0, IPoint direction, IList<Element> elements)
+    private Element FindIndexElement(IPoint p0, IPoint direction, IList<GeoElement> elements)
     {
       Element indexElement = null;
       double x0 = 0;
@@ -838,12 +835,12 @@ namespace Asvz.Sola
         if (symbol.Number == SymD.TrAusschnitt)
         {
           if (!(symbol.Graphics.Count == 1)) throw new InvalidOperationException($"Expected 1 'TrAusschnitt', got {symbol.Graphics.Count}");
-          _symUebergabe = (Polyline)symbol.Graphics[0].Geometry.Project(pSetup.Map2Prj);
+          _symUebergabe = (Polyline)symbol.Graphics[0].MapGeometry.Project(pSetup.Map2Prj);
         }
         else if (symbol.Number == SymD.UeCircle)
         {
           if (!(symbol.Graphics.Count == 1)) throw new InvalidOperationException($"Expected 1 'UeCircle', got {symbol.Graphics.Count}");
-          _symUeCircle = (Polyline)symbol.Graphics[0].Geometry.Project(pSetup.Map2Prj);
+          _symUeCircle = (Polyline)symbol.Graphics[0].MapGeometry.Project(pSetup.Map2Prj);
         }
 
       }
@@ -873,7 +870,7 @@ namespace Asvz.Sola
     }
 
     private void AdaptText(OcadWriter writer, Setup setup,
-      IList<Element> textList, Ocad.Symbol.TextSymbol textSymbol)
+      IList<GeoElement> textList, Ocad.Symbol.TextSymbol textSymbol)
     {
       Ocad.Symbol.TextSymbol.RectFraming pFrame = (Ocad.Symbol.TextSymbol.RectFraming)textSymbol.Frame;
 
@@ -881,7 +878,6 @@ namespace Asvz.Sola
       double dx1 = pFrame.Right;
       double dy0 = pFrame.Bottom - (2.0 / 3.0) * textSymbol.Size;
       double dy1 = pFrame.Top - textSymbol.Size;
-      Element pElem = new Element(true);
 
       foreach (var pText in textList)
       {
@@ -898,7 +894,7 @@ namespace Asvz.Sola
 
         pLine = pLine.Project(setup.Map2Prj);
 
-        pElem.Geometry = pLine;
+        Element pElem = new GeoElement(pLine);
         pElem.Symbol = SymD.BoxText;
         pElem.Type = GeomType.line;
         writer.Append(pElem);
@@ -909,9 +905,8 @@ namespace Asvz.Sola
     {
       IPoint edge = null;
 
-      Element pElem = new Element(true);
+      Element pElem = new GeoElement(border);
       pElem.Symbol = SymD.TrMassstab;
-      pElem.Geometry = border;
       pElem.Type = GeomType.line;
       writer.Append(pElem);
 
@@ -934,7 +929,7 @@ namespace Asvz.Sola
       Point pPos0 = new Point2D();
       Point pPos1 = new Point2D();
       IBox pBxBord = border.Extent;
-      IBox pBxLgd = _legendBox.Graphics[0].Geometry.Extent;
+      IBox pBxLgd = _legendBox.Graphics[0].MapGeometry.Extent;
       double dx = pBxLgd.Max.X - pBxLgd.Min.X;
       double dy = pBxLgd.Max.Y - pBxLgd.Min.Y;
 
@@ -961,27 +956,24 @@ namespace Asvz.Sola
         pPos1.Y = pPos0.Y;
       }
 
-      pElem = new Element(true);
-      pElem.Geometry = pPos0.Project(_templateSetup.Map2Prj);
+      pElem = new GeoElement(pPos0.Project(_templateSetup.Map2Prj));
       pElem.Symbol = SymD.TrLegendeBox;
       pElem.Type = GeomType.point;
       writer.Append(pElem);
 
-      pElem = new Element(true);
-      pElem.Geometry = pPos1.Project(_templateSetup.Map2Prj);
+      pElem = new GeoElement(pPos1.Project(_templateSetup.Map2Prj));
       pElem.Symbol = SymD.TrLegendeBox;
       pElem.Type = GeomType.point;
       writer.Append(pElem);
 
-      pElem = new Element(true);
-      pElem.Geometry = pPos0.Project(_templateSetup.Map2Prj);
+      pElem = new GeoElement(pPos0.Project(_templateSetup.Map2Prj));
       pElem.Angle = _templateSetup.PrjRotation;
       pElem.Symbol = SymD.TrNordpfeil;
       pElem.Type = GeomType.point;
       writer.Append(pElem);
 
       Point p = pPos1.Project(_templateSetup.Map2Prj);
-      pElem = Common.CreateText("50 m", p.X, p.Y, _legendText, _templateSetup);
+      pElem = Common.CreateText("50 m", p.X, p.Y, _templateSetup, _legendText);
       writer.Append(pElem);
 
       Polyline pScale = Polyline.Create(new[] { new Point2D(0, 0), new Point2D(50, 0) });
@@ -994,8 +986,7 @@ namespace Asvz.Sola
       pScale.Add(new Point2D(pPos1.X + dx, pPos1.Y - dy / 5.0));
       pScale.Add(new Point2D(pPos1.X + dx, pPos1.Y - dy / 10.0));
 
-      pElem = new Element(true);
-      pElem.Geometry = pScale.Project(_templateSetup.Map2Prj);
+      pElem = new GeoElement(pScale.Project(_templateSetup.Map2Prj));
       pElem.Symbol = SymD.TrMassstab;
       pElem.Type = GeomType.line;
       writer.Append(pElem);

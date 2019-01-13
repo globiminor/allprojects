@@ -47,7 +47,7 @@ namespace OCourse.Ext
       Dictionary<string, Control> controls)
     {
       List<Grafics> lst = new List<Grafics>();
-      foreach (var element in reader.Elements(true, null))
+      foreach (var element in reader.EnumGeoElements(null))
       {
         if (symbols != null && symbols.ContainsKey(element.Symbol) == false)
         { continue; }
@@ -62,7 +62,7 @@ namespace OCourse.Ext
       return lst;
     }
 
-    public static Grafics Create(Element elem, Dictionary<string, Control> controls)
+    public static Grafics Create(GeoElement elem, Dictionary<string, Control> controls)
     {
       Grafics g = new Grafics();
 
@@ -148,30 +148,26 @@ namespace OCourse.Ext
       Apply(writer, _geom);
     }
 
-    public void Apply(OcadWriter writer, IGeometry geometry)
+    public void Apply(OcadWriter writer, IGeometry geoGeometry)
     {
       AdaptLine adapt = new AdaptLine(this, writer);
       writer.DeleteElements(adapt.DeleteLine);
       if (adapt.Line == null)
       { return; }
 
-      adapt.Line.Geometry = geometry;
-      adapt.Line.IsGeometryProjected = true;
+      adapt.Line.Geometry = geoGeometry;
       writer.Append(adapt.Line);
     }
 
     public enum ClipParam { AtStart, AtEnd }
-    public Polyline Clip(Polyline geometry, Element pnt, GeometryCollection symbol, ClipParam clip, Setup setup)
+
+    public Polyline Clip(Polyline geometry, GeoElement pnt, GeometryCollection symbol, ClipParam clip)
     {
       if (symbol == null)
       {
         return geometry;
       }
       IPoint pntGeom = (IPoint)pnt.Geometry;
-      if (pnt.IsGeometryProjected == false && setup != null)
-      {
-        pntGeom = pntGeom.Project(setup.Map2Prj);
-      }
       IList<Polyline> split = Ocad.Utils.Split(geometry, symbol, pntGeom, pnt.Angle);
       Polyline clipped;
       if (split == null)
@@ -190,11 +186,9 @@ namespace OCourse.Ext
       return clipped;
     }
 
-    public bool IsConnection(Element elem, Setup setup)
+    public bool IsConnection(GeoElement elem)
     {
       Polyline line = (Polyline)elem.Geometry;
-      if (elem.IsGeometryProjected)
-      { line = line.Project(setup.Map2Prj); }
 
       double d2From = Point2D.Dist2(_fromPnt, line.Points.First.Value);
       double d2To = Point2D.Dist2(_toPnt, line.Points.Last.Value);
@@ -213,7 +207,7 @@ namespace OCourse.Ext
       private Grafics _parent;
       private OcadWriter _writer;
 
-      public Element Line;
+      public GeoElement Line;
 
       public AdaptLine(Grafics parent, OcadWriter writer)
       {
@@ -226,9 +220,9 @@ namespace OCourse.Ext
         if (index.Symbol != _parent.ReplaceSymbol)
         { return false; }
 
-        Element elem = _writer.ReadElement(index);
+        _writer.ReadElement(index, out GeoElement elem);
 
-        if (_parent.IsConnection(elem, null) == false)
+        if (_parent.IsConnection(elem) == false)
         { return false; }
 
         if (Line != null) { throw new InvalidOperationException("Multiple Lines"); }

@@ -14,7 +14,7 @@ namespace Asvz.Forchlauf
     private Ocad.Symbol.TextSymbol _txtMittel;
     private Ocad.Symbol.TextSymbol _txtKurz;
 
-    private Element _elemLegende;
+    private GeoElement _elemLegende;
 
     private double TextWidth
     {
@@ -60,8 +60,7 @@ namespace Asvz.Forchlauf
       Polyline startClip = InitStart(writer, start);
       Polyline part = ReducedStrecke(cat.Strecke, startClip);
 
-      Element elem = new Element(true);
-      elem.Geometry = part;
+      Element elem = new GeoElement(part);
       elem.Symbol = symStrecke;
       elem.Type = GeomType.line;
       writer.Append(elem);
@@ -87,14 +86,12 @@ namespace Asvz.Forchlauf
       List<Data.VerpflegungSym> verpfList = data.Verpflegung(line);
       foreach (var verpf in verpfList)
       {
-        Element elem = new Element(true);
-        elem.Geometry = verpf.Symbol;
+        Element elem = new GeoElement(verpf.Symbol);
         elem.Symbol = SymF.Verpflegung;
         elem.Type = GeomType.point;
         writer.Append(elem);
 
-        elem = new Element(true);
-        elem.Geometry = verpf.Index;
+        elem = new GeoElement(verpf.Index);
         elem.Symbol = SymF.LinieBreit;
         elem.Type = GeomType.line;
         writer.Append(elem);
@@ -126,8 +123,7 @@ namespace Asvz.Forchlauf
         Polyline strecke = (Polyline)dataElement.Geometry;
         strecke = ReducedStrecke(strecke, startClip);
 
-        Element elem = new Element(true);
-        elem.Geometry = strecke;
+        Element elem = new GeoElement(strecke);
         elem.Symbol = dataElement.Symbol;
         elem.Type = GeomType.line;
         writer.Append(elem);
@@ -204,7 +200,7 @@ namespace Asvz.Forchlauf
         iIndex++;
       }
 
-      foreach (var elem in template.Elements(true, pIndexList))
+      foreach (var elem in template.EnumGeoElements(pIndexList))
       {
         if (elem.Symbol == _txtSchwarz.Number && elem.Text.Contains("Fluntern"))
         { _elemLegende = elem; }
@@ -266,7 +262,7 @@ namespace Asvz.Forchlauf
       prj.Y -= symText.LineSpace / 100.0 * symText.Size * 2.54;
 
       min = prj.Project(Setup.Map2Prj);
-      Element elem = Common.CreateText(name + ":", min.X, min.Y, symText, Setup);
+      Element elem = Common.CreateText(name + ":", min.X, min.Y, Setup, symText);
       writer.Append(elem);
       IPoint result = min;
 
@@ -279,7 +275,7 @@ namespace Asvz.Forchlauf
       prj.X = prj.X + TextWidth - width;
 
       min = prj.Project(Setup.Map2Prj);
-      elem = Common.CreateText(info, min.X, min.Y, symText, Setup);
+      elem = Common.CreateText(info, min.X, min.Y, Setup, symText);
 
       writer.Append(elem);
 
@@ -305,8 +301,7 @@ namespace Asvz.Forchlauf
 
       Area area = new Area(border);
 
-      Element elem = new Element(false);
-      elem.Geometry = area;
+      Element elem = new MapElement(Coord.EnumCoords(area));
       elem.Type = GeomType.area;
       elem.Symbol = SymF.Deckweiss;
 
@@ -326,9 +321,7 @@ namespace Asvz.Forchlauf
 
     private Polyline InitStart(OcadWriter writer, IPoint start)
     {
-      Element elem = new Element(true);
-
-      elem.Geometry = start;
+      Element elem = new GeoElement(start);
       elem.Symbol = _startSymbol.Number;
       elem.Type = GeomType.point;
 
@@ -338,8 +331,8 @@ namespace Asvz.Forchlauf
       foreach (var graphics in _startSymbol.Graphics)
       {
         if (max == null || max.Extent.GetMaxExtent() <
-          graphics.Geometry.Extent.GetMaxExtent())
-        { max = graphics.Geometry; }
+          graphics.MapGeometry.Extent.GetMaxExtent())
+        { max = graphics.MapGeometry; }
       }
 
       IPoint translate = start.Project(Setup.Prj2Map);

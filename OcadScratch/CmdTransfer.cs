@@ -127,9 +127,6 @@ namespace OcadScratch
         }
         else
         {
-          Element elem = new Element(true);
-          elem.Type = GeomType.unformattedText;
-          elem.Color = color;
           Basics.Geom.PointCollection points = new Basics.Geom.PointCollection();
           Basics.Geom.Point2D center = (Basics.Geom.Point2D)geom;
           points.Add(new Basics.Geom.Point2D(center.X - 2, center.Y - 2));
@@ -138,7 +135,10 @@ namespace OcadScratch
           //points.Add(new Basics.Geom.Point2D(center.X + 0.1, center.Y - 0.1));
           //points.Add(new Basics.Geom.Point2D(center.X + 0.1, center.Y + 0.2));
           //points.Add(new Basics.Geom.Point2D(center.X - 0.1, center.Y + 0.2));
-          elem.Geometry = points;
+
+          Element elem = new GeoElement(points);
+          elem.Type = GeomType.unformattedText;
+          elem.Color = color;
           elem.Text = e.Symbol.Text;
           elem.Symbol = -3;
 
@@ -189,11 +189,10 @@ namespace OcadScratch
         {
           if (sym.Dash == null)
           {
-            Element elem = new Element(true);
+            Element elem = new GeoElement(line);
             elem.Type = GeomType.line;
             elem.LineWidth = GetLineWidth(w, sym.LineWidth);
             elem.Color = color;
-            elem.Geometry = line;
             elem.Symbol = -3;
 
             w.Append(elem);
@@ -212,11 +211,10 @@ namespace OcadScratch
               {
                 Basics.Geom.Polyline dash = line.SubPart(pre, Math.Min(posUnscaled, lUnscaled) - pre);
 
-                Element elem = new Element(true);
+                Element elem = new GeoElement(dash);
                 elem.Type = GeomType.line;
                 elem.LineWidth = GetLineWidth(w, sym.LineWidth);
                 elem.Color = color;
-                elem.Geometry = dash;
                 elem.Symbol = -3;
 
                 w.Append(elem);
@@ -271,16 +269,16 @@ namespace OcadScratch
 
       GeomType geomType;
 
-      Element elem = new Element(true);
+      Element elem;
       if (lineWidth <= 0)
       {
-        elem.Geometry = new Basics.Geom.Area(line);
+        elem = new GeoElement(new Basics.Geom.Area(line));
         geomType = GeomType.area;
       }
       else
       {
+        elem = new GeoElement(line);
         geomType = GeomType.line;
-        elem.Geometry = line;
       }
 
       elem.Type = geomType;

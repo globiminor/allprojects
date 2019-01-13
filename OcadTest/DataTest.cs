@@ -23,7 +23,7 @@ namespace OcadTest
       {
         foreach (var idx in r.GetIndices())
         {
-          Element e = r.ReadElement(idx);
+          r.ReadElement(idx, out GeoElement e);
           if (e == null)
           { continue; }
           byte[] color = BitConverter.GetBytes(e.Color);
@@ -226,11 +226,10 @@ namespace OcadTest
       using (OcadWriter w = OcadWriter.AppendTo(@"C:\daten\felix\kapreolo\scool\regensdorf_ruggenacher\test.ocd"))
       {
         {
-          Element elem = new Element(true)
+          Element elem = new GeoElement(new Point2D(677000, 254000))
           {
             Type = GeomType.unformattedText,
             Color = Color.ColorToCmyk(System.Drawing.Color.Blue).ToNumber(),
-            Geometry = new Point2D(677000, 254000),
             Text = "A",
             Symbol = -3
           };
@@ -239,12 +238,11 @@ namespace OcadTest
         }
 
         {
-          Element elem = new Element(true)
+          Element elem = new GeoElement(Polyline.Create(new[] { new Point2D(677010, 254000), new Point2D(677020, 254010) }))
           {
             Type = GeomType.line,
             Color = Color.ColorToCmyk(System.Drawing.Color.Green).ToNumber(),
             LineWidth = 30,
-            Geometry = Polyline.Create(new[] { new Point2D(677010, 254000), new Point2D(677020, 254010) }),
             Symbol = -3
           };
 
@@ -262,7 +260,7 @@ namespace OcadTest
       {
         foreach (var idx in r.GetIndices())
         {
-          Element e = r.ReadElement(idx);
+          r.ReadElement(idx, out GeoElement e);
           if (!string.IsNullOrWhiteSpace(e.Text))
           {
           }
@@ -276,7 +274,7 @@ namespace OcadTest
       using (OcadWriter w = OcadWriter.AppendTo(@"C:\daten\ASVZ\SOLA\2015\OCAD Vorlagen\sola10k - Kopie.ocd"))
       {
         ElementIndex idx = w.ReadIndex(264);
-        Element elem = (Element)w.ReadElement(idx);
+        w.ReadElement(idx, out GeoElement elem);
         uint c = 0xff000000;
         elem.Color = (int)c;
         w.Overwrite(elem, 264);
@@ -290,7 +288,7 @@ namespace OcadTest
       {
         foreach (var idx in w.GetIndices())
         {
-          Element elem = w.ReadElement(idx);
+          w.ReadElement(idx, out GeoElement elem);
           if (elem != null && elem.Geometry is Area)
           {
             elem.Angle = 0;
@@ -359,7 +357,7 @@ namespace OcadTest
       {
         foreach (var idx in r.GetIndices())
         {
-          r.ReadElement(idx);
+          r.ReadElement(idx, out GeoElement e);
         }
       }
     }
@@ -370,8 +368,8 @@ namespace OcadTest
       BoxTree<ISegment> t2;
       using (OcadReader reader = OcadReader.Open(@"C:\daten\felix\kapreolo\karten\stadlerberg\Stadlerberg_2007_ocd11.ocd"))
       {
-        Element h1 = reader.ReadElement(326);
-        Element h2 = reader.ReadElement(3583);
+        reader.ReadElement(326, out GeoElement h1);
+        reader.ReadElement(3583, out GeoElement h2);
         t1 = CreateTree((Polyline)h1.Geometry);
         t2 = CreateTree((Polyline)h2.Geometry);
       }

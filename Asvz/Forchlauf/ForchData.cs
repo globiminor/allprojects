@@ -22,7 +22,7 @@ namespace Asvz.Forchlauf
         Line = line;
       }
 
-      public Kategorie GetKategorie(IList<Element> elements)
+      public Kategorie GetKategorie(IList<GeoElement> elements)
       {
         foreach (var elemIdx in PartIndexList)
         {
@@ -45,7 +45,7 @@ namespace Asvz.Forchlauf
         return clone;
       }
 
-      public void Append(List<Element> streckenTeile, int index)
+      public void Append(List<GeoElement> streckenTeile, int index)
       {
         Polyline f = (Polyline)streckenTeile[index].Geometry;
         AppendLine(Line, f);
@@ -55,7 +55,7 @@ namespace Asvz.Forchlauf
     }
     #endregion
 
-    private IList<Element> _streckenTeile;
+    private IList<GeoElement> _streckenTeile;
 
     public ForchData(string fileName, string dhm)
       : base(dhm)
@@ -79,9 +79,9 @@ namespace Asvz.Forchlauf
         iIndex++;
       }
 
-      List<Element> streckenTeile = new List<Element>();
+      List<GeoElement> streckenTeile = new List<GeoElement>();
 
-      foreach (var elem in reader.Elements(true, pIndexList))
+      foreach (var elem in reader.EnumGeoElements(pIndexList))
       {
         if (elem.Symbol == SymF.StreckeLang)
         { streckenTeile.Add(elem); }
@@ -111,12 +111,12 @@ namespace Asvz.Forchlauf
       _streckenTeile = streckenTeile;
     }
 
-    internal IList<Element> StreckenTeile
+    internal IList<GeoElement> StreckenTeile
     {
       get { return _streckenTeile; }
     }
 
-    private void GetStrecken(List<Element> streckenTeile)
+    private void GetStrecken(List<GeoElement> streckenTeile)
     {
       int n = streckenTeile.Count;
       bool[] hasFrom = new bool[n];
@@ -124,12 +124,12 @@ namespace Asvz.Forchlauf
 
       for (int ix = 0; ix < n; ix++)
       {
-        Element x = streckenTeile[ix];
+        GeoElement x = streckenTeile[ix];
         Polyline xPart = (Polyline)x.Geometry;
 
         for (int iy = 0; iy < n; iy++)
         {
-          Element y = streckenTeile[iy];
+          GeoElement y = streckenTeile[iy];
           Polyline yPart = (Polyline)y.Geometry;
 
           if (PointOperator.Dist2(xPart.Points.Last.Value, yPart.Points.First.Value) < 20)
@@ -171,7 +171,7 @@ namespace Asvz.Forchlauf
       Strecken.Add(s);
     }
 
-    private List<StreckeInfo> GetStreckeInfo(StreckeInfo start, List<Element> streckenTeile,
+    private List<StreckeInfo> GetStreckeInfo(StreckeInfo start, List<GeoElement> streckenTeile,
       List<int>[] toStrecken)
     {
       int n = start.PartIndexList.Count;

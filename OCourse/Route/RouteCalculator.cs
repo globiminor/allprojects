@@ -1,12 +1,12 @@
 
-using System;
-using System.Collections.Generic;
-using Grid;
-using LeastCostPathUI;
 using Basics.Geom;
+using Grid;
+using Grid.Lcp;
+using LeastCostPathUI;
 using Ocad;
 using OCourse.Ext;
-using Grid.Lcp;
+using System;
+using System.Collections.Generic;
 
 namespace OCourse.Route
 {
@@ -130,8 +130,7 @@ namespace OCourse.Route
       extent.Max.Y = Math.Ceiling(extent.Max.Y / resolution) * resolution;
     }
 
-    public List<CostSectionlist> CalcCourse(SectionCollection course,
-      double resol, Setup setup)
+    public List<CostSectionlist> CalcCourse(SectionCollection course, double resol)
     {
       if (course == null)
       { return null; }
@@ -177,7 +176,7 @@ namespace OCourse.Route
         }
       }
 
-      List<CostSectionlist> courseInfos = GetCourseInfo(allPermuts, resol, setup);
+      List<CostSectionlist> courseInfos = GetCourseInfo(allPermuts, resol);
       return courseInfos;
     }
 
@@ -186,12 +185,12 @@ namespace OCourse.Route
       VariationAdded?.Invoke(this, variation);
     }
 
-    public List<CostSectionlist> GetCourseInfo(IList<SectionList> permuts, double resol, Setup setup)
+    public List<CostSectionlist> GetCourseInfo(IList<SectionList> permuts, double resol)
     {
       List<CostSectionlist> courseInfo = new List<CostSectionlist>(permuts.Count);
       foreach (var permut in permuts)
       {
-        CostSectionlist cost = GetCourseInfo(permut, resol, setup);
+        CostSectionlist cost = GetCourseInfo(permut, resol);
         if (cost != null)
         {
           courseInfo.Add(cost);
@@ -200,7 +199,7 @@ namespace OCourse.Route
       return courseInfo;
     }
 
-    public CostSectionlist GetCourseInfo(SectionList permut, double resol, Setup setup)
+    public CostSectionlist GetCourseInfo(SectionList permut, double resol)
     {
       List<Control> controls = new List<Control>(permut.Controls);
       Control from = null;
@@ -214,8 +213,7 @@ namespace OCourse.Route
           || to.Code == ControlCode.MapChange)
         { continue; }
 
-        IPoint point = to.GetPoint();
-        toP = point.Project(setup.Map2Prj);
+        toP = to.GetPoint();
 
         if (from != null)
         {
@@ -479,12 +477,10 @@ namespace OCourse.Route
       IList<string> courseList = Utils.GetCourseList(courseFile);
       using (OcadReader reader = OcadReader.Open(courseFile))
       {
-        Setup setup = reader.ReadSetup();
-
         foreach (var courseName in courseList)
         {
           Course course = reader.ReadCourse(courseName);
-          CalcCourse(course, -1, setup);
+          CalcCourse(course, -1);
         }
       }
     }

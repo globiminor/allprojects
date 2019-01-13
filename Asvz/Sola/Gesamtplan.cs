@@ -30,12 +30,12 @@ namespace Asvz.Sola
     private Ocad.Symbol.TextSymbol _symKmGrid;
     private Ocad.Symbol.TextSymbol _symBewilligung;
 
-    private IList<Element> _lstStrecke;
-    private IList<Element> _lstStreckeInfo;
-    private IList<Element> _lstGross;
-    private IList<Element> _lstKlein;
-    private IList<Element> _lstSpital;
-    private IList<Element> _lstSanBg;
+    private IList<GeoElement> _lstStrecke;
+    private IList<GeoElement> _lstStreckeInfo;
+    private IList<GeoElement> _lstGross;
+    private IList<GeoElement> _lstKlein;
+    private IList<GeoElement> _lstSpital;
+    private IList<GeoElement> _lstSanBg;
 
     private ExportPar _exportParam;
     private PrintPar _printParam;
@@ -91,9 +91,8 @@ namespace Asvz.Sola
           PointCollection points = (PointCollection)elemStrecke.Geometry;
           Point center = 0.5 * PointOperator.Add(points[1], points[3]);
 
-          Element elemBox = new Element(true);
+          Element elemBox = new GeoElement(center);
           elemBox.Symbol = SymT.TextStreckeBox;
-          elemBox.Geometry = center;
           elemBox.Type = GeomType.point;
           writer.Append(elemBox);
         }
@@ -142,13 +141,12 @@ namespace Asvz.Sola
           PointCollection points = (PointCollection)strecke.Geometry;
           Point center = 0.5 * PointOperator.Add(points[1], points[3]);
 
-          Element elem = new Element(true);
+          GeoElement elem = new GeoElement(center);
           elem.Symbol = SymT.TextStreckeBox;
-          elem.Geometry = center;
           elem.Type = GeomType.point;
           writer.Append(elem);
 
-          Element minInfo = null;
+          GeoElement minInfo = null;
           double minDist2 = double.MaxValue;
           int iStrecke = int.Parse(strecke.Text);
           foreach (var elemInfo in _lstStreckeInfo)
@@ -192,9 +190,8 @@ namespace Asvz.Sola
 
         foreach (var pSanBg in _lstSanBg)
         {
-          Element pElem = new Element(true);
+          Element pElem = new GeoElement(((Area)pSanBg.Geometry).Border[0]);
           pElem.Symbol = SymT.TextRahmen;
-          pElem.Geometry = ((Area)pSanBg.Geometry).Border[0];
           pElem.Type = GeomType.line;
           writer.Append(pElem);
         }
@@ -298,15 +295,13 @@ namespace Asvz.Sola
         if (strecke0 == null ||
           PointOperator.Dist2(strecke0.Points.Last.Value, strecke.Points.First.Value) > 10)
         {
-          elem = new Element(true);
+          elem = new GeoElement(strecke.Points.First.Value);
           elem.Symbol = SymT.KmStartEnd;
-          elem.Geometry = strecke.Points.First.Value;
           elem.Type = GeomType.point;
           writer.Append(elem);
         }
-        elem = new Element(true);
+        elem = new GeoElement(strecke.Points.Last.Value);
         elem.Symbol = SymT.KmStartEnd;
-        elem.Geometry = strecke.Points.Last.Value;
         elem.Type = GeomType.point;
         writer.Append(elem);
 
@@ -323,8 +318,7 @@ namespace Asvz.Sola
 
         if (box != null)
         {
-          Element elem = new Element(true);
-          elem.Geometry = box;
+          Element elem = new GeoElement(box);
           elem.Symbol = SymT.LinieBreit;
           elem.Type = GeomType.line;
           writer.Append(elem);
@@ -334,11 +328,11 @@ namespace Asvz.Sola
           IPoint p2 = box.Points.First.Next.Next.Value;
           if (Math.Abs(p1.X - p0.X) < Math.Abs(p1.Y - p0.Y))
           {
-            elem = Common.CreateText("D", p0.X + 50, p0.Y - 85, _symKmText, _templateSetup);
+            elem = Common.CreateText("D", p0.X + 50, p0.Y - 85, _templateSetup, _symKmText);
           }
           else
           {
-            elem = Common.CreateText("D", p0.X - 85, p0.Y - 50, _symKmText, _templateSetup);
+            elem = Common.CreateText("D", p0.X - 85, p0.Y - 50, _templateSetup, _symKmText);
             elem.Angle = -Math.PI / 2.0;
           }
           writer.Append(elem);
@@ -379,62 +373,45 @@ namespace Asvz.Sola
     private void WriteTitel(OcadWriter writer, string titel,
       string subtitel, Point2D ur)
     {
-
-
-      Element elem = new Element(true);
-      elem.Symbol = _symGross.Number;
-      elem.UnicodeText = true;
-
       double xStart = 1000 * (int)((ur.X - 1500) / 1000);
 
       string sText = titel;
-      elem = Common.CreateText(sText, xStart + 100, ur.Y - 300, _symGross, _templateSetup);
+      GeoElement elem = Common.CreateText(sText, xStart + 100, ur.Y - 300, _templateSetup, _symGross);
       while (elem.Geometry.Extent.Max.X > ur.X)
       {
         xStart -= 1000;
-        elem = Common.CreateText(sText, xStart + 100, ur.Y - 300, _symGross, _templateSetup);
+        elem = Common.CreateText(sText, xStart + 100, ur.Y - 300, _templateSetup, _symGross);
       }
       writer.Append(elem);
 
       sText = subtitel;
 
-      elem = Common.CreateText(sText, xStart + 100, ur.Y - 550, _symKlein, _templateSetup);
+      elem = Common.CreateText(sText, xStart + 100, ur.Y - 550, _templateSetup, _symKlein);
       writer.Append(elem);
-
-      elem = new Element(true);
-      elem.Symbol = SymT.Deckweiss;
-      elem.Type = GeomType.area;
 
       Polyline border = Polyline.Create(new[] {
         new Point2D(xStart, ur.Y), new Point2D(xStart, ur.Y - 800),
         new Point2D(ur.X, ur.Y - 800), new Point2D(ur.X, ur.Y), new Point2D(xStart, ur.Y)
       });
       Area poly = new Area(border);
-      elem.Geometry = poly;
+      elem = new GeoElement(border);
+      elem.Symbol = SymT.Deckweiss;
+      elem.Type = GeomType.area;
       writer.Append(elem);
     }
 
     private void WriteBewilligung(OcadWriter writer, Point2D ll, Point2D ur, string bewilligung)
     {
-      Element elem = new Element(true);
-      elem.Symbol = _symBewilligung.Number;
-      elem.UnicodeText = true;
-
       string sText = bewilligung;
-      elem = Common.CreateText(sText, ur.X, ll.Y - 200, _symBewilligung, _templateSetup);
+      Element elem = Common.CreateText(sText, ur.X, ll.Y - 200, _templateSetup, _symBewilligung);
       writer.Append(elem);
     }
 
     private void WriteLaufDatum(OcadWriter writer, Layout layout, Point2D ll,
       string titel, DateTime laufdatum)
     {
-
-      Element elem = new Element(true);
-      elem.Symbol = _symGross.Number;
-      elem.UnicodeText = true;
-
       string sText = titel;
-      elem = Common.CreateText(sText, ll.X, ll.Y - 600, _symGross, _templateSetup);
+      GeoElement elem = Common.CreateText(sText, ll.X, ll.Y - 600, _templateSetup, _symGross);
       writer.Append(elem);
 
       double xStart = elem.Geometry.Extent.Max.X + 200;
@@ -444,7 +421,7 @@ namespace Asvz.Sola
       {
         sText = laufdatum.ToString("dddd d. MMMM yyyy");
 
-        elem = Common.CreateText(sText, xStart, ll.Y - 600, _symKlein, _templateSetup);
+        elem = Common.CreateText(sText, xStart, ll.Y - 600, _templateSetup, _symKlein);
         writer.Append(elem);
       }
     }
@@ -470,15 +447,13 @@ namespace Asvz.Sola
 
       Area area = new Area(new[] { outside, inside });
 
-      Element elem = new Element(true);
+      Element elem = new GeoElement(area);
       elem.Symbol = SymT.Deckweiss;
-      elem.Geometry = area;
       elem.Type = GeomType.area;
       writer.Append(elem);
 
-      elem = new Element(true);
+      elem = new GeoElement(inside);
       elem.Symbol = SymT.LinieBreit;
-      elem.Geometry = inside;
       elem.Type = GeomType.line;
       writer.Append(elem);
     }
@@ -495,13 +470,12 @@ namespace Asvz.Sola
         double x = iKm * 1000;
         double y = ur.Y + 200;
 
-        elem = Common.CreateText(sKm, x, y, _symKmGrid, _templateSetup);
+        elem = Common.CreateText(sKm, x, y, _templateSetup, _symKmGrid);
         writer.Append(elem);
 
-        elem = new Element(true);
+        elem = new GeoElement(Polyline.Create(new Point[] {
+          new Point2D(x, ur.Y), new Point2D(x, ll.Y) }));
         elem.Symbol = SymT.KmRasterLinie;
-        elem.Geometry = Polyline.Create(new Point[] {
-          new Point2D(x, ur.Y), new Point2D(x, ll.Y) });
         elem.Type = GeomType.line;
         writer.Append(elem);
       }
@@ -514,13 +488,12 @@ namespace Asvz.Sola
         double x = ll.X - 400;
         double y = iKm * 1000;
 
-        elem = Common.CreateText(sKm, x, y - 100, _symKmGrid, _templateSetup);
+        elem = Common.CreateText(sKm, x, y - 100, _templateSetup, _symKmGrid);
         writer.Append(elem);
 
-        elem = new Element(true);
+        elem = new GeoElement(Polyline.Create(new Point[] {
+          new Point2D(ur.X, y), new Point2D(ll.X, y) }));
         elem.Symbol = SymT.KmRasterLinie;
-        elem.Geometry = Polyline.Create(new Point[] {
-          new Point2D(ur.X, y), new Point2D(ll.X, y) });
         elem.Type = GeomType.line;
         writer.Append(elem);
       }
@@ -546,14 +519,14 @@ namespace Asvz.Sola
         iIndex++;
       }
 
-      _lstStrecke = new List<Element>();
-      _lstStreckeInfo = new List<Element>();
-      _lstGross = new List<Element>();
-      _lstKlein = new List<Element>();
-      _lstSpital = new List<Element>();
-      _lstSanBg = new List<Element>();
+      _lstStrecke = new List<GeoElement>();
+      _lstStreckeInfo = new List<GeoElement>();
+      _lstGross = new List<GeoElement>();
+      _lstKlein = new List<GeoElement>();
+      _lstSpital = new List<GeoElement>();
+      _lstSanBg = new List<GeoElement>();
 
-      foreach (var elem in template.Elements(true, pIndexList))
+      foreach (var elem in template.EnumGeoElements(pIndexList))
       {
         if (elem.Symbol == SymT.TextStrecke)
         { _lstStrecke.Add(elem); }
@@ -630,7 +603,7 @@ namespace Asvz.Sola
     }
 
     private void AdaptText(OcadWriter writer, Setup setup,
-      IList<Element> textList, Ocad.Symbol.TextSymbol textSymbol, int symRahmen)
+      IList<GeoElement> textList, Ocad.Symbol.TextSymbol textSymbol, int symRahmen)
     {
       Ocad.Symbol.TextSymbol.RectFraming pFrame = (Ocad.Symbol.TextSymbol.RectFraming)textSymbol.Frame;
 
@@ -638,24 +611,23 @@ namespace Asvz.Sola
       double dx1 = pFrame.Right;
       double dy0 = pFrame.Bottom - (2.0 / 3.0) * textSymbol.Size * 1.1;
       double dy1 = pFrame.Top - textSymbol.Size * 1.1;
-      Element pElem = new Element(true);
 
       foreach (var pText in textList)
       {
-        PointCollection pList = (PointCollection)pText.Geometry;
-        pList = pList.Project(setup.Prj2Map);
+        PointCollection pts = (PointCollection)pText.Geometry;
+        pts = pts.Project(setup.Prj2Map);
 
-        Polyline pLine = new Polyline();
+        Polyline line = new Polyline();
 
-        pLine.Add(new Point2D(pList[1].X - dx0, pList[1].Y - dy0));
-        pLine.Add(new Point2D(pList[2].X + dx1, pList[2].Y - dy0));
-        pLine.Add(new Point2D(pList[3].X + dx1, pList[3].Y + dy1));
-        pLine.Add(new Point2D(pList[4].X - dx0, pList[4].Y + dy1));
-        pLine.Add(new Point2D(pList[1].X - dx0, pList[1].Y - dy0));
+        line.Add(new Point2D(pts[1].X - dx0, pts[1].Y - dy0));
+        line.Add(new Point2D(pts[2].X + dx1, pts[2].Y - dy0));
+        line.Add(new Point2D(pts[3].X + dx1, pts[3].Y + dy1));
+        line.Add(new Point2D(pts[4].X - dx0, pts[4].Y + dy1));
+        line.Add(new Point2D(pts[1].X - dx0, pts[1].Y - dy0));
 
-        pLine = pLine.Project(setup.Map2Prj);
+        line = line.Project(setup.Map2Prj);
 
-        pElem.Geometry = pLine;
+        GeoElement pElem = new GeoElement(line);
         pElem.Symbol = symRahmen;
         pElem.Type = GeomType.line;
         writer.Append(pElem);

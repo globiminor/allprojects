@@ -1,6 +1,6 @@
-using System;
 using Basics.Geom;
 using Ocad;
+using System;
 using System.Collections.Generic;
 
 namespace Asvz
@@ -79,7 +79,7 @@ namespace Asvz
         double[] param = strecke.ParamAt(iKm * 1000.0 * f);
         IPoint p = strecke.Segments[(int)param[0]].PointAt(param[1]);
         IPoint t = strecke.Segments[(int)param[0]].TangentAt(param[1]);
-        Element elem = CreateKmText(p, t, iKm, kmTxtSymbol, setup, suffix);
+        GeoElement elem = CreateKmText(p, t, setup, iKm, kmTxtSymbol, suffix);
         PointCollection points = ((PointCollection)elem.Geometry).Clone();
         points.Add(points[1]);
         points.Insert(0, p + 0.01 * Point.Sub(points[0], p));
@@ -87,12 +87,11 @@ namespace Asvz
         if (flipOnConflict && strecke.Intersection(pPoly) != null)
         {
           t = Point.Scale(-1.0, t);
-          elem = CreateKmText(p, t, iKm, kmTxtSymbol, setup, suffix);
+          elem = CreateKmText(p, t, setup, iKm, kmTxtSymbol, suffix);
         }
         kmElem.Text = elem;
 
-        elem = new Element(true);
-        elem.Geometry = p;
+        elem = new GeoElement(p);
         elem.Angle = wSetup.PrjRotation + Math.Atan2(t.X, -t.Y);
         elem.Symbol = KmStrichSymbol;
         elem.Type = GeomType.point;
@@ -108,11 +107,11 @@ namespace Asvz
     protected class KmElem
     {
       public Element Text { get; set; }
-      public Element Strich { get; set; }
+      public GeoElement Strich { get; set; }
     }
 
-      private static Element CreateKmText(IPoint p, IPoint t, int km,
-      Ocad.Symbol.TextSymbol kmTxtSymbol, Setup setup, string suffix)
+    private static GeoElement CreateKmText(IPoint p, IPoint t, Setup setup, int km,
+    Ocad.Symbol.TextSymbol kmTxtSymbol, string suffix)
     {
       string sKm = km.ToString();
       if (suffix != null)
@@ -122,12 +121,12 @@ namespace Asvz
       text = 130.0 * 1.0 / Math.Sqrt(text.OrigDist2()) * text;
       text = text + p;
 
-      Element elem = Common.CreateText(sKm, text.X, text.Y, kmTxtSymbol, setup);
+      GeoElement elem = Common.CreateText(sKm, text.X, text.Y, setup, kmTxtSymbol);
       PointCollection list = (PointCollection)elem.Geometry;
       Point pM = 0.5 * PointOperator.Add(list[1], list[3]);
       text = 2.0 * text - pM;
 
-      return Common.CreateText(sKm, text.X, text.Y, kmTxtSymbol, setup);
+      return Common.CreateText(sKm, text.X, text.Y, setup, kmTxtSymbol);
     }
 
   }

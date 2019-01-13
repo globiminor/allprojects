@@ -200,7 +200,7 @@ namespace Asvz.SolaDuo
       foreach (var row in reader)
       {
 
-        Element elem = new Element(true);
+        GeoElement elem = new GeoElement((Geometry)row[shapeCol]);
 
         string val = ((string)row[objTyp]).Trim();
 
@@ -241,7 +241,6 @@ namespace Asvz.SolaDuo
           int breit = (int)row[iBreite];
           sym.SetBreite(breit);
         }
-        elem.Geometry = (Geometry)row[shapeCol];
         elem.Symbol = sym.GetSymbol();
 
         if (elem.Geometry is Area)

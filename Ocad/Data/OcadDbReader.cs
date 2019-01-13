@@ -10,77 +10,9 @@ namespace Ocad.Data
 {
   public class OcadDbReader : DbBaseReader
   {
-    #region nested classes
-    private class ElemsEnumerator : IEnumerator<Element>
-    {
-      private readonly OcadDbReader _reader;
-      private OcadIo.ElementEnumerator _enumerator;
-      private Element _currentElem;
-      IGeometry _intersect = null;
-
-      public ElemsEnumerator(OcadDbReader reader, OcadElemsInfo ocad)
-      {
-        _reader = reader;
-        IBox extent = null;
-
-        foreach (var parameter in reader._command.Parameters.Enum())
-        {
-          if (parameter.Value is IGeometry)
-          {
-            _intersect = (IGeometry)parameter.Value;
-            extent = _intersect.Extent;
-          }
-        }
-
-        _enumerator = new OcadIo.ElementEnumerator(ocad, extent, true);
-      }
-
-      #region IEnumerator Members
-
-      public void Dispose()
-      {
-        if (_enumerator != null)
-        { _enumerator.Dispose(); }
-      }
-
-      public void Reset()
-      {
-        _enumerator.Reset();
-        _currentElem = null;
-      }
-
-      object IEnumerator.Current
-      { get { return Current; } }
-      public Element Current
-      {
-        get { return _currentElem; }
-      }
-
-      public bool MoveNext()
-      {
-        bool value = _enumerator.MoveNext();
-        bool conditions = false;
-        _currentElem = null;
-        while (value && conditions == false)
-        {
-          _currentElem = _enumerator.Current;
-
-          conditions = _reader._command.Validate(_reader);
-
-          if (conditions == false)
-          { value = _enumerator.MoveNext(); }
-        }
-        return value;
-      }
-
-      #endregion
-    }
-
-    #endregion
-
     private OcadCommand _command;
 
-    private ElemsEnumerator _enum;
+    private IEnumerator<GeoElement> _enum;
     private int _nRows;
 
     public OcadDbReader(OcadCommand command, CommandBehavior behavior)
@@ -104,7 +36,15 @@ namespace Ocad.Data
       if (_enum != null)
       { _enum.Dispose(); }
 
-      _enum = new ElemsEnumerator(this, OcadInfo);
+      IBox extent = null;
+
+      foreach (var parameter in _command.Parameters.Enum())
+      {
+        if (parameter.Value is IGeometry intersect)
+        { extent = intersect.Extent; }
+      }
+
+      _enum = OcadInfo.CreateReader().EnumGeoElements(extent, null).GetEnumerator();
       _nRows = 0;
       return _enum;
     }

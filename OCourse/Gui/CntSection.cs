@@ -509,6 +509,9 @@ namespace OCourse.Gui
         new NextControl.EqualControlComparer());
       BuildTree(next, dict, new List<NextControl>(),
          start, 0, new List<Control> { startWrapper, endWrapper });
+      // Compensate for startWrapper:
+      foreach (var value in dict.Values)
+      { value.Pos--; }
 
       _nextDict = next;
       _lblDict = dict;

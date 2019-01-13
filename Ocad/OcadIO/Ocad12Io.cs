@@ -22,17 +22,23 @@ namespace Ocad
     public override ElementIndex GetIndex(Element element) => Ocad9Io.GetIndex(this, element);
     public override void Write(ElementIndex index) => Ocad9Io.Write(this, index);
     public override void WriteElementSymbol(int symbol) => Ocad9Io.WriteElementSymbol(this, symbol);
-    public override Element ReadElement()
+    public override T ReadElement<T>(out T element)
     {
-      Element elem = new Element(false);
+      T elem = new T();
 
       elem.Symbol = Reader.ReadInt32();
       if (elem.Symbol < -4 || elem.Symbol == 0)
-      { return null; }
+      {
+        element = null;
+        return element;
+      }
 
       elem.Type = (GeomType)Reader.ReadByte();
       if (elem.Type == 0)
-      { return null; }
+      {
+        element = null;
+        return element;
+      }
 
       Reader.ReadByte(); // reserved
 
@@ -59,7 +65,7 @@ namespace Ocad
       Reader.ReadByte();
 
       List<Coord> coords = ReadCoords(nPoint);
-      elem.Geometry = Coord.GetGeometry(elem.Type, coords);
+      elem.InitGeometry(coords, Setup);
       if (nText > 0)
       { elem.Text = Reader.ReadUnicodeString(); }
       if (nObjectString > 0)
@@ -74,7 +80,8 @@ namespace Ocad
         elem.ObjectString = Reader.ReadUnicodeString();
       }
 
-      return elem;
+      element = elem;
+      return element;
     }
 
     protected override FileParam Init(int sectionMark, int version)
@@ -165,15 +172,13 @@ namespace Ocad
       return length;
     }
 
-    private IList<Element> _courseSettingElements;
-    private IList<Element> CourseSettingElements => _courseSettingElements ?? (_courseSettingElements = GetCourseSettingElements());
-    private IList<Element> GetCourseSettingElements()
+    private IList<GeoElement> _courseSettingElements;
+    private IList<GeoElement> CourseSettingElements => _courseSettingElements ?? (_courseSettingElements = GetCourseSettingElements());
+    private IList<GeoElement> GetCourseSettingElements()
     {
-      List<Element> csElements = new List<Element>();
-      IEnumerator<Element> elems = new ElementEnumerator(this, null, false, null);
-      while (elems.MoveNext())
+      List<GeoElement> csElements = new List<GeoElement>();
+      foreach (var elem in EnumGeoElements(null, null))
       {
-        Element elem = elems.Current;
         if (elem.ObjectStringType == ObjectStringType.None)
         { continue; }
 
@@ -183,9 +188,10 @@ namespace Ocad
     }
 
 
-    public override Element ReadControlGeometry(Control control, IList<StringParamIndex> settingIndexList)
+    public override GeoElement ReadControlGeometry(Control control, 
+      IList<StringParamIndex> settingIndexList)
     {
-      Element match = null;
+      GeoElement match = null;
       string search = control.Name;
       while (search.Length < 3) search = $"0{search}";
 

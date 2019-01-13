@@ -9,7 +9,7 @@ namespace Ocad.Symbol
       Box boxAll = null;
       foreach (var element in this)
       {
-        IBox box = element.Geometry.Extent;
+        IBox box = element.MapGeometry.Extent;
         if (boxAll == null)
         { boxAll = new Box(box); }
         else
@@ -86,12 +86,10 @@ namespace Ocad.Symbol
       }
     }
 
-    public IGeometry Geometry
+    public IGeometry MapGeometry
     {
-      get
-      { return _geometry; }
-      set
-      { _geometry = value; }
+      get { return _geometry; }
+      set { _geometry = value; }
     }
   }
 }

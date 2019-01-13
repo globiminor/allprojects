@@ -126,7 +126,7 @@ namespace OCourse.Route
 
     internal static IEnumerable<CostSectionlist> GetCostSectionLists(
       IEnumerable<ViewModels.PermutationVm> permutations, 
-      RouteCalculator routeCalc, double resol, Setup setup)
+      RouteCalculator routeCalc, double resol)
     {
       foreach (var permut in permutations)
       {
@@ -141,7 +141,7 @@ namespace OCourse.Route
             {
               iLeg++;
               sLeg = $".{iLeg}";
-              CostSectionlist cost = routeCalc.GetCourseInfo(sections, resol, setup);
+              CostSectionlist cost = routeCalc.GetCourseInfo(sections, resol);
               cost.Name = $"{permut.StartNr}{sLeg}";
               yield return cost;
               sLeg = $".{iLeg + 1}";
@@ -160,7 +160,7 @@ namespace OCourse.Route
         }
         if (sections != null)
         {
-          CostSectionlist cost = routeCalc.GetCourseInfo(sections, resol, setup);
+          CostSectionlist cost = routeCalc.GetCourseInfo(sections, resol);
           cost.Name = $"{permut.StartNr}{sLeg}";
           yield return cost;
         }

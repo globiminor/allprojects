@@ -94,13 +94,13 @@ namespace OcadTest
 
         for (int i = i0.Count; i < i1.Count; i++)
         {
-          var e1 = r1.ReadElement(i1[i]);
+          r1.ReadElement(i1[i], out GeoElement e1);
           if (e1.ObjectStringType != ObjectStringType.CsPreview)
           { continue; }
 
           foreach (var i2_ in i2)
           {
-            var e2 = r2.ReadElement(i2_);
+            r2.ReadElement(i2_, out GeoElement e2);
             if (e2.ObjectString == e1.ObjectString)
             {
 

@@ -120,9 +120,9 @@ namespace Asvz.SolaDuo
         iIndex++;
       }
 
-      List<Element> streckenTeile = new List<Element>();
+      List<GeoElement> streckenTeile = new List<GeoElement>();
 
-      foreach (var elem in reader.Elements(true, indexList))
+      foreach (var elem in reader.EnumGeoElements(indexList))
       {
         if (elem.Symbol == SymDD.Strecke)
         { streckenTeile.Add(elem); }
@@ -224,7 +224,7 @@ namespace Asvz.SolaDuo
       dc.AppendChild(style);
     }
 
-    private void GetStrecken(List<Element> strecken)
+    private void GetStrecken(List<GeoElement> strecken)
     {
       int n = strecken.Count;
       int[] from = new int[n];
@@ -265,7 +265,7 @@ namespace Asvz.SolaDuo
         if (cat == null)
         { cat = new DuoCategorie(this); }
 
-        Element elem = strecken[t - 1];
+        GeoElement elem = strecken[t - 1];
         Polyline line = (Polyline)elem.Geometry;
         line = line.Clone();
 
@@ -313,8 +313,7 @@ namespace Asvz.SolaDuo
           ISegment c = str.Segments.First;
           IPoint tangent = c.TangentAt(0);
 
-          element = new Element(true);
-          element.Geometry = Point.Create(c.Start);
+          element = new GeoElement(Point.Create(c.Start));
           element.Angle = -Math.Atan2(tangent.X, tangent.Y);
           element.Symbol = SymDD.Start;
           element.Type = GeomType.point;
@@ -324,8 +323,7 @@ namespace Asvz.SolaDuo
         }
         else
         {
-          element = new Element(true);
-          element.Geometry = Point.Create(str.Points.First.Value);
+          element = new GeoElement(Point.Create(str.Points.First.Value));
           element.Symbol = SymDD.Uebergabe;
           element.Type = GeomType.point;
           elements.Add(element);
@@ -335,8 +333,7 @@ namespace Asvz.SolaDuo
 
         if (iStrecke == nStrecken - 1)
         {
-          element = new Element(true);
-          element.Geometry = Point.Create(str.Points.Last.Value);
+          element = new GeoElement(Point.Create(str.Points.Last.Value));
           element.Symbol = SymDD.Ziel;
           element.Type = GeomType.point;
           elements.Add(element);
@@ -354,8 +351,7 @@ namespace Asvz.SolaDuo
         foreach (var helfer in Helfer)
         {
         }
-        element = new Element(true);
-        element.Geometry = str;
+        element = new GeoElement(str);
         element.Symbol = SymDD.Strecke;
         element.Type = GeomType.line;
 
@@ -364,8 +360,7 @@ namespace Asvz.SolaDuo
 
       foreach (var verzweigung in Verzweigung)
       {
-        element = new Element(true);
-        element.Geometry = verzweigung;
+        element = new GeoElement(verzweigung);
         element.Symbol = SymDD.Verzweigung;
         element.Type = GeomType.point;
 
@@ -374,8 +369,7 @@ namespace Asvz.SolaDuo
 
       foreach (var helfer in Helfer)
       {
-        element = new Element(true);
-        element.Geometry = helfer;
+        element = new GeoElement(helfer);
         element.Symbol = SymDD.Helfer;
         element.Type = GeomType.point;
 

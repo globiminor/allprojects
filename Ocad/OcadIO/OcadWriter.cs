@@ -3,6 +3,7 @@ using Ocad.StringParams;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 // ReSharper disable RedundantCast
 
 namespace Ocad
@@ -20,15 +21,6 @@ namespace Ocad
 
     public void Overwrite(Element element, int index)
     {
-      IGeometry prj = null;
-
-      if (element.IsGeometryProjected)
-      {
-        prj = element.Geometry;
-        element.Geometry = element.Geometry.Project(Io.Setup.Prj2Map);
-        element.IsGeometryProjected = false;
-      }
-
       ElementIndex idx = Io.GetIndex(element);
       idx.Position = (int)BaseStream.Seek(0, SeekOrigin.End);
 
@@ -37,13 +29,7 @@ namespace Ocad
       Io.Write(idx);
 
       BaseStream.Seek(idx.Position, SeekOrigin.Begin);
-      Write(element);
-
-      if (prj != null)
-      {
-        element.Geometry = prj;
-        element.IsGeometryProjected = true;
-      }
+      WriteElement(element);
     }
     /// <summary>
     /// assumption : index has all values set except for pos
@@ -133,64 +119,16 @@ namespace Ocad
 
     public int Append(Element element, ElementIndex index)
     {
-      IGeometry prj = null;
-      if (element.IsGeometryProjected)
-      {
-        prj = element.Geometry;
-        element.Geometry = element.Geometry.Project(Io.Setup.Prj2Map);
-        index.SetBox(element.Geometry.Extent);
-        element.IsGeometryProjected = false;
-      }
+      PointCollection coords = new PointCollection();
+      coords.AddRange(element.GetCoords(Io.Setup).Select(x => x.GetPoint()));
+      index.SetMapBox(coords.Extent);
 
       int pos = Append(index);
 
       Io.Writer.BaseStream.Seek(index.Position, SeekOrigin.Begin);
-      Write(element);
-
-      if (prj != null)
-      {
-        element.Geometry = prj;
-        index.SetBox(element.Geometry.Extent);
-        element.IsGeometryProjected = true;
-      }
+      WriteElement(element);
 
       return pos;
-    }
-
-    internal static void Write(EndianWriter writer, IGeometry geometry)
-    {
-      Coord pCoord;
-
-      if (geometry is Point pt)
-      {
-        pCoord = Coord.Create(pt, Coord.Flags.none);
-        writer.Write((int)pCoord.Ox);
-        writer.Write((int)pCoord.Oy);
-      }
-      else if (geometry is PointCollection)
-      {
-        foreach (var p in ((PointCollection)geometry))
-        {
-          pCoord = Coord.Create(p, Coord.Flags.none);
-          writer.Write((int)pCoord.Ox);
-          writer.Write((int)pCoord.Oy);
-        }
-      }
-      else if (geometry is Polyline)
-      {
-        Write(writer, (Polyline)geometry, false);
-      }
-      else if (geometry is Area area)
-      {
-        bool bIsInnerRing = false;
-        foreach (var pLine in area.Border)
-        {
-          Write(writer, pLine, bIsInnerRing);
-          bIsInnerRing = true;
-        }
-      }
-      else
-      { throw new Exception("Unhandled geometry type " + geometry.GetType()); }
     }
 
     public void Write(Symbol.SymbolGraphics graphics)
@@ -208,49 +146,12 @@ namespace Ocad
       Io.Writer.Write((short)graphics.LineWidth);
       Io.Writer.Write((short)graphics.Diameter);
 
-      Io.Writer.Write((short)Element.PointCount(graphics.Geometry));
+      Io.Writer.Write((short)Element.PointCount(graphics.MapGeometry));
       Io.Writer.Write((short)0); // reserved
       Io.Writer.Write((short)0); // reserved
 
-      Write(Io.Writer, graphics.Geometry);
+      Io.WriteGeometry(graphics.MapGeometry);
     }
-
-    private static void Write(EndianWriter Writer, Polyline polyline, bool isInnerRing)
-    {
-      Coord pCoord;
-
-      if (polyline.Points.Count < 1)
-      { return; }
-
-      if (isInnerRing)
-      { pCoord = Coord.Create(polyline.Points.First.Value, Coord.Flags.firstHolePoint); }
-      else
-      { pCoord = Coord.Create(polyline.Points.First.Value, Coord.Flags.none); }
-      Writer.Write((int)pCoord.Ox);
-      Writer.Write((int)pCoord.Oy);
-
-      foreach (var pSeg in polyline.Segments)
-      {
-        if (pSeg is Bezier)
-        {
-          Bezier pBezier = pSeg as Bezier;
-
-          pCoord = Coord.Create(pBezier.P1, Coord.Flags.firstBezierPoint);
-          Writer.Write((int)pCoord.Ox);
-          Writer.Write((int)pCoord.Oy);
-
-          pCoord = Coord.Create(pBezier.P2, Coord.Flags.secondBezierPoint);
-          Writer.Write((int)pCoord.Ox);
-          Writer.Write((int)pCoord.Oy);
-        }
-
-        pCoord = Coord.Create(pSeg.End, Coord.Flags.none);
-        Writer.Write((int)pCoord.Ox);
-        Writer.Write((int)pCoord.Oy);
-      }
-
-    }
-
 
     public void WriteHeader(FileParam data)
     {
@@ -396,25 +297,25 @@ namespace Ocad
       return 0;
     }
 
-    public int DeleteElements(ElementIndexDlg<bool> checkDelete)
+    public int DeleteElements(Func<ElementIndex, bool> checkDelete)
     {
       int n = 0;
       int iIndex = 0;
-      ElementIndex pIndex = Io.ReadIndex(iIndex);
-      while (pIndex != null)
+      ElementIndex idx = Io.ReadIndex(iIndex);
+      while (idx != null)
       {
         long pos = BaseStream.Position;
-        if (checkDelete(pIndex))
+        if (checkDelete(idx))
         {
-          pIndex.Status = ElementIndex.StatusDeleted;
+          idx.Status = ElementIndex.StatusDeleted;
           BaseStream.Seek(pos - Io.FileParam.INDEX_LENGTH, SeekOrigin.Begin);
-          Io.Write(pIndex);
+          Io.Write(idx);
 
           n++;
         }
 
         iIndex++;
-        pIndex = Io.ReadIndex(iIndex);
+        idx = Io.ReadIndex(iIndex);
       }
       return n;
     }
@@ -460,7 +361,7 @@ namespace Ocad
       Io.Write(index);
     }
 
-    public void Write(Element element)
+    public void WriteElement(Element element)
     {
       Io.WriteElementHeader(element);
 
@@ -670,7 +571,7 @@ namespace Ocad
     public static void Write(Element element, Stream stream)
     {
       OcadWriter writer = AppendTo(stream);
-      writer.Write(element);
+      writer.WriteElement(element);
     }
 
 

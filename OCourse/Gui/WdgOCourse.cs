@@ -413,12 +413,7 @@ namespace OCourse.Gui
       List<CostSectionlist> info;
       if (list != null)
       {
-        Setup setup;
-        using (OcadReader reader = OcadReader.Open(_vm.CourseFile))
-        {
-          setup = reader.ReadSetup();
-        }
-        info = _vm.CalcCourse(list, setup);
+        info = _vm.CalcCourse(list);
       }
       else
       {
@@ -666,7 +661,7 @@ namespace OCourse.Gui
         if (!(control.Element.Geometry is IPoint p))
         { continue; }
 
-        control.Element.Geometry = control.Element.Geometry.Project(setup.Map2Prj);
+        control.Element.Geometry = control.Element.Geometry;
         prjControls.Add(control);
       }
       {
@@ -802,15 +797,10 @@ namespace OCourse.Gui
       string courseName = null;
       if (_vm.Course != null)
       { courseName = PermutationUtils.GetCoreCourseName(_vm.Course.Name); }
-      Setup setup;
-      using (OcadReader reader = OcadReader.Open(_vm.CourseFile))
-      {
-        setup = reader.ReadSetup();
-      }
 
       IEnumerable<PermutationVm> selectedPermuts = DataGridViewUtils.GetSelectedItems(dgvPermut).Cast<PermutationVm>();
       IEnumerable<CostSectionlist> selectedCombs =
-        CostSectionlist.GetCostSectionLists(selectedPermuts, _vm.RouteCalculator, _vm.LcpConfig.Resolution, setup);
+        CostSectionlist.GetCostSectionLists(selectedPermuts, _vm.RouteCalculator, _vm.LcpConfig.Resolution);
       using (CmdCourseTransfer cmd = new CmdCourseTransfer(wdg.ExportFile, wdg.TemplateFile, _vm.CourseFile))
       {
         cmd.Export(courseName, selectedCombs, courseName);

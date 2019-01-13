@@ -13,8 +13,8 @@ namespace Asvz.Sola
   /// </summary>
   public class Detail
   {
-    private Element _detail;
-    private IList<Element> _legendPos;
+    private GeoElement _detail;
+    private IList<GeoElement> _legendPos;
 
     private Polyline _symUebergabe;
 
@@ -63,11 +63,11 @@ namespace Asvz.Sola
         }
 
         _detail = null;
-        _legendPos = new List<Element>();
+        _legendPos = new List<GeoElement>();
         _templateSetup = tplReader.ReadSetup();
 
         int iDetail = 0;
-        foreach (var elem in tplReader.Elements(true, indexList))
+        foreach (var elem in tplReader.EnumGeoElements(indexList))
         {
           if (elem.Symbol == SymD.Detail)
           {
@@ -158,7 +158,7 @@ namespace Asvz.Sola
       }
     }
 
-    private Polyline GetBorder(Element border)
+    private Polyline GetBorder(GeoElement border)
     {
       // Get Uebergabe Geometry
       Setup setup = new Setup();
@@ -203,7 +203,7 @@ namespace Asvz.Sola
         if (symbol.Number == SymD.Detail)
         {
           if (!(symbol.Graphics.Count == 1)) throw new InvalidOperationException($"Expected 1 'Detail', got {symbol.Graphics.Count}");
-          _symUebergabe = (Polyline)symbol.Graphics[0].Geometry.Project(setup.Map2Prj);
+          _symUebergabe = (Polyline)symbol.Graphics[0].MapGeometry.Project(setup.Map2Prj);
         }
       }
     }
@@ -231,7 +231,7 @@ namespace Asvz.Sola
       Point pos0 = new Point2D();
       Point pos1 = new Point2D();
       IBox boxBord = border.Extent;
-      IBox boxLgd = _legendBox.Graphics[0].Geometry.Extent;
+      IBox boxLgd = _legendBox.Graphics[0].MapGeometry.Extent;
       double dx = boxLgd.Max.X - boxLgd.Min.X;
       double dy = boxLgd.Max.Y - boxLgd.Min.Y;
 
@@ -258,27 +258,24 @@ namespace Asvz.Sola
         pos1.Y = pos0.Y;
       }
 
-      Element elem = new Element(true);
-      elem.Geometry = pos0.Project(_templateSetup.Map2Prj);
+      Element elem = new GeoElement(pos0.Project(_templateSetup.Map2Prj));
       elem.Symbol = SymD.DtLegendeBox;
       elem.Type = GeomType.point;
       writer.Append(elem);
 
-      elem = new Element(true);
-      elem.Geometry = pos1.Project(_templateSetup.Map2Prj);
+      elem = new GeoElement(pos1.Project(_templateSetup.Map2Prj));
       elem.Symbol = SymD.DtLegendeBox;
       elem.Type = GeomType.point;
       writer.Append(elem);
 
-      elem = new Element(true);
-      elem.Geometry = pos0.Project(_templateSetup.Map2Prj);
+      elem = new GeoElement(pos0.Project(_templateSetup.Map2Prj));
       elem.Angle = _templateSetup.PrjRotation;
       elem.Symbol = SymD.DtNordpfeil;
       elem.Type = GeomType.point;
       writer.Append(elem);
 
       Point p = pos1.Project(_templateSetup.Map2Prj);
-      elem = Common.CreateText("10 m", p.X, p.Y, _legendText, _templateSetup);
+      elem = Common.CreateText("10 m", p.X, p.Y, _templateSetup, _legendText);
       writer.Append(elem);
 
       Polyline scale = Polyline.Create(new[] { new Point2D(0, 0), new Point2D(10, 0) });
@@ -291,8 +288,7 @@ namespace Asvz.Sola
       scale.Add(new Point2D(pos1.X + dx, pos1.Y - dy / 5.0));
       scale.Add(new Point2D(pos1.X + dx, pos1.Y - dy / 10.0));
 
-      elem = new Element(true);
-      elem.Geometry = scale.Project(_templateSetup.Map2Prj);
+      elem = new GeoElement(scale.Project(_templateSetup.Map2Prj));
       elem.Symbol = SymD.DtMassstab;
       elem.Type = GeomType.line;
       writer.Append(elem);

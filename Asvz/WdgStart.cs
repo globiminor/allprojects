@@ -676,13 +676,13 @@ namespace Asvz
 
         // read clipboard
         OcadReader reader = OcadReader.Open((Stream)pData, ocadVersion: 9);
-        Element elem = reader.ReadElement();
+        reader.ReadElement(out MapElement elem);
         int size = 0;
         while (elem != null)
         {
           size += elem.PointCount() * 8 + 40;
           pInList.Add(elem);
-          elem = reader.ReadElement();
+          reader.ReadElement(out elem);
         }
 
         MemoryStream memStream = new MemoryStream(size);
@@ -712,7 +712,7 @@ namespace Asvz
         IDataObject data = Clipboard.GetDataObject();
         string sFormat = "OCAD9 Object";
         object pData = data.GetData(sFormat);
-        List<Element> inList = new List<Element>();
+        List<GeoElement> inList = new List<GeoElement>();
         _lblFormat.Text = "";
 
         if (pData == null)
@@ -723,7 +723,7 @@ namespace Asvz
 
         // read clipboard
         OcadReader pReader = OcadReader.Open((Stream)pData, 9);
-        Element elem = pReader.ReadElement();
+        pReader.ReadElement(out GeoElement elem);
         while (elem != null)
         {
           if (elem.Geometry is Area == false)
@@ -732,7 +732,7 @@ namespace Asvz
             return;
           }
           inList.Add(elem);
-          elem = pReader.ReadElement();
+          pReader.ReadElement(out elem);
         }
 
         // groesste Geometry finden
@@ -744,7 +744,7 @@ namespace Asvz
         }
 
         Box boxMax = null;
-        Element maxElement = null;
+        GeoElement maxElement = null;
         foreach (var inElem in inList)
         {
           if (boxMax == null)
@@ -795,7 +795,7 @@ namespace Asvz
 
         MemoryStream memStream = new MemoryStream(maxElement.PointCount() * 8 + 40);
         OcadWriter writer = OcadWriter.AppendTo(memStream, ocadVersion: 9);
-        writer.Write(maxElement);
+        writer.WriteElement(maxElement);
         for (int i = 0; i < 40; i++)
         { memStream.WriteByte(0); }
 

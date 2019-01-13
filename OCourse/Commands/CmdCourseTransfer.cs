@@ -108,7 +108,7 @@ namespace OCourse.Commands
         if (_courseElements == null)
         {
           List<Element> courseElements = new List<Element>();
-          foreach (Element element in Reader.Elements(false, null))
+          foreach (Element element in Reader.EnumGeoElements(null))
           {
             if (element.ObjectStringType != ObjectStringType.CsPreview)
             { continue; }
@@ -222,7 +222,7 @@ namespace OCourse.Commands
       if (!_oldNewElemDict.TryGetValue(oldIdx.ElemNummer, out int newIdx))
       {
         ElementIndex elemIdx = Reader.ReadIndex(oldIdx.ElemNummer - 1);
-        Element elem = Reader.ReadElement(elemIdx);
+        Reader.ReadElement(elemIdx, out GeoElement elem);
         newIdx = Writer.Append(elem, elemIdx) + 1;
         //Element t = Writer.Reader.ReadElement(newIdx - 1);
         _oldNewElemDict.Add(oldIdx.ElemNummer, newIdx);
@@ -262,11 +262,10 @@ namespace OCourse.Commands
       Setup rs = reader.ReadSetup();
       foreach (var control in controls)
       {
-        Element elem = reader.ReadElement(control.ParIndex.ElemNummer - 1);
+        reader.ReadElement(control.ParIndex.ElemNummer - 1, out GeoElement elem);
         if (elem != null)
         {
-          elem.Geometry = elem.Geometry.Project(rs.Map2Prj);
-          elem.IsGeometryProjected = true;
+          // writer may have different coordinate settings!
           control.ElementIndex = writer.Append(elem);
         }
       }
@@ -278,7 +277,7 @@ namespace OCourse.Commands
 
 
       IList<int> transferSymbols = new int[] { 709000 };
-      foreach (var element in reader.Elements(true, null))
+      foreach (var element in reader.EnumGeoElements(null))
       {
         if (transferSymbols.Contains(element.Symbol))
         {

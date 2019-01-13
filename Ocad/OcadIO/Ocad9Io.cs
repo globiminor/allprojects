@@ -160,19 +160,26 @@ namespace Ocad
     }
 
 
-    public override Element ReadElement() => ReadElement(this);
-    public static Element ReadElement(OcadIo io)
+    public override T ReadElement<T>(out T element) => ReadElement(this, out element);
+    public static T ReadElement<T>(OcadIo io, out T element) where T : Element, new()
     {
       int nPoint;
       int nText;
-      Element elem = new Element(false);
+      T elem = new T();
+
       elem.Symbol = io.Reader.ReadInt32();
       if (elem.Symbol < -4 || elem.Symbol == 0)
-      { return null; }
+      {
+        element = null;
+        return element;
+      }
 
       elem.Type = (GeomType)io.Reader.ReadByte();
       if (elem.Type == 0)
-      { return null; }
+      {
+        element = null;
+        return element;
+      }
 
       io.Reader.ReadByte(); // reserved
 
@@ -195,11 +202,12 @@ namespace Ocad
       elem.Height = heightMM / 1000.0;
 
       List<Coord> coords = io.ReadCoords(nPoint);
-      elem.Geometry = Coord.GetGeometry(elem.Type, coords);
+      elem.InitGeometry(coords, elem.NeedsSetup ? io.Setup : null);
       if (nText > 0)
       { elem.Text = io.Reader.ReadUnicodeString(); }
 
-      return elem;
+      element = elem;
+      return element;
     }
 
     public override Symbol.BaseSymbol ReadSymbol()
@@ -437,9 +445,9 @@ namespace Ocad
       List<Coord> coords = io.ReadCoords(nPoints);
 
       if (elem.Type == Symbol.SymbolGraphicsType.Line)
-      { elem.Geometry = Coord.GetGeometry(GeomType.line, coords); }
+      { elem.MapGeometry = Coord.GetGeometry(GeomType.line, coords); }
       else if (elem.Type == Symbol.SymbolGraphicsType.Area)
-      { elem.Geometry = Coord.GetGeometry(GeomType.area, coords); }
+      { elem.MapGeometry = Coord.GetGeometry(GeomType.area, coords); }
       else if (elem.Type == Symbol.SymbolGraphicsType.Circle ||
         elem.Type == Symbol.SymbolGraphicsType.Dot)
       {
@@ -448,9 +456,9 @@ namespace Ocad
         Polyline circle = new Polyline();
         circle.Add(arc);
         if (elem.Type == Symbol.SymbolGraphicsType.Circle)
-        { elem.Geometry = circle; }
+        { elem.MapGeometry = circle; }
         else if (elem.Type == Symbol.SymbolGraphicsType.Dot)
-        { elem.Geometry = new Area(circle); }
+        { elem.MapGeometry = new Area(circle); }
         else
         { throw new NotImplementedException(elem.Type.ToString()); }
       }
@@ -463,7 +471,8 @@ namespace Ocad
     public override ElementIndex GetIndex(Element element) => GetIndex(this, element);
     public static ElementIndex GetIndex(OcadIo io, Element element)
     {
-      ElementIndex index = new ElementIndex(element.Geometry.Extent);
+      ElementIndex index = new ElementIndex(-1);
+      index.SetMapBox(element.GetExent(io.Setup));
       index.Symbol = element.Symbol;
 
       index.CalcElementLength(io, element);
@@ -535,7 +544,7 @@ namespace Ocad
     public override void WriteElementContent(Element element) => WriteElementContent(this, element);
     public static void WriteElementContent(OcadIo io, Element element)
     {
-      OcadWriter.Write(io.Writer, element.Geometry);
+      io.WriteElementGeometry(element);
       WriteUnicodeString(io.Writer, element.Text);
     }
 

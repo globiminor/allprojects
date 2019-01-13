@@ -16,7 +16,7 @@ namespace Ocad
     public override ElementIndex ReadIndex(int i) => Ocad9Io.ReadIndex(this, i);
     public override int CalcElementLength(Element element) => Ocad9Io.CalcElementLength(this, element);
     public override int ReadElementLength() => Ocad9Io.ReadElementLength(this);
-    public override Element ReadElement() => Ocad9Io.ReadElement(this);
+    public override T ReadElement<T>(out T element) => Ocad9Io.ReadElement(this, out element);
     public override void ReadAreaSymbol(AreaSymbol symbol) => Ocad9Io.ReadAreaSymbol(this, symbol);
     public override IEnumerable<ColorInfo> ReadColorInfos() => Ocad9Io.ReadColorInfos(this);
     public override ElementIndex GetIndex(Element element) => Ocad9Io.GetIndex(this, element);

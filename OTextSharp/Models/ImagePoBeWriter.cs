@@ -61,7 +61,7 @@ namespace OTextSharp.Models
           _controlPars.Add(ctrPar.Name, ctrPar);
         }
       }
-      foreach (var elem in _reader.Elements(false, null))
+      foreach (var elem in _reader.EnumMapElements(null))
       {
         if (elem.ObjectStringType == ObjectStringType.None)
         { continue; }
@@ -210,12 +210,12 @@ namespace OTextSharp.Models
         if (graphics.Type == SymbolGraphicsType.Line)
         {
           Pcb.SetLineWidth(graphics.LineWidth);
-          DrawCurve((Polyline)graphics.Geometry);
+          DrawCurve((Polyline)graphics.MapGeometry);
           Pcb.Stroke();
         }
         if (graphics.Type == SymbolGraphicsType.Area)
         {
-          foreach (var border in ((Area)graphics.Geometry).Border)
+          foreach (var border in ((Area)graphics.MapGeometry).Border)
           {
             DrawCurve(border);
             Pcb.Fill();
@@ -224,7 +224,7 @@ namespace OTextSharp.Models
         else if (graphics.Type == SymbolGraphicsType.Circle)
         {
           Pcb.SetLineWidth(graphics.LineWidth);
-          DrawCurve((Polyline)graphics.Geometry);
+          DrawCurve((Polyline)graphics.MapGeometry);
           //IPoint center = (IPoint)graphics.Geometry;
           //Pcb.MoveTo((float)center.X + graphics.Diameter, (float)center.Y);
           //Pcb.Circle((float)center.X, (float)center.Y, graphics.Diameter);
@@ -232,7 +232,7 @@ namespace OTextSharp.Models
         }
         else if (graphics.Type == SymbolGraphicsType.Dot)
         {
-          DrawCurve((Polyline)graphics.Geometry);
+          DrawCurve((Polyline)graphics.MapGeometry);
           Pcb.Fill();
         }
       }

@@ -1,10 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using Basics.Geom;
 using Ocad;
 using Ocad.StringParams;
+using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace Asvz.Sola
 {
@@ -23,11 +22,11 @@ namespace Asvz.Sola
     private readonly Polyline _strecke;
     private readonly int _iStrecke;
 
-    private readonly IList<Element> _elemUeKreis;
-    private readonly IList<Element> _elemUeZiel;
-    private readonly IList<Element> _elemInfo;
-    private readonly IList<Element> _elemPlace;
-    private readonly IList<Element> _elemStrecke;
+    private readonly IList<GeoElement> _elemUeKreis;
+    private readonly IList<GeoElement> _elemUeZiel;
+    private readonly IList<GeoElement> _elemInfo;
+    private readonly IList<GeoElement> _elemPlace;
+    private readonly IList<GeoElement> _elemStrecke;
     private Polyline _ausschnittBox;
 
     private Ocad.Symbol.TextSymbol _kmTxtSymbol;
@@ -55,11 +54,11 @@ namespace Asvz.Sola
       if (_iStrecke < _data.Strecken.Count)
       { _streckeNext = _data.Categorie(_iStrecke, Kategorie.Default).Strecke; }
 
-      _elemUeKreis = new List<Element>();
-      _elemUeZiel = new List<Element>();
-      _elemInfo = new List<Element>();
-      _elemPlace = new List<Element>();
-      _elemStrecke = new List<Element>();
+      _elemUeKreis = new List<GeoElement>();
+      _elemUeZiel = new List<GeoElement>();
+      _elemInfo = new List<GeoElement>();
+      _elemPlace = new List<GeoElement>();
+      _elemStrecke = new List<GeoElement>();
     }
 
     public void Update(Kategorie kat, bool updateStartZiel)
@@ -108,8 +107,7 @@ namespace Asvz.Sola
         foreach (var o in _data.Strecken[_iStrecke - 1].Categories)
         {
           SolaCategorie cat = (SolaCategorie)o;
-          Element pElem = new Element(true);
-          pElem.Geometry = cat.Strecke;
+          Element pElem = new GeoElement(cat.Strecke);
           if (first)
           { pElem.Symbol = SymS.Strecke; }
           else
@@ -161,7 +159,7 @@ namespace Asvz.Sola
           SymS.BoxStreckeNr, SymS.RahmenStrecke,
           SymS.TextBewilligung, SymS.TextBewilligungVoid});
 
-        List<Element> infoElements = AdaptText(writer, setup, _elemInfo, _infoSymbol);
+        List<GeoElement> infoElements = AdaptText(writer, setup, _elemInfo, _infoSymbol);
         AdaptText(writer, setup, _elemPlace, _placeSymbol);
         AdaptStreckenNr(writer, _elemStrecke, _nrBackSymbol, infoElements, setup);
 
@@ -208,8 +206,8 @@ namespace Asvz.Sola
       return 3 * _rahmenBorder;
     }
 
-    private void AdaptStreckenNr(OcadWriter writer, IList<Element> elemStrecke,
-      Ocad.Symbol.PointSymbol symNrBack, IList<Element> elemInfo, Setup setup)
+    private void AdaptStreckenNr(OcadWriter writer, IList<GeoElement> elemStrecke,
+      Ocad.Symbol.PointSymbol symNrBack, IList<GeoElement> elemInfo, Setup setup)
     {
       if (elemStrecke.Count > 1 || elemInfo.Count > 1)
       {
@@ -225,7 +223,7 @@ namespace Asvz.Sola
         IBox infoBox = elemInfo[0].Geometry.Extent;
         Point lrInfo = new Point2D(infoBox.Max.X, infoBox.Min.Y);
 
-        IBox box = symNrBack.Graphics[0].Geometry.Extent;
+        IBox box = symNrBack.Graphics[0].MapGeometry.Extent;
         Point p = new Point2D(lrInfo.X - box.Max.X,
           lrInfo.Y - (box.Max.Y + GetOffset()));
         p = p.Project(setup.Map2Prj);
@@ -246,11 +244,9 @@ namespace Asvz.Sola
     private void DrawStreckenNrBack(OcadWriter writer, IPoint point, Setup setup,
       Ocad.Symbol.PointSymbol symNrBack)
     {
-      Element elem = new Element(true);
-
       point = point.Project(setup.Prj2Map);
 
-      IBox box = symNrBack.Graphics[0].Geometry.Extent;
+      IBox box = symNrBack.Graphics[0].MapGeometry.Extent;
 
       Polyline line = new Polyline();
       line.Add(point + new Point2D(box.Min.X, box.Max.Y));
@@ -261,7 +257,7 @@ namespace Asvz.Sola
 
       line = line.Project(setup.Map2Prj);
 
-      elem.Geometry = line;
+      Element elem = new GeoElement(line);
       elem.Symbol = SymS.RahmenStrecke;
       elem.Type = GeomType.area;
 
@@ -280,7 +276,7 @@ namespace Asvz.Sola
       }
 
       IPoint pos = _templateSetup.Map2Prj.Project(new Point2D(xMap, yMap));
-      Element elem = Common.CreateText(sText, pos.X, pos.Y, _symBewilligung, _templateSetup);
+      Element elem = Common.CreateText(sText, pos.X, pos.Y, _templateSetup, _symBewilligung);
       //elem.Symbol = SymS.TextBewilligungVoid;
       writer.Append(elem);
     }
@@ -309,14 +305,12 @@ namespace Asvz.Sola
       writer.Append(StringType.Color, 0, pre.StringPar);
       return topRed;
     }
-    private void WriteScale(OcadWriter writer, IList<Element> infoElems, ColorPar topRed)
+    private void WriteScale(OcadWriter writer, IList<GeoElement> infoElems, ColorPar topRed)
     {
       Point pMin = null;
       foreach (var infoElem in infoElems)
       {
-        if (infoElem.IsGeometryProjected)
-        { throw new NotImplementedException("Geometry is projected"); }
-        IPoint p = infoElem.Geometry.Extent.Min;
+        IPoint p = infoElem.Geometry.Extent.Min.Project(_templateSetup.Prj2Map);
         if (pMin == null || pMin.Y > p.Y)
         { pMin = Point.Create(p); }
       }
@@ -328,29 +322,26 @@ namespace Asvz.Sola
       double dy = 0.3 * dx;
 
       Point2D p0 = new Point2D(pMin.X + 0.12 * dx, pMin.Y - dy);
-      Element elem = Common.CreateText("0 km", p0.X, p0.Y + 0.3 * dy, _kmTxtSymbol, null);
+      Element elem = Common.CreateText("0 km", p0.X, p0.Y + 0.3 * dy, _kmTxtSymbol);
       writer.Append(elem);
 
-      double strichOffset = -_kmStrichSymbol.Graphics[0].Geometry.Extent.Max.X;
-      elem = new Element(false);
-      elem.Geometry = new Point2D(p0.X, p0.Y - strichOffset);
+      double strichOffset = -_kmStrichSymbol.Graphics[0].MapGeometry.Extent.Max.X;
+      elem = new MapElement(Coord.EnumCoords(new Point2D(p0.X, p0.Y - strichOffset)));
       elem.Angle = 3.0 * Math.PI / 2.0;
       elem.Symbol = SymS.KmStrich;
       elem.Type = GeomType.point;
       writer.Append(elem);
 
-      elem = Common.CreateText("1 km", p0.X + dx, p0.Y + 0.3 * dy, _kmTxtSymbol, null);
+      elem = Common.CreateText("1 km", p0.X + dx, p0.Y + 0.3 * dy, _kmTxtSymbol);
       writer.Append(elem);
 
-      elem = new Element(false);
-      elem.Geometry = new Point2D(p0.X + dx, p0.Y - strichOffset);
+      elem = new MapElement(Coord.EnumCoords(new Point2D(p0.X + dx, p0.Y - strichOffset)));
       elem.Angle = 3.0 * Math.PI / 2.0;
       elem.Symbol = SymS.KmStrich;
       elem.Type = GeomType.point;
       writer.Append(elem);
 
-      elem = new Element(false);
-      elem.Geometry = Polyline.Create(new[] { new Point2D(p0.X, p0.Y), new Point2D(p0.X + dx, p0.Y) });
+      elem = new MapElement(Coord.EnumCoords(Polyline.Create(new[] { new Point2D(p0.X, p0.Y), new Point2D(p0.X + dx, p0.Y) })));
       elem.Symbol = -2;
       elem.LineWidth = _symStrecke.LineWidth;
       elem.Color = topRed.Number;
@@ -365,17 +356,16 @@ namespace Asvz.Sola
       double x1 = p0.X + dx + (p0.X - pMin.X);
       double y1 = pMin.Y;
       double y0 = p0.Y - 0.3 * dy;
-      elem = new Element(false);
-      elem.Geometry = new Area(
+      elem = new MapElement(Coord.EnumCoords(new Area(
         Polyline.Create(new[] { new Point2D(x0, y0), new Point2D(x1, y0),
-        new Point2D(x1, y1), new Point2D(x0, y1), new Point2D(x0, y0)}));
+        new Point2D(x1, y1), new Point2D(x0, y1), new Point2D(x0, y0)}))));
       elem.Symbol = SymS.RahmenStrecke;
       elem.Type = GeomType.area;
       writer.Append(elem);
     }
 
-    private List<Element> AdaptText(OcadWriter writer, Setup setup,
-      IList<Element> textList, Ocad.Symbol.TextSymbol textSymbol)
+    private List<GeoElement> AdaptText(OcadWriter writer, Setup setup,
+      IList<GeoElement> textList, Ocad.Symbol.TextSymbol textSymbol)
     {
       Ocad.Symbol.TextSymbol.RectFraming frame = (Ocad.Symbol.TextSymbol.RectFraming)textSymbol.Frame;
 
@@ -384,7 +374,7 @@ namespace Asvz.Sola
       double dy0 = frame.Bottom - (2.0 / 3.0) * textSymbol.Size;
       double dy1 = frame.Top - textSymbol.Size;
 
-      List<Element> elems = new List<Element>(textList.Count);
+      List<GeoElement> elems = new List<GeoElement>(textList.Count);
       foreach (var txtElem in textList)
       {
         PointCollection txtGeom = (PointCollection)txtElem.Geometry;
@@ -398,10 +388,7 @@ namespace Asvz.Sola
         line.Add(new Point2D(txtGeom[4].X - dx0, txtGeom[4].Y + dy1));
         line.Add(new Point2D(txtGeom[1].X - dx0, txtGeom[1].Y - dy0));
 
-        Element elem = new Element(false);
-        // line = line.Project(setup.Map2Prj);
-
-        elem.Geometry = line;
+        GeoElement elem = new GeoElement(line.Project(setup.Map2Prj));
         elem.Symbol = SymS.RahmenText;
         elem.Type = GeomType.line;
         writer.Append(elem);
@@ -419,14 +406,12 @@ namespace Asvz.Sola
       List<Data.VerpflegungSym> verpfList = _data.Verpflegung(line);
       foreach (var verpf in verpfList)
       {
-        Element pElem = new Element(true);
-        pElem.Geometry = verpf.Symbol;
+        Element pElem = new GeoElement(verpf.Symbol);
         pElem.Symbol = SymS.Verpflegung;
         pElem.Type = GeomType.point;
         writer.Append(pElem);
 
-        pElem = new Element(true);
-        pElem.Geometry = verpf.Index;
+        pElem = new GeoElement(verpf.Index);
         pElem.Symbol = SymS.LinieBreit;
         pElem.Type = GeomType.line;
         writer.Append(pElem);
@@ -457,8 +442,7 @@ namespace Asvz.Sola
         else
         { strecke = parts[parts.Count - 1]; }
 
-        pElem = new Element(true);
-        pElem.Geometry = strecke;
+        pElem = new GeoElement(strecke);
         pElem.Symbol = SymS.VorherNachher;
         pElem.Type = GeomType.line;
         writer.Append(pElem);
@@ -476,8 +460,7 @@ namespace Asvz.Sola
         {
           if (e.Geometry.Extent.Intersects(box))
           {
-            pElem = new Element(true);
-            pElem.Geometry = e.Geometry;
+            pElem = new GeoElement(e.Geometry);
             pElem.Symbol = SymS.UebergabeTeil;
             pElem.Type = GeomType.line;
             writer.Append(pElem);
@@ -487,8 +470,7 @@ namespace Asvz.Sola
         {
           if (e.Geometry.Extent.Intersects(box))
           {
-            pElem = new Element(true);
-            pElem.Geometry = e.Geometry;
+            pElem = new GeoElement(e.Geometry);
             pElem.Symbol = SymS.ZielTeil;
             pElem.Type = GeomType.line;
             writer.Append(pElem);
@@ -535,10 +517,10 @@ namespace Asvz.Sola
 
       while (iKm < lengthMeas)
       {
-        double[] param = cat.GetLineParams(iKm * 1000.0); 
+        double[] param = cat.GetLineParams(iKm * 1000.0);
         IPoint p = line.Segments[(int)param[0]].PointAt(param[1]);
         IPoint t = line.Segments[(int)param[0]].TangentAt(param[1]);
-        Element textKm = CreateKmText(p, t, iKm, kmTxtSymbol, setup, damen);
+        GeoElement textKm = CreateKmText(p, t, setup, iKm, kmTxtSymbol, damen);
         PointCollection textKmBox = ((PointCollection)textKm.Geometry).Clone();
         textKmBox.Add(textKmBox[1]);
         textKmBox.Insert(0, p + 0.01 * Point.Sub(textKmBox[0], p));
@@ -546,12 +528,11 @@ namespace Asvz.Sola
         if (line.Intersection(textKmPoly) != null)
         {
           t = Point.Scale(-1.0, t);
-          textKm = CreateKmText(p, t, iKm, kmTxtSymbol, setup, damen);
+          textKm = CreateKmText(p, t, setup, iKm, kmTxtSymbol, damen);
         }
         writer.Append(textKm);
 
-        textKm = new Element(true);
-        textKm.Geometry = p;
+        textKm = new GeoElement(p);
         textKm.Angle = writer.Setup.PrjRotation + Math.Atan2(t.X, -t.Y);
         textKm.Symbol = SymS.KmStrich;
         textKm.Type = GeomType.point;
@@ -562,8 +543,8 @@ namespace Asvz.Sola
       }
     }
 
-    private static Element CreateKmText(IPoint p, IPoint t, int km,
-      Ocad.Symbol.TextSymbol kmTxtSymbol, Setup setup, bool damen)
+    private static GeoElement CreateKmText(IPoint p, IPoint t, Setup setup,
+      int km, Ocad.Symbol.TextSymbol kmTxtSymbol, bool damen)
     {
       string sKm = km.ToString();
       if (damen)
@@ -573,12 +554,12 @@ namespace Asvz.Sola
       pText = 130.0 * 1.0 / Math.Sqrt(pText.OrigDist2()) * pText;
       pText = Point.Add(pText, p);
 
-      Element elem = Common.CreateText(sKm, pText.X, pText.Y, kmTxtSymbol, setup);
+      GeoElement elem = Common.CreateText(sKm, pText.X, pText.Y, setup, kmTxtSymbol);
       PointCollection list = (PointCollection)elem.Geometry;
       Point pM = 0.5 * PointOperator.Add(list[1], list[3]);
       pText = 2.0 * pText - pM;
 
-      return Common.CreateText(sKm, pText.X, pText.Y, kmTxtSymbol, setup);
+      return Common.CreateText(sKm, pText.X, pText.Y, setup, kmTxtSymbol);
     }
 
     public void Write(string outFile)
@@ -591,8 +572,7 @@ namespace Asvz.Sola
         writer.SymbolsSetState(null, Ocad.Symbol.SymbolStatus.Hidden);
         writer.SymbolsSetState(new[] { 1 }, Ocad.Symbol.SymbolStatus.Protected);
 
-        Element elem = new Element(true);
-        elem.Geometry = _strecke;
+        Element elem = new GeoElement(_strecke);
         elem.Symbol = 1;
         elem.Type = GeomType.line;
         writer.Append(elem);
@@ -620,7 +600,7 @@ namespace Asvz.Sola
         iIndex++;
       }
 
-      foreach (var elem in template.Elements(true, pIndexList))
+      foreach (var elem in template.EnumGeoElements(pIndexList))
       {
         if (elem.Symbol == SymS.UebergabeTeil)
         { _elemUeKreis.Add(elem); }
@@ -658,7 +638,7 @@ namespace Asvz.Sola
         iIndex++;
       }
 
-      foreach (var elem in template.Elements(true, pIndexList))
+      foreach (var elem in template.EnumGeoElements(pIndexList))
       {
         if (elem.Symbol == _infoSymbol.Number)
         {
@@ -731,7 +711,7 @@ namespace Asvz.Sola
               symbol.Number, symbol.Graphics.Count);
             throw new InvalidOperationException(msg);
           }
-          _symAusschnitt = (Polyline)symbol.Graphics[0].Geometry.Project(setup.Map2Prj);
+          _symAusschnitt = (Polyline)symbol.Graphics[0].MapGeometry.Project(setup.Map2Prj);
         }
       }
       Ocad.Symbol.AreaSymbol rahmen = (Ocad.Symbol.AreaSymbol)symbols[SymS.RahmenStrecke];
@@ -755,7 +735,7 @@ namespace Asvz.Sola
       }
     }
 
-    private Polyline GetPrintExtent(Element printElem)
+    private Polyline GetPrintExtent(GeoElement printElem)
     {
       Setup setup = new Setup();
       Point p = (Point)printElem.Geometry;

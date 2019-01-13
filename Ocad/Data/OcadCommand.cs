@@ -72,7 +72,7 @@ namespace Ocad.Data
       else
       { w = OcadWriter.AppendTo(Connection.ConnectionString); }
       ElementIndex elemIdx = w.Io.ReadIndex(whereIdx);
-      Element elem = w.Io.ReadElement(elemIdx);
+       w.Io.ReadElement(elemIdx, out GeoElement elem);
 
       foreach (var pInfo in update.UpdateParameterInfos)
       {
@@ -89,7 +89,6 @@ namespace Ocad.Data
         else if (p.ParameterName == OcadConnection.FieldShape.Name)
         {
           elem.Geometry = (Basics.Geom.IGeometry)p.Value;
-          elem.IsGeometryProjected = true;
         }
         else if (p.ParameterName == OcadConnection.FieldSymbol)
         { elem.Symbol = (int)p.Value; }

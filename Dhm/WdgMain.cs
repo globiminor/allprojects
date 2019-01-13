@@ -886,7 +886,7 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
     {
       contours = new List<Contour>();
       fallDirs = new List<FallDir>();
-      foreach (var elem in reader.Elements(true, idxList))
+      foreach (var elem in reader.EnumGeoElements(idxList))
       {
         if (_ocadSymbols.TryGetValue(elem.Symbol, out ContourType type))
         {
@@ -918,9 +918,8 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
           Polyline line = contour.Polyline;
           if (contour.Orientation == Orientation.RightSideDown)
           { line = line.Invert(); }
-          Ocad.Element element = new Ocad.Element(true)
+          Ocad.Element element = new Ocad.GeoElement(line)
           {
-            Geometry = line,
             Type = Ocad.GeomType.line,
             Symbol = Symbol(contour.Type)
           };

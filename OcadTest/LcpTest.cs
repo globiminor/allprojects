@@ -26,7 +26,7 @@ namespace OcadTest
         @"D:\daten\felix\kapreolo\karten\ruemlangerwald\2011\Rümlangerwald_Arnet_110619.ocd"))
       {
         Box all = null;
-        foreach (var element in reader.Elements(true, null))
+        foreach (var element in reader.EnumGeoElements(null))
         {
           if (all == null)
           {
@@ -56,7 +56,7 @@ namespace OcadTest
         }
 
 
-        foreach (var element in reader.Elements(true, null))
+        foreach (var element in reader.EnumGeoElements(null))
         {
           IEnumerable<int[]> cells = null;
           if (element.Geometry is Area area)

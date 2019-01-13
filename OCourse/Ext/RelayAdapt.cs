@@ -551,7 +551,7 @@ namespace OCourse.Ext
     private RelayMapInfo GetCourse(IList<Course> courses, OcadReader reader)
     {
       RelayMapInfo info = new RelayMapInfo();
-      foreach (var element in reader.Elements(null, false, reader.GetIndices()))
+      foreach (var element in reader.EnumMapElements(null))
       {
         if (element.Symbol == _symStartNr)
         {
@@ -696,7 +696,7 @@ namespace OCourse.Ext
         if (index.Symbol != _parent._symPoBeTitle)
         { return false; }
 
-        Element elem = _writer.ReadElement(index);
+        _writer.ReadElement(index, out GeoElement elem);
         if (elem.Text == null || elem.Text.EndsWith(" m") == false)
         { return false; }
 
@@ -727,13 +727,14 @@ namespace OCourse.Ext
         {
           if (StartNr != null)
           { throw new InvalidOperationException("Multiple StartNr"); }
-          StartNr = _writer.ReadElement(index);
+          StartNr = _writer.ReadElement(index, out GeoElement startNr);
         }
         else if (index.Symbol == _parent._symVariant)
         {
           if (Combination != null)
           { throw new InvalidOperationException("Multiple Combination"); }
-          Combination = _writer.ReadElement(index);
+          _writer.ReadElement(index, out GeoElement comb);
+          Combination = comb;
         }
         else
         { return false; }

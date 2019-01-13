@@ -666,7 +666,7 @@ namespace TData
     #region nested classes
     private class Enumerator : IEnumerator<DataRow>
     {
-      private IEnumerator<Ocad.Element> _enumerator;
+      private IEnumerator<Ocad.GeoElement> _enumerator;
       private OcadReader _schema;
       private DataRow _currentRow;
 
@@ -685,7 +685,7 @@ namespace TData
           }
         }
 
-        _enumerator = ocad.Elements(box, true, schema.IndexList).GetEnumerator();
+        _enumerator = ocad.EnumGeoElements(box, schema.IndexList).GetEnumerator();
         _schema = schema;
       }
 
@@ -790,7 +790,7 @@ namespace TData
       get
       {
         Box extent = null;
-        foreach (var elem in _ocad.Elements(true, IndexList))
+        foreach (var elem in _ocad.EnumGeoElements(IndexList))
         {
           if (extent == null)
           { extent = new Box(elem.Geometry.Extent); }
