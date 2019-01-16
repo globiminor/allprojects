@@ -147,7 +147,7 @@ namespace OMapScratch.Views
       {
         _default.Checked = true;
 
-        foreach (string recent in recents)
+        foreach (var recent in recents)
         {
           FileButton fileButton = new FileButton(Context, recent, false);
           fileButton.TextAlignment = TextAlignment.TextStart;

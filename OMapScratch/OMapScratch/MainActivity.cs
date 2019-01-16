@@ -143,7 +143,7 @@ namespace OMapScratch
     private RecentFileBrowser _browser;
     private LinearLayout _imageList;
 
-    private CheckBox chkDrawOnly = null;
+    private CheckBox _chkDrawOnly = null;
 
     private System.Action<MapButton> _setModeFct;
 
@@ -316,7 +316,7 @@ namespace OMapScratch
       {
         _imageList.RemoveAllViews();
         {
-          foreach (XmlImage img in MapVm.Images)
+          foreach (var img in MapVm.Images)
           {
             Button btn = new Button(this)
             { Text = img.Name };
@@ -640,7 +640,7 @@ namespace OMapScratch
     }
 
     public bool DrawOnlyMode
-    { get { return chkDrawOnly?.Checked ?? false; } }
+    { get { return _chkDrawOnly?.Checked ?? false; } }
 
     public bool DetailUpperRight
     {
@@ -660,7 +660,7 @@ namespace OMapScratch
 
       //Button imageButton = FindViewById<Button>(Resource.Id.btnImages);
       //int nImages = 0;
-      //foreach (XmlImage img in MapVm.Images)
+      //foreach (var img in MapVm.Images)
       //{ nImages++; }
       //imageButton.Visibility = (nImages < 2) ? ViewStates.Gone : ViewStates.Visible;
       //imageButton.PostInvalidate();

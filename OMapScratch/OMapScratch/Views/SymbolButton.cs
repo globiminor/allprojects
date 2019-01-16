@@ -34,7 +34,7 @@ namespace OMapScratch.Views
 
   public class ModeButton : MapButton
   {
-    private MainActivity _context;
+    private readonly MainActivity _context;
     public MapButton CurrentMode { get; set; }
 
     public ModeButton(MainActivity context, MapButton initMode)
@@ -71,7 +71,7 @@ namespace OMapScratch.Views
     }
     private class Prj : IProjection
     {
-      private float _d;
+      private readonly float _d;
       public Prj(float d)
       { _d = d; }
       public Pnt Project(Pnt p)

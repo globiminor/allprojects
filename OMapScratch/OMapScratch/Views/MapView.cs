@@ -490,8 +490,7 @@ namespace OMapScratch.Views
 
     public bool OnTouch(float x, float y, Android.Views.MotionEventActions action)
     {
-      ITouchAction touchAction = _nextPointAction as ITouchAction;
-      if (touchAction == null)
+      if (!(_nextPointAction is ITouchAction touchAction))
       { return false; }
       if (action == Android.Views.MotionEventActions.Down)
       {
@@ -511,8 +510,7 @@ namespace OMapScratch.Views
 
     public bool IsTouchHandled(bool checkOnly = false)
     {
-      ITouchAction touchAction = _nextPointAction as ITouchAction;
-      if (touchAction == null)
+      if (!(_nextPointAction is ITouchAction touchAction))
       { return false; }
 
       if (checkOnly)
@@ -557,7 +555,7 @@ namespace OMapScratch.Views
       ContextMenu.RemoveAllViews();
       ResetContextMenu();
       bool first = true;
-      foreach (ContextActions objActions in allActions)
+      foreach (var objActions in allActions)
       {
         LinearLayout objMenus = AddMenues(objActions, first);
         AddConstrMenus(objMenus, ConstrView.ViewModel.GetConstrActions(objActions.Position));
@@ -615,7 +613,7 @@ namespace OMapScratch.Views
 
     private void AddMenues(LinearLayout menues, IList<ContextAction> actions, Android.Views.ViewStates visibility = Android.Views.ViewStates.Visible)
     {
-      foreach (ContextAction action in actions)
+      foreach (var action in actions)
       {
         ActionButton actionButton = new ActionButton(_context, action)
         { Text = action.Name };
@@ -848,7 +846,7 @@ namespace OMapScratch.Views
           float symbolScale = _context.MapVm.SymbolScale;
           MatrixProps matrixProps = new MatrixProps(matrix);
 
-          foreach (Elem elem in elems)
+          foreach (var elem in elems)
           {
             if (!maxExtent.Intersects(elem.Geometry.Extent))
             { continue; }
@@ -903,7 +901,7 @@ namespace OMapScratch.Views
       }
     }
 
-    private int _detailSize = 300;
+    private readonly int _detailSize = 300;
 
     public Rect GetDetailRect()
     {

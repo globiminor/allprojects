@@ -333,7 +333,7 @@ namespace OMapScratch
 
   public class MatrixProps
   {
-    private float[] _m;
+    private readonly float[] _m;
     private float? _scale;
     private float? _rotate;
 
@@ -409,7 +409,7 @@ namespace OMapScratch
     {
       float lineScale = matrix?.Scale * symbolScale ?? 1;
       bool drawn = false;
-      foreach (SymbolCurve sym in symbol.Curves)
+      foreach (var sym in symbol.Curves)
       {
         if (sym.Curve == null)
         {
@@ -430,14 +430,14 @@ namespace OMapScratch
               Symbol pntSym = new Symbol { Curves = new System.Collections.Generic.List<SymbolCurve> { sym }, };
               OMapScratch.Dash scaled = matrix != null ? sym.Dash.Scale(symbolScale) : sym.Dash;
 
-              foreach (float dist in scaled.GetPositions(l))
+              foreach (var dist in scaled.GetPositions(l))
               {
                 if (dist > l)
                 { break; }
 
                 float[] pos = new float[2];
                 float[] tan = new float[2];
-                m.GetPosTan(dist, pos, tan);
+                m.GetPosTan((float)dist, pos, tan);
 
                 DirectedPnt pnt = new DirectedPnt { X = pos[0], Y = pos[1], Azimuth = (float)(System.Math.Atan2(tan[0], tan[1]) + System.Math.PI / 2) };
                 DrawPoint(canvas, pntSym, matrix, symbolScale, pnt, p);
@@ -486,7 +486,7 @@ namespace OMapScratch
         { canvas.Rotate(azi * 180 / (float)System.Math.PI); }
 
         ScalePrj prj = new ScalePrj(pntScale);
-        foreach (SymbolCurve curve in sym.Curves)
+        foreach (var curve in sym.Curves)
         {
           DrawCurve(canvas, curve.Curve.Project(prj), null, curve.LineWidth * pntScale, curve.Fill, curve.Stroke, p);
         }
@@ -507,7 +507,13 @@ namespace OMapScratch
         Pnt t = point.Trans(matrix?.Matrix);
         canvas.Translate(t.X, t.Y);
         if (matrix != null)
-        { canvas.Scale(matrix.Matrix[0] * symbolScale, matrix.Matrix[4] * symbolScale); }
+        {
+          float f = matrix.Scale;
+          canvas.Scale(f * symbolScale, f * symbolScale);
+          float rot = matrix.Rotate;
+          if (rot != 0)
+          { canvas.Rotate(-rot * 180 / (float)System.Math.PI); }
+        }
         canvas.DrawText(text, 0, 0 + p.TextSize / 2.5f, p);
       }
       finally
@@ -518,7 +524,7 @@ namespace OMapScratch
     {
       Path path = new Path();
       curve[0].Init(path, matrix);
-      foreach (ISegment segment in curve.Segments)
+      foreach (var segment in curve.Segments)
       { segment.AppendTo(path, matrix); }
       return path;
     }

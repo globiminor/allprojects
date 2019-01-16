@@ -208,7 +208,7 @@ namespace OMapScratch
 
         AddView(btnEdit);
 
-        foreach (ColorRef clr in colors)
+        foreach (var clr in colors)
         {
           ColorButton btnColor = new ColorButton(_activity, clr);
           btnColor.SetMinimumWidth(5);
@@ -221,7 +221,7 @@ namespace OMapScratch
           });
         }
         SymbolButton firstSym = null;
-        foreach (Symbol sym in symbols)
+        foreach (var sym in symbols)
         {
           SymbolButton btnSym = new SymbolButton(sym, _activity);
           btnSym.SetMinimumWidth(5);
@@ -264,7 +264,7 @@ namespace OMapScratch
         if (_symBtns == null)
         { return; }
 
-        foreach (SymbolButton btn in _symBtns)
+        foreach (var btn in _symBtns)
         {
           btn.Color = btnColor.Color;
           btn.PostInvalidate();

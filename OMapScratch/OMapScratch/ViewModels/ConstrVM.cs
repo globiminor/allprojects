@@ -350,8 +350,7 @@ namespace OMapScratch.ViewModels
 
     public float? GetDeclination()
     {
-      IHasCompass action = _view.MapView.NextPointAction as IHasCompass;
-      if (action == null)
+      if (!(_view.MapView.NextPointAction is IHasCompass action))
       { return null; }
 
       return _view.MapView.MapVm.GetDeclination() ?? 0;
@@ -359,8 +358,7 @@ namespace OMapScratch.ViewModels
 
     public Pnt GetCompassPoint()
     {
-      IHasCompass action = _view.MapView.NextPointAction as IHasCompass;
-      if (action == null)
+      if (!(_view.MapView.NextPointAction is IHasCompass action))
       { return null; }
 
       return action.Position;
@@ -373,13 +371,12 @@ namespace OMapScratch.ViewModels
 
     public IEnumerable<Curve> GetGeometries()
     {
-      foreach (Curve curve in _constrs)
+      foreach (var curve in _constrs)
       { yield return curve; }
 
-      IHasGeometries action = _view.MapView.NextPointAction as IHasGeometries;
-      if (action != null)
+      if (_view.MapView.NextPointAction is IHasGeometries action)
       {
-        foreach (Curve curve in action.GetGeometries())
+        foreach (var curve in action.GetGeometries())
         {
           yield return curve;
         }
@@ -388,10 +385,9 @@ namespace OMapScratch.ViewModels
 
     public IEnumerable<Elem> GetTexts()
     {
-      IHasTexts action = _view.MapView.NextPointAction as IHasTexts;
-      if (action != null)
+      if (_view.MapView.NextPointAction is IHasTexts action)
       {
-        foreach (Elem elem in action.GetTexts())
+        foreach (var elem in action.GetTexts())
         {
           yield return elem;
         }

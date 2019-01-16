@@ -8,7 +8,7 @@ namespace OMapScratch.Views
 {
   public class FileBrowser : LinearLayout
   {
-    private LinearLayout _browse;
+    private readonly LinearLayout _browse;
     private FileButton _top;
     private System.Action<string> _onSuccess;
 
@@ -78,7 +78,7 @@ namespace OMapScratch.Views
     private IEnumerable<string> Select(IEnumerable<string> candidates, bool useFilter)
     {
       List<string> entries = new List<string>();
-      foreach (string candidate in candidates)
+      foreach (var candidate in candidates)
       {
         if (!ShowHiddenEntries && System.IO.Path.GetFileName(candidate).StartsWith("."))
         { continue; }
@@ -86,7 +86,7 @@ namespace OMapScratch.Views
         if (useFilter && Filter != null)
         {
           valid = false;
-          foreach (string filter in Filter)
+          foreach (var filter in Filter)
           {
             if (candidate.EndsWith(filter, System.StringComparison.CurrentCultureIgnoreCase))
             {
@@ -113,7 +113,7 @@ namespace OMapScratch.Views
       browse.RemoveAllViews();
 
       _top.FullPath = System.IO.Path.GetDirectoryName(path);
-      foreach (string fsi in Select(System.IO.Directory.EnumerateFiles(path), true))
+      foreach (var fsi in Select(System.IO.Directory.EnumerateFiles(path), true))
       {
         FileButton fileButton = new FileButton(Context, fsi, false);
         fileButton.TextAlignment = TextAlignment.TextStart;
@@ -127,7 +127,7 @@ namespace OMapScratch.Views
           });
         browse.AddView(fileButton);
       }
-      foreach (string fsi in Select(System.IO.Directory.EnumerateDirectories(path), false))
+      foreach (var fsi in Select(System.IO.Directory.EnumerateDirectories(path), false))
       {
         FileButton fileButton = new FileButton(Context, fsi, true);
         fileButton.TextAlignment = TextAlignment.TextStart;

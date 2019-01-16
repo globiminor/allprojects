@@ -112,7 +112,7 @@ namespace OMapScratch.Views
         DrawOrientation(canvas, ViewModel.GetOrientation(), declination, wp, bp);
 
         bool first = true;
-        foreach (Elem textElem in ViewModel.GetTexts())
+        foreach (var textElem in ViewModel.GetTexts())
         {
           if (first)
           {
@@ -146,7 +146,7 @@ namespace OMapScratch.Views
           canvas.ClipRect(detail, Region.Op.Difference);
         }
 
-        foreach (Curve geom in ViewModel.GetGeometries())
+        foreach (var geom in ViewModel.GetGeometries())
         {
           if (!_parent.MaxExtent.Intersects(geom.Extent))
           { continue; }
@@ -165,7 +165,7 @@ namespace OMapScratch.Views
 
           Box detailExtent = null;
           Translation detPrj = null;
-          foreach (Curve geom in ViewModel.GetGeometries())
+          foreach (var geom in ViewModel.GetGeometries())
           {
             detailExtent = detailExtent ?? _parent.GetDetailExtent();
             if (!detailExtent.Intersects(geom.Extent))
@@ -200,14 +200,14 @@ namespace OMapScratch.Views
       SymbolUtils.DrawCurve(canvas, displayGeom, null, bp.StrokeWidth, false, true, bp);
     }
 
-    private static float _compassRadius = 8;
+    private static readonly float _compassRadius = 8;
     private void DrawCompass(Canvas canvas, Pnt center, double declination, Paint wp, Paint bp)
     {
       float mm = Utils.GetMmPixel(this);
       DrawCurve(canvas, new Curve().Circle(center.X, center.Y, _compassRadius * mm), wp, bp);
 
       double l = 16 * mm;
-      foreach (double angle in new List<double> { 0, 90 })
+      foreach (var angle in new List<double> { 0, 90 })
       {
         double sin = System.Math.Sin((angle + declination) / 180 * System.Math.PI);
         double cos = System.Math.Cos((angle + declination) / 180 * System.Math.PI);
