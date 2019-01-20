@@ -1,6 +1,6 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using GeomOp = Basics.Geom.GeometryOperator;
 using PntOp = Basics.Geom.PointOperator;
 
 namespace Basics.Geom
@@ -62,13 +62,13 @@ namespace Basics.Geom
 
     public IEnumerable<MeshLine> GetLinesAt(MeshPoint centralPoint)
     {
-        MeshLineEx l0 = centralPoint.IndexLine;
-        MeshLineEx l = l0;
-        do
-        {
-          yield return l; 
-          l = l._GetNextPointLine();
-        } while (l.BaseLine != l0.BaseLine);
+      MeshLineEx l0 = centralPoint.IndexLine;
+      MeshLineEx l = l0;
+      do
+      {
+        yield return l;
+        l = l._GetNextPointLine();
+      } while (l.BaseLine != l0.BaseLine);
     }
 
     public IEnumerable<MeshLine> Lines(IBox intersect)
@@ -380,7 +380,7 @@ namespace Basics.Geom
       Point dir = PntOp.Sub(p1, p0);
       MeshLineEx l2;
       IPoint dirGoal = goal - p0;
-      lGoal2 = Point2D.Dist2(p0, goal);
+      lGoal2 = PntOp.Dist2(p0, goal, GeomOp.DimensionXY);
 
       vecProd1 = dir.VectorProduct(dirGoal);
       if (vecProd1 < 0)
@@ -458,9 +458,9 @@ namespace Basics.Geom
           p1 = _listPoint[i].Value;
           if ((point[index] >= p0.Point[index]) == (point[index] <= p1.Point[index]))
           { // segment found
-            if (Point2D.Dist2(point, p0.Point) < _fuzzy2)
+            if (PntOp.Dist2(point, p0.Point, GeomOp.DimensionXY) < _fuzzy2)
             { return p0; }
-            if (Point2D.Dist2(point, p1.Point) < _fuzzy2)
+            if (PntOp.Dist2(point, p1.Point, GeomOp.DimensionXY) < _fuzzy2)
             { return p1; }
 
             MeshPoint p2 = new MeshPoint(point);
@@ -483,7 +483,7 @@ namespace Basics.Geom
       { // point on either side of start or end
         if ((point[index] < p0.Point[index]) == (p0.Point[index] < p1.Point[index]))
         { // insert at start
-          if (Point2D.Dist2(point, p0.Point) < _fuzzy2)
+          if (PntOp.Dist2(point, p0.Point, GeomOp.DimensionXY) < _fuzzy2)
           { return p0; }
           else
           {
@@ -497,7 +497,7 @@ namespace Basics.Geom
         }
         else
         { // insert at end
-          if (Point2D.Dist2(point, p1.Point) < _fuzzy2)
+          if (PntOp.Dist2(point, p1.Point, GeomOp.DimensionXY) < _fuzzy2)
           { return p1; }
           else
           {
@@ -607,20 +607,20 @@ namespace Basics.Geom
         { return m1; }
       }
 
-      if (Point2D.Dist2(p1, l0.Start) < _fuzzy2)
+      if (PntOp.Dist2(p1, l0.Start, GeomOp.DimensionXY) < _fuzzy2)
       {
         if (l0.LeftTri != null || p0.Equals(l0.EndPointEx) == false)
         { l0 = -(l0._GetPreviousPointLine()); }
         else
         { l0 = -l0; }
       }
-      else if (Point2D.Dist2(p1, l0.End) <= _fuzzy2)
+      else if (PntOp.Dist2(p1, l0.End, GeomOp.DimensionXY) <= _fuzzy2)
       {
         if (l0.LeftTri != null)
         { l0 = -((-l0)._GetNextPointLine()); }
       }
       if (!(p0.Equals(l0.StartPointEx))) throw new InvalidProgramException("Error in software design assumption");
-      if (!(Point2D.Dist2(p1, l0.End) < _fuzzy2)) throw new InvalidProgramException("Error in software design assumption");
+      if (!(PntOp.Dist2(p1, l0.End, GeomOp.DimensionXY) < _fuzzy2)) throw new InvalidProgramException("Error in software design assumption");
 
       l0.SetTag(lineInfo, false);
 
@@ -682,7 +682,7 @@ namespace Basics.Geom
       for (int i = 0; i < pntMax; i++)
       {
         p2 = _listPoint[i].Value;
-        if (Point2D.Dist2(newPoint, p2.Point) < _fuzzy2)
+        if (PntOp.Dist2(newPoint, p2.Point, GeomOp.DimensionXY) < _fuzzy2)
         { return p2; }
       }
 
@@ -721,10 +721,10 @@ namespace Basics.Geom
       MeshLineEx lt = l;
       while (triArea == 0)
       {
-        double d0 = Point2D.Dist2(point, p0.Point);
-        double d1 = Point2D.Dist2(point, p1.Point);
+        double d0 = PntOp.Dist2(point, p0.Point, GeomOp.DimensionXY);
+        double d1 = PntOp.Dist2(point, p1.Point, GeomOp.DimensionXY);
 
-        double d2 = Point2D.Dist2(p0.Point, p1.Point);
+        double d2 = PntOp.Dist2(p0.Point, p1.Point, GeomOp.DimensionXY);
         if (d0 < d2 && d1 < d2) // point lies between p0 and p1
         {
           break;
@@ -820,7 +820,7 @@ namespace Basics.Geom
         // try add first line
         MeshPoint p0 = _listPoint[0].Value;
 
-        if (Point2D.Dist2(point, p0.Point) < _fuzzy2)
+        if (PntOp.Dist2(point, p0.Point, GeomOp.DimensionXY) < _fuzzy2)
         { return p0; }
 
         MeshPoint p1 = new MeshPoint(point);
@@ -856,12 +856,12 @@ namespace Basics.Geom
 
       if (tri0 == null)
       { // point outside of current mesh
-        if (Point2D.Dist2(point, line.Start) <= _fuzzy2)
+        if (PntOp.Dist2(point, line.Start, GeomOp.DimensionXY) <= _fuzzy2)
         {
           _inserted = true;
           return line.StartPointEx;
         }
-        if (Point2D.Dist2(point, line.End) <= _fuzzy2)
+        if (PntOp.Dist2(point, line.End, GeomOp.DimensionXY) <= _fuzzy2)
         {
           _inserted = true;
           return line.EndPointEx;
@@ -877,7 +877,7 @@ namespace Basics.Geom
     {
       for (int i = 0; i < 3; i++)
       {
-        if (Point2D.Dist2(point, tri0[i].Start) <= _fuzzy2)
+        if (PntOp.Dist2(point, tri0[i].Start, GeomOp.DimensionXY) <= _fuzzy2)
         {
           _inserted = true;
           return tri0._GetLine(i).StartPointEx;

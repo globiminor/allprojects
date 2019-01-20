@@ -523,11 +523,11 @@ namespace Asvz.Sola
         GeoElement textKm = CreateKmText(p, t, setup, iKm, kmTxtSymbol, damen);
         PointCollection textKmBox = ((PointCollection)textKm.Geometry).Clone();
         textKmBox.Add(textKmBox[1]);
-        textKmBox.Insert(0, p + 0.01 * Point.Sub(textKmBox[0], p));
+        textKmBox.Insert(0, p + 0.01 * PointOperator.Sub(textKmBox[0], p));
         Polyline textKmPoly = Polyline.Create(textKmBox);
         if (line.Intersection(textKmPoly) != null)
         {
-          t = Point.Scale(-1.0, t);
+          t = PointOperator.Scale(-1.0, t);
           textKm = CreateKmText(p, t, setup, iKm, kmTxtSymbol, damen);
         }
         writer.Append(textKm);
@@ -552,7 +552,7 @@ namespace Asvz.Sola
 
       Point pText = new Point2D(t.Y, -t.X);
       pText = 130.0 * 1.0 / Math.Sqrt(pText.OrigDist2()) * pText;
-      pText = Point.Add(pText, p);
+      pText = PointOperator.Add(pText, p);
 
       GeoElement elem = Common.CreateText(sKm, pText.X, pText.Y, setup, kmTxtSymbol);
       PointCollection list = (PointCollection)elem.Geometry;

@@ -288,7 +288,7 @@ namespace Grid
       {
         if (p0 != null)
         {
-          Point d = Point.Sub(p1, p0);
+          Point d = PointOperator.Sub(p1, p0);
           double l = Math.Sqrt(d.OrigDist2());
           double f = width / (2 * l);
           Point v = new Point2D(f * d.Y, -f * d.X);

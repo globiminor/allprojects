@@ -6,7 +6,7 @@ namespace Basics.Geom
   /// <summary>
   /// Summary description for Area.
   /// </summary>
-  public class Area : Geometry, IGeometry
+  public class Area : Geometry, IGeometry, ISimpleArea
   {
     private readonly PolylineCollection _lines_;
     BoxTree<Polyline> _spatialIndex;
@@ -24,6 +24,7 @@ namespace Basics.Geom
     }
     #region IGeometry Members
 
+    IEnumerable<IPoint> ISimpleArea.Border => Lines[0].Points;
     protected virtual PolylineCollection Lines
     {
       get { return _lines_; }

@@ -190,8 +190,8 @@ namespace OCourse.Ext
     {
       Polyline line = (Polyline)elem.Geometry;
 
-      double d2From = Point2D.Dist2(_fromPnt, line.Points.First.Value);
-      double d2To = Point2D.Dist2(_toPnt, line.Points.Last.Value);
+      double d2From = PointOperator.Dist2(_fromPnt, line.Points.First.Value, GeometryOperator.DimensionXY);
+      double d2To = PointOperator.Dist2(_toPnt, line.Points.Last.Value, GeometryOperator.DimensionXY);
 
       if (d2From > 200000)
       { return false; }

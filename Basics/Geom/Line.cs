@@ -477,7 +477,7 @@ namespace Basics.Geom
 
     public override Point TangentAt(double t)
     {
-      return Point.Sub(End, Start);
+      return PntOp.Sub(End, Start);
     }
     public override IList<IPoint> LinApprox(double t0, double t1)
     {

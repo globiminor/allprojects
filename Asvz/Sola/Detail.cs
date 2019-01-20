@@ -218,7 +218,7 @@ namespace Asvz.Sola
       double dDist = -1;
       foreach (var pnt in border.Points)
       {
-        double d2 = Point2D.DistXY2(pnt, rawPosition);
+        double d2 = PointOperator.Dist2(pnt, rawPosition, GeometryOperator.DimensionXY);
         if (dDist < 0 || dDist > d2)
         {
           dDist = d2;

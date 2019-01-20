@@ -82,11 +82,11 @@ namespace Asvz
         GeoElement elem = CreateKmText(p, t, setup, iKm, kmTxtSymbol, suffix);
         PointCollection points = ((PointCollection)elem.Geometry).Clone();
         points.Add(points[1]);
-        points.Insert(0, p + 0.01 * Point.Sub(points[0], p));
+        points.Insert(0, p + 0.01 * PointOperator.Sub(points[0], p));
         Polyline pPoly = Polyline.Create(points);
         if (flipOnConflict && strecke.Intersection(pPoly) != null)
         {
-          t = Point.Scale(-1.0, t);
+          t = PointOperator.Scale(-1.0, t);
           elem = CreateKmText(p, t, setup, iKm, kmTxtSymbol, suffix);
         }
         kmElem.Text = elem;

@@ -86,7 +86,7 @@ namespace Basics.Geom
 
         IRelationGeometry paramGeom = this;
         double normed = paramGeom.NormedMaxOffset;
-        double l2 = Point.Sub(End, Start).OrigDist2();
+        double l2 = PointOperator.Sub(End, Start).OrigDist2();
         if (normed * normed * l2 > d2)
         {
           Curve c0 = Subpart(0, 0.5);

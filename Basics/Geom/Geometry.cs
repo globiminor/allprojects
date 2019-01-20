@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using PntOp = Basics.Geom.PointOperator;
 
 namespace Basics.Geom
@@ -17,28 +18,6 @@ namespace Basics.Geom
   /// </summary>
   public abstract class Geometry : IGeometry
   {
-    private static readonly int[] _dim0 = new int[] { };
-    public static int[] DimensionX = new int[] { 0 };
-    public static int[] DimensionXY = new int[] { 0, 1 };
-    public static int[] DimensionXYZ = new int[] { 0, 1, 2 };
-    private static readonly int[][] _dimList = new int[][] { _dim0, DimensionX, DimensionXY, DimensionXYZ };
-
-    public static int[] DimensionList(int dimension)
-    {
-      if (dimension < 3)
-      {
-        return _dimList[dimension];
-      }
-      else
-      {
-        int[] dim = new int[dimension];
-        for (int i = 0; i < dimension; i++)
-        { dim[i] = i; }
-        return dim;
-      }
-    }
-
-
     public class Comparer : IComparer<IGeometry>
     {
       #region IComparer<IGeometry> Members
@@ -195,7 +174,7 @@ namespace Basics.Geom
         Math.Abs(s0.Y) + Math.Abs(s1.Y)) / 1000.0)
       {
         f = p.VectorProduct(dir1) / det;
-        return (Point2D)(s0 + PntOp.Scale(dir0, f));
+        return (Point2D)(s0 + PntOp.Scale(f, dir0));
       }
       else
       {

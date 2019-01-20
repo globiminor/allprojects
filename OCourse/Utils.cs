@@ -121,7 +121,7 @@ namespace OCourse
         toPoint = (IPoint)toGeom;
       }
 
-      length += Math.Sqrt(Point2D.Dist2(fromPoint, toPoint));
+      length += Math.Sqrt(PointOperator.Dist2(fromPoint, toPoint, GeometryOperator.DimensionXY));
       return length;
     }
   }

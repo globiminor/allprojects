@@ -123,7 +123,7 @@ namespace Dhm
       bool forest = false;
       List<double> vegHs = new List<double>(pts.Count);
       List<int> intens = new List<int>(pts.Count);
-      foreach (Vector pt in pts)
+      foreach (var pt in pts)
       {
         double d = q.GetDh(pt);
         if (d < vegMin)
@@ -236,7 +236,7 @@ namespace Dhm
       Quads q = new Quads(pts[0], pA0, p0A, pM0, p0M);
       double min = 0.3;
       double max = 2.0;
-      foreach (Vector pt in pts)
+      foreach (var pt in pts)
       {
 
         double dMax = pt[2] - q.Max;
@@ -321,16 +321,16 @@ namespace Dhm
       }
       private Point GetNormal()
       {
-        List<Vector> vs = new List<Vector> {
-          _pA0?.Sub(_center),
-          _p0A?.Sub(_center),
-          _pM0?.Sub(_center),
-          _p0M?.Sub(_center),
+        List<Point> vs = new List<Point> {
+          _pA0 != null ? _pA0 - _center : null,
+          _p0A != null ? _p0A - _center : null,
+          _pM0 != null ? _pM0 - _center : null,
+          _p0M != null ? _p0M - _center : null,
         };
 
-        Vector pre = vs[3];
+        Point pre = vs[3];
         Point sumN = null;
-        foreach (Vector v in vs)
+        foreach (var v in vs)
         {
           Point3D n = pre?.VectorProduct3D(v);
           pre = v;

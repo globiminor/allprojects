@@ -170,7 +170,7 @@ namespace Grid.Processors
         _top = new Border(_extent.Max.X);
         _right = new Border(_extent.Max.Y);
 
-        Point diagP = 0.5 * Point.Sub(_extent.Max, _extent.Min);
+        Point diagP = 0.5 * PointOperator.Sub(_extent.Max, _extent.Min);
         _diag = diagP.X + diagP.Y;
         _center = _extent.Min + diagP;
 

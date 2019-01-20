@@ -24,12 +24,28 @@ namespace Basics.Geom
     IBox Clone();
     Relation RelationTo(IBox box);
     bool Contains(IBox box);
-    bool Contains(IBox box, int[] dimensionList);
+    bool Contains(IBox box, IEnumerable<int> dimensionList);
     //bool IsWithin(IBox box);
     //bool IsWithin(IBox box, IList<int> calcDimensions);
     //bool Intersects(IBox box, IList<int> calcDimensions);
     bool Intersects(IGeometry geometry);
     double GetMaxExtent();
+  }
+
+  public interface IVolume
+  {
+    IReadOnlyList<ISignedArea> Planes { get; }
+  }
+  public interface ISignedArea : ISimpleArea
+  {
+    int Sign { get; }
+  }
+  public interface ISimpleArea
+  {
+    /// <summary>
+    /// Last point == first point
+    /// </summary>
+    IEnumerable<IPoint> Border { get; }
   }
 
   public interface IMultipartGeometry : IGeometry

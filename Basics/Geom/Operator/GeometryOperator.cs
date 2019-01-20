@@ -1,11 +1,29 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using PntOp = Basics.Geom.PointOperator;
 
 namespace Basics.Geom
 {
   public static partial class GeometryOperator
   {
+    public static int[] DimensionX = new int[] { 0 };
+    public static int[] DimensionXY = new int[] { 0, 1 };
+    public static int[] DimensionXYZ = new int[] { 0, 1, 2 };
+
+    public static IEnumerable<int> GetDimensions(params IGeometry[] geoms)
+    {
+      int dim = int.MaxValue;
+      foreach (var g in geoms)
+      { dim = Math.Min(dim, g.Dimension); }
+      return Enumerable.Range(0, dim);
+    }
+
+    public static IEnumerable<int> DimensionList(int dimension)
+    {
+      return Enumerable.Range(0, dimension);
+    }
+
     #region nested classes
 
     private class PartEnumerable : IEnumerable<IList<IPoint>>

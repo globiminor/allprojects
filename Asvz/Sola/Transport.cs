@@ -742,7 +742,7 @@ namespace Asvz.Sola
           ISegment c0 = line.Segments.First;
           ISegment c1 = line.Segments.Last;
 
-          Element elemStart = FindIndexElement(c0.Start, Point.Scale(-1, c0.TangentAt(0)), elements);
+          Element elemStart = FindIndexElement(c0.Start, PointOperator.Scale(-1, c0.TangentAt(0)), elements);
           Element elemEnd = FindIndexElement(c1.End, c1.TangentAt(1), elements);
         }
       }
@@ -759,8 +759,8 @@ namespace Asvz.Sola
 
         Point d = p - p0;
         IPoint dirPrj = direction.Project(Geometry.ToXY);
-        double x = Point.SkalarProduct( dirPrj, d);
-        double y = Point.VectorProduct(dirPrj, d);
+        double x = PointOperator.SkalarProduct( dirPrj, d);
+        double y = PointOperator.VectorProduct(dirPrj, d);
 
         if (x > 0 &&
           (indexElement == null || (Math.Abs(y / x) < 0.3 && x < x0)))
@@ -916,7 +916,7 @@ namespace Asvz.Sola
       double dist2 = -1;
       foreach (var pnt in border.Points)
       {
-        double d2 = Point.Dist2(pnt, rawPosition);
+        double d2 = PointOperator.Dist2(pnt, rawPosition);
         if (dist2 < 0 || dist2 > d2)
         {
           dist2 = d2;

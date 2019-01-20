@@ -102,7 +102,7 @@ namespace Basics.Geom
     /// Indicates if box is within this
     /// </summary>
     /// <returns></returns>
-    public bool Contains(IBox box, int[] dimensionList)
+    public bool Contains(IBox box, IEnumerable<int> dimensionList)
     {
       return (ExceedDimension(box, dimensionList) == 0);
     }
@@ -113,18 +113,18 @@ namespace Basics.Geom
     /// <returns></returns>
     public bool Contains(IBox box)
     {
-      return Contains(box, Geometry.DimensionList(_dimension));
+      return Contains(box, GeometryOperator.DimensionList(_dimension));
     }
 
     public int ExceedDimension(IBox box)
     {
-      return ExceedDimension(this, box, Geometry.DimensionList(_dimension));
+      return ExceedDimension(this, box, GeometryOperator.DimensionList(_dimension));
     }
-    public int ExceedDimension(IBox box, int[] dimensionList)
+    public int ExceedDimension(IBox box, IEnumerable<int> dimensionList)
     {
       return ExceedDimension(this, box, dimensionList);
     }
-    public static int ExceedDimension(IBox x, IBox y, int[] dimensionList)
+    public static int ExceedDimension(IBox x, IBox y, IEnumerable<int> dimensionList)
     {
       foreach (var i in dimensionList)
       {

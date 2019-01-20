@@ -353,7 +353,7 @@ namespace Grid.Lcp
         double vX = 0;
         double vY = 0;
         double sumW = 0;
-        foreach (VVelo velo in _velos)
+        foreach (var velo in _velos)
         {
           double v = velo.GetV();
           double w = 1.0 / (1.0 + velo.V2) / v;

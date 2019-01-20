@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
+using PntOp = Basics.Geom.PointOperator;
 
 namespace Basics.Geom
 {
@@ -85,9 +85,9 @@ namespace Basics.Geom
 
     bool IBox.Contains(IBox box)
     {
-      return Box.ExceedDimension(this, box, DimensionList(Dimension)) == 0;
+      return Box.ExceedDimension(this, box, GeometryOperator.DimensionList(Dimension)) == 0;
     }
-    bool IBox.Contains(IBox box, int[] dimensionList)
+    bool IBox.Contains(IBox box, IEnumerable<int> dimensionList)
     {
       return Box.ExceedDimension(this, box, dimensionList) == 0;
     }
@@ -100,12 +100,7 @@ namespace Basics.Geom
     /// <summary>
     /// Vector product
     /// </summary>
-    public double VectorProduct(IPoint p1) => VectorProduct(this, p1);
-    public static double VectorProduct(IPoint p0, IPoint p1)
-    {
-      double v = p0.X * p1.Y - p0.Y * p1.X;
-      return v;
-    }
+    public double VectorProduct(IPoint p1) => PntOp.VectorProduct(this, p1);
 
     public Point3D VectorProduct3D(IPoint p1)
     {
@@ -147,7 +142,9 @@ namespace Basics.Geom
 
     public static Point Create(double[] coords)
     {
-      return new Vector(coords);
+      Point created = Create(coords.Length);
+      created._vector = coords;
+      return created;
     }
 
     public static Point Create(int dim)
@@ -173,31 +170,14 @@ namespace Basics.Geom
       { p[i] = point[i]; }
       return p;
     }
-    public double Dist2(IPoint point)
+    public double Dist2(IPoint point, IEnumerable<int> dimensions = null)
     {
-      return Dist2(this, point);
-    }
-    public static double Dist2(IPoint p0, IPoint p1, IEnumerable<int> dimensions = null)
-    {
-      IEnumerable<int> dims = dimensions ?? Enumerable.Range(0, Math.Min(p0.Dimension, p1.Dimension));
-      double dDist2 = 0;
-      foreach (int i in dims)
-      {
-        double d = p0[i] - p1[i];
-        dDist2 += d * d;
-      }
-      return dDist2;
+      return PntOp.Dist2(this, point, dimensions);
     }
 
-    public double OrigDist2()
+    public double OrigDist2(IEnumerable<int> dimensions = null)
     {
-      double dist2 = 0;
-      for (int i = 0; i < Dimension; i++)
-      {
-        double d = this[i];
-        dist2 += d * d;
-      }
-      return dist2;
+      return PntOp.Dist2(this, null, dimensions);
     }
 
     public Relation RelationTo(IBox box)
@@ -239,73 +219,23 @@ namespace Basics.Geom
       return new Box(Clone(), Clone());
     }
 
-    public static Point operator +(Point p0, Point p1)
-    { return Add(p0, p1); }
-    public static Point operator +(IPoint p0, Point p1)
-    { return Add(p0, p1); }
-    public static Point operator +(Point p0, IPoint p1)
-    { return Add(p0, p1); }
-    public static Point Add(IPoint p0, IPoint p1)
-    {
-      int iDim = Math.Min(p0.Dimension, p1.Dimension);
-      Point sum = Create(iDim);
-      for (int i = 0; i < iDim; i++)
-      { sum[i] = p0[i] + p1[i]; }
+    public static Point operator +(Point p0, Point p1) => PointOperator.Add(p0, p1);
+    public static Point operator +(IPoint p0, Point p1) => PointOperator.Add(p0, p1);
+    public static Point operator +(Point p0, IPoint p1) => PointOperator.Add(p0, p1);
 
-      return sum;
-    }
+    public static Point operator -(Point p0, IPoint p1) => PointOperator.Sub(p0, p1);
+    public static Point operator -(IPoint p0, Point p1) => PointOperator.Sub(p0, p1);
+    public static Point operator -(Point p0, Point p1) => PointOperator.Sub(p0, p1);
 
-    public static Point operator -(Point p0)
-    {
-      int dim = p0.Dimension;
-      Point diff = Create(p0.Dimension);
-      for (int i = 0; i < dim; i++)
-      { diff[i] = -p0[i]; }
+    public static Point operator -(Point p0) => PointOperator.Neg(p0);
 
-      return diff;
-    }
-
-    public static Point operator -(Point p0, IPoint p1)
-    { return Sub(p0, p1); }
-    public static Point operator -(IPoint p0, Point p1)
-    { return Sub(p0, p1); }
-    public static Point operator -(Point p0, Point p1)
-    { return Sub(p0, p1); }
-    public static Point Sub(IPoint p0, IPoint p1)
-    {
-      int iDim = Math.Min(p0.Dimension, p1.Dimension);
-      Point diff = Create(iDim);
-      for (int i = 0; i < iDim; i++)
-      { diff[i] = p0[i] - p1[i]; }
-
-      return diff;
-    }
 
     /// <summary>
     /// scalar product
     /// </summary>
-    public static Point operator *(double f, Point p)
-    { return Scale(f, p); }
-    public static Point Scale(double f, IPoint p)
-    {
-      int iDim = p.Dimension;
-      Point skalar = Create(iDim);
-      for (int i = 0; i < iDim; i++)
-      { skalar[i] = f * p[i]; }
+    public static Point operator *(double f, Point p) => PointOperator.Scale(f, p);
 
-      return skalar;
-    }
-
-    public double SkalarProduct(IPoint p1) => SkalarProduct(this, p1);
-    public static double SkalarProduct(IPoint p0, IPoint p1)
-    {
-      double prod = 0;
-      int maxDim = Math.Min(p0.Dimension, p1.Dimension);
-      for (int iDim = 0; iDim < maxDim; iDim++)
-      { prod += p0[iDim] * p1[iDim]; }
-
-      return prod;
-    }
+    public double SkalarProduct(IPoint p1) => PointOperator.SkalarProduct(this, p1);
 
     /// <summary>
     /// get factor f of skalar product p0 = f * p1
@@ -375,16 +305,6 @@ namespace Basics.Geom
     public override string ToString()
     { return string.Format("{0};{1}", X, Y); }
     #endregion
-
-    public static double DistXY2(IPoint p0, IPoint p1)
-    {
-      double d2 = 0;
-      double d = p0.X - p1.X;
-      d2 += d * d;
-      d = p0.Y - p1.Y;
-      d2 += d * d;
-      return d2;
-    }
   }
 
   public class Point3D : Point
@@ -457,9 +377,6 @@ namespace Basics.Geom
     #endregion
   }
 
-  /// <summary>
-  /// Summary description for Point.
-  /// </summary>
   public class Vector : Point
   {
     private readonly int _dimension;
@@ -503,42 +420,6 @@ namespace Basics.Geom
       {
         return (Vector[0].GetHashCode() ^ Vector[1].GetHashCode());
       }
-    }
-
-    public static Vector operator +(Vector v0, Vector v1)
-    { return v0.Add(v1); }
-    public Vector Add(Vector v1)
-    {
-      if (!(Dimension == v1.Dimension)) throw new InvalidOperationException($"Dimensions differ {Dimension} != {v1.Dimension}");
-      int iDim = Dimension;
-      Vector v = new Vector(iDim);
-      for (int i = 0; i < iDim; i++)
-      { v[i] = this[i] + v1[i]; }
-      return v;
-    }
-
-    public static Vector operator -(Vector v0, Vector v1)
-    { return v0.Sub(v1); }
-    public Vector Sub(Vector v1)
-    {
-      if (!(Dimension == v1.Dimension)) throw new InvalidOperationException($"Dimensions differ {Dimension} != {v1.Dimension}");
-      int iDim = Dimension;
-      Vector v = new Vector(iDim);
-      for (int i = 0; i < iDim; i++)
-      { v[i] = this[i] - v1[i]; }
-      return v;
-    }
-
-    public double Dist2(Vector v)
-    {
-      if (!(Dimension == v.Dimension)) throw new InvalidOperationException($"Dimensions differ {Dimension} != {v.Dimension}");
-      double d2 = 0;
-      for (int i = 0; i < Dimension; i++)
-      {
-        double d = this[i] - v[i];
-        d2 += d * d;
-      }
-      return d2;
     }
 
     public override string ToString()
