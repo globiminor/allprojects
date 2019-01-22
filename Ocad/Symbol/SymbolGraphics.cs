@@ -76,10 +76,10 @@ namespace Ocad.Symbol
         else
         { return 0; }
 
-        if (line.Segments.Count == 1 &&
-            line.Segments.First is Arc)
+        if (line.Points.Count == 2 &&
+            line.GetSegment(0) is Arc arc)
         {
-          return (int)((Arc)line.Segments.First).Diameter;
+          return (int)arc.Diameter;
         }
         else
         { return 0; }

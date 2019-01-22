@@ -177,7 +177,7 @@ namespace Basics.Geom
 
     public double OrigDist2(IEnumerable<int> dimensions = null)
     {
-      return PntOp.Dist2(this, null, dimensions);
+      return PntOp.OrigDist2(this, dimensions);
     }
 
     public Relation RelationTo(IBox box)

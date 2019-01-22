@@ -72,7 +72,7 @@ namespace Basics.Geom
         return p;
       }
     }
-    public override InnerCurve InnerCurve()
+    public override InnerCurve GetInnerCurve()
     { return null; }
 
     public override IPoint Start
@@ -199,43 +199,43 @@ namespace Basics.Geom
       return b2 - scalarProd * scalarProd / a2;
     }
 
-
-    public override IList<ParamGeometryRelation> CreateRelations(IParamGeometry other, TrackOperatorProgress trackProgress)
+    public override IEnumerable<ParamGeometryRelation> CreateRelations(IParamGeometry other, TrackOperatorProgress trackProgress)
     {
       if (other is Curve o)
       {
         return CreateRelations(o, trackProgress);
       }
-      else
-      {
-        return base.CreateRelations(other, trackProgress);
-      }
+      return base.CreateRelations(other, trackProgress);
     }
-    protected override IList<ParamGeometryRelation> CreateRelations(Curve other, TrackOperatorProgress trackProgress)
+    protected override IEnumerable<ParamGeometryRelation> CreateRelations(Curve other, TrackOperatorProgress trackProgress)
     {
-      IList<ParamGeometryRelation> result;
       if (other is Line line)
       {
         ParamGeometryRelation rel = CutLine(line);
         if (rel.Intersection != null)
         {
-          result = new ParamGeometryRelation[] { rel };
-
           if (trackProgress != null)
           { trackProgress.OnRelationFound(this, rel); }
 
-          return result;
+          yield return rel;
+          yield break;
         }
       }
       if (other is Arc arc)
       {
-        IList<ParamGeometryRelation> list = arc.CutLine(this);
-        result = AddRelations(list, trackProgress);
-        return result;
+        foreach (var rel in arc.CutLine(this))
+        { yield return rel; }
+        yield break;
       }
 
-      result = base.CreateRelations(other, trackProgress);
-      return result;
+      IEnumerable<ParamGeometryRelation> baseRels = base.CreateRelations(other, trackProgress);
+      if (baseRels != null)
+      {
+        foreach (var rel in baseRels)
+        {
+          yield return rel;
+        }
+      }
     }
 
     /*

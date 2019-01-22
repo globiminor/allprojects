@@ -366,7 +366,7 @@ namespace Basics.Geom
         End.Project(projection));
     }
 
-    public override InnerCurve InnerCurve()
+    public override InnerCurve GetInnerCurve()
     {
       return new _InnerCurve(_p1, _p2);
     }

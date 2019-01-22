@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Basics.Geom;
 using Ocad;
 
@@ -83,7 +84,7 @@ namespace OCourse.Ext
         if (cntFrom.Element.Geometry is IPoint)
         { g._fromPnt = (IPoint)cntFrom.Element.Geometry; }
         else if (cntFrom.Element.Geometry is Polyline)
-        { g._fromPnt = ((Polyline)cntFrom.Element.Geometry).Points.Last.Value; }
+        { g._fromPnt = ((Polyline)cntFrom.Element.Geometry).Points.Last(); }
         else
         {
           throw new NotImplementedException("Unhandled geometry type " + cntFrom.Element.Geometry);
@@ -97,7 +98,7 @@ namespace OCourse.Ext
         if (cntTo.Element.Geometry is IPoint)
         { g._toPnt = (IPoint)cntTo.Element.Geometry; }
         else if (cntTo.Element.Geometry is Polyline)
-        { g._toPnt = ((Polyline)cntTo.Element.Geometry).Points.First.Value; }
+        { g._toPnt = ((Polyline)cntTo.Element.Geometry).Points[0]; }
         else
         {
           throw new NotImplementedException("Unhandled geometry type " + cntTo.Element.Geometry);
@@ -190,8 +191,8 @@ namespace OCourse.Ext
     {
       Polyline line = (Polyline)elem.Geometry;
 
-      double d2From = PointOperator.Dist2(_fromPnt, line.Points.First.Value, GeometryOperator.DimensionXY);
-      double d2To = PointOperator.Dist2(_toPnt, line.Points.Last.Value, GeometryOperator.DimensionXY);
+      double d2From = PointOperator.Dist2(_fromPnt, line.Points[0], GeometryOperator.DimensionXY);
+      double d2To = PointOperator.Dist2(_toPnt, line.Points.Last(), GeometryOperator.DimensionXY);
 
       if (d2From > 200000)
       { return false; }

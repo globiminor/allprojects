@@ -728,7 +728,7 @@ namespace Gravity
         else
           vt = -1;
 
-        GravityValues v = GetPlaneGravity(s0, signedPlane, vt * rho);
+        GravityValues v = GetPlaneGravity(s0, signedPlane.Area, vt * rho);
         w = w.Add(v);
       }
       return w;

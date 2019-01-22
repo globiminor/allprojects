@@ -456,7 +456,7 @@ namespace Grid.Processors
         PointComparer comparer = new PointComparer();
 
         IMeshLine t = slope;
-        while (comparer.Compare(contour.Points.First.Value, contour.Points.Last.Value) != 0)
+        while (comparer.Compare(contour.Points[0], contour.Points.Last()) != 0)
         {
           IMeshLine next = t.GetNextTriLine();
           if (next == null)
@@ -484,7 +484,7 @@ namespace Grid.Processors
 
           pFraction2d = p0 + f1 * (p1 - p0);
           pFraction3d = new Point3D(pFraction2d.X, pFraction2d.Y, h);
-          if (comparer.Equals(contour.Points.Last.Value, pFraction3d))
+          if (comparer.Equals(contour.Points.Last(), pFraction3d))
           { continue; }
 
           contour.Add(pFraction3d);

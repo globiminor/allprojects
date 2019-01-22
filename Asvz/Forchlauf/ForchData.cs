@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml;
 using Basics.Geom;
 using Ocad;
@@ -132,7 +133,7 @@ namespace Asvz.Forchlauf
           GeoElement y = streckenTeile[iy];
           Polyline yPart = (Polyline)y.Geometry;
 
-          if (PointOperator.Dist2(xPart.Points.Last.Value, yPart.Points.First.Value) < 20)
+          if (PointOperator.Dist2(xPart.Points.Last(), yPart.Points[0]) < 20)
           {
             hasFrom[iy] = true;
 
@@ -220,10 +221,9 @@ namespace Asvz.Forchlauf
     private static Polyline AppendLine(Polyline line, Polyline append)
     {
       append = append.Clone();
-      append.Points.RemoveFirst();
-      append.AddFirst(Point.Create(line.Points.Last.Value));
+      append.Insert(0, Point.Create(line.Points.Last()));
 
-      foreach (var seg in append.Segments)
+      foreach (var seg in append.EnumSegments())
       {
         line.Add(seg);
       }

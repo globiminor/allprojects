@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Basics.Geom
@@ -637,27 +638,27 @@ namespace Basics.Geom
           { }
           else
           {
-            Point end = Point.CastOrCreate(border.Points.Last.Value);
-            if (border.Points.Count == 0 || end.EqualGeometry(line.Points.First.Value))
+            Point end = Point.CastOrCreate(border.Points.Last());
+            if (border.Points.Count == 0 || end.EqualGeometry(line.Points[0]))
             { }
-            else if (end.EqualGeometry(line.Points.Last.Value))
+            else if (end.EqualGeometry(line.Points.Last()))
             {
               line = line.Clone().Invert();
             }
             else
             {
-              double d02 = end.Dist2(line.Points.First.Value);
-              double d12 = end.Dist2(line.Points.Last.Value);
+              double d02 = end.Dist2(line.Points[0]);
+              double d12 = end.Dist2(line.Points.Last());
               line = line.Clone();
               if (d02 < d12 * 1e-12)
               { }
               else if (d12 < d02 * 1e-12)
               { line = line.Invert(); }
               else throw new NotImplementedException();
-              line.Points.First.Value = end;
+              line.Replace(0, end);
             }
           }
-          foreach (var curve in line.Segments)
+          foreach (var curve in line.EnumSegments())
           {
             border.Add(curve);
           }

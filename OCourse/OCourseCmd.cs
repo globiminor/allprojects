@@ -9,6 +9,7 @@ using TMap;
 using Grid.Lcp;
 using Control = Ocad.Control;
 using Basics.Forms;
+using System.Linq;
 
 namespace OCourse
 {
@@ -218,9 +219,9 @@ namespace OCourse.Gui
         else if (g is Polyline l)
         {
           if (start)
-          { p = l.Points.First.Value; }
+          { p = l.Points[0]; }
           else
-          { p = l.Points.Last.Value; }
+          { p = l.Points.Last(); }
         }
         else
         { throw new InvalidOperationException("Unhandle control geometry " + g.GetType()); }

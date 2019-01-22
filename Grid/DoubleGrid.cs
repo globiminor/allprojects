@@ -401,10 +401,10 @@ namespace Grid
 
       double sumDist = 0;
       double h;
-      pos = line.Points.First.Value;
+      pos = line.Points[0];
       h = grid.Value(pos.X, pos.Y, EGridInterpolation.bilinear);
       profile.Add(new Point2D(0, h));
-      foreach (var segment in line.Segments)
+      foreach (var segment in line.EnumSegments())
       {
         double dist = segment.Length();
         sumDist += dist;

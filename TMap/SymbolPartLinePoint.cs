@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using Basics.Geom;
 
 namespace TMap
@@ -50,16 +51,16 @@ namespace TMap
       _basePoint.Tag = Tag;
       if ((_linePointType & LinePointType.StartPoint) != 0)
       {
-        _basePoint.Draw(line.Points.First.Value, properties, drawable);
+        _basePoint.Draw(line.Points[0], properties, drawable);
       }
       if ((_linePointType & LinePointType.EndPoint) != 0)
       {
-        _basePoint.Draw(line.Points.Last.Value, properties, drawable);
+        _basePoint.Draw(line.Points.Last(), properties, drawable);
       }
       if ((_linePointType & LinePointType.VertexPoint) != 0)
       {
         bool first = false;
-        foreach (var curve in line.Segments)
+        foreach (var curve in line.EnumSegments())
         {
           if (first)
           {
@@ -101,7 +102,7 @@ namespace TMap
         }
         double d = dash[iDash] - offset;
 
-        IEnumerator<ISegment> curves = line.Segments.GetEnumerator();
+        IEnumerator<ISegment> curves = line.EnumSegments().GetEnumerator();
         curves.Reset();
         curves.MoveNext();
         ISegment c = curves.Current;

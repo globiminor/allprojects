@@ -36,16 +36,17 @@ namespace Basics.Geom
   {
     IReadOnlyList<ISignedArea> Planes { get; }
   }
-  public interface ISignedArea : ISimpleArea
+  public interface ISignedArea
   {
     int Sign { get; }
+    ISimpleArea Area { get; }
   }
   public interface ISimpleArea
   {
     /// <summary>
     /// Last point == first point
     /// </summary>
-    IEnumerable<IPoint> Border { get; }
+    IReadOnlyList<IPoint> Border { get; }
   }
 
   public interface IMultipartGeometry : IGeometry
@@ -53,6 +54,11 @@ namespace Basics.Geom
     bool IsContinuous { get; }
     bool HasSubparts { get; }
     IEnumerable<IGeometry> Subparts();
+  }
+
+  public interface IIndexGeometry
+  {
+
   }
 
   public interface IPoint : IGeometry
@@ -76,7 +82,7 @@ namespace Basics.Geom
   {
     ParamRelate Relation(IBox paramBox);
 
-    IList<ParamGeometryRelation> CreateRelations(IParamGeometry other, TrackOperatorProgress trackProgress);
+    IEnumerable<ParamGeometryRelation> CreateRelations(IParamGeometry other, TrackOperatorProgress trackProgress);
 
     bool IsLinear { get; }
 

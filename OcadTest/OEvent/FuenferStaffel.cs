@@ -6,6 +6,7 @@ using OTextSharp.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace OcadTest.OEvent
 {
@@ -300,8 +301,8 @@ namespace OcadTest.OEvent
           if (elem.Geometry is Polyline line && line.Points.Count == 2)
           {
             line = line.Project(setup.Map2Prj);
-            IPoint s = line.Points.First.Value;
-            IPoint t = line.Points.Last.Value;
+            IPoint s = line.Points[0];
+            IPoint t = line.Points.Last();
             if (Math.Abs(s.X - 693505.3) < 1 && Math.Abs(s.Y - 260302.3) < 1 &&
               Math.Abs(t.X - 693058.2) < 1 && Math.Abs(t.Y - 260252.2) < 1)
             {

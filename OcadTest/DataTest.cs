@@ -396,7 +396,7 @@ namespace OcadTest
 
           foreach (var line in area.Border)
           {
-            foreach (var curve in line.Segments)
+            foreach (var curve in line.EnumSegments())
             {
               _curves.Add(curve.Extent, new CurveInfo { Curve = curve, Index = i });
               i++;
@@ -486,7 +486,7 @@ namespace OcadTest
       BoxTree<ISegment> t = new BoxTree<ISegment>(2, 1, true);
       t.InitSize(new IGeometry[] { line });
 
-      foreach (var segment in line.Segments)
+      foreach (var segment in line.EnumSegments())
       {
         //for (int i = 0; i < 50; i++)
         {

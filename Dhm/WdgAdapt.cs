@@ -150,7 +150,7 @@ namespace Dhm
 
       Polyline l0 = (Polyline)Ocad.Data.OcadConnection.FieldShape.GetValue(tbl.Rows[0]);
       Polyline l1 = (Polyline)Ocad.Data.OcadConnection.FieldShape.GetValue(tbl.Rows[1]);
-      IList<ParamGeometryRelation> rels = GeometryOperator.CreateRelations(l0, l1);
+      IEnumerable<ParamGeometryRelation> rels = GeometryOperator.CreateRelations(l0, l1);
 
       List<JoinOption> options = new List<JoinOption>();
       if (rels == null)
@@ -309,7 +309,7 @@ namespace Dhm
         Polyline part0 = (parts0[0].Length() > parts0[1].Length()) ? parts0[0] : parts0[1].Invert();
         IList<Polyline> parts1 = l1.Split(rels);
         Polyline part1 = (parts1[0].Length() > parts1[1].Length()) ? parts1[0].Invert() : parts1[1];
-        foreach (var seg in part1.Segments)
+        foreach (var seg in part1.EnumSegments())
         { part0.Add(seg); }
         Ocad.Data.OcadConnection.FieldShape.SetValue(Row0, part0);
 

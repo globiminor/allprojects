@@ -1074,8 +1074,13 @@ namespace Basics.Geom
       TrackOperatorProgress track = new TrackOperatorProgress();
       try
       {
+
         track.RelationFound += Intersects_RelationFound;
-        IList<ParamGeometryRelation> firstRelation = CreateRelations(x, y, track);
+        IEnumerable<ParamGeometryRelation> firstRelation = CreateRelations(x, y, track);
+        if (firstRelation == null)
+        { return false; }
+        foreach (var relation in firstRelation)
+        { return true; }
       }
       finally
       { track.RelationFound -= Intersects_RelationFound; }
@@ -1090,7 +1095,7 @@ namespace Basics.Geom
 
     public static GeometryCollection Intersection(IGeometry x, IGeometry y)
     {
-      IList<ParamGeometryRelation> list = CreateRelations(x, y);
+      IEnumerable<ParamGeometryRelation> list = CreateRelations(x, y);
       if (list == null)
       { return null; }
 
@@ -1111,11 +1116,13 @@ namespace Basics.Geom
     /// Dieser Parameter kommt nur zur Anwendung, falls x und y keine Multipart-Geometrien sind und 
     /// IParamGeom implementieren</param>
     /// <returns></returns>
-    public static IList<ParamGeometryRelation> CreateRelations(
+    public static IEnumerable<ParamGeometryRelation> CreateRelations(
       IGeometry x, IGeometry y, TrackOperatorProgress track = null, bool calcLinearized = false)
     {
       if (y.Topology > x.Topology)
-      { return CreateRelations(y, x, track, calcLinearized); }
+      {
+        return CreateRelations(y, x, track, calcLinearized);
+      }
 
       Relation rel;
       if (x.Extent == null)
@@ -1125,7 +1132,7 @@ namespace Basics.Geom
       return CreateRelations(x, y, track, rel, calcLinearized);
     }
 
-    private static IList<ParamGeometryRelation> CreateRelations(IGeometry x, IGeometry y,
+    private static IEnumerable<ParamGeometryRelation> CreateRelations(IGeometry x, IGeometry y,
       TrackOperatorProgress track, Relation extentRelation, bool calcLinearized)
     {
       if (extentRelation == Relation.Disjoint)
@@ -1163,14 +1170,20 @@ namespace Basics.Geom
 
         // y is single part
         if (extentRelation == Relation.Within)
-        { return IntersectReduce(y, x, track, false); }
+        {
+          return IntersectReduce(y, x, track, false);
+        }
         else
-        { return MpRelations(x, y, track); }
+        {
+          return MpRelations(x, y, track);
+        }
       }
       if (y.Topology >= x.Topology && IsMultipart(y))
       {
         if (extentRelation == Relation.Contains)
-        { return IntersectReduce(x, y, track, calcLinearized); }
+        {
+          return IntersectReduce(x, y, track, calcLinearized);
+        }
         else
         { return MpRelations(y, x, track); }
       }
@@ -1181,10 +1194,9 @@ namespace Basics.Geom
       { return IntersectReduce(y, x, track, false); }
     }
 
-    private static IList<ParamGeometryRelation> MpRelations(
+    private static IEnumerable<ParamGeometryRelation> MpRelations(
       IGeometry x, IGeometry y, TrackOperatorProgress track)
     {
-      List<ParamGeometryRelation> relations = null;
       IMultipartGeometry xMulti = (IMultipartGeometry)x;
 
       IBox yExtent = y.Extent;
@@ -1193,26 +1205,23 @@ namespace Basics.Geom
       {
         iPart++;
         if (track != null && track.Cancel)
-        { return relations; }
+        { yield break; }
 
         Relation extentRelation = xPart.Extent.RelationTo(yExtent);
-        IList<ParamGeometryRelation> list = CreateRelations(xPart, y,
+        IEnumerable<ParamGeometryRelation> list = CreateRelations(xPart, y,
           track, extentRelation, false);
         if (list != null)
         {
-          if (relations == null)
-          { relations = new List<ParamGeometryRelation>(); }
           foreach (var rel in list)
           {
             rel.AddParent(x, iPart, xPart);
-            relations.Add(rel);
+            yield return rel;
           }
         }
       }
-      return relations;
     }
 
-    private static IList<ParamGeometryRelation> IntersectReduce(
+    private static IEnumerable<ParamGeometryRelation> IntersectReduce(
       IGeometry x, IGeometry y, TrackOperatorProgress track, bool calcLinearized)
     {
       if (!(x.Topology >= y.Topology)) throw new InvalidOperationException("Topology");
@@ -1243,10 +1252,7 @@ namespace Basics.Geom
           return list;
         }
 
-        {
-          IList<ParamGeometryRelation> list = xParam.CreateRelations(yParam, track);
-          return list;
-        }
+        return xParam.CreateRelations(yParam, track);
       }
       else
       {
@@ -1262,17 +1268,17 @@ namespace Basics.Geom
           return null;
         }
         IGeometry border = x.Border;
-        IList<ParamGeometryRelation> list = CreateRelations(border, y, track, false);
+        List<ParamGeometryRelation> rels = new List<ParamGeometryRelation>(CreateRelations(border, y, track, false));
 
         if (track == null || !track.Cancel)
         {
-          List<ParamGeometryRelation> adapted = ParamGeometryRelation.Assemble(x, y, list);
+          List<ParamGeometryRelation> adapted = ParamGeometryRelation.Assemble(x, y, rels);
           if (adapted != null && adapted.Count > 0 && track != null)
           { track.OnRelationFound(track, adapted[0]); }
           if (adapted != null)
-          { list = adapted; }
+          { rels = adapted; }
         }
-        return list;
+        return rels;
       }
     }
 
@@ -1391,7 +1397,7 @@ namespace Basics.Geom
         return rel;
       }
 
-      public IList<ParamGeometryRelation> CreateRelations(IParamGeometry other,
+      public IEnumerable<ParamGeometryRelation> CreateRelations(IParamGeometry other,
         TrackOperatorProgress trackProgress)
       {
         if (other is IRelParamGeometry relOther)

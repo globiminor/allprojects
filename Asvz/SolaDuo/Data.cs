@@ -1,12 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Xml;
 using Basics.Geom;
 using Basics.Geom.Projection;
 using Ocad;
-using System.Xml.Serialization;
-using System.IO;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Xml;
 
 namespace Asvz
 {
@@ -155,7 +153,7 @@ namespace Asvz
       while (iKm < lengthMeas)
       {
         double[] param = cat.GetLineParams(iKm * 1000.0);
-        IPoint p = line.Segments[(int)param[0]].PointAt(param[1]);
+        IPoint p = line.GetSegment((int)param[0]).PointAt(param[1]);
 
         p = p.Project(prj);
 
@@ -234,12 +232,13 @@ namespace Asvz
 
     protected void ReadDefaultData(string fileName)
     {
-      OcadReader pReader = OcadReader.Open(fileName);
+      using (OcadReader reader = OcadReader.Open(fileName))
+      {
+        ReadDefaultElements(reader);
+        ReadSymbols(reader);
 
-      ReadDefaultElements(pReader);
-      ReadSymbols(pReader);
-
-      pReader.Close();
+        reader.Close();
+      }
     }
 
     protected Polyline ReadSpecialStrecke(string fileName, Polyline defaultStrecke)
@@ -342,12 +341,12 @@ namespace Asvz
       List<VerpflegungSym> list = new List<VerpflegungSym>();
       foreach (var idx in Index(strecke))
       {
-        double t0 = -idx.Segments.First.ParamAt(DistIndex);
-        double l1 = idx.Segments.Last.Length();
-        double t1 = 2 - idx.Segments.Last.ParamAt(l1 - DistIndex);
+        double t0 = -idx.GetSegment(0).ParamAt(DistIndex);
+        double l1 = idx.GetSegment(-1).Length();
+        double t1 = 2 - idx.GetSegment(-1).ParamAt(l1 - DistIndex);
         Polyline cross = idx.Clone();
-        cross.AddFirst(idx.Segments.First.PointAt(t0));
-        cross.Add(idx.Segments.Last.PointAt(t1));
+        cross.Insert(0, idx.GetSegment(0).PointAt(t0));
+        cross.Add(idx.GetSegment(-1).PointAt(t1));
 
         foreach (var verpf in VerpfList)
         {
@@ -366,13 +365,13 @@ namespace Asvz
 
       foreach (var idx in IndexList)
       {
-        IPoint p = idx.Points.First.Value;
+        IPoint p = idx.Points[0];
         Arc a = new Arc(p, DistIndex, 0, Math.PI * 2);
         if (line.Intersects(a))
         { index.Add(idx); }
         else
         {
-          p = idx.Points.Last.Value;
+          p = idx.Points.Last();
           a = new Arc(p, DistIndex, 0, Math.PI * 2);
           if (line.Intersects(a))
           { index.Add(idx); }
@@ -448,8 +447,8 @@ namespace Asvz
 
     protected void GetStartZiel(int iStrecke, SortedList<IPoint, List<int>> marks, Polyline strecke)
     {
-      IPoint start = strecke.Points.First.Value;
-      IPoint ziel = strecke.Points.Last.Value;
+      IPoint start = strecke.Points[0];
+      IPoint ziel = strecke.Points.Last();
 
       if (marks.TryGetValue(start, out List<int> l) == false)
       {

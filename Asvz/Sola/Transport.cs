@@ -1,11 +1,12 @@
+using Basics.Geom;
+using Basics.Geom.Projection;
+using Ocad;
+using Ocad.StringParams;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Basics.Geom;
-using Ocad;
 using System.IO;
-using Ocad.StringParams;
-using Basics.Geom.Projection;
+using System.Linq;
 using System.Xml;
 
 namespace Asvz.Sola
@@ -35,8 +36,8 @@ namespace Asvz.Sola
       foreach (var elem in SortedElements)
       {
         Polyline add = (Polyline)elem.Geometry;
-        combined.Add(add.Points.First.Value);
-        foreach (var seg in add.Segments)
+        combined.Add(add.Points[0]);
+        foreach (var seg in add.EnumSegments())
         { combined.Add(seg); }
       }
       return combined;
@@ -51,12 +52,12 @@ namespace Asvz.Sola
       List<GeoElement> startLines = new List<GeoElement>();
       foreach (var elem in Elements)
       {
-        Point start = Point.CastOrCreate(((Polyline)elem.Geometry).Points.First.Value);
+        Point start = Point.CastOrCreate(((Polyline)elem.Geometry).Points[0]);
         double minDist = double.MaxValue;
         Element pre = null;
         foreach (var nb in Elements)
         {
-          IPoint end = ((Polyline)nb.Geometry).Points.Last.Value;
+          IPoint end = ((Polyline)nb.Geometry).Points.Last();
           double d2 = start.Dist2(end);
           if (d2 < 2000 && d2 < minDist)
           {
@@ -557,22 +558,20 @@ namespace Asvz.Sola
     private void GetBorder(Polyline border, out Polyline partEnd, out Polyline partStart,
       out IPoint centerEnd, out IPoint centerStart)
     {
-      IList<ParamGeometryRelation> pEnd = null;
-      IList<ParamGeometryRelation> pStart = null;
+      List<ParamGeometryRelation> pEnd = null;
+      List<ParamGeometryRelation> pStart = null;
 
       partEnd = null;
       partStart = null;
 
       if (_runFrom != null)
       {
-        pEnd = GeometryOperator.CreateRelations(border, _runFrom);
-        Trace.Assert(pEnd != null);
+        pEnd = new List<ParamGeometryRelation>(GeometryOperator.CreateRelations(border, _runFrom));
       }
 
       if (_runTo != null)
       {
-        pStart = GeometryOperator.CreateRelations(border, _runTo);
-        Trace.Assert(pStart != null);
+        pStart = new List<ParamGeometryRelation>(GeometryOperator.CreateRelations(border, _runTo));
       }
 
       ParamGeometryRelation pCutBorder;
@@ -582,9 +581,9 @@ namespace Asvz.Sola
       centerStart = null;
 
       if (_runFrom != null)
-      { centerEnd = _runFrom.Points.Last.Value; }
+      { centerEnd = _runFrom.Points.Last(); }
       if (_runTo != null)
-      { centerStart = _runTo.Points.First.Value; }
+      { centerStart = _runTo.Points[0]; }
 
       if (centerEnd != null && centerStart != null && PointOperator.Dist2(centerEnd, centerStart) < 100)
       { centerStart = centerEnd; }
@@ -595,7 +594,7 @@ namespace Asvz.Sola
       {
         pCutBorder = pEnd[pEnd.Count - 1];
         pCircle = Circle(centerEnd);
-        IList<ParamGeometryRelation> pList = GeometryOperator.CreateRelations(_runFrom, pCircle);
+        List<ParamGeometryRelation> pList = new List<ParamGeometryRelation>(GeometryOperator.CreateRelations(_runFrom, pCircle));
         pCutCircle = pList[pList.Count - 1];
         partEnd = _runFrom.Split(new[] { pCutBorder, pCutCircle })[1];
       }
@@ -604,7 +603,7 @@ namespace Asvz.Sola
         pCutBorder = pStart[0];
         if (centerStart != centerEnd)
         { pCircle = Circle(centerStart); }
-        IList<ParamGeometryRelation> pList = GeometryOperator.CreateRelations(_runTo, pCircle);
+        List<ParamGeometryRelation> pList = new List<ParamGeometryRelation>(GeometryOperator.CreateRelations(_runTo, pCircle));
         pCutCircle = pList[0];
         partStart = _runTo.Split(new[] { pCutCircle, pCutBorder })[1];
       }
@@ -739,8 +738,8 @@ namespace Asvz.Sola
         {
           Polyline line = (Polyline)elem.Geometry;
 
-          ISegment c0 = line.Segments.First;
-          ISegment c1 = line.Segments.Last;
+          ISegment c0 = line.GetSegment(0);
+          ISegment c1 = line.GetSegment(-1);
 
           Element elemStart = FindIndexElement(c0.Start, PointOperator.Scale(-1, c0.TangentAt(0)), elements);
           Element elemEnd = FindIndexElement(c1.End, c1.TangentAt(1), elements);
@@ -759,7 +758,7 @@ namespace Asvz.Sola
 
         Point d = p - p0;
         IPoint dirPrj = direction.Project(Geometry.ToXY);
-        double x = PointOperator.SkalarProduct( dirPrj, d);
+        double x = PointOperator.SkalarProduct(dirPrj, d);
         double y = PointOperator.VectorProduct(dirPrj, d);
 
         if (x > 0 &&

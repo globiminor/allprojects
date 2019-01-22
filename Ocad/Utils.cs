@@ -11,7 +11,7 @@ namespace Ocad
     {
       GeometryCollection symPrj = SymbolGeometry(symbol, position, angle);
 
-      IList<ParamGeometryRelation> cuts =
+      IEnumerable<ParamGeometryRelation> cuts =
         GeometryOperator.CreateRelations(line, symPrj, new TrackOperatorProgress());
 
       if (cuts == null)

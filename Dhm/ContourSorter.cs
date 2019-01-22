@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Basics.Geom;
 using PntOp = Basics.Geom.PointOperator;
 
@@ -741,12 +742,12 @@ namespace Dhm
         { typeList.Add(contour.Type); }
 
         Polyline line = contour.Polyline;
-        mesh.Add(line.Points.First.Value);
+        mesh.Add(line.Points[0]);
       }
       foreach (var contour in contourList)
       {
         Polyline line = contour.Polyline;
-        mesh.Add(line.Points.Last.Value);
+        mesh.Add(line.Points.Last());
       }
 
       foreach (var contour in contourList)
@@ -847,33 +848,28 @@ namespace Dhm
         if (contour.Orientation != Orientation.Unknown)
         { continue; }
         Polyline line = contour.Polyline;
-        if (PntOp.Dist2(line.Points.First.Value, line.Points.Last.Value) > 0)
+        if (PntOp.Dist2(line.Points[0], line.Points.Last()) > 0)
         { continue; }
 
         double xMax = line.Extent.Max.X;
-        LinkedListNode<IPoint> node = line.Points.First;
-        while (node != null)
+        int nPoints = line.Points.Count;
+        for (int iPoint = 0; iPoint < nPoints - 1; iPoint++)
         {
-          if (node.Value.X == xMax)
+          IPoint p1 = line.Points[iPoint];
+          if (p1.X == xMax)
           {
-            IPoint p1 = node.Value;
-            IPoint p2 = node.Next.Value;
-            IPoint p0;
-            if (node.Previous != null)
-            { p0 = node.Previous.Value; }
-            else
-            {
-              LinkedListNode<IPoint> node0 = line.Points.Last.Previous;
-              p0 = node0.Value;
-            }
+            IPoint p2 = line.Points[iPoint + 1];
+            int iPre = iPoint - 1;
+            if (iPre < 0)
+              iPre = nPoints - 2; 
+            IPoint p0 = line.Points[iPre];
+
             if (p2.X == xMax && p0.X == xMax)
             {
-              Debug.Assert(node.Previous == null,
-                "Error in software design assumption");
-              LinkedListNode<IPoint> node0 = node.Next.Next;
-              while (node0.Value.X == xMax)
-              { node0 = node0.Next; }
-              p2 = node0.Value;
+              int iNext = iPoint + 2;
+              while (line.Points[iNext].X == xMax)
+              { iNext++; }
+              p2 = line.Points[iNext];
             }
 
             if ((PntOp.Sub(p1, p0)).VectorProduct(PntOp.Sub(p2, p1)) < 0)
@@ -884,8 +880,6 @@ namespace Dhm
             OnProgressChanged(Progress.HillAssigned, contour);
             break;
           }
-
-          node = node.Next;
         }
         if (contour.Orientation == Orientation.Unknown)
         {

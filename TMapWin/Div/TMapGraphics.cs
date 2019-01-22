@@ -150,7 +150,7 @@ namespace TMapWin.Div
     {
       GraphicsPath path = new GraphicsPath();
 
-      foreach (var seg in line.Segments)
+      foreach (var seg in line.EnumSegments())
       {
         if (seg is Line l)
         {

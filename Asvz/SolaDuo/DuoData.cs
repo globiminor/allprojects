@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Basics.Geom;
 using Ocad;
 using Ocad.StringParams;
+using System.Linq;
 
 namespace Asvz.SolaDuo
 {
@@ -132,13 +133,13 @@ namespace Asvz.SolaDuo
         {
           streckenTeile.Add(elem);
           Polyline line = (Polyline)elem.Geometry;
-          Verzweigung.Add(Point.Create(line.Points.Last.Value));
+          Verzweigung.Add(Point.Create(line.Points.Last()));
         }
         else if (elem.Symbol == SymDD.StreckeBisHelfer)
         {
           streckenTeile.Add(elem);
           Polyline line = (Polyline)elem.Geometry;
-          Helfer.Add(Point.Create(line.Points.Last.Value));
+          Helfer.Add(Point.Create(line.Points.Last()));
         }
         else if (elem.Symbol == SymDD.StreckeBisEnde)
         { streckenTeile.Add(elem); }
@@ -238,8 +239,8 @@ namespace Asvz.SolaDuo
         {
           Polyline yPart = (Polyline)strecken[iy].Geometry;
 
-          if (PointOperator.Dist2(xPart.Points.Last.Value, yPart.Points.First.Value) < 20)
-            if (PointOperator.Dist2(xPart.Points.Last.Value, yPart.Points.First.Value) < 20)
+          if (PointOperator.Dist2(xPart.Points.Last(), yPart.Points[0]) < 20)
+            if (PointOperator.Dist2(xPart.Points.Last(), yPart.Points[0]) < 20)
             {
               to[ix] = iy + 1;
               from[iy] = ix + 1;
@@ -310,7 +311,7 @@ namespace Asvz.SolaDuo
 
         if (iStrecke == 0)
         {
-          ISegment c = str.Segments.First;
+          ISegment c = str.GetSegment(0);
           IPoint tangent = c.TangentAt(0);
 
           element = new GeoElement(Point.Create(c.Start));
@@ -323,26 +324,26 @@ namespace Asvz.SolaDuo
         }
         else
         {
-          element = new GeoElement(Point.Create(str.Points.First.Value));
+          element = new GeoElement(Point.Create(str.Points[0]));
           element.Symbol = SymDD.Uebergabe;
           element.Type = GeomType.point;
           elements.Add(element);
 
-          str = Utils.Split(str, _symUebergabe, str.Points.First.Value, 0)[1];
+          str = Utils.Split(str, _symUebergabe, str.Points[0], 0)[1];
         }
 
         if (iStrecke == nStrecken - 1)
         {
-          element = new GeoElement(Point.Create(str.Points.Last.Value));
+          element = new GeoElement(Point.Create(str.Points.Last()));
           element.Symbol = SymDD.Ziel;
           element.Type = GeomType.point;
           elements.Add(element);
 
-          str = Utils.Split(str, _symZiel, str.Points.Last.Value, 0)[0];
+          str = Utils.Split(str, _symZiel, str.Points.Last(), 0)[0];
         }
         else
         {
-          str = Utils.Split(str, _symUebergabe, str.Points.Last.Value, 0)[0];
+          str = Utils.Split(str, _symUebergabe, str.Points.Last(), 0)[0];
         }
 
         foreach (var verzweigung in Verzweigung)

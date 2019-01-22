@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 
 namespace OCourse.ViewModels
 {
@@ -582,8 +583,8 @@ namespace OCourse.ViewModels
 
           ctrl0.Name = from.Trim();
           ctrl1.Name = to.Trim();
-          IPoint start = new Point2D(route.Points.First.Value);
-          IPoint end = new Point2D(route.Points.Last.Value);
+          IPoint start = new Point2D(route.Points[0]);
+          IPoint end = new Point2D(route.Points.Last());
           double direct = Math.Sqrt(PointOperator.Dist2(start, end));
           CostFromTo routeCost = new CostFromTo(ctrl0, ctrl1, start, end,
             resol, direct, climb, route, optimal, cost);

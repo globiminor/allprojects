@@ -63,16 +63,16 @@ namespace Dhm
         i = lx.Points.Count - ly.Points.Count;
         if (i != 0) { return i; }
 
-        i = lx.Points.First.Value.X.CompareTo(ly.Points.First.Value.X);
+        i = lx.Points[0].X.CompareTo(ly.Points[0].X);
         if (i != 0) { return i; }
 
-        i = lx.Points.First.Value.Y.CompareTo(ly.Points.First.Value.Y);
+        i = lx.Points[0].Y.CompareTo(ly.Points[0].Y);
         if (i != 0) { return i; }
 
-        i = lx.Points.First.Next.Value.X.CompareTo(ly.Points.First.Next.Value.X);
+        i = lx.Points[1].X.CompareTo(ly.Points[1].X);
         if (i != 0) { return i; }
 
-        i = lx.Points.First.Next.Value.Y.CompareTo(ly.Points.First.Next.Value.Y);
+        i = lx.Points[1].Y.CompareTo(ly.Points[1].Y);
         if (i == 0)
         { throw new InvalidProgramException("Error in software design assumption"); }
         return i;
@@ -81,9 +81,9 @@ namespace Dhm
       #endregion
     }
 
-    private int _id;
+    private readonly int _id;
     private Polyline _line;
-    private ContourType _type;
+    private readonly ContourType _type;
 
     private int? _heightIdx;
     private int? _maxHeightIdx;
@@ -94,7 +94,7 @@ namespace Dhm
 
     private static Comparer _comparer = new Comparer();
 
-    private SortedDictionary<Contour, NeighborInfo> _neighbors;
+    private readonly SortedDictionary<Contour, NeighborInfo> _neighbors;
 
     public Contour(int id, Polyline polyline, ContourType type)
     {

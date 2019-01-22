@@ -99,7 +99,7 @@ namespace Ocad
       else if (geom is PointCollection)
       { point = ((PointCollection)geom)[0]; }
       else if (geom is Polyline)
-      { point = ((Polyline)geom).Points.First.Value; }
+      { point = ((Polyline)geom).Points[0]; }
       else
       { throw new NotImplementedException("Unhandled geometry type " + geom.GetType()); }
       return point;

@@ -56,7 +56,7 @@ namespace Asvz.Forchlauf
       Ocad.Symbol.TextSymbol symText = SymbolText(cat.Kategorie);
       string name = KategorieName(cat.Kategorie);
 
-      IPoint start = cat.Strecke.Points.First.Value;
+      IPoint start = cat.Strecke.Points[0];
       Polyline startClip = InitStart(writer, start);
       Polyline part = ReducedStrecke(cat.Strecke, startClip);
 
@@ -115,7 +115,7 @@ namespace Asvz.Forchlauf
 
       Categorie lang = data.GetKategorie(Kategorie.Lang);
 
-      IPoint start = lang.Strecke.Points.First.Value;
+      IPoint start = lang.Strecke.Points[0];
       Polyline startClip = InitStart(writer, start);
 
       foreach (var dataElement in data.StreckenTeile)
@@ -310,11 +310,12 @@ namespace Asvz.Forchlauf
 
     private Polyline ReducedStrecke(Polyline full, Polyline startClip)
     {
-      IList<ParamGeometryRelation> splits = GeometryOperator.CreateRelations(full, startClip);
-      if (splits != null && splits.Count > 0)
+      IEnumerable<ParamGeometryRelation> splits = GeometryOperator.CreateRelations(full, startClip);
+      if (splits != null)
       {
         IList<Polyline> parts = full.Split(splits);
-        full = parts[1];
+        if (parts.Count > 1)
+        { full = parts[1]; }
       }
       return full;
     }

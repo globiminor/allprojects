@@ -126,7 +126,6 @@
     <Compile Include="Geom\Projection\TransferProjection.cs" />
     <Compile Include="Geom\Projection\Translate.cs" />
     <Compile Include="Geom\Projection\TransversMercator.cs" />
-    <Compile Include="Geom\SegmentList.cs" />
     <Compile Include="Geom\ToleranceGeometry.cs" />
     <Compile Include="Geom\TrackOperatorProgress.cs" />
     <Compile Include="Geom\Units.cs" />

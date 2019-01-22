@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Basics.Geom
 {
@@ -8,7 +9,7 @@ namespace Basics.Geom
   /// </summary>
   public class Area : Geometry, IGeometry, ISimpleArea
   {
-    private readonly PolylineCollection _lines_;
+    private readonly PolylineCollection _border;
     BoxTree<Polyline> _spatialIndex;
 
     public Area()
@@ -19,19 +20,19 @@ namespace Basics.Geom
     { }
     public Area(IEnumerable<Polyline> border)
     {
-      _lines_ = new PolylineCollection();
-      _lines_.AddRange(border);
+      _border = new PolylineCollection();
+      _border.AddRange(border);
     }
     #region IGeometry Members
 
-    IEnumerable<IPoint> ISimpleArea.Border => Lines[0].Points;
+    IReadOnlyList<IPoint> ISimpleArea.Border => Lines[0].Points;
     protected virtual PolylineCollection Lines
     {
-      get { return _lines_; }
+      get { return _border; }
     }
     public override int Dimension
     {
-      get { return _lines_.Dimension; }
+      get { return _border.Dimension; }
     }
 
     public override int Topology
@@ -66,11 +67,11 @@ namespace Basics.Geom
         if (rel == Relation.Disjoint)
         { continue; }
 
-        if (border.Points.First.Value.EqualGeometry(border.Points.Last.Value) == false)
-        { border.Add(border.Points.First.Value); }
+        if (border.Points[0].EqualGeometry(border.Points.Last()) == false)
+        { border.Add(border.Points[0]); }
 
         double? xPre = null;
-        foreach (var curve in border.Segments)
+        foreach (var curve in border.EnumSegments())
         {
           IBox extent = curve.Extent;
 
@@ -214,8 +215,8 @@ namespace Basics.Geom
       foreach (var eLine in SpatialIndex.Search(searchBox))
       {
         Polyline line = eLine.Value;
-        if (Point.Equals(line.Points.First.Value, line.Points.Last.Value) == false)
-        { line.Add(line.Points.First.Value); }
+        if (Point.Equals(line.Points[0], line.Points.Last()) == false)
+        { line.Add(line.Points[0]); }
         foreach (var eCurve in line.SpatialIndex.Search(searchBox))
         {
           ISegment curve = eCurve.Value;
@@ -326,7 +327,7 @@ namespace Basics.Geom
 
     public void CloseBorders()
     {
-      System.Collections.Generic.List<Polyline> invalidList = new System.Collections.Generic.List<Polyline>();
+      List<Polyline> invalidList = new List<Polyline>();
       foreach (var border in Border)
       {
         if (border.Points.Count == 0)
@@ -334,8 +335,8 @@ namespace Basics.Geom
           invalidList.Add(border);
           continue;
         }
-        Point start = Point.CastOrCreate(border.Points.First.Value);
-        if (start.Dist2(border.Points.Last.Value) > 1e-12)
+        Point start = Point.CastOrCreate(border.Points[0]);
+        if (start.Dist2(border.Points.Last()) > 1e-12)
         { border.Add(start); }
       }
       foreach (var invalid in invalidList)

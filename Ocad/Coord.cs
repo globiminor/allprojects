@@ -91,7 +91,7 @@ namespace Ocad
       Flags c = Code() | remove;
       Flags code = c ^ remove;
       double x = GetGeomPart(_ix);
-      double y = GetCodePart(_iy);
+      double y = GetGeomPart(_iy);
       Point2D p = code == 0 ? new Point2D(x, y) : new CodePoint(x, y) { Flags = code };
       return p;
     }
@@ -287,12 +287,12 @@ namespace Ocad
       { yield break; }
 
       if (isInnerRing)
-      { coord = Coord.Create(polyline.Points.First.Value, Coord.Flags.firstHolePoint); }
+      { coord = Coord.Create(polyline.Points[0], Coord.Flags.firstHolePoint); }
       else
-      { coord = Coord.Create(polyline.Points.First.Value, Coord.Flags.none); }
+      { coord = Coord.Create(polyline.Points[0], Coord.Flags.none); }
       yield return coord;
 
-      foreach (var seg in polyline.Segments)
+      foreach (var seg in polyline.EnumSegments())
       {
         if (seg is Bezier bezier)
         {

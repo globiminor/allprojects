@@ -8,17 +8,15 @@ namespace Basics.Geom
   /// </summary>
   public class Polyline : Geometry, IMultipartGeometry, ICurve
   {
-    private readonly LinkedList<IPoint> _pointList;
-    private readonly SegmentList _segmentList;
-    private LinkedList<IInnerSegment> _innerCurveList;
+    private readonly List<IPoint> _pointList;
+    private List<IInnerSegment> _innerCurveList;
     private Box _extent;
 
     private BoxTree<ISegment> _spatialIndex;
 
     public Polyline()
     {
-      _pointList = new LinkedList<IPoint>();
-      _segmentList = new SegmentList(this);
+      _pointList = new List<IPoint>();
     }
 
     public static Polyline Create<T>(IEnumerable<T> pointList) where T : IPoint
@@ -31,7 +29,7 @@ namespace Basics.Geom
     public Polyline ToBeziers()
     {
       Polyline copy = new Polyline();
-      foreach (var seg in Segments)
+      foreach (var seg in EnumSegments())
       {
         if (seg is Line || seg is Bezier)
         {
@@ -49,7 +47,7 @@ namespace Basics.Geom
 
     public bool HasNonBezier()
     {
-      foreach (var seg in Segments)
+      foreach (var seg in EnumSegments())
       {
         if (seg is Line || seg is Bezier)
         { continue; }
@@ -76,7 +74,7 @@ namespace Basics.Geom
       if (iSeg >= Points.Count - 1)
       { iSeg--; }
 
-      return Segments[iSeg].PointAt(at - iSeg);
+      return GetSegment(iSeg).PointAt(at - iSeg);
     }
     IList<IPoint> ITangentGeometry.TangentAt(IPoint parameters)
     {
@@ -85,65 +83,110 @@ namespace Basics.Geom
       if (iSeg >= Points.Count - 1)
       { iSeg--; }
 
-      return new[] { Segments[iSeg].TangentAt(at - iSeg) };
+      return new[] { GetSegment(iSeg).TangentAt(at - iSeg) };
     }
 
-    private void AddRange<T>(IEnumerable<T> pointList) where T : IPoint
+    private void AddRange<T>(IEnumerable<T> points) where T : IPoint
     {
-      foreach (var point in pointList)
-      {
-        _pointList.AddLast(point);
-      }
+      foreach (var point in points)
+      { _pointList.Add(point); }
     }
-    internal LinkedList<IInnerSegment> SegmentParts
+    internal List<IInnerSegment> SegmentParts
     { // used from SegmentList
       get { return _innerCurveList; }
     }
 
-    IEnumerable<ISegment> ICurve.Segments => Segments;
-    public SegmentList Segments => _segmentList;
+    IEnumerable<ISegment> ICurve.Segments => EnumSegments();
+    public IEnumerable<ISegment> EnumSegments()
+    {
+      if (Points.Count < 2)
+      { yield break; }
+
+      IEnumerator<IInnerSegment> innerSegs = _innerCurveList?.GetEnumerator();
+      IEnumerator<IPoint> points = Points.GetEnumerator();
+
+      points.MoveNext();
+      IPoint p2 = points.Current;
+      while (points.MoveNext())
+      {
+        IPoint p1 = p2;
+        p2 = points.Current;
+        innerSegs?.MoveNext();
+        IInnerSegment innerSeg = innerSegs?.Current;
+        yield return Curve.Create(p1, p2, innerSeg);
+      }
+    }
+
+    public void Insert(int position, IPoint point)
+    {
+      if (position == _pointList.Count)
+      {
+        Add(point);
+        return;
+      }
+      _spatialIndex = null;
+
+      _pointList.Insert(position, point);
+      _innerCurveList?.Insert(position, null);
+    }
+
+    public void Replace(int position, IPoint point)
+    {
+      _spatialIndex = null;
+
+      if (position < 0)
+        position = Points.Count + position;
+      _pointList[position] = point;
+    }
+
+    public void RemoveAt(int index)
+    {
+      if (index < 0)
+      {
+        index = Points.Count - 1;
+      }
+      _spatialIndex = null;
+
+      _pointList.RemoveAt(index);
+      _innerCurveList?.RemoveAt(Math.Max(index, _innerCurveList.Count - 1));
+    }
 
     public void Add(IPoint point)
     {
       _spatialIndex = null;
 
-      _pointList.AddLast(point);
+      _pointList.Add(point);
       if (_innerCurveList != null)
-      { _innerCurveList.AddLast((InnerCurve)null); }
-    }
-    public void AddFirst(IPoint point)
-    {
-      _spatialIndex = null;
-
-      _pointList.AddFirst(point);
-      if (_innerCurveList != null)
-      { _innerCurveList.AddFirst((InnerCurve)null); }
+      { _innerCurveList.Add((InnerCurve)null); }
     }
 
-    public int Add(ISegment segment)
+    public int Add(ISegment segment, bool verify = true)
     {
       _spatialIndex = null;
 
       int i = _pointList.Count - 1;
       if (i < 0)
-      { _pointList.AddFirst(segment.Start); }
+      { _pointList.Add(segment.Start); }
       else
       {
-        IPoint last = _pointList.Last.Value;
-        IPoint start = segment.Start;
-        if (last != start && Point.CastOrCreate(last).Dist2(start) > 0.0001 * segment.Length())
-        { throw new InvalidOperationException("segment does not fit to the end of polyline"); }
+        if (verify)
+        {
+          IPoint last = _pointList[_pointList.Count - 1];
+          IPoint start = segment.Start;
+          if (last != start && PointOperator.Dist2(last, start) > 0.0001 * segment.Length())
+          { throw new InvalidOperationException("segment does not fit to the end of polyline"); }
+        }
       }
-      _pointList.AddLast(segment.End);
+      _pointList.Add(segment.End);
 
-      if (_innerCurveList == null && segment.InnerSegment() != null)
+      if (_innerCurveList == null && segment.GetInnerSegment() != null)
       {
-        _innerCurveList = new LinkedList<IInnerSegment>();
+        _innerCurveList = new List<IInnerSegment>();
         for (int iSeg = 0; iSeg < i; iSeg++)
-        { _innerCurveList.AddLast((InnerCurve)null); }
+        { _innerCurveList.Add(null); }
       }
       if (_innerCurveList != null)
-      { _innerCurveList.AddLast(segment.InnerSegment()); }
+      { _innerCurveList.Add(segment.GetInnerSegment()); }
 
       return i + 1;
     }
@@ -159,7 +202,7 @@ namespace Basics.Geom
     public Polyline Clone()
     {
       Polyline pClone = new Polyline();
-      foreach (var pLine in Segments)
+      foreach (var pLine in EnumSegments())
       {
         pClone.Add(pLine.Clone());
       }
@@ -177,7 +220,7 @@ namespace Basics.Geom
       int iSeg = 0;
       double p0 = 0;
       double p1 = 0;
-      foreach (var curve in Segments)
+      foreach (var curve in EnumSegments())
       {
         double l0 = l1;
         double d = curve.Length();
@@ -201,31 +244,37 @@ namespace Basics.Geom
       }
       if (iStart == iEnd)
       {
-        ISegment c = Segments[iStart].Subpart(p0, p1);
+        ISegment c = GetSegment(iStart).Subpart(p0, p1);
         subpart.Add(c);
       }
       else
       {
-        ISegment c = Segments[iStart].Subpart(p0, 1);
+        ISegment c = GetSegment(iStart).Subpart(p0, 1);
         subpart.Add(c);
         for (int i = iStart + 1; i < iSeg; i++)
         {
-          subpart.Add(Segments[i]);
+          subpart.Add(GetSegment(i));
         }
         if (iEnd >= 0)
         {
-          ISegment endPart = Segments[iEnd].Subpart(0, p1);
+          ISegment endPart = GetSegment(iEnd).Subpart(0, p1);
           subpart.Add(endPart);
         }
       }
       return subpart;
     }
 
-    public LinkedList<IPoint> Points
+    public IReadOnlyList<IPoint> Points
     {
       get { return _pointList; }
     }
-    internal LinkedList<IInnerSegment> InnerCurves
+    public ISegment GetSegment(int iSegment)
+    {
+      if (iSegment < 0)
+      { iSegment = Points.Count + iSegment - 1; }
+      return Curve.Create(Points[iSegment], Points[iSegment + 1], InnerCurves?[iSegment]);
+    }
+    internal IReadOnlyList<IInnerSegment> InnerCurves
     {
       get { return _innerCurveList; }
     }
@@ -233,7 +282,7 @@ namespace Basics.Geom
     public double Length()
     {
       double dDist = 0;
-      foreach (var pLine in Segments)
+      foreach (var pLine in EnumSegments())
       {
         dDist += pLine.Length();
       }
@@ -244,7 +293,7 @@ namespace Basics.Geom
     {
       double dRest = distance;
       int iSeg = 0;
-      foreach (var curve in Segments)
+      foreach (var curve in EnumSegments())
       {
         double dLength = curve.Length();
         if (dLength > dRest)
@@ -258,7 +307,7 @@ namespace Basics.Geom
       return null;
     }
 
-    public IList<Polyline> Split(IList<ParamGeometryRelation> splits)
+    public IList<Polyline> Split(IEnumerable<ParamGeometryRelation> splits)
     {
       Dictionary<ISegment, List<ParamGeometryRelation>> curveSplits =
         new Dictionary<ISegment, List<ParamGeometryRelation>>(new Curve.GeometryEquality());
@@ -274,11 +323,13 @@ namespace Basics.Geom
         }
         list.Add(r);
       }
+      if (curveSplits.Count == 0)
+      { return new List<Polyline> { this }; }
 
       List<Polyline> parts = new List<Polyline>();
       Polyline part = null;
 
-      foreach (var curve in Segments)
+      foreach (var curve in EnumSegments())
       {
         if (curveSplits.TryGetValue(curve, out List<ParamGeometryRelation> list) == false)
         {
@@ -331,16 +382,6 @@ namespace Basics.Geom
       return Curve.Create(pointNode.Value, pointNode.Next.Value, innerCurve);
     }
 
-    internal void InitNode(out LinkedListNode<IPoint> pointNode,
-      out LinkedListNode<IInnerSegment> innerCurveNode)
-    {
-      pointNode = _pointList.First;
-      if (_innerCurveList != null)
-      { innerCurveNode = _innerCurveList.First; }
-      else
-      { innerCurveNode = null; }
-    }
-
     internal void NextNodes(ref LinkedListNode<IPoint> pointNode,
       ref LinkedListNode<IInnerSegment> innerCurveNode)
     {
@@ -369,24 +410,20 @@ namespace Basics.Geom
         if (_extent == null)
         {
           Box extent = null;
-          foreach (var seg in Segments)
+          foreach (var seg in EnumSegments())
           {
             if (extent == null)
             {
               IBox box = seg.Extent;
-              Point min = Point.Create(box.Min);
-              Point max = Point.Create(box.Max);
-              extent = new Box(min, max);
+              extent = new Box(box);
             }
             else
             { extent.Include(seg.Extent); }
           }
           if (extent == null && _pointList.Count > 0)
           {
-            IBox box = _pointList.First.Value.Extent;
-            Point min = Point.Create(box.Min);
-            Point max = Point.Create(box.Max);
-            extent = new Box(min, max);
+            IBox box = _pointList[0].Extent;
+            extent = new Box(box);
           }
           _extent = extent;
         }
@@ -404,7 +441,7 @@ namespace Basics.Geom
         {
           _spatialIndex = new BoxTree<ISegment>(2);
           _spatialIndex.InitSize(new IGeometry[] { Extent });
-          foreach (var curve in Segments)
+          foreach (var curve in EnumSegments())
           { _spatialIndex.Add(curve.Extent, curve); }
         }
         return _spatialIndex;
@@ -414,11 +451,11 @@ namespace Basics.Geom
     {
       get
       {
-        int iNPoints = _pointList.Count;
-        if (iNPoints == 0)
+        int nPoints = _pointList.Count;
+        if (nPoints == 0)
         { return null; }
-        IPoint start = _pointList.First.Value;
-        IPoint end = _pointList.Last.Value;
+        IPoint start = _pointList[0];
+        IPoint end = _pointList[nPoints - 1];
         PointCollection border = new PointCollection();
         if (start.Equals(end))
         { border.Add(start); }
@@ -546,7 +583,7 @@ namespace Basics.Geom
     public Polyline Project(IProjection projection)
     {
       Polyline projected = new Polyline();
-      foreach (var line in Segments)
+      foreach (var line in EnumSegments())
       { projected.Add(line.Project(projection)); }
       return projected;
     }
@@ -569,12 +606,7 @@ namespace Basics.Geom
       { return true; }
     }
 
-    public IEnumerable<ISegment> Subparts()
-    {
-      return _segmentList;
-    }
-    IEnumerable<IGeometry> IMultipartGeometry.Subparts()
-    { return Subparts(); }
+    IEnumerable<IGeometry> IMultipartGeometry.Subparts() => EnumSegments();
 
     #endregion
 
@@ -586,14 +618,15 @@ namespace Basics.Geom
     public Polyline Generalize(double d)
     {
       List<IPoint> points;
-      if (_segmentList == null)
+      if (_innerCurveList == null)
       {
         points = new List<IPoint>(Points);
       }
       else
       {
-        points = new List<IPoint>(2 * Points.Count) { Points.First.Value };
-        foreach (var curve in Segments)
+        points = new List<IPoint>(2 * Points.Count);
+        points.Add(Points[0]);
+        foreach (var curve in EnumSegments())
         {
           points.AddRange(curve.Linearize(d, false));
         }
@@ -650,7 +683,7 @@ namespace Basics.Geom
       Polyline poly = new Polyline();
       IList<IPoint> list = null;
       int n = 0;
-      foreach (var curve in Segments)
+      foreach (var curve in EnumSegments())
       {
         list = curve.Linearize(maxOffset);
         n = list.Count - 1;
@@ -667,29 +700,18 @@ namespace Basics.Geom
     { return Invert(); }
     public Polyline Invert()
     {
-      Polyline invert = new Polyline();
-      if (SegmentParts == null)
+      Polyline invert = Polyline.Create(Points);
+      invert._pointList.Reverse();
+      if (SegmentParts != null)
       {
-        LinkedListNode<IPoint> node = Points.Last;
-        while (node != null)
+        invert._innerCurveList = new List<IInnerSegment>();
+        for (int iSeg = Points.Count - 2; iSeg >= 0; iSeg--)
         {
-          invert.Add(node.Value);
-          node = node.Previous;
-        }
-      }
-      else
-      {
-        LinkedListNode<IPoint> startNode = Points.Last;
-        LinkedListNode<IPoint> endNode = startNode.Previous;
-        LinkedListNode<IInnerSegment> curveNode = SegmentParts.Last;
-        while (endNode != null)
-        {
-          ISegment curve = Curve.Create(endNode.Value, startNode.Value, curveNode.Value);
-          invert.Add(curve.Invert());
 
-          startNode = endNode;
-          endNode = endNode.Previous;
-          curveNode = curveNode.Previous;
+          ISegment curve = GetSegment(iSeg); 
+
+          IInnerSegment invertedSeg = curve.Invert().GetInnerSegment();
+          invert._innerCurveList.Add(invertedSeg);
         }
       }
 

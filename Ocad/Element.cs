@@ -160,7 +160,7 @@ namespace Ocad
     private static int PointCount(Polyline line)
     {
       int nPoints = 1;
-      foreach (var pSeg in line.Segments)
+      foreach (var pSeg in line.EnumSegments())
       {
         if (pSeg is Bezier)
         { nPoints += 3; }

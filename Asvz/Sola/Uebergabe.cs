@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 namespace Asvz.Sola
 {
@@ -234,7 +235,7 @@ namespace Asvz.Sola
           Type = GeomType.point
         };
 
-        IPoint p1 = partStart.Points.First.Value.Project(_templateSetup.Prj2Map);
+        IPoint p1 = partStart.Points[0].Project(_templateSetup.Prj2Map);
         IPoint p0 = centerStart.Project(_templateSetup.Prj2Map);
         Point p = PointOperator.Sub(p1, p0);
         double angle = -Math.Atan2(p.X, p.Y);
@@ -264,8 +265,8 @@ namespace Asvz.Sola
       pSetup.PrjRotation = border.Angle + _templateSetup.PrjRotation;
       Polyline symBorder = _symUebergabe.Project(pSetup.Map2Prj);
 
-      IList<ParamGeometryRelation> pEnd = null;
-      IList<ParamGeometryRelation> pStart = null;
+      List<ParamGeometryRelation> pEnd = null;
+      List<ParamGeometryRelation> pStart = null;
 
       partEnd = null;
       partStart = null;
@@ -276,14 +277,14 @@ namespace Asvz.Sola
       if (_strecke > 0)
       {
         streckeEnd = _streckenList[_strecke - 1].GetCategorie(Kategorie.Default).Strecke;
-        pEnd = GeometryOperator.CreateRelations(symBorder, streckeEnd);
+        pEnd = new List<ParamGeometryRelation>(GeometryOperator.CreateRelations(symBorder, streckeEnd));
         Trace.Assert(pEnd != null);
       }
 
       if (_strecke < _streckenList.Count)
       {
         streckeStart = _streckenList[_strecke].GetCategorie(Kategorie.Default).Strecke;
-        pStart = GeometryOperator.CreateRelations(symBorder, streckeStart);
+        pStart = new List<ParamGeometryRelation>(GeometryOperator.CreateRelations(symBorder, streckeStart));
         Trace.Assert(pStart != null);
       }
 
@@ -294,9 +295,9 @@ namespace Asvz.Sola
       centerStart = null;
 
       if (streckeEnd != null)
-      { centerEnd = streckeEnd.Points.Last.Value; }
+      { centerEnd = streckeEnd.Points.Last(); }
       if (streckeStart != null)
-      { centerStart = streckeStart.Points.First.Value; }
+      { centerStart = streckeStart.Points[0]; }
 
       if (centerEnd != null && centerStart != null && PointOperator.Dist2(centerEnd, centerStart) < 100)
       { centerStart = centerEnd; }
@@ -307,7 +308,7 @@ namespace Asvz.Sola
       {
         cutBorder = pEnd[pEnd.Count - 1];
         circle = Circle(centerEnd, Radius(_symUeCircle));
-        IList<ParamGeometryRelation> pList = GeometryOperator.CreateRelations(streckeEnd, circle);
+        List<ParamGeometryRelation> pList = new List<ParamGeometryRelation>(GeometryOperator.CreateRelations(streckeEnd, circle));
         cutCircle = pList[pList.Count - 1];
         partEnd = streckeEnd.Split(new[] { cutBorder, cutCircle })[1];
       }
@@ -318,7 +319,7 @@ namespace Asvz.Sola
         if (centerStart != centerEnd)
         { circle = Circle(centerStart, Radius(_symUeNeustart)); }
 
-        IList<ParamGeometryRelation> pList = GeometryOperator.CreateRelations(streckeStart, circle);
+        List<ParamGeometryRelation> pList = new List<ParamGeometryRelation>(GeometryOperator.CreateRelations(streckeStart, circle));
         cutCircle = pList[0];
         partStart = streckeStart.Split(new[] { cutCircle, cutBorder })[1];
       }
@@ -328,7 +329,7 @@ namespace Asvz.Sola
 
     private double Radius(Polyline symbol)
     {
-      double r2 = PointOperator.OrigDist2(symbol.Points.First.Value);
+      double r2 = PointOperator.OrigDist2(symbol.Points[0]);
       double r = Math.Sqrt(r2);
       return r;
     }

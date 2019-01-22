@@ -77,8 +77,8 @@ namespace Asvz
         elems.Add(kmElem);
 
         double[] param = strecke.ParamAt(iKm * 1000.0 * f);
-        IPoint p = strecke.Segments[(int)param[0]].PointAt(param[1]);
-        IPoint t = strecke.Segments[(int)param[0]].TangentAt(param[1]);
+        IPoint p = strecke.GetSegment((int)param[0]).PointAt(param[1]);
+        IPoint t = strecke.GetSegment((int)param[0]).TangentAt(param[1]);
         GeoElement elem = CreateKmText(p, t, setup, iKm, kmTxtSymbol, suffix);
         PointCollection points = ((PointCollection)elem.Geometry).Clone();
         points.Add(points[1]);

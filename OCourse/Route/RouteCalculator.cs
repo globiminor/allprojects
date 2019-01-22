@@ -445,11 +445,8 @@ namespace OCourse.Route
     {
       Polyline line = lcg.GetPath(end);
 
-      line.Points.RemoveFirst();
-      line.AddFirst(Point.Create(start));
-
-      line.Points.RemoveLast();
-      line.Add(Point.Create(end));
+      line.Replace(0, Point.Create(start));
+      line.Replace(-1, Point.Create(end));
 
       climb = -1;
       double h0 = 0;

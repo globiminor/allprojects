@@ -6,6 +6,7 @@ using Ocad;
 using Ocad.StringParams;
 using System.Text;
 using Ocad.Data;
+using System.Linq;
 
 namespace Asvz.Sola
 {
@@ -293,14 +294,14 @@ namespace Asvz.Sola
         Streckenplan.WriteKm(writer, cat, _symKmText, _templateSetup, false);
 
         if (strecke0 == null ||
-          PointOperator.Dist2(strecke0.Points.Last.Value, strecke.Points.First.Value) > 10)
+          PointOperator.Dist2(strecke0.Points.Last(), strecke.Points[0]) > 10)
         {
-          elem = new GeoElement(strecke.Points.First.Value);
+          elem = new GeoElement(strecke.Points[0]);
           elem.Symbol = SymT.KmStartEnd;
           elem.Type = GeomType.point;
           writer.Append(elem);
         }
-        elem = new GeoElement(strecke.Points.Last.Value);
+        elem = new GeoElement(strecke.Points.Last());
         elem.Symbol = SymT.KmStartEnd;
         elem.Type = GeomType.point;
         writer.Append(elem);
@@ -323,9 +324,9 @@ namespace Asvz.Sola
           elem.Type = GeomType.line;
           writer.Append(elem);
 
-          IPoint p0 = box.Points.First.Value;
-          IPoint p1 = box.Points.First.Next.Value;
-          IPoint p2 = box.Points.First.Next.Next.Value;
+          IPoint p0 = box.Points[0];
+          IPoint p1 = box.Points[1];
+          IPoint p2 = box.Points[2];
           if (Math.Abs(p1.X - p0.X) < Math.Abs(p1.Y - p0.Y))
           {
             elem = Common.CreateText("D", p0.X + 50, p0.Y - 85, _templateSetup, _symKmText);

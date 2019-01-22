@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Basics.Geom;
 
 namespace Asvz
@@ -35,9 +36,9 @@ namespace Asvz
         else
         {
           IPoint p;
-          p = _line.Points.First.Value;
+          p = _line.Points[0];
           double h0 = dhm.Value(p.X, p.Y);
-          p = _line.Points.Last.Value;
+          p = _line.Points.Last();
           double h1 = dhm.Value(p.X, p.Y);
           profil = Polyline.Create(new[] {
                 new Point2D(0, h0),
@@ -98,7 +99,7 @@ namespace Asvz
             int n = _streckeTeilList.Count;
             for (int i = 1; i < n; i++)
             {
-              foreach (var c in _streckeTeilList[i].Line.Segments)
+              foreach (var c in _streckeTeilList[i].Line.EnumSegments())
               { _s.Add(c.Clone()); }
             }
           }
@@ -166,7 +167,7 @@ namespace Asvz
             }
             else
             {
-              double x0 = _profil.Points.Last.Value.X;
+              double x0 = _profil.Points.Last().X;
 
               foreach (var p in teilProfil.Points)
               {
@@ -202,7 +203,7 @@ namespace Asvz
         if (_steigung < 0)
         {
           _steigung = 0;
-          foreach (var seg in Profil.Segments)
+          foreach (var seg in Profil.EnumSegments())
           {
             double dH = seg.End.Y - seg.Start.Y;
             if (dH > 0)

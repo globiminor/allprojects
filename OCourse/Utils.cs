@@ -5,6 +5,7 @@ using Basics.Geom;
 using Ocad;
 using Grid.Lcp;
 using Ocad.StringParams;
+using System.Linq;
 
 namespace OCourse
 {
@@ -108,13 +109,13 @@ namespace OCourse
 
       if (!(fromGeom is IPoint fromPoint))
       {
-        fromPoint = ((Polyline)fromGeom).Points.Last.Value;
+        fromPoint = ((Polyline)fromGeom).Points.Last();
       }
 
       IPoint toPoint;
       if (line != null)
       {
-        toPoint = line.Points.First.Value;
+        toPoint = line.Points[0];
       }
       else
       {

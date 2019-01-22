@@ -58,7 +58,7 @@ namespace OTextSharp.Models
     public void DrawCurve(Polyline curve)
     {
       bool first = true;
-      foreach (var seg in curve.Segments)
+      foreach (var seg in curve.EnumSegments())
       {
         if (first)
         {

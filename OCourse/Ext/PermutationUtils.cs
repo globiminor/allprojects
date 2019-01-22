@@ -10,6 +10,7 @@ using Ocad;
 using Ocad.StringParams;
 using OCourse.Route;
 using OCourse.Tracking;
+using System.Linq;
 
 namespace OCourse.Ext
 {
@@ -777,7 +778,7 @@ namespace OCourse.Ext
       GeoElement controlElem = lastControl.Element;
       GeometryCollection controlGeom = Ocad.Utils.SymbolGeometry(controlSymbol, (IPoint)controlElem.Geometry.Project(setup.Map2Prj), 0);
 
-      IList<ParamGeometryRelation> cuts =
+      IEnumerable<ParamGeometryRelation> cuts =
         GeometryOperator.CreateRelations(startGeom, controlGeom, new TrackOperatorProgress());
 
       if (cuts == null)
@@ -788,7 +789,7 @@ namespace OCourse.Ext
 
       // dummy implementation
       Polyline clipped = parts[2].Clone();
-      clipped.Points.RemoveLast();
+      clipped.RemoveAt(-1);
       foreach (var add in parts[0].Points)
       { clipped.Add(Point.Create(add)); }
 
@@ -1312,7 +1313,7 @@ namespace OCourse.Ext
         {
           if (info.To.Name == t.Name)
           {
-            IPoint f = info.Route.Points.Last.Value;
+            IPoint f = info.Route.Points.Last();
             finish = new Point3D(f.X, f.Y, 25 * costPerSec);
           }
         }
@@ -1366,27 +1367,27 @@ namespace OCourse.Ext
         cost += dt * costPerSec;
       }
 
-      LinkedListNode<IPoint> pNode = info.Route.Points.First;
+      IEnumerator<IPoint> points = info.Route.Points.GetEnumerator();
 
-      while (pNode != null)
+      IPoint p0 = null;
+      while (points.MoveNext())
       {
-        while (pNode != null && pNode.Value.Z < cost)
+        while (points.Current.Z < cost)
         {
-          pNode = pNode.Next;
-        }
-        if (pNode == null)
-        {
-          break;
+          p0 = points.Current;
+          if (!points.MoveNext())
+          {
+            break;
+          }
         }
 
-        Point p1 = Point.CastOrCreate(pNode.Value);
+        Point p1 = Point.CastOrCreate(points.Current);
         if (p1.Z == cost)
         {
           AppendNode(trkseg, p1, cost / costPerSec + time0, start, calc);
         }
         else
         {
-          IPoint p0 = pNode.Previous.Value;
           double dCost = p1.Z - p0.Z;
           double d = (cost - p1.Z) / dCost;
           Point dp = p1 + d * (p1 - p0);
@@ -1394,9 +1395,11 @@ namespace OCourse.Ext
         }
 
         cost += dt * costPerSec;
+
+        p0 = p1;
       }
       {
-        IPoint last = info.Route.Points.Last.Value;
+        IPoint last = info.Route.Points.Last();
         double x = (last.Z - (cost - dt * costPerSec)) / costPerSec;
         if (x < 1)
         {

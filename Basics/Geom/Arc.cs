@@ -154,17 +154,17 @@ namespace Basics.Geom
       return equal;
     }
 
-    public override IList<ParamGeometryRelation> CreateRelations(IParamGeometry other,
+    public override IEnumerable<ParamGeometryRelation> CreateRelations(IParamGeometry other,
       TrackOperatorProgress trackProgress)
     {
-      IList<ParamGeometryRelation> list;
+      IEnumerable<ParamGeometryRelation> list;
       if (other is Curve o)
       { list = CreateRelations(o, trackProgress); }
       else
       { list = base.CreateRelations(other, trackProgress); }
       return list;
     }
-    protected override IList<ParamGeometryRelation> CreateRelations(Curve other,
+    protected override IEnumerable<ParamGeometryRelation> CreateRelations(Curve other,
       TrackOperatorProgress trackProgress)
     {
       IList<ParamGeometryRelation> result;
@@ -173,7 +173,6 @@ namespace Basics.Geom
         IList<ParamGeometryRelation> list = CutLine(line);
         result = AddRelations(list, trackProgress);
         return result;
-
       }
       if (other is Arc arc)
       {
@@ -182,9 +181,7 @@ namespace Basics.Geom
         return result;
       }
 
-      result = base.CreateRelations(other, trackProgress);
-      return result;
-
+      return base.CreateRelations(other, trackProgress);
     }
 
     double IMultipartSegment.Parameter(ParamGeometryRelation split) => Parameter(split);
@@ -353,7 +350,7 @@ namespace Basics.Geom
     { return Subpart(t0, t1); }
 
 
-    public override InnerCurve InnerCurve()
+    public override InnerCurve GetInnerCurve()
     {
       return new _InnerCurve(_center, _radius, _dirStart, _angle);
     }

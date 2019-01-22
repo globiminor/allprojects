@@ -82,7 +82,7 @@ namespace OCourse.Commands
             if (!(geom is IPoint p))
             {
               if (geom is Polyline l)
-                p = l.Points.Last.Value;
+                p = l.Points.Last();
               else if (geom is PointCollection pts)
                 p = pts[0];
               else
@@ -97,7 +97,7 @@ namespace OCourse.Commands
             {
               if (geom is Polyline l)
               {
-                p1 = l.Points.First.Value;
+                p1 = l.Points[0];
                 double d = l.Length();
                 fullDistance += d;
                 part += d;

@@ -7,6 +7,7 @@ using System.Xml;
 using Ocad;
 using Basics.Geom;
 using Basics.Geom.Projection;
+using System.Linq;
 
 namespace Asvz.Sola
 {
@@ -71,14 +72,14 @@ namespace Asvz.Sola
         iIndex++;
       }
 
-      IPoint start = defaultStrecke.Points.First.Value;
-      IPoint end = defaultStrecke.Points.Last.Value;
+      IPoint start = defaultStrecke.Points[0];
+      IPoint end = defaultStrecke.Points.Last();
       Polyline line0 = null;
       foreach (var elem in reader.EnumGeoElements(indexList))
       {
         Polyline line = (Polyline)elem.Geometry;
-        if (PointOperator.Dist2(line.Points.First.Value, start) < 100 &&
-          PointOperator.Dist2(line.Points.Last.Value, end) < 100)
+        if (PointOperator.Dist2(line.Points[0], start) < 100 &&
+          PointOperator.Dist2(line.Points.Last(), end) < 100)
         {
           line0 = line;
           break;
@@ -205,7 +206,7 @@ namespace Asvz.Sola
         {
           Polyline pLine = (strecken[iGeom]).Geometry as Polyline;
           double dMin = -1;
-          foreach (var pSeg in pLine.Segments)
+          foreach (var pSeg in pLine.EnumSegments())
           {
             Point pX = 0.5 * (pSeg.Extent.Max +
               (Point)pSeg.Extent.Min);
@@ -257,12 +258,12 @@ namespace Asvz.Sola
 
       foreach (var idx in IndexList)
       {
-        double t0 = -idx.Segments.First.ParamAt(DistIndex);
-        double l_1 = idx.Segments.Last.Length();
-        double t1 = 1 + idx.Segments.Last.ParamAt(DistIndex);
+        double t0 = -idx.GetSegment(0).ParamAt(DistIndex);
+        double l_1 = idx.GetSegment(-1).Length();
+        double t1 = 1 + idx.GetSegment(-1).ParamAt(DistIndex);
         Polyline cross = idx.Clone();
-        cross.AddFirst(idx.Segments.First.PointAt(t0));
-        cross.Add(idx.Segments.Last.PointAt(t1));
+        cross.Insert(0, idx.GetSegment(0).PointAt(t0));
+        cross.Add(idx.GetSegment(-1).PointAt(t1));
 
         if (line.Intersection(cross) != null)
         { index.Add(idx); }
@@ -309,8 +310,8 @@ namespace Asvz.Sola
         foreach (var pair in _transport)
         {
           Polyline trans = pair.Key;
-          if (boxFrom.IsWithin(trans.Points.First.Value)
-            && boxTo.IsWithin(trans.Points.Last.Value))
+          if (boxFrom.IsWithin(trans.Points[0])
+            && boxTo.IsWithin(trans.Points.Last()))
           {
             t.Elements.AddRange(CombineTransport(trans, pair.Value));
             return t;
@@ -325,7 +326,7 @@ namespace Asvz.Sola
           { continue; }
 
           Polyline trans = pair.Key;
-          if (boxFrom.IsWithin(trans.Points.First.Value))
+          if (boxFrom.IsWithin(trans.Points[0]))
           {
             t.Elements.AddRange(CombineTransport(trans, SymT.Transport));
             return t;
@@ -340,7 +341,7 @@ namespace Asvz.Sola
           { continue; }
 
           Polyline trans = pair.Key;
-          if (boxTo.IsWithin(trans.Points.Last.Value))
+          if (boxTo.IsWithin(trans.Points.Last()))
           {
             t.Elements.AddRange(CombineTransport(trans, SymT.Transport));
             return t;
@@ -365,8 +366,8 @@ namespace Asvz.Sola
       elem.Symbol = symbol;
       elemList.Add(elem);
 
-      IPoint s = trans.Points.First.Value;
-      IPoint e = trans.Points.Last.Value;
+      IPoint s = trans.Points[0];
+      IPoint e = trans.Points.Last();
 
       //TODO
       bool next = true;
@@ -380,17 +381,17 @@ namespace Asvz.Sola
           symbol = pair.Value;
 
           Polyline p = pair.Key;
-          if (symbol != currentFirstSymbol && PointOperator.Dist2(p.Points.Last.Value, s) < 20.0)
+          if (symbol != currentFirstSymbol && PointOperator.Dist2(p.Points.Last(), s) < 20.0)
           {
             next = true;
-            s = p.Points.First.Value;
+            s = p.Points[0];
             currentFirstSymbol = symbol;
           }
 
-          if (symbol != currentLastSymbol && PointOperator.Dist2(p.Points.First.Value, e) < 20.0)
+          if (symbol != currentLastSymbol && PointOperator.Dist2(p.Points[0], e) < 20.0)
           {
             next = true;
-            e = p.Points.Last.Value;
+            e = p.Points.Last();
             currentLastSymbol = symbol;
           }
 

@@ -24,7 +24,7 @@ namespace Basics.Geom
 
     ISegment Clone();
     ISegment Invert();
-    IInnerSegment InnerSegment();
+    IInnerSegment GetInnerSegment();
     IList<IPoint> Linearize(double maxOffset, bool includeFirstPoint = true);
   }
   public interface IMultipartSegment : IMultipartGeometry
@@ -67,8 +67,8 @@ namespace Basics.Geom
     public enum CurveAtType
     { Parameter, Distance }
 
-    IInnerSegment ISegment.InnerSegment() => InnerCurve();
-    public abstract InnerCurve InnerCurve();
+    IInnerSegment ISegment.GetInnerSegment() => GetInnerCurve();
+    public abstract InnerCurve GetInnerCurve();
 
     public override abstract bool EqualGeometry(IGeometry other);
 
@@ -142,7 +142,7 @@ namespace Basics.Geom
       { return ParamRelate.Intersect; }
     }
 
-    public virtual IList<ParamGeometryRelation> CreateRelations(IParamGeometry other,
+    public virtual IEnumerable<ParamGeometryRelation> CreateRelations(IParamGeometry other,
       TrackOperatorProgress trackProgress)
     {
       if (other is Curve o)
@@ -151,14 +151,14 @@ namespace Basics.Geom
       }
       else
       {
-        return GeometryOperator.CreateRelations(this, other, trackProgress, true);
+        return GeometryOperator.CreateRelations(this, other, trackProgress, calcLinearized: true);
       }
     }
-    protected virtual IList<ParamGeometryRelation> CreateRelations(Curve other, TrackOperatorProgress trackProgress)
+    protected virtual IEnumerable<ParamGeometryRelation> CreateRelations(Curve other, TrackOperatorProgress trackProgress)
     {
       // falls diese Methode ausgefuhert wird existiert keine ueberschriebene Methode dazu 
       // und die Relation muss via Linearisierung berechnet werden.
-      return GeometryOperator.CreateRelations(this, other, trackProgress, true);
+      return GeometryOperator.CreateRelations(this, other, trackProgress, calcLinearized: true);
     }
     protected IList<ParamGeometryRelation> AddRelations(
       IList<ParamGeometryRelation> list, TrackOperatorProgress trackProgress)

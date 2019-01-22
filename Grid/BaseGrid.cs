@@ -334,7 +334,7 @@ namespace Grid
       foreach (var border in borders)
       {
         Polyline linears = border.Generalize(_extent.Dx);
-        foreach (var line in linears.Segments)
+        foreach (var line in linears.EnumSegments())
         {
           lines.Add(GetLine(line.Start, line.End));
         }

@@ -83,13 +83,10 @@ namespace TMap
       //  if (sp->type & SYM_LINE_TYPE || sp->type & SYM_DASH_POINT_TYPE) {
       //    if (sp->nDash <= 0 && sp->type & SYM_LINE_TYPE) {
       //      if (drawable.ExtentMatrix == null) {
-      int nSeg = line.Segments.Count;
-      if (nSeg == 0)
-      { return; }
 
       ISegment segment = null;
       Polyline drawLine = null;
-      foreach (var curve in line.Segments)
+      foreach (var curve in line.EnumSegments())
       {
         if (segment == null)
         {

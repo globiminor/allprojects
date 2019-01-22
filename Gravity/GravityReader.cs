@@ -3,6 +3,7 @@ using Basics.Geom;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Gravity
 {
@@ -123,24 +124,31 @@ namespace Gravity
       Dictionary<int, double> rho = new Dictionary<int, double>();
       ReadData(reader, co, pl, vm, rho);
 
+      Dictionary<int, Area> areas = new Dictionary<int, Area>();
+      foreach (var pair in pl)
+      {
+        Area area = new Area(CreateLine(pair.Value, co));
+        areas.Add(pair.Key, area);
+      }
+
       Dictionary<int, Volume> volumes = new Dictionary<int, Volume>();
       foreach (var pair in vm)
       {
-        volumes.Add(pair.Key, CreateVolume(pair.Value, pl, co));
+        volumes.Add(pair.Key, CreateVolume(pair.Value, areas));
       }
       densities = rho;
       return volumes;
     }
 
-    private static Volume CreateVolume(IReadOnlyList<int> planeIndices, Dictionary<int, IReadOnlyList<int>> pl, Dictionary<int, IPoint> co)
+    private static Volume CreateVolume(IReadOnlyList<int> planeIndices, Dictionary<int, Area> areas)
     {
       Volume v = new Volume();
       foreach (var planeIndex in planeIndices)
       {
-        SignedArea area = new SignedArea();
-        area.Border.Add(CreateLine(pl[Math.Abs(planeIndex)], co));
-        area.Sign = (planeIndex >= 0) ? 1 : -1;
-        v.Planes.Add(area);
+        SignedArea signedArea = new SignedArea();
+        signedArea.Sign = (planeIndex >= 0) ? 1 : -1;
+        signedArea.Area = areas[Math.Abs(planeIndex)];
+        v.Planes.Add(signedArea);
       }
       return v;
     }
@@ -152,9 +160,9 @@ namespace Gravity
       {
         line.Add(co[cornerIndex]);
       }
-      if (line.Points.First.Value != line.Points.Last.Value)
+      if (line.Points[0] != line.Points.Last())
       {
-        line.Add(line.Points.First.Value);
+        line.Add(line.Points[0]);
       }
       return line;
     }
@@ -163,14 +171,17 @@ namespace Gravity
 
   public class Volume : IVolume
   {
-    private List<SignedArea> _planes = new List<SignedArea>();
+    private readonly List<SignedArea> _planes = new List<SignedArea>();
 
     IReadOnlyList<ISignedArea> IVolume.Planes => Planes;
     public List<SignedArea> Planes { get { return _planes; } }
   }
 
-  public class SignedArea : Area, ISignedArea
+  public class SignedArea : ISignedArea
   {
     public int Sign { get; set; }
+
+    ISimpleArea ISignedArea.Area => Area;
+    public Area Area { get; set; }
   }
 }

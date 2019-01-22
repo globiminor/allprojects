@@ -4,6 +4,7 @@ using Ocad.StringParams;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Asvz.Sola
 {
@@ -116,8 +117,8 @@ namespace Asvz.Sola
           writer.Append(pElem);
 
           WriteKm(writer, cat, _kmTxtSymbol, _templateSetup, !first);
-          WriteUe(writer, cat.Strecke.Points.First.Value, _streckePre, -1, updateStartZiel);
-          WriteUe(writer, cat.Strecke.Points.Last.Value, _streckeNext, 0, updateStartZiel);
+          WriteUe(writer, cat.Strecke.Points[0], _streckePre, -1, updateStartZiel);
+          WriteUe(writer, cat.Strecke.Points.Last(), _streckeNext, 0, updateStartZiel);
 
           WriteInfo(writer, cat.Typ);
           first = false;
@@ -221,7 +222,7 @@ namespace Asvz.Sola
       else
       {
         IBox infoBox = elemInfo[0].Geometry.Extent;
-        Point lrInfo = new Point2D(infoBox.Max.X, infoBox.Min.Y);
+        Point lrInfo = new Point2D(infoBox.Max.X, infoBox.Min.Y).Project(setup.Prj2Map);
 
         IBox box = symNrBack.Graphics[0].MapGeometry.Extent;
         Point p = new Point2D(lrInfo.X - box.Max.X,
@@ -425,15 +426,15 @@ namespace Asvz.Sola
       {
         IPoint p;
         if (iPoint == 0)
-        { p = strecke.Points.First.Value; }
+        { p = strecke.Points[0]; }
         else if (iPoint == -1)
-        { p = strecke.Points.Last.Value; }
+        { p = strecke.Points.Last(); }
         else
         { throw new ArgumentException(string.Format("{0} != 0 && != -1", iPoint)); }
 
         Arc arc = new Arc(p, 800, 0, 2 * Math.PI);
 
-        IList<ParamGeometryRelation> intersects =
+        IEnumerable<ParamGeometryRelation> intersects =
           GeometryOperator.CreateRelations(strecke, arc);
 
         IList<Polyline> parts = strecke.Split(intersects);
@@ -518,8 +519,8 @@ namespace Asvz.Sola
       while (iKm < lengthMeas)
       {
         double[] param = cat.GetLineParams(iKm * 1000.0);
-        IPoint p = line.Segments[(int)param[0]].PointAt(param[1]);
-        IPoint t = line.Segments[(int)param[0]].TangentAt(param[1]);
+        IPoint p = line.GetSegment((int)param[0]).PointAt(param[1]);
+        IPoint t = line.GetSegment((int)param[0]).TangentAt(param[1]);
         GeoElement textKm = CreateKmText(p, t, setup, iKm, kmTxtSymbol, damen);
         PointCollection textKmBox = ((PointCollection)textKm.Geometry).Clone();
         textKmBox.Add(textKmBox[1]);

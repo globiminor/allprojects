@@ -157,7 +157,7 @@ namespace Asvz
     }
     protected void WriteProfile(OcadWriter writer, Polyline profile, double sumDist)
     {
-      double dist = profile.Points.Last.Value.X;
+      double dist = profile.Points.Last().X;
 
       //Console.WriteLine(
       //  "{0,2}:    {1,6:N2}    {2,3:N0}    {3,5:N1}     {4,6:N1}    {5,6:N1}",
@@ -165,9 +165,9 @@ namespace Asvz
       //  profile.Points.First.Value.Y, profile.Points.Last.Value.Y);
 
       List<Point> points = new List<Point>(profile.Points.Select(x => Point.Create(x)));
-      points.Add(new Point2D(profile.Points.Last.Value.X, 300));
-      points.Add(new Point2D(profile.Points.First.Value.X, 300));
-      points.Add(new Point2D(profile.Points.First.Value.X, profile.Points.First.Value.Y));
+      points.Add(new Point2D(profile.Points.Last().X, 300));
+      points.Add(new Point2D(profile.Points[0].X, 300));
+      points.Add(new Point2D(profile.Points[0].X, profile.Points[0].Y));
       foreach (var p in points)
       {
         p.X = (p.X + sumDist) / _fHeight;
@@ -231,7 +231,7 @@ namespace Asvz
       int iPoint = 0;
       double dTeerStart = 0;
       double dTeerEnd = dTeerStart - 1;
-      foreach (var seg in profile.Segments)
+      foreach (var seg in profile.EnumSegments())
       {
         double dStart = seg.Start.X + sumDist;
         double dEnd = seg.End.X + sumDist;

@@ -12,17 +12,27 @@ namespace Basics.Geom
       return v;
     }
 
-    public static double OrigDist2(IPoint p0, IEnumerable<int> dimensions = null) => Dist2(p0, null, dimensions);
-    public static double Dist2(IPoint p0, IPoint p1 = null, IEnumerable<int> dimensions = null)
+    public static double OrigDist2(IPoint p0, IEnumerable<int> dimensions = null)
+    {
+      IEnumerable<int> dims = dimensions ?? GeometryOperator.GetDimensions(p0);
+      double dist2 = 0;
+      foreach (int i in dims)
+      {
+        double d = p0[i];
+        dist2 += d * d;
+      }
+      return dist2;
+    }
+    public static double Dist2(IPoint p0, IPoint p1, IEnumerable<int> dimensions = null)
     {
       IEnumerable<int> dims = dimensions ?? GeometryOperator.GetDimensions(p0, p1);
-      double dDist2 = 0;
+      double dist2 = 0;
       foreach (int i in dims)
       {
         double d = p0[i] - (p1?[i] ?? 0);
-        dDist2 += d * d;
+        dist2 += d * d;
       }
-      return dDist2;
+      return dist2;
     }
 
     public static Point Add(IPoint p0, IPoint p1, IEnumerable<int> dimensions = null)
