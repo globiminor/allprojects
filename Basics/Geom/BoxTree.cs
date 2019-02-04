@@ -109,8 +109,8 @@ namespace Basics.Geom
         }
         if (_unitBox == null)
         {
-          Point min = Point.Create(_dimension);
-          Point max = Point.Create(_dimension);
+          Point min = Point.Create_0(_dimension);
+          Point max = Point.Create_0(_dimension);
           for (int i = 0; i < _dimension; i++)
           {
             min[i] = box.Min[i];
@@ -145,7 +145,7 @@ namespace Basics.Geom
       }
     }
 
-    public Box UnitBox
+    public IBox UnitBox
     {
       get { return _unitBox; }
     }
@@ -486,8 +486,8 @@ namespace Basics.Geom
 
     private Box GetBox(BoxTile tile)
     {
-      Point min = Point.Create(_dimension);
-      Point max = Point.Create(_dimension);
+      Point min = Point.Create_0(_dimension);
+      Point max = Point.Create_0(_dimension);
       bool[] handled = new bool[_dimension];
       int nHandled = 0;
       BoxTile t = tile;
@@ -548,7 +548,7 @@ namespace Basics.Geom
           throw new InvalidProgramException("Error in software design assumption: SplitDim");
         }
         currentBox.Max[splitDim] = child.MaxInParentSplitDim;
-        if (extent == null || currentBox.Intersects(extent))
+        if (extent == null || BoxOp.Intersects(currentBox, extent))
         {
           return child;
         }
@@ -561,7 +561,7 @@ namespace Basics.Geom
           child = currentTile.Child1;
           currentBox.Min[splitDim] = child.MinInParentSplitDim;
           currentBox.Max[splitDim] = child.MaxInParentSplitDim;
-          if (extent == null || currentBox.Intersects(extent))
+          if (extent == null || BoxOp.Intersects(currentBox, extent))
           {
             return child;
           }
@@ -604,9 +604,9 @@ namespace Basics.Geom
       get { return _mainBox; }
     }
 
-    public bool Intersects(Box box)
+    public bool Intersects(IBox box)
     {
-      return Extent.Intersects(box);
+      return BoxOp.Intersects(Extent, box);
     }
 
     #endregion
@@ -903,7 +903,7 @@ namespace Basics.Geom
         IBox extent = tree.TileExtent(this);
         foreach (var entry in EnumElems())
         {
-          if (extent.Contains(entry.Box) == false)
+          if (BoxOp.Contains(extent, entry.Box) == false)
           {
             return false;
           }

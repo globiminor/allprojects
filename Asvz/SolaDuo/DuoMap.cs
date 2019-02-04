@@ -200,8 +200,18 @@ namespace Asvz.SolaDuo
       foreach (var row in reader)
       {
 
-        GeoElement elem = new GeoElement((Geometry)row[shapeCol]);
-
+        GeoElement elem;
+        object geom = row[shapeCol];
+        {
+          if (geom is Area a)
+          { elem = new GeoElement(a); }
+          else if (geom is Polyline l)
+          { elem = new GeoElement(l); }
+          else if (geom is IPoint p)
+          { elem = new GeoElement(p); }
+          else
+          { throw new NotImplementedException("Unhandled type " + geom.GetType()); }
+        }
         string val = ((string)row[objTyp]).Trim();
 
         if (val == "Fluss_U")
@@ -243,11 +253,11 @@ namespace Asvz.SolaDuo
         }
         elem.Symbol = sym.GetSymbol();
 
-        if (elem.Geometry is Area)
+        if (elem.Geometry is GeoElement.Area)
         { elem.Type = GeomType.area; }
-        else if (elem.Geometry is Polyline)
+        else if (elem.Geometry is GeoElement.Line)
         { elem.Type = GeomType.line; }
-        else if (elem.Geometry is Point)
+        else if (elem.Geometry is GeoElement.Point)
         { elem.Type = GeomType.point; }
         else
         { throw new NotImplementedException("Unhandled type " + elem.Geometry.GetType()); }

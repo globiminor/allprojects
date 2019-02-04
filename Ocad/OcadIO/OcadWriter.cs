@@ -146,7 +146,7 @@ namespace Ocad
       Io.Writer.Write((short)graphics.LineWidth);
       Io.Writer.Write((short)graphics.Diameter);
 
-      Io.Writer.Write((short)Element.PointCount(graphics.MapGeometry));
+      Io.Writer.Write((short)graphics.MapGeometry.EnumCoords().Count());
       Io.Writer.Write((short)0); // reserved
       Io.Writer.Write((short)0); // reserved
 

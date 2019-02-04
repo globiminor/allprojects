@@ -78,45 +78,27 @@ namespace OCourse.Commands
           IPoint p0 = null;
           if (pre != null)
           {
-            IGeometry geom = pre.Element.Geometry;
-            if (!(geom is IPoint p))
-            {
-              if (geom is Polyline l)
-                p = l.Points.Last();
-              else if (geom is PointCollection pts)
-                p = pts[0];
-              else
-                throw new InvalidOperationException($"Unexpected geom-Type {geom.GetType()}");
-            }
-            p0 = p;
+            p0 = Utils.GetBorderPoint(pre.Element.Geometry, atEnd:true);
           }
           if (c.Element != null)
           {
-            IGeometry geom = c.Element.Geometry;
-            if (!(geom is IPoint p1))
+            GeoElement.Geom geom = c.Element.Geometry;
+            IPoint p1 = Utils.GetBorderPoint(c.Element.Geometry, atEnd: false);
             {
-              if (geom is Polyline l)
-              {
-                p1 = l.Points[0];
-                double d = l.Length();
-                fullDistance += d;
-                part += d;
-              }
-              else if (geom is PointCollection pts)
-                p1 = pts[0];
-              else
-                throw new InvalidOperationException($"Unexpected geom-Type {geom.GetType()}");
+              double d = (geom as GeoElement.Line)?.BaseGeometry.Length() ?? 0;
+              fullDistance += d;
+              part += d;
             }
             if (p1 == null)
             { }
 
             if (p0 != null)
             {
-              double d = Math.Sqrt(PointOperator.Dist2(p0, p1));
+              double d = Math.Sqrt(PointOp.Dist2(p0, p1));
               fullDistance += d;
               part += d;
             }
-            if (geom is IPoint || geom is PointCollection)
+            if (geom is GeoElement.Point || geom is GeoElement.Points)
             {
               if (part > 0)
               { sb.Append($"{part / 1000.0:N3};"); }

@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace Basics.Geom
@@ -37,11 +36,11 @@ namespace Basics.Geom
 
           public IEnumerable<TileEntry> GetEntries(IBox box)
           {
-            if (!box.Intersects(_tileBox))
+            if (!BoxOp.Intersects(box, _tileBox))
             { yield break; }
             foreach (var entry in _tile.EnumElems())
             {
-              if (entry.Box.Intersects(box))
+              if (BoxOp.Intersects(entry.Box, box))
               { yield return entry; }
             }
           }
@@ -326,12 +325,12 @@ namespace Basics.Geom
         {
           foreach (var neighbourTile in GetNeighbourTilesWithElems())
           {
-            if (!_master._neighbourTree.GetBox(neighbourTile).Intersects(search))
+            if (!BoxOp.Intersects(_master._neighbourTree.GetBox(neighbourTile), search))
             { continue; }
 
             foreach (var neighbour in neighbourTile.EnumElems())
             {
-              if (neighbour.Box.Intersects(search))
+              if (BoxOp.Intersects(neighbour.Box, search))
               { yield return neighbour; }
             }
           }
@@ -501,7 +500,7 @@ namespace Basics.Geom
           {
             IBox search = GetSearchBox(_master._searchingTree.UnitBox, _master._searchDistance,
                                        _master._common);
-            if (search == null || !search.Intersects(_master._neighbourTree.UnitBox))
+            if (search == null || !BoxOp.Intersects(search, _master._neighbourTree.UnitBox))
             {
               return null;
             }
@@ -645,8 +644,8 @@ namespace Basics.Geom
                                      [NotNull] IBox commonBox)
     {
       int dim = commonBox.Dimension;
-      Point min = Point.Create(dim);
-      Point max = Point.Create(dim);
+      Point min = Point.Create_0(dim);
+      Point max = Point.Create_0(dim);
       for (int i = 0; i < dim; i++)
       {
         min[i] = Math.Max(rawBox.Min[i] - search, commonBox.Min[i]);

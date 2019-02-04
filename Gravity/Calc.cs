@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using GeomOp = Basics.Geom.GeometryOperator;
-using PntOp = Basics.Geom.PointOperator;
 
 namespace Gravity
 {
@@ -411,29 +410,32 @@ namespace Gravity
 
       IPoint p2 = null;
       double r2 = 0;
-      foreach (var p in pl.Border)
+      foreach (var border in pl.Border)
       {
-        IPoint p1 = p2;
-        double r1 = r2;
-
-        p2 = PntOp.Sub(p, s0, GeomOp.DimensionXYZ);
-        r2 = Math.Sqrt(PntOp.Dist2(p2, null, dimensions: GeomOp.DimensionXYZ));
-
-        if (p1 == null)
+        foreach (var p in border.Points)
         {
-          if (d0 == false)
-          {
-            double rm = _epsi * (Math.Abs(b) + Math.Abs(c)) / 2.0;
-            z0 = -b * p2.X - c * p2.Y + p2.Z;
-            if (Math.Abs(z0) <= rm) z0 = 0.0;
-          }
-          continue;
-        }
+          IPoint p1 = p2;
+          double r1 = r2;
 
-        GetLineParam(out double y0, out double a, out bool a0, p1.X, p1.Y, p2.X, p2.Y);
-        GravityValues v = GetLineGravity(p1.X, p1.Y, p1.Z, p2.X, p2.Y, p2.Z,
-              y0, a, a0, z0, b, c, d0, r1, r2);
-        w = w.Add(v);
+          p2 = PointOp.Sub(p, s0, GeomOp.DimensionXYZ);
+          r2 = Math.Sqrt(PointOp.Dist2(p2, null, dimensions: GeomOp.DimensionXYZ));
+
+          if (p1 == null)
+          {
+            if (d0 == false)
+            {
+              double rm = _epsi * (Math.Abs(b) + Math.Abs(c)) / 2.0;
+              z0 = -b * p2.X - c * p2.Y + p2.Z;
+              if (Math.Abs(z0) <= rm) z0 = 0.0;
+            }
+            continue;
+          }
+
+          GetLineParam(out double y0, out double a, out bool a0, p1.X, p1.Y, p2.X, p2.Y);
+          GravityValues v = GetLineGravity(p1.X, p1.Y, p1.Z, p2.X, p2.Y, p2.Z,
+                y0, a, a0, z0, b, c, d0, r1, r2);
+          w = w.Add(v);
+        }
       }
       return w;
     }
@@ -442,23 +444,26 @@ namespace Gravity
     {
       IPoint[] e = new IPoint[3];
 
-      foreach (var p in pl.Border)
+      foreach (var border in pl.Border)
       {
-        if (e[0] == null)
+        foreach (var p in border.Points)
         {
-          e[0] = p;
-          continue;
-        }
-        e[1] = e[2];
-        e[2] = p;
-        if (e[1] == null)
-        { continue; }
+          if (e[0] == null)
+          {
+            e[0] = p;
+            continue;
+          }
+          e[1] = e[2];
+          e[2] = p;
+          if (e[1] == null)
+          { continue; }
 
-        if (GetPlaneParam(out double z0, out double b, out double c, out bool d0, e[0], e[1], e[2]))
-        {
-          GravityValues w = GetPlaneGravity(s0, pl, z0, b, c, d0);
-          w.ApplyDensity(rho);
-          return w;
+          if (GetPlaneParam(out double z0, out double b, out double c, out bool d0, e[0], e[1], e[2]))
+          {
+            GravityValues w = GetPlaneGravity(s0, pl, z0, b, c, d0);
+            w.ApplyDensity(rho);
+            return w;
+          }
         }
       }
       throw new InvalidOperationException("No valid plane parameters found");
@@ -528,7 +533,7 @@ namespace Gravity
 
     GravityValues GrvPlaneApp(IPoint s0, IPoint m, double df, double rho)
     {
-      IPoint d = PntOp.Sub(m, s0);
+      IPoint d = PointOp.Sub(m, s0);
 
       double s = d.X * d.X + d.Y * d.Y;
       double r = Math.Sqrt(s + d.Z * d.Z);

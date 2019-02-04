@@ -11,7 +11,7 @@ namespace Asvz
     {
       Point p = new Point2D(x, y);
       p = p.Project(setup.Prj2Map);
-      IGeometry geom = GetGeometry(text, p, symbol);
+      PointCollection geom = GetGeometry(text, p, symbol);
       geom = geom.Project(setup.Map2Prj);
 
       GeoElement elem = new GeoElement(geom);
@@ -24,7 +24,8 @@ namespace Asvz
     {
       Point p = new Point2D(x, y);
       IGeometry geom = GetGeometry(text, p, symbol);
-      List<Coord> coords = new List<Coord>(Coord.EnumCoords(geom));
+      Coord.TryEnumCoords(geom, out IEnumerable<Coord> enumCoords);
+      List<Coord> coords = new List<Coord>(enumCoords);
 
       MapElement elem = new MapElement(coords);
       AssignText(elem, text, symbol);

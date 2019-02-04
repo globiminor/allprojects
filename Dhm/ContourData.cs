@@ -44,7 +44,7 @@ namespace Dhm
     {
       foreach (var contour in _contours)
       {
-        if (contour.Polyline.Extent.Intersects(geom))
+        if (BoxOp.Intersects(contour.Polyline.Extent, geom))
         {
           yield return contour;
         }

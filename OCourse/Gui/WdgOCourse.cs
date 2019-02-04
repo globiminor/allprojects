@@ -568,11 +568,11 @@ namespace OCourse.Gui
       IPoint point;
 
       point = cStart.GetPoint();
-      IPoint start = point.Project(setup.Map2Prj);
+      IPoint start = PointOp.Project(point, setup.Map2Prj);
       point = cEnd.GetPoint();
-      IPoint end = point.Project(setup.Map2Prj);
+      IPoint end = PointOp.Project(point, setup.Map2Prj);
 
-      double l = Math.Sqrt(PointOperator.Dist2(start, end)) / 2.0;
+      double l = Math.Sqrt(PointOp.Dist2(start, end)) / 2.0;
       Box box = _vm.RouteCalculator.GetBox(start, end, l);
 
       wdg.Init(_vm.RouteCalculator.GetTerrainVeloModel(), _vm.RouteCalculator.HeightGrid,
@@ -658,7 +658,7 @@ namespace OCourse.Gui
       {
         if (control.Element == null)
         { continue; }
-        if (!(control.Element.Geometry is IPoint p))
+        if (!(control.Element.Geometry is GeoElement.Point p))
         { continue; }
 
         control.Element.Geometry = control.Element.Geometry;

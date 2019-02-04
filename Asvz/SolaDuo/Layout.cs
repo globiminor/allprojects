@@ -80,13 +80,13 @@ namespace Asvz
         IPoint p = strecke.GetSegment((int)param[0]).PointAt(param[1]);
         IPoint t = strecke.GetSegment((int)param[0]).TangentAt(param[1]);
         GeoElement elem = CreateKmText(p, t, setup, iKm, kmTxtSymbol, suffix);
-        PointCollection points = ((PointCollection)elem.Geometry).Clone();
+        PointCollection points = (((GeoElement.Points)elem.Geometry).BaseGeometry).Clone();
         points.Add(points[1]);
-        points.Insert(0, p + 0.01 * PointOperator.Sub(points[0], p));
+        points.Insert(0, p + 0.01 * PointOp.Sub(points[0], p));
         Polyline pPoly = Polyline.Create(points);
         if (flipOnConflict && strecke.Intersection(pPoly) != null)
         {
-          t = PointOperator.Scale(-1.0, t);
+          t = PointOp.Scale(-1.0, t);
           elem = CreateKmText(p, t, setup, iKm, kmTxtSymbol, suffix);
         }
         kmElem.Text = elem;
@@ -122,8 +122,8 @@ namespace Asvz
       text = text + p;
 
       GeoElement elem = Common.CreateText(sKm, text.X, text.Y, setup, kmTxtSymbol);
-      PointCollection list = (PointCollection)elem.Geometry;
-      Point pM = 0.5 * PointOperator.Add(list[1], list[3]);
+      PointCollection list = ((GeoElement.Points)elem.Geometry).BaseGeometry;
+      Point pM = 0.5 * PointOp.Add(list[1], list[3]);
       text = 2.0 * text - pM;
 
       return Common.CreateText(sKm, text.X, text.Y, setup, kmTxtSymbol);

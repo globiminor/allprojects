@@ -1,24 +1,109 @@
 using System;
 using System.Collections.Generic;
-using PntOp = Basics.Geom.PointOperator;
 
 namespace Basics.Geom
 {
-  /// <summary>
-  /// Summary description for Line
-  /// </summary>
-  public class Line : Curve, ISegment<Line>
+  public abstract class LineCore : Curve, ILine, ISegment<Line>
   {
-    private IPoint _start;
-    private IPoint _end;
+    protected abstract IPoint GetStart();
+    protected abstract IPoint GetEnd();
 
-    static Line()
+    public override IPoint Start => GetStart();
+    public override IPoint End => GetEnd();
+
+    public override bool EqualGeometry(IGeometry other)
     {
-      Point min = Point.Create(1);
-      Point max = Point.Create(1);
-      min.X = 0;
-      max.X = 1;
+      if (this == other)
+      { return true; }
+
+      if (!(other is ILine o))
+      { return false; }
+      return LineOp.EqualGeometry(this, o);
     }
+
+    public override int Dimension
+    {
+      get { return Math.Min(Start.Dimension, End.Dimension); }
+    }
+
+    public override int Topology
+    {
+      get { return 1; }
+    }
+
+    public new Box Extent => LineOp.GetExtent(this);
+    protected override IBox GetExtent() => LineOp.GetExtent(this);
+    protected override Curve CloneCore() => LineOp.Clone(this);
+    public new Line Clone() => LineOp.Clone(this);
+
+    protected override double NormedMaxOffsetCore => 0;
+    public override bool IsLinear => true;
+
+    public override InnerCurve GetInnerCurve() => null;
+
+    public override Point PointAt(double t) => LineOp.PointAt(this, t);
+
+    protected override Curve SubpartCurve(double t0, double t1) => LineOp.Subpart(this, t0, t1);
+    public new Line Subpart(double t0, double t1) => LineOp.Subpart(this, t0, t1);
+
+    protected override Curve InvertCore() => LineOp.Invert(this);
+    public Line Invert() => LineOp.Invert(this);
+    public override double Length() => LineOp.Length(this);
+    public override Point TangentAt(double t) => LineOp.TangentAt(this, t);
+    public override double ParamAt(double distance) => LineOp.ParamAt(this, distance);
+
+    protected override IGeometry ProjectCore(IProjection projection) => LineOp.Project(this, projection);
+    public Line Project(IProjection projection) => LineOp.Project(this, projection);
+
+    public override PointCollection Border
+    {
+      get
+      {
+        PointCollection pBorder = new PointCollection();
+        pBorder.AddRange(new IPoint[] { Start, End });
+        return pBorder;
+      }
+    }
+    protected override IGeometry BorderGeom
+    { get { return Border; } }
+
+
+    public Point Cut(IBox box, ref double t) => LineOp.Cut(this, box, ref t);
+    public ParamGeometryRelation CutLine(ILine line) => LineOp.CutLine(this, line);
+
+    public Relation Intersect(ILine other, int xDim, int yDim, ref double u, ref double v, double? epsi = null) => LineOp.Intersect(this, other, xDim, yDim, ref u, ref v, epsi);
+
+    public override IEnumerable<ParamGeometryRelation> CreateRelations(IParamGeometry other, TrackOperatorProgress trackProgress)
+    {
+      if (other is Curve o)
+      {
+        return CreateRelations(o, trackProgress);
+      }
+      return base.CreateRelations(other, trackProgress);
+    }
+
+    public double Distance2(IPoint point) => LineOp.Distance2(this, point);
+
+    protected override IEnumerable<ParamGeometryRelation> CreateRelations(Curve other, TrackOperatorProgress trackProgress) => LineOp.CreateRelations(this, other, trackProgress);
+
+    public override IList<IPoint> LinApprox(double t0, double t1) => LineOp.LinApprox(this, t0, t1);
+  }
+  public class LineWrap : LineCore
+  {
+    public ILine Line { get; }
+    public LineWrap(ILine line)
+    {
+      Line = line;
+    }
+    protected override IPoint GetStart() => Line.Start;
+    protected override IPoint GetEnd() => Line.End;
+  }
+
+  public class Line : LineCore
+  {
+    private readonly IPoint _start;
+    private readonly IPoint _end;
+
     public Line()
     { }
 
@@ -28,113 +113,94 @@ namespace Basics.Geom
       _end = end;
     }
 
-    protected override double NormedMaxOffsetCore
-    { get { return 0; } }
-    public override bool IsLinear
-    { get { return true; } }
+    protected override IPoint GetStart() => _start;
+    protected override IPoint GetEnd() => _end;
 
-    public override bool EqualGeometry(IGeometry other)
+    public static LineCore CastOrWrap(ILine line)
     {
-      if (this == other)
-      { return true; }
+      return line as LineCore ?? new LineWrap(line);
+    }
+  }
 
-      if (!(other is Line o))
-      { return false; }
-      bool equal = Start.EqualGeometry(o.Start) && End.EqualGeometry(o.End);
+  public static class LineOp
+  {
+    public static bool EqualGeometry(ILine x, ILine y)
+    {
+      bool equal = PointOp.EqualGeometry(x.Start, y.Start) && PointOp.EqualGeometry(x.End, y.End);
       return equal;
+
     }
 
-    private delegate double BoxFct(double x, double y);
-    private class BoxPoint : Line, IPoint
+    public static Line Clone(ILine line)
     {
-      private readonly BoxFct _fct;
-      public BoxPoint(IPoint s, IPoint e, BoxFct fct)
+      return new Line(Point.Create(line.Start), Point.Create(line.End));
+    }
+
+    public static Point PointAt(ILine line, double t, IEnumerable<int> dimensions = null)
+    {
+      dimensions = dimensions ?? GeometryOperator.GetDimensions(line);
+      List<double> coords = new List<double>();
+      foreach (int i in dimensions)
       {
-        _start = s;
-        _end = e;
-        _fct = fct;
+        coords.Add(line.Start[i] + t * (line.End[i] - line.Start[i]));
       }
-      public double X { get { return _fct(_start.X, _end.X); } set { } }
-      public double Y { get { return _fct(_start.Y, _end.Y); } set { } }
-      public double Z { get { return _fct(_start.Z, _end.Z); } set { } }
-      public double this[int i] { get { return _fct(_start[i], _end[i]); } set { } }
-
-      IPoint IPoint.Project(IProjection prj)
-      {
-        return Pnt().Project(prj);
-      }
-      public Point Pnt()
-      {
-        int dim = Dimension;
-        Point p = Point.Create(dim);
-        for (int i = 0; i < dim; i++)
-        { p[i] = this[i]; }
-        return p;
-      }
-    }
-    public override InnerCurve GetInnerCurve()
-    { return null; }
-
-    public override IPoint Start
-    {
-      get { return _start; }
-    }
-
-    public override IPoint End
-    {
-      get { return _end; }
-    }
-
-    protected override Curve CloneCore()
-    { return Clone(); }
-    public new Line Clone()
-    {
-      return new Line(Point.Create(_start), Point.Create(_end));
-    }
-
-    public override Point PointAt(double t)
-    {
-      int iDim = Dimension;
-      Point p = Point.Create(iDim);
-
-      for (int i = 0; i < iDim; i++)
-      {
-        p[i] = _start[i] + t * (_end[i] - _start[i]);
-      }
+      Point p = Point.Create(coords.ToArray());
       return p;
     }
-    public override double ParamAt(double distance)
+
+    public static double ParamAt(ILine line, double distance)
     {
-      return distance / Length();
+      return distance / Length(line);
     }
 
-    public override double Length()
+    public static double Length(ILine line, IEnumerable<int> dimensions = null)
     {
-      return Math.Sqrt(PntOp.Dist2(Start, End));
+      return Math.Sqrt(PointOp.Dist2(line.Start, line.End, dimensions));
     }
 
-    /// <summary>
-    /// Findet Punkt wo
-    /// this.PointAt(u) = other.PointAt(v)
-    /// mit u > Startwert von u
-    /// </summary>
-    /// <returns>weitere Schnittstelle vorhanden</returns>
-    public Relation Intersect(Line other, int xDim, int yDim, ref double u, ref double v)
+    public static IEnumerable<ParamGeometryRelation> CreateRelations(ILine l, Curve other, TrackOperatorProgress trackProgress)
     {
-      if (other.GetType() != typeof(Line))
+      if (other is ILine line)
       {
-        if (GetType() == typeof(Line))
-        { return other.Intersect(this, xDim, yDim, ref v, ref u); }
+        ParamGeometryRelation rel = CutLine(l, line);
+        if (rel.Intersection != null)
+        {
+          if (trackProgress != null)
+          { trackProgress.OnRelationFound(l, rel); }
+
+          yield return rel;
+          yield break;
+        }
       }
+      if (other is IArc arc)
+      {
+        foreach (var rel in ArcOp.CutLine(arc, l))
+        { yield return rel; }
+        yield break;
+      }
+
+      IEnumerable<ParamGeometryRelation> baseRels = GeometryOperator.CreateRelations(Line.CastOrWrap(l), other, trackProgress, calcLinearized: true);
+      if (baseRels != null)
+      {
+        foreach (var rel in baseRels)
+        {
+          yield return rel;
+        }
+      }
+    }
+
+    public static Relation Intersect(ILine x, ILine other, int xDim, int yDim, ref double u, ref double v, double? epsi = null)
+    {
+      epsi = epsi ?? Geometry.epsi;
       // this.PointAt(u) = other.PointAt(v)
       // TODO: Generalize for any LineType
-      double x0 = Start[xDim];
+      double x0 = x.Start[xDim];
       double x1 = other.Start[xDim];
-      double y0 = Start[yDim];
+      double y0 = x.Start[yDim];
       double y1 = other.Start[yDim];
 
-      double a0 = End[xDim] - x0;
-      double b0 = End[yDim] - y0;
+      double a0 = x.End[xDim] - x0;
+      double b0 = x.End[yDim] - y0;
 
       double a1 = other.End[xDim] - x1;
       double b1 = other.End[yDim] - y1;
@@ -159,30 +225,18 @@ namespace Basics.Geom
       }
     }
 
-    public new Line Subpart(double t0, double t1)
+    public static Line Subpart(ILine line, double t0, double t1)
     {
-      Point p = PntOp.Sub(_end, _start);
-      return new Line(_start + (t0 * p), _start + (t1 * p));
+      Point p = PointOp.Sub(line.End, line.Start);
+      return new Line(line.Start + (t0 * p), line.Start + (t1 * p));
     }
-    protected override Curve SubpartCurve(double t0, double t1)
-    { return Subpart(t0, t1); }
 
     #region IGeometry Members
 
-    public override int Dimension
+    public static double Distance2(ILine line, IPoint point)
     {
-      get { return Math.Min(Start.Dimension, End.Dimension); }
-    }
-
-    public override int Topology
-    {
-      get { return 1; }
-    }
-
-    public double Distance2(IPoint point)
-    {
-      Point a = PntOp.Sub(End, Start);
-      Point b = PntOp.Sub(point, Start);
+      Point a = PointOp.Sub(line.End, line.Start);
+      Point b = PointOp.Sub(point, line.Start);
 
       double scalarProd = a.SkalarProduct(b); // == |a| * |b| * cos phi
       if (scalarProd < 0)
@@ -190,7 +244,7 @@ namespace Basics.Geom
 
       double a2 = a.OrigDist2();
       if (scalarProd > a2)
-      { return PntOp.Dist2(End, point); }
+      { return PointOp.Dist2(line.End, point); }
 
       if (a2 == 0)
       { return b.OrigDist2(); }
@@ -199,217 +253,21 @@ namespace Basics.Geom
       return b2 - scalarProd * scalarProd / a2;
     }
 
-    public override IEnumerable<ParamGeometryRelation> CreateRelations(IParamGeometry other, TrackOperatorProgress trackProgress)
+    public static ParamGeometryRelation CutLine(ILine x, ILine y)
     {
-      if (other is Curve o)
-      {
-        return CreateRelations(o, trackProgress);
-      }
-      return base.CreateRelations(other, trackProgress);
-    }
-    protected override IEnumerable<ParamGeometryRelation> CreateRelations(Curve other, TrackOperatorProgress trackProgress)
-    {
-      if (other is Line line)
-      {
-        ParamGeometryRelation rel = CutLine(line);
-        if (rel.Intersection != null)
-        {
-          if (trackProgress != null)
-          { trackProgress.OnRelationFound(this, rel); }
-
-          yield return rel;
-          yield break;
-        }
-      }
-      if (other is Arc arc)
-      {
-        foreach (var rel in arc.CutLine(this))
-        { yield return rel; }
-        yield break;
-      }
-
-      IEnumerable<ParamGeometryRelation> baseRels = base.CreateRelations(other, trackProgress);
-      if (baseRels != null)
-      {
-        foreach (var rel in baseRels)
-        {
-          yield return rel;
-        }
-      }
-    }
-
-    /*
-    internal void CutAny(Curve line, double min0, double max0, double min1, double max1,
-      int ident, ref GeometryCollection result)
-    {
-      if (max0 - min0 < 1e-6 || max1 - min1 < 1e-6)
-      { return; }
-
-      IList<IPoint> pList = line.LinApprox(min1, max1);
-      if (ident != 0)
-      { SnapIdentPoints(new IPoint[] { PointAt(min0), PointAt(max0) }, pList, ident); }
-
-      double dSide;
-      double[] dfList = Intersection(min0, max0, pList, 3, ident, out dSide);
-      if (dfList == null)
-      { return; }
-
-      double dfThis;
-      double dfAny = min1 + (max1 - min1) * dfList[1];
-      double ddf;
-
-      IPoint cut;
-      do
-      {
-        IPoint point = line.PointAt(dfAny);
-        IPoint tangent = line.TangentAt(dfAny);
-
-        cut = CutLine(new Line(point, point.Add(tangent)), out dfThis, out ddf);
-        dfAny += ddf;
-      } while (Math.Abs(ddf) > 1e-6 && dfThis >= min0 && dfThis <= max0 &&
-        dfAny >= min1 && dfAny <= max1);
-
-      if (Math.Abs(ddf) > 1e-6 ||
-        ((ident & 3) != 0 && Math.Abs(dfThis - min0) < 2e-6) ||
-        ((ident & 12) != 0 && Math.Abs(max0 - dfThis) < 2e-6))
-      {
-        double dMean0 = (min0 + max0) / 2.0;
-        double dMean1 = (min1 + max1) / 2.0;
-        CutAny(line, min0, dMean0, min1, dMean1, ident & 1, ref result);
-        CutAny(line, dMean0, max0, min1, dMean1, ident & 4, ref result);
-        CutAny(line, min0, dMean0, dMean1, max1, ident & 2, ref result);
-        CutAny(line, dMean0, max0, dMean1, max1, ident & 8, ref result);
-
-        return;
-      }
-
-      if (result == null)
-      { result = new GeometryCollection(); }
-      result.Add(new CutPoint_(Point.Create(cut), this, dfThis, line, dfAny));
-
-      if (ident != 0)
-      { return; }
-
-      if (((Start.X > End.X) == (Start.Y > End.Y)) ==
-        ((line.Start.X > line.End.X) == (line.Start.Y > line.End.Y)))
-      { // this and other continuous in same direction, may be there are multiple intersections !
-
-        if (Start.X > End.X == line.Start.X > line.End.X)
-        {
-          CutAny(line, 0, dfThis, 0, dfAny, 8, ref result);
-          CutAny(line, dfThis, 1, dfAny, 1, 1, ref result);
-        }
-        else
-        {
-          CutAny(line, 0, dfThis, dfAny, 1, 4, ref result);
-          CutAny(line, dfThis, 1, 0, dfAny, 2, ref result);
-        }
-      }
-
-    }
-
-    internal double[] Intersection(IList<IPoint> convexList,
-      int position, int ident, out double side)
-    {
-      return Intersection(0, 1, convexList, position, ident, out side);
-    }
-
-    internal double[] Intersection(double l0, double l1,
-      IList<IPoint> convexList, int position, int ident, out double side)
-    { // remark: because convexList is assumed to be convex, 
-      // there are exactly 0 or 2 intersections !
-      double df0 = 0;
-
-      IPoint d0 = End.Sub(Start);
-      int iMin = 0;
-      int iMax = convexList.Count - 1;
-      int iNSeg = iMax;
-
-      if (ident != 0 && position != 0)
-      {
-        if ((ident & 1) != 0 && (position & 1) != 0)
-        { iMin = 1; }
-        if ((ident & 2) != 0 && (position & 1) != 0)
-        { iMax--; }
-        if ((ident & 4) != 0 && (position & 2) != 0)
-        { iMin = 1; }
-        if ((ident & 8) != 0 && (position & 2) != 0)
-        { iMax--; }
-      }
-
-      int iNCut = 0;
-      IPoint d2 = convexList[iMin].Sub(Start);
-      double dv1 = d0.VectorProduct(d2);
-      side = dv1;
-      for (int i0 = iMin; i0 <= iMax; i0++)
-      {
-        double dv0 = dv1;
-
-        int i1 = i0 + 1;
-        if (i1 > iMax)
-        {
-          if (iMin > 0 || iMax < iNSeg)
-          { continue; }
-          i1 = 0;
-        }
-
-        d2 = convexList[i1].Sub(Start);
-        dv1 = d0.VectorProduct(d2);
-
-        if (dv0 < 0 != dv1 < 0 || dv0 == 0 || dv1 == 0)
-        { // intersection found
-          double dv = dv0 / (dv0 - dv1);
-          IPoint cut;
-          if (dv != 1)
-          { cut = convexList[i0].Add(convexList[i1].Sub(convexList[i0]).Scale(dv)); }
-          else
-          { cut = convexList[i1]; }
-          double df1 = d0.GetFactor(cut.Sub(Start));
-
-          if (df1 < l0 || df1 > l1)
-          {
-            if (iNCut == 0)
-            {
-              df0 = df1;
-              iNCut++;
-              continue;
-            }
-            if ((df0 < l0 && df1 < l0) || df0 > l1 && df1 > l1)
-            {
-              side = double.NaN;
-              return null;
-            }
-            df1 = l0;
-          }
-
-          if (i0 < iMax)
-          { return new double[] { df1, (dv + i0) / iNSeg }; }
-          else
-          { return new double[] { df1, 1 - dv }; }
-        }
-        else
-        { side += dv0 + dv1; }
-      }
-      return null;
-    }
-    */
-
-
-    public ParamGeometryRelation CutLine(Line line)
-    {
-      Point xAxis = PntOp.Sub(End, Start);
+      Point xAxis = PointOp.Sub(x.End, x.Start);
       OrthogonalSystem fullSystem = OrthogonalSystem.Create(new IPoint[] { xAxis });
 
       Axis nullAxis = null;
 
-      IPoint yAxis = PntOp.Sub(line.End, line.Start);
+      IPoint yAxis = PointOp.Sub(y.End, y.Start);
       Axis axis = fullSystem.GetOrthogonal(yAxis);
       if (axis.Length2Epsi > 0)
       { fullSystem.Axes.Add(axis); }
       else
       { nullAxis = axis; }
 
-      Point offset = PntOp.Sub(line.Start, Start);
+      Point offset = PointOp.Sub(y.Start, x.Start);
       Axis offsetAxis = fullSystem.GetOrthogonal(offset);
 
       IList<double> factors = fullSystem.VectorFactors(offsetAxis.Factors);
@@ -421,73 +279,22 @@ namespace Basics.Geom
       else
       { yParam = null; }
 
-      ParamGeometryRelation rel = new ParamGeometryRelation(this, xParam, line, yParam, offsetAxis.Point);
+      ParamGeometryRelation rel = new ParamGeometryRelation(Line.CastOrWrap(x), xParam, Line.CastOrWrap(y), yParam, offsetAxis.Point);
 
       return rel;
-
-      //IPoint p = End.Sub(Start);
-      //IPoint p0 = line.Start.Sub(Start);
-      //IPoint p1 = line.End.Sub(Start);
-      //f0 = 0;
-      //f1 = 0;
-      //double v0 = p.VectorProduct(p0);
-      //double v1 = p.VectorProduct(p1);
-
-      //if (v0 == 0)
-      //{
-      //  if (v1 == 0)
-      //  { // coincident
-      //    f0 = p.GetFactor(p0);
-      //    f1 = p.GetFactor(p1);
-      //    return null;
-      //  }
-      //  f0 = p.GetFactor(p0);
-      //  f1 = 0;
-      //  return line.Start;
-      //}
-
-      //if (v1 == 0)
-      //{
-      //  f0 = p.GetFactor(p1);
-      //  f1 = 1;
-      //}
-      //if (validateInside)
-      //{
-      //  if ((v0 > 0) == (v1 > 0))
-      //  { return null; }
-      //  if (v1 == 0)
-      //  { return null; }
-      //}
-
-      //if (v0 == v1)
-      //{ // Parallel lines
-      //  f0 = v0;
-      //  f1 = v0;
-      //  return null;
-      //}
-      //f1 = v0 / (v0 - v1);
-      //if ((validateInside == false || (f1 > 0 && f1 < 1)) == false)
-      //{ throw new InvalidProgramException("Cut point does not lie within segment"); }
-
-      //Point d = Point.Sub(line.End, line.Start);
-      //Point cut = line.Start + f1 * d;
-      //f0 = p.GetFactor(cut - Start);
-      //return cut;
     }
 
-    public override Point TangentAt(double t)
+    public static Point TangentAt(ILine line, double t, IEnumerable<int> dimensions = null)
     {
-      return PntOp.Sub(End, Start);
+      return PointOp.Sub(line.End, line.Start, dimensions);
     }
-    public override IList<IPoint> LinApprox(double t0, double t1)
+    public static IList<IPoint> LinApprox(ILine line, double t0, double t1)
     {
-      if (GetType() == typeof(Line))
-      { return new IPoint[] { PointAt(t0), PointAt(t1) }; }
+      return new IPoint[] { PointAt(line, t0), PointAt(line, t1) };
 
-      return base.LinApprox(t0, t1);
     }
 
-    public Point Cut(Box box, ref double t)
+    public static Point Cut(ILine line, IBox box, ref double t, IEnumerable<int> dimensions = null)
     {
       /*
           (x)     (a)     (x0)   (x1)  (xc)  (xc)
@@ -498,92 +305,82 @@ namespace Basics.Geom
       */
 
       double tNew = t - 1;
-      Point pNew = null;
-      Point pc;
-      IPoint start = Start;
-      IPoint end = End;
-      int dim = Dimension;
+      List<double> pNew = null;
+      IPoint start = line.Start;
+      IPoint end = line.End;
 
-      if (box.Dimension < dim)
-      { dim = box.Dimension; }
-      pc = Point.Create(dim);
+      dimensions = dimensions ?? GeometryOperator.GetDimensions(line, box);
+      List<double> coords = new List<double>();
 
-      for (int iSide = 0; iSide < 2 * dim; iSide++)
+      foreach (int iDim in dimensions)
       {
-        int iDim = iSide / 2;
-        double a = end[iDim] - start[iDim];
-
-        if (a != 0)
+        for (int iSid = 0; iSid < 2; iSid++)
         {
-          if ((iSide & 1) == 0)
-          { pc[iDim] = box.Min[iDim]; }
-          else
-          { pc[iDim] = box.Max[iDim]; }
+          while (coords.Count <= iDim) coords.Add(0);
+          double a = end[iDim] - start[iDim];
 
-          double u = (pc[iDim] - start[iDim]) / a;
-          if (u > t && (u < tNew || tNew < t))
+          if (a != 0)
           {
-            bool bCut = true;
-            for (int j = 0; j < dim; j++)
+
+            if (iSid == 0)
+            { coords[iDim] = box.Min[iDim]; }
+            else
+            { coords[iDim] = box.Max[iDim]; }
+
+            double u = (coords[iDim] - start[iDim]) / a;
+            if (u > t && (u < tNew || tNew < t))
             {
-              if (j == iDim)
-              { continue; }
-              double b = end[j] - start[j];
-              double tc = start[j] + b * u;
-              if (tc < box.Min[j] || tc > box.Max[j])
+              bool bCut = true;
+              foreach (int j in dimensions)
               {
-                bCut = false;
-                break;
+
+                if (j == iDim)
+                { continue; }
+                double b = end[j] - start[j];
+                double tc = start[j] + b * u;
+                if (tc < box.Min[j] || tc > box.Max[j])
+                {
+                  bCut = false;
+                  break;
+                }
+                coords[j] = tc;
               }
-              pc[j] = tc;
-            }
-            if (bCut)
-            {
-              pNew = pc.Clone();
-              tNew = u;
+              if (bCut)
+              {
+                pNew = new List<double>(coords);
+                tNew = u;
+              }
             }
           }
         }
       }
+      Point result = null;
       if (pNew != null)
-      { t = tNew; }
-      return pNew;
-    }
-
-
-    public override IBox Extent
-    {
-      get
       {
-        return new Box(Point.Create(Start), Point.Create(End), true);
+        while (pNew.Count < coords.Count) pNew.Add(0);
+        result = Point.Create(pNew.ToArray());
+        t = tNew;
       }
+      return result;
     }
 
-    public override PointCollection Border
+    public static Box GetExtent(ILine line)
     {
-      get
-      {
-        PointCollection pBorder = new PointCollection();
-        pBorder.AddRange(new IPoint[] { Start, End });
-        return pBorder;
-      }
-    }
-    protected override IGeometry BorderGeom
-    { get { return Border; } }
-
-    protected override Curve InvertCore() => Invert();
-    public Line Invert()
-    {
-      return new Line(_end, _start);
+      return new Box(Point.Create(line.Start), Point.Create(line.End), true);
     }
 
-    protected override IGeometry ProjectCore(IProjection projection) => Project(projection);
-    public Line Project(IProjection projection)
+    public static Line Invert(ILine line)
     {
-      return new Line(_start.Project(projection),
-        _end.Project(projection));
+      return new Line(line.End, line.Start);
+    }
+
+    public static Line Project(ILine line, IProjection projection)
+    {
+      return new Line(PointOp.Project(line.Start, projection),
+        PointOp.Project(line.End, projection));
     }
 
     #endregion
   }
+
 }

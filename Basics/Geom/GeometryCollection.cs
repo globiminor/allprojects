@@ -42,7 +42,7 @@ namespace Basics.Geom
         return dim;
       }
     }
-    int IGeometry.Topology
+    int ITopology.Topology
     {
       get
       {

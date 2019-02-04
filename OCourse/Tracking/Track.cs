@@ -50,7 +50,7 @@ namespace OCourse.Tracking
 
         if (p0 == null)
         { continue; }
-        double w = Math.Sqrt(PointOperator.Dist2(p0, p1, GeometryOperator.DimensionXY));
+        double w = Math.Sqrt(PointOp.Dist2(p0, p1, GeometryOperator.DimensionXY));
 
         center = center + w / 2.0 * (Point.CastOrCreate(p0) + Point.CastOrCreate(p1));
         sumW += w;

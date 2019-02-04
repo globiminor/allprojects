@@ -171,7 +171,7 @@ namespace TMap
       }
       else
       {
-        IPoint drawPoint = point.Project(drawable.Projection);
+        IPoint drawPoint = PointOp.Project(point, drawable.Projection);
         Basics.Geom.Projection.Translate trsPrj = new Basics.Geom.Projection.Translate(drawPoint);
         drawLine = line.Project(trsPrj);
       }

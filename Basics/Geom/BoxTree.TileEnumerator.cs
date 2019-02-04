@@ -35,7 +35,7 @@ namespace Basics.Geom
         get { return _searchBox; }
         set
         {
-          if (_searchBox.Contains(value) == false)
+          if (BoxOp.Contains(_searchBox, value) == false)
           {
             throw new ArgumentException("new search box must be within current search box");
           }
@@ -151,7 +151,7 @@ namespace Basics.Geom
         get { return _searchBox; }
         set
         {
-          if (_searchBox.Contains(value) == false)
+          if (BoxOp.Contains(_searchBox, value) == false)
           {
             throw new ArgumentException("new search box must be within current search box");
           }
@@ -203,7 +203,7 @@ namespace Basics.Geom
           {
             return true;
           }
-          if (Assert.NotNull(Current).Box.Intersects(_searchBox))
+          if (BoxOp.Intersects(Assert.NotNull(Current).Box, _searchBox))
           {
             return true;
           }

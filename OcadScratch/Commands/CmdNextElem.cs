@@ -43,7 +43,7 @@ namespace OcadScratch.Commands
       }
 
       Basics.Geom.IBox ext0 = _elemVm.GetElem()?.Geometry?.GetGeometry().Extent;
-      Basics.Geom.Point p0 = 2 * Basics.Geom.PointOperator.Add(ext0.Min, ext0.Max);
+      Basics.Geom.Point p0 = 2 * Basics.Geom.PointOp.Add(ext0.Min, ext0.Max);
 
       WorkElemVm next = null;
       double minD2 = double.MaxValue;
@@ -53,7 +53,7 @@ namespace OcadScratch.Commands
         { continue; }
 
         Basics.Geom.IBox ext = candidate.GetElem()?.Geometry?.GetGeometry().Extent;
-        Basics.Geom.Point p = 2 * Basics.Geom.PointOperator.Add(ext.Min, ext.Max);
+        Basics.Geom.Point p = 2 * Basics.Geom.PointOp.Add(ext.Min, ext.Max);
 
         double d2 = p.Dist2(p0);
         if (d2 < minD2)

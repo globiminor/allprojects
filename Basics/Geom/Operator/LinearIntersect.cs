@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using PntOp = Basics.Geom.PointOperator;
 
 namespace Basics.Geom
 {
@@ -52,7 +51,7 @@ namespace Basics.Geom
           }
         }
 
-        Point offset = PntOp.Sub(yOrig, xOrig);
+        Point offset = PointOp.Sub(yOrig, xOrig);
         Axis offsetAxis = fullSystem.GetOrthogonal(offset);
 
         LinearIntersect intersect = new LinearIntersect(xOrig, fullSystem, xTopology,
@@ -126,7 +125,7 @@ namespace Basics.Geom
             }
 
             IList<double> factors = VectorFactors;
-            Point near = PntOp.Add(_fullOrig, _offset);
+            Point near = PointOp.Add(_fullOrig, _offset);
             for (int i = factors.Count - 1; i >= _xTopology; i--)
             {
               Point p = _fullSystem.OrigVector(i);
@@ -241,10 +240,10 @@ namespace Basics.Geom
 
       public Point Parameter(int index, IBox box)
       {
-        Point d = PntOp.Sub(box.Max, box.Min);
+        Point d = PointOp.Sub(box.Max, box.Min);
         if (index == 0)
         {
-          Point p = Point.Create(_xTopology);
+          Point p = Point.Create_0(_xTopology);
           for (int i = 0; i < _xTopology; i++)
           {
             p[i] = box.Min[i] + d[i] * VectorFactors[i];
@@ -254,7 +253,7 @@ namespace Basics.Geom
         else if (index == 1)
         {
           int n = VectorFactors.Count - _xTopology;
-          Point p = Point.Create(n);
+          Point p = Point.Create_0(n);
           for (int i = 0; i < n; i++)
           {
             p[i] = box.Min[i] - d[i] * VectorFactors[i + _xTopology];

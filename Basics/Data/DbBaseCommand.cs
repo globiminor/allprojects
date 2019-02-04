@@ -970,7 +970,7 @@ namespace Basics.Data
       {
         IGeometry geom0 = (IGeometry)values[0];
         IGeometry geom1 = (IGeometry)values[1];
-        if (!geom0.Extent.Intersects(geom1.Extent))
+        if (!BoxOp.Intersects(geom0.Extent, geom1.Extent))
         { return false; }
         if (geom1 is IBox)
         {

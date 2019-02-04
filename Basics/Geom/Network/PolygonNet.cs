@@ -61,7 +61,7 @@ namespace Basics.Geom.Network
       foreach (var ring in innerRingList)
       {
         LineListPolygon poly = new LineListPolygon(ring, true);
-        Debug.Assert(poly != null,"Make resharper happy");
+        Debug.Assert(poly != null, "Make resharper happy");
       }
 
       net._spatialIndex = BuildSpatialIndex(outerRingsBox, outerRingList, innerLineList, new BoxComparer());
@@ -117,7 +117,7 @@ namespace Basics.Geom.Network
       Tree tree = new Tree(comparer);
 
       // Add each line once to box tree
-      tree.InitSize(new IGeometry[] { box });
+      tree.InitSize(new IGeometry[] { Box.CastOrWrap(box) });
       foreach (var ring in outerRingList)
       {
         foreach (var row in ring.DirectedRows)
@@ -262,7 +262,7 @@ namespace Basics.Geom.Network
       return nearestLine;
     }
 
-    private static bool NewLineSide(IPoint p, ref double xMax, 
+    private static bool NewLineSide(IPoint p, ref double xMax,
       IPoint onLine, IPoint offLine, bool startOnLine,
       ref double nearX, ref double nearY, ref int onRightSide)
     {

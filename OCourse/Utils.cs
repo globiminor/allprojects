@@ -86,43 +86,35 @@ namespace OCourse
     }
 
 
+    public static IPoint GetBorderPoint(GeoElement.Geom geom, bool atEnd)
+    {
+      if (geom is GeoElement.Point p) return p.BaseGeometry;
+      if (geom is GeoElement.Line l) return atEnd ? l.BaseGeometry.Points.Last() : l.BaseGeometry.Points[0];
+      if (geom is GeoElement.Points pts) return pts.BaseGeometry[0];
+
+      throw new InvalidOperationException($"Unexpected geom-Type {geom.GetType()}");
+    }
+
     public static double GetLength(Control from, Control to, Setup setup)
     {
-      double length = 0;
-      IGeometry toGeom = to.Element.Geometry;
+      GeoElement.Geom toGeom = to.Element.Geometry;
       if (setup != null)
       { toGeom = toGeom.Project(setup.Map2Prj); }
 
-      Polyline line = toGeom as Polyline;
-      if (line != null)
-      {
-        length += line.Length();
-      }
+      double length = (toGeom as GeoElement.Line)?.BaseGeometry.Length() ?? 0;
       if (from == null)
       {
         return length;
       }
 
-      IGeometry fromGeom = from.Element.Geometry;
+      GeoElement.Geom fromGeom = from.Element.Geometry;
       if (setup != null)
       { fromGeom = fromGeom.Project(setup.Map2Prj); }
 
-      if (!(fromGeom is IPoint fromPoint))
-      {
-        fromPoint = ((Polyline)fromGeom).Points.Last();
-      }
+      IPoint fromPoint = GetBorderPoint(fromGeom, atEnd: true);
+      IPoint toPoint = GetBorderPoint(toGeom, atEnd: false);
 
-      IPoint toPoint;
-      if (line != null)
-      {
-        toPoint = line.Points[0];
-      }
-      else
-      {
-        toPoint = (IPoint)toGeom;
-      }
-
-      length += Math.Sqrt(PointOperator.Dist2(fromPoint, toPoint, GeometryOperator.DimensionXY));
+      length += Math.Sqrt(PointOp.Dist2(fromPoint, toPoint, GeometryOperator.DimensionXY));
       return length;
     }
   }

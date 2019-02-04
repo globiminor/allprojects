@@ -150,7 +150,7 @@ namespace Basics.Geom.Network
       {  
         IPoint atTan = at.TangentAt(1);
         IPoint nextTan = next.TangentAt(0);
-        double p = PointOperator.VectorProduct(atTan, nextTan);
+        double p = PointOp.VectorProduct(atTan, nextTan);
         int sign = Math.Sign(p);
         if (sign < 0)
         { _maxCode = MaxCode.ClockWise; }

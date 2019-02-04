@@ -88,7 +88,7 @@ namespace Ocad.Data
         }
         else if (p.ParameterName == OcadConnection.FieldShape.Name)
         {
-          elem.Geometry = (Basics.Geom.IGeometry)p.Value;
+          elem.Geometry = GeoElement.Geom.Create(p.Value);
         }
         else if (p.ParameterName == OcadConnection.FieldSymbol)
         { elem.Symbol = (int)p.Value; }

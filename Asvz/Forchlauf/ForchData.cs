@@ -48,7 +48,7 @@ namespace Asvz.Forchlauf
 
       public void Append(List<GeoElement> streckenTeile, int index)
       {
-        Polyline f = (Polyline)streckenTeile[index].Geometry;
+        Polyline f = ((GeoElement.Line)streckenTeile[index].Geometry).BaseGeometry;
         AppendLine(Line, f);
 
         PartIndexList.Add(index);
@@ -96,16 +96,16 @@ namespace Asvz.Forchlauf
         { streckenTeile.Add(elem); }
 
         else if (elem.Symbol == SymF.LinieBreit)
-        { IndexList.Add((Polyline)elem.Geometry); }
+        { IndexList.Add(((GeoElement.Line)elem.Geometry).BaseGeometry); }
         else if (elem.Symbol == SymF.Verpflegung)
-        { VerpfList.Add((Point)elem.Geometry); }
+        { VerpfList.Add(((GeoElement.Point)elem.Geometry).BaseGeometry); }
 
         else if (elem.Symbol == SymF.Wald)
-        { Wald.Add((Area)elem.Geometry); }
+        { Wald.Add(((GeoElement.Area)elem.Geometry).BaseGeometry); }
         else if (elem.Symbol == SymF.Siedlung)
-        { Siedlung.Add((Area)elem.Geometry); }
+        { Siedlung.Add(((GeoElement.Area)elem.Geometry).BaseGeometry); }
         else if (elem.Symbol == SymF.Teer)
-        { Teer.Add((Area)elem.Geometry); }
+        { Teer.Add(((GeoElement.Area)elem.Geometry).BaseGeometry); }
       }
 
       GetStrecken(streckenTeile);
@@ -126,14 +126,14 @@ namespace Asvz.Forchlauf
       for (int ix = 0; ix < n; ix++)
       {
         GeoElement x = streckenTeile[ix];
-        Polyline xPart = (Polyline)x.Geometry;
+        Polyline xPart = ((GeoElement.Line)x.Geometry).BaseGeometry;
 
         for (int iy = 0; iy < n; iy++)
         {
           GeoElement y = streckenTeile[iy];
-          Polyline yPart = (Polyline)y.Geometry;
+          Polyline yPart = ((GeoElement.Line)y.Geometry).BaseGeometry;
 
-          if (PointOperator.Dist2(xPart.Points.Last(), yPart.Points[0]) < 20)
+          if (PointOp.Dist2(xPart.Points.Last(), yPart.Points[0]) < 20)
           {
             hasFrom[iy] = true;
 
@@ -155,7 +155,7 @@ namespace Asvz.Forchlauf
       }
 
       int t = iStart;
-      Polyline line = (Polyline)streckenTeile[t].Geometry;
+      Polyline line = ((GeoElement.Line)streckenTeile[t].Geometry).BaseGeometry;
       line = line.Clone();
 
       StreckeInfo init = new StreckeInfo(t, line);
@@ -187,7 +187,7 @@ namespace Asvz.Forchlauf
           for (int iPos = pos - 1; iPos >= 0; iPos--)
           {
             int rev = start.PartIndexList[iPos];
-            Polyline rLine = (Polyline)streckenTeile[rev].Geometry;
+            Polyline rLine = ((GeoElement.Line)streckenTeile[rev].Geometry).BaseGeometry;
             rLine = rLine.Invert();
             AppendLine(start.Line, rLine);
             start.PartIndexList.Add(-rev - 1);
@@ -196,7 +196,7 @@ namespace Asvz.Forchlauf
           result.Add(start);
           return result;
         }
-        Polyline f = (Polyline)streckenTeile[t1].Geometry;
+        Polyline f = ((GeoElement.Line)streckenTeile[t1].Geometry).BaseGeometry;
         f = AppendLine(start.Line, f);
 
         start.PartIndexList.Add(t1);

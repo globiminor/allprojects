@@ -6,9 +6,12 @@ namespace Basics.Geom
   {
     int Dimension { get; }
   }
-  public interface IGeometry : IDimension
+  public interface ITopology
   {
     int Topology { get; }
+  }
+  public interface IGeometry : IDimension, ITopology
+  {
     bool IsWithin(IPoint point);
     IBox Extent { get; }
     IGeometry Border { get; }
@@ -17,20 +20,32 @@ namespace Basics.Geom
     bool EqualGeometry(IGeometry other);
   }
 
-  public interface IBox : IGeometry
+  public interface IBox : IDimension, ITopology
   {
     IPoint Min { get; }
     IPoint Max { get; }
-    IBox Clone();
-    Relation RelationTo(IBox box);
-    bool Contains(IBox box);
-    bool Contains(IBox box, IEnumerable<int> dimensionList);
-    //bool IsWithin(IBox box);
-    //bool IsWithin(IBox box, IList<int> calcDimensions);
-    //bool Intersects(IBox box, IList<int> calcDimensions);
-    bool Intersects(IGeometry geometry);
-    double GetMaxExtent();
   }
+
+  public interface ILine : IDimension
+  {
+    IPoint Start { get; }
+    IPoint End { get; }
+  }
+  public interface IArc
+  {
+    IPoint Center { get; }
+    double Radius { get; }
+    double DirStart { get; }
+    double Angle { get; }
+  }
+  public interface IBezier : IDimension
+  {
+    IPoint Start { get; }
+    IPoint P1 { get; }
+    IPoint P2 { get; }
+    IPoint End { get; }
+  }
+
 
   public interface IVolume
   {
@@ -41,12 +56,17 @@ namespace Basics.Geom
     int Sign { get; }
     ISimpleArea Area { get; }
   }
+
+  public interface ISimplePolyline
+  {
+    IReadOnlyList<IPoint> Points { get; }
+  }
   public interface ISimpleArea
   {
     /// <summary>
-    /// Last point == first point
+    /// Foreach border: Last point == first point
     /// </summary>
-    IReadOnlyList<IPoint> Border { get; }
+    IReadOnlyList<ISimplePolyline> Border { get; }
   }
 
   public interface IMultipartGeometry : IGeometry
@@ -61,9 +81,8 @@ namespace Basics.Geom
 
   }
 
-  public interface IPoint : IGeometry
+  public interface IPoint : IDimension
   {
-    new IPoint Project(IProjection prj);
     double X { get; }
     double Y { get; }
     double Z { get; }

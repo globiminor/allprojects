@@ -25,7 +25,7 @@ namespace Basics.Geom
     }
     #region IGeometry Members
 
-    IReadOnlyList<IPoint> ISimpleArea.Border => Lines[0].Points;
+    IReadOnlyList<ISimplePolyline> ISimpleArea.Border => Lines;
     protected virtual PolylineCollection Lines
     {
       get { return _border; }
@@ -47,7 +47,7 @@ namespace Basics.Geom
         if (_spatialIndex == null)
         {
           _spatialIndex = new BoxTree<Polyline>(2);
-          _spatialIndex.InitSize(new IGeometry[] { Extent });
+          _spatialIndex.InitSize(new IGeometry[] { Box.CastOrWrap(Extent) });
           foreach (var line in Lines)
           { _spatialIndex.Add(line.Extent, line); }
         }
@@ -63,11 +63,11 @@ namespace Basics.Geom
 
       foreach (var border in Lines)
       {
-        Relation rel = border.Extent.RelationTo(p.Extent);
+        Relation rel = BoxOp.GetRelation(border.Extent, Point.CastOrWrap(p).Extent);
         if (rel == Relation.Disjoint)
         { continue; }
 
-        if (border.Points[0].EqualGeometry(border.Points.Last()) == false)
+        if (PointOp.EqualGeometry(border.Points[0], border.Points.Last()) == false)
         { border.Add(border.Points[0]); }
 
         double? xPre = null;
@@ -292,13 +292,13 @@ namespace Basics.Geom
       { return; }
       else if (near == null || onLine.X < max.X)
       {
-        near = PointOperator.Sub(offLine, onLine);
+        near = PointOp.Sub(offLine, onLine);
         max.X = onLine.X;
         onRightSide = (near.Y < 0) == startOnLine;
       }
       else if ((near.Y > 0) == (offLine.Y > p.Y))
       {
-        Point n = PointOperator.Sub(offLine, onLine);
+        Point n = PointOp.Sub(offLine, onLine);
         if ((n.VectorProduct(near) < 0) == (n.Y > 0))
         {
           near = n;
@@ -307,7 +307,8 @@ namespace Basics.Geom
       }
     }
 
-    public override IBox Extent => Lines.Extent;
+    public new Box Extent => Lines.Extent;
+    protected override IBox GetExtent() => Lines.Extent;
     IBox IGeometry.Extent
     { get { return Extent; } }
 

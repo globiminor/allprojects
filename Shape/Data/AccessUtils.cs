@@ -25,12 +25,13 @@ namespace Shape.Data
       {
         _bytes = bytes;
       }
-      public override IBox Extent
+//      protected override IBox GetExtent() => Extent;
+      public new Box Extent
       {
         get
         {
           if (_bytes != null)
-          { return GetExtent(_bytes); }
+          { return AccessUtils.GetExtent(_bytes); }
           return base.Extent;
         }
       }

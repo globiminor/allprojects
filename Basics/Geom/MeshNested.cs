@@ -759,7 +759,7 @@ namespace Basics.Geom
       }
     }
 
-    public class MeshPoint : IGeometry
+    public class MeshPoint
     {
       private readonly IPoint _point;
       private MeshLineEx _indexLine;
@@ -785,45 +785,6 @@ namespace Basics.Geom
           _indexLine = value;
         }
       }
-      #region IGeometry Members
-
-      public int Dimension
-      {
-        get
-        { return _point.Dimension; }
-      }
-
-      public int Topology
-      {
-        get
-        { return _point.Topology; }
-      }
-
-      public bool IsWithin(IPoint point)
-      { return false; }
-
-      public bool Intersects(IGeometry other)
-      {
-        return other.IsWithin(_point);
-      }
-
-      public IBox Extent
-      {
-        get
-        { return _point.Extent; }
-      }
-
-      public IGeometry Border
-      { get { return null; } }
-
-      public IPoint Project(IProjection projection)
-      {
-        return _point.Project(projection);
-      }
-      IGeometry IGeometry.Project(IProjection projection)
-      { return Project(projection); }
-
-      #endregion
     }
 
     private class PointBoxTree : BoxTree<MeshPoint>
@@ -836,11 +797,11 @@ namespace Basics.Geom
       { }
       internal int Add(MeshPoint point)
       {
-        return Add(point.Point.Extent, point);
+        return Add(Point.CastOrWrap(point.Point), point);
       }
       internal void Insert(int index, MeshPoint point)
       {
-        Insert(index, new TileEntry(point.Point.Extent, point));
+        Insert(index, new TileEntry(Point.CastOrWrap(point.Point), point));
       }
     }
   }

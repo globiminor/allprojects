@@ -1,3 +1,5 @@
+using Ocad;
+
 namespace TMap
 {
   public class TableMapData : GraphicMapData
@@ -96,9 +98,9 @@ namespace TMap
     }
     private static TableMapData FromOcad(string ocadPath, TData.TTable table)
     {
-      using (Ocad.OcadReader reader = Ocad.OcadReader.Open(ocadPath))
+      using (OcadReader reader = Ocad.OcadReader.Open(ocadPath))
       {
-        Ocad.Setup setup = reader.ReadSetup();
+        Setup setup = reader.ReadSetup();
         setup.PrjTrans.X = 0;
         setup.PrjTrans.Y = 0;
         System.Collections.Generic.Dictionary<int, SymbolInfo> symbols = new System.Collections.Generic.Dictionary<int, SymbolInfo>();
@@ -117,7 +119,7 @@ namespace TMap
         for (int i = symbolInfos.Count - 1; i >= 0; i--)
         { symbolInfos[i].Position = -i - 1; }
 
-        System.Collections.Generic.Dictionary<int, Ocad.ColorInfo> colors = new System.Collections.Generic.Dictionary<int, Ocad.ColorInfo>();
+        System.Collections.Generic.Dictionary<int, ColorInfo> colors = new System.Collections.Generic.Dictionary<int, ColorInfo>();
         foreach (var color in reader.ReadColorInfos())
         { colors.Add(color.Nummer, color); }
 
@@ -146,8 +148,8 @@ namespace TMap
       }
     }
 
-    private static Symbol ToSymbol(Ocad.Symbol.BaseSymbol ocadSymbol, Ocad.Setup setup,
-                                   System.Collections.Generic.Dictionary<int, Ocad.ColorInfo> colors)
+    private static Symbol ToSymbol(Ocad.Symbol.BaseSymbol ocadSymbol, Setup setup,
+                                   System.Collections.Generic.Dictionary<int, ColorInfo> colors)
     {
       Symbol sym = null;
       if (ocadSymbol is Ocad.Symbol.PointSymbol ocadPoint)
@@ -157,11 +159,11 @@ namespace TMap
         {
           SymbolPartPoint part = new SymbolPartPoint(null);
           part.Scale = true;
-          part.LineWidth = graphic.LineWidth * Ocad.FileParam.OCAD_UNIT * setup.Scale;
-          if (colors.TryGetValue(graphic.Color, out Ocad.ColorInfo color))
+          part.LineWidth = graphic.LineWidth * FileParam.OCAD_UNIT * setup.Scale;
+          if (colors.TryGetValue(graphic.Color, out ColorInfo color))
           { part.LineColor = GetColor(color.Color); }
-          if (graphic.MapGeometry is Basics.Geom.Polyline) part.SymbolLine = (Basics.Geom.Polyline)graphic.MapGeometry.Project(setup.Map2Prj);
-          else if (graphic.MapGeometry is Basics.Geom.Area) part.SymbolLine = ((Basics.Geom.Area)graphic.MapGeometry).Border[0].Project(setup.Map2Prj);
+          if (graphic.MapGeometry is GeoElement.Line l) part.SymbolLine = l.BaseGeometry.Project(setup.Map2Prj);
+          else if (graphic.MapGeometry is GeoElement.Area a) part.SymbolLine = a.BaseGeometry.Border[0].Project(setup.Map2Prj);
           else throw new System.NotImplementedException();
 
           part.DrawLevel = 0;
@@ -174,10 +176,10 @@ namespace TMap
         SymbolPartLine part = new SymbolPartLine(null);
         part.Scale = true;
         part.LineWidth = ocadLine.LineWidth * Ocad.FileParam.OCAD_UNIT * setup.Scale;
-        if (!colors.TryGetValue(ocadLine.LineColor, out Ocad.ColorInfo oc))
+        if (!colors.TryGetValue(ocadLine.LineColor, out ColorInfo oc))
         {
-          oc = new Ocad.ColorInfo();
-          oc.Color = new Ocad.Color(0, 0, 0, 128);
+          oc = new ColorInfo();
+          oc.Color = new Color(0, 0, 0, 128);
         }
         part.LineColor = GetColor(oc.Color);
         part.DrawLevel = 3;
@@ -188,10 +190,10 @@ namespace TMap
         sym = new Symbol(2);
         SymbolPartArea part = new SymbolPartArea(null);
         //part.FillColor = GetColor(colors[ocadArea.FillColor].Color);
-        if (!colors.TryGetValue(ocadArea.FillColor, out Ocad.ColorInfo oc))
+        if (!colors.TryGetValue(ocadArea.FillColor, out ColorInfo oc))
         {
-          oc = new Ocad.ColorInfo();
-          oc.Color = new Ocad.Color(0, 0, 0, 128);
+          oc = new ColorInfo();
+          oc.Color = new Color(0, 0, 0, 128);
         }
         part.LineColor = GetColor(oc.Color);
         part.DrawLevel = 5;
@@ -200,7 +202,7 @@ namespace TMap
       return sym;
     }
 
-    private static System.Drawing.Color GetColor(Ocad.Color ocadColor)
+    private static System.Drawing.Color GetColor(Color ocadColor)
     {
       System.Drawing.Color color = Ocad.Color.CmykToColor(ocadColor.Cyan / 255.0,
                                                       ocadColor.Magenta / 255.0, ocadColor.Yellow / 255.0, ocadColor.Black / 255.0);

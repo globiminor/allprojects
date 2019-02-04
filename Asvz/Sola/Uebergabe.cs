@@ -106,7 +106,7 @@ namespace Asvz.Sola
 
         WriteStartEnd(writer, partStart, partEnd, centerStart, centerEnd);
 
-        AddLegend(writer, border, (Point)_legendPos.Geometry);
+        AddLegend(writer, border, ((GeoElement.Point)_legendPos.Geometry).BaseGeometry);
 
         AdaptText(writer, _templateSetup, _textList, _textSymbol);
 
@@ -210,45 +210,37 @@ namespace Asvz.Sola
 
       if (centerEnd != null)
       {
-        elem = new GeoElement(centerEnd)
-        {
-          Symbol = SymD.UeCircle,
-          Type = GeomType.point
-        };
+        elem = new GeoElement(centerEnd);
+        elem.Symbol = SymD.UeCircle;
+        elem.Type = GeomType.point;
         writer.Append(elem);
       }
       if (partEnd != null)
       {
-        elem = new GeoElement(partEnd)
-        {
-          Symbol = SymD.UeVorherNachher,
-          Type = GeomType.line
-        };
+        elem = new GeoElement(partEnd);
+        elem.Symbol = SymD.UeVorherNachher;
+        elem.Type = GeomType.line;
         writer.Append(elem);
       }
 
       if (centerStart != null && centerStart != centerEnd)
       {
-        elem = new GeoElement(centerStart)
-        {
-          Symbol = SymD.UeNeustart,
-          Type = GeomType.point
-        };
+        elem = new GeoElement(centerStart);
+        elem.Symbol = SymD.UeNeustart;
+        elem.Type = GeomType.point;
 
-        IPoint p1 = partStart.Points[0].Project(_templateSetup.Prj2Map);
-        IPoint p0 = centerStart.Project(_templateSetup.Prj2Map);
-        Point p = PointOperator.Sub(p1, p0);
+        IPoint p1 = PointOp.Project(partStart.Points[0], _templateSetup.Prj2Map);
+        IPoint p0 = PointOp.Project(centerStart, _templateSetup.Prj2Map);
+        Point p = PointOp.Sub(p1, p0);
         double angle = -Math.Atan2(p.X, p.Y);
         elem.Angle = angle;
         writer.Append(elem);
       }
       if (partStart != null)
       {
-        elem = new GeoElement(partStart)
-        {
-          Symbol = SymD.UeVorherNachher,
-          Type = GeomType.line
-        };
+        elem = new GeoElement(partStart);
+        elem.Symbol = SymD.UeVorherNachher;
+        elem.Type = GeomType.line;
         writer.Append(elem);
       }
     }
@@ -258,7 +250,7 @@ namespace Asvz.Sola
     {
       // Get Uebergabe Geometry
       Setup pSetup = new Setup();
-      Point p = (Point)border.Geometry;
+      IPoint p = ((GeoElement.Point)border.Geometry).BaseGeometry;
       pSetup.PrjTrans.X = p.X;
       pSetup.PrjTrans.Y = p.Y;
       pSetup.Scale = 1 / FileParam.OCAD_UNIT;
@@ -299,7 +291,7 @@ namespace Asvz.Sola
       if (streckeStart != null)
       { centerStart = streckeStart.Points[0]; }
 
-      if (centerEnd != null && centerStart != null && PointOperator.Dist2(centerEnd, centerStart) < 100)
+      if (centerEnd != null && centerStart != null && PointOp.Dist2(centerEnd, centerStart) < 100)
       { centerStart = centerEnd; }
 
       Polyline circle = null;
@@ -329,7 +321,7 @@ namespace Asvz.Sola
 
     private double Radius(Polyline symbol)
     {
-      double r2 = PointOperator.OrigDist2(symbol.Points[0]);
+      double r2 = PointOp.OrigDist2(symbol.Points[0]);
       double r = Math.Sqrt(r2);
       return r;
     }
@@ -415,17 +407,17 @@ namespace Asvz.Sola
         if (symbol.Number == SymD.Uebergabe)
         {
           if (!(symbol.Graphics.Count == 1)) throw new InvalidOperationException($"Expected 1 'Uebergabe', got {symbol.Graphics.Count}");
-          _symUebergabe = (Polyline)symbol.Graphics[0].MapGeometry.Project(pSetup.Map2Prj);
+          _symUebergabe = ((GeoElement.Line)symbol.Graphics[0].MapGeometry).Project(pSetup.Map2Prj).BaseGeometry;
         }
         else if (symbol.Number == SymD.UeCircle)
         {
           if (!(symbol.Graphics.Count == 1)) throw new InvalidOperationException($"Expected 1 'UeCircle', got {symbol.Graphics.Count}");
-          _symUeCircle = (Polyline)symbol.Graphics[0].MapGeometry.Project(pSetup.Map2Prj);
+          _symUeCircle = ((GeoElement.Line)symbol.Graphics[0].MapGeometry).Project(pSetup.Map2Prj).BaseGeometry;
         }
         else if (symbol.Number == SymD.UeNeustart)
         {
           if (!(symbol.Graphics.Count == 1)) throw new InvalidOperationException($"Expected 1 'UeNeuStart', got {symbol.Graphics.Count}");
-          _symUeNeustart = (Polyline)symbol.Graphics[0].MapGeometry.Project(pSetup.Map2Prj);
+          _symUeNeustart = ((GeoElement.Line)symbol.Graphics[0].MapGeometry).Project(pSetup.Map2Prj).BaseGeometry;
         }
       }
     }
@@ -465,7 +457,7 @@ namespace Asvz.Sola
 
       foreach (var text in textList)
       {
-        PointCollection pList = (PointCollection)text.Geometry;
+        PointCollection pList = ((GeoElement.Points)text.Geometry).BaseGeometry;
         pList = pList.Project(setup.Prj2Map);
 
         Polyline line = new Polyline();
@@ -485,17 +477,17 @@ namespace Asvz.Sola
       }
     }
 
-    private void AddLegend(OcadWriter writer, Polyline border, Point rawPosition)
+    private void AddLegend(OcadWriter writer, Polyline border, IPoint rawPosition)
     {
       IPoint edge = null;
 
       border = border.Project(_templateSetup.Prj2Map);
-      rawPosition = rawPosition.Project(_templateSetup.Prj2Map);
+      rawPosition = PointOp.Project(rawPosition, _templateSetup.Prj2Map);
 
       double dDist = -1;
       foreach (var pnt in border.Points)
       {
-        double d2 = PointOperator.Dist2(pnt, rawPosition);
+        double d2 = PointOp.Dist2(pnt, rawPosition);
         if (dDist < 0 || dDist > d2)
         {
           dDist = d2;
@@ -535,26 +527,20 @@ namespace Asvz.Sola
         pos1.Y = pos0.Y;
       }
 
-      Element elem = new GeoElement(pos0.Project(_templateSetup.Map2Prj))
-      {
-        Symbol = SymD.UeLegendeBox,
-        Type = GeomType.point
-      };
+      Element elem = new GeoElement(pos0.Project(_templateSetup.Map2Prj));
+      elem.Symbol = SymD.UeLegendeBox;
+      elem.Type = GeomType.point;
       writer.Append(elem);
 
-      elem = new GeoElement(pos1.Project(_templateSetup.Map2Prj))
-      {
-        Symbol = SymD.UeLegendeBox,
-        Type = GeomType.point
-      };
+      elem = new GeoElement(pos1.Project(_templateSetup.Map2Prj));
+      elem.Symbol = SymD.UeLegendeBox;
+      elem.Type = GeomType.point;
       writer.Append(elem);
 
-      elem = new GeoElement(pos0.Project(_templateSetup.Map2Prj))
-      {
-        Angle = _templateSetup.PrjRotation,
-        Symbol = SymD.UeNordpfeil,
-        Type = GeomType.point
-      };
+      elem = new GeoElement(pos0.Project(_templateSetup.Map2Prj));
+      elem.Angle = _templateSetup.PrjRotation;
+      elem.Symbol = SymD.UeNordpfeil;
+      elem.Type = GeomType.point;
       writer.Append(elem);
 
       Point p = pos1.Project(_templateSetup.Map2Prj);
@@ -571,11 +557,9 @@ namespace Asvz.Sola
       pScale.Add(new Point2D(pos1.X + dx, pos1.Y - dy / 5.0));
       pScale.Add(new Point2D(pos1.X + dx, pos1.Y - dy / 10.0));
 
-      elem = new GeoElement(pScale.Project(_templateSetup.Map2Prj))
-      {
-        Symbol = SymD.UeMassstab,
-        Type = GeomType.line
-      };
+      elem = new GeoElement(pScale.Project(_templateSetup.Map2Prj));
+      elem.Symbol = SymD.UeMassstab;
+      elem.Type = GeomType.line;
       writer.Append(elem);
     }
   }

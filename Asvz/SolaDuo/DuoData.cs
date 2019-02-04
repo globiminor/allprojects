@@ -1,11 +1,11 @@
-using System;
-using System.IO;
-using System.Xml;
-using System.Collections.Generic;
 using Basics.Geom;
 using Ocad;
 using Ocad.StringParams;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Xml;
 
 namespace Asvz.SolaDuo
 {
@@ -132,20 +132,20 @@ namespace Asvz.SolaDuo
         else if (elem.Symbol == SymDD.StreckeBisAbzweigung)
         {
           streckenTeile.Add(elem);
-          Polyline line = (Polyline)elem.Geometry;
+          Polyline line = ((GeoElement.Line)elem.Geometry).BaseGeometry;
           Verzweigung.Add(Point.Create(line.Points.Last()));
         }
         else if (elem.Symbol == SymDD.StreckeBisHelfer)
         {
           streckenTeile.Add(elem);
-          Polyline line = (Polyline)elem.Geometry;
+          Polyline line = ((GeoElement.Line)elem.Geometry).BaseGeometry;
           Helfer.Add(Point.Create(line.Points.Last()));
         }
         else if (elem.Symbol == SymDD.StreckeBisEnde)
         { streckenTeile.Add(elem); }
 
         else if (elem.Symbol == SymDD.Ausschnitt)
-        { Ausschnitt.Add((IPoint)elem.Geometry); }
+        { Ausschnitt.Add(((GeoElement.Point)elem.Geometry).BaseGeometry); }
       }
 
       GetStrecken(streckenTeile);
@@ -233,14 +233,14 @@ namespace Asvz.SolaDuo
 
       for (int ix = 0; ix < n; ix++)
       {
-        Polyline xPart = (Polyline)strecken[ix].Geometry;
+        Polyline xPart = ((GeoElement.Line)strecken[ix].Geometry).BaseGeometry;
 
         for (int iy = 0; iy < n; iy++)
         {
-          Polyline yPart = (Polyline)strecken[iy].Geometry;
+          Polyline yPart = ((GeoElement.Line)strecken[iy].Geometry).BaseGeometry;
 
-          if (PointOperator.Dist2(xPart.Points.Last(), yPart.Points[0]) < 20)
-            if (PointOperator.Dist2(xPart.Points.Last(), yPart.Points[0]) < 20)
+          if (PointOp.Dist2(xPart.Points.Last(), yPart.Points[0]) < 20)
+            if (PointOp.Dist2(xPart.Points.Last(), yPart.Points[0]) < 20)
             {
               to[ix] = iy + 1;
               from[iy] = ix + 1;
@@ -267,7 +267,7 @@ namespace Asvz.SolaDuo
         { cat = new DuoCategorie(this); }
 
         GeoElement elem = strecken[t - 1];
-        Polyline line = (Polyline)elem.Geometry;
+        Polyline line = ((GeoElement.Line)elem.Geometry).BaseGeometry;
         line = line.Clone();
 
         if (elem.Symbol == SymDD.StreckeOhneDtm)
@@ -314,7 +314,7 @@ namespace Asvz.SolaDuo
           ISegment c = str.GetSegment(0);
           IPoint tangent = c.TangentAt(0);
 
-          element = new GeoElement(Point.Create(c.Start));
+          element = new GeoElement(c.Start);
           element.Angle = -Math.Atan2(tangent.X, tangent.Y);
           element.Symbol = SymDD.Start;
           element.Type = GeomType.point;
@@ -324,7 +324,7 @@ namespace Asvz.SolaDuo
         }
         else
         {
-          element = new GeoElement(Point.Create(str.Points[0]));
+          element = new GeoElement(str.Points[0]);
           element.Symbol = SymDD.Uebergabe;
           element.Type = GeomType.point;
           elements.Add(element);
@@ -334,7 +334,7 @@ namespace Asvz.SolaDuo
 
         if (iStrecke == nStrecken - 1)
         {
-          element = new GeoElement(Point.Create(str.Points.Last()));
+          element = new GeoElement(str.Points.Last());
           element.Symbol = SymDD.Ziel;
           element.Type = GeomType.point;
           elements.Add(element);
@@ -433,7 +433,7 @@ namespace Asvz.SolaDuo
         writer.Append(element);
       }
 
-      IBox e = extent.Project(setup.Prj2Map).Extent;
+      IBox e = BoxOp.ProjectRaw(extent, setup.Prj2Map).Extent;
 
       PrintPar printParam = new PrintPar(_printParam.StringPar);
       printParam.Left = e.Min.X / 100;

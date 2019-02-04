@@ -1,13 +1,12 @@
-using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Xml;
-using Ocad;
 using Basics.Geom;
 using Basics.Geom.Projection;
+using Ocad;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
+using System.Xml;
 
 namespace Asvz.Sola
 {
@@ -77,9 +76,9 @@ namespace Asvz.Sola
       Polyline line0 = null;
       foreach (var elem in reader.EnumGeoElements(indexList))
       {
-        Polyline line = (Polyline)elem.Geometry;
-        if (PointOperator.Dist2(line.Points[0], start) < 100 &&
-          PointOperator.Dist2(line.Points.Last(), end) < 100)
+        Polyline line = ((GeoElement.Line)elem.Geometry).BaseGeometry;
+        if (PointOp.Dist2(line.Points[0], start) < 100 &&
+          PointOp.Dist2(line.Points.Last(), end) < 100)
         {
           line0 = line;
           break;
@@ -117,21 +116,21 @@ namespace Asvz.Sola
           { nummern.Add(elem); }
         }
         else if (elem.Symbol == SymT.Transport)
-        { _transport.Add((Polyline)elem.Geometry, elem.Symbol); }
+        { _transport.Add(((GeoElement.Line)elem.Geometry).BaseGeometry, elem.Symbol); }
         else if (elem.Symbol == SymT.TransportUi)
-        { _transport.Add((Polyline)elem.Geometry, elem.Symbol); }
+        { _transport.Add(((GeoElement.Line)elem.Geometry).BaseGeometry, elem.Symbol); }
         else if (elem.Symbol == SymT.TransportHilf)
-        { _transport.Add((Polyline)elem.Geometry, elem.Symbol); }
+        { _transport.Add(((GeoElement.Line)elem.Geometry).BaseGeometry, elem.Symbol); }
         else if (elem.Symbol == SymT.LinieBreit)
-        { IndexList.Add((Polyline)elem.Geometry); }
+        { IndexList.Add(((GeoElement.Line)elem.Geometry).BaseGeometry); }
         else if (elem.Symbol == SymT.Verpflegung)
-        { VerpfList.Add((Point)elem.Geometry); }
+        { VerpfList.Add(((GeoElement.Point)elem.Geometry).BaseGeometry); }
         else if (elem.Symbol == SymT.Wald)
-        { Wald.Add((Area)elem.Geometry); }
+        { Wald.Add(((GeoElement.Area)elem.Geometry).BaseGeometry); }
         else if (elem.Symbol == SymT.Siedlung)
-        { Siedlung.Add((Area)elem.Geometry); }
+        { Siedlung.Add(((GeoElement.Area)elem.Geometry).BaseGeometry); }
         else if (elem.Symbol == SymT.Teer)
-        { Teer.Add((Area)elem.Geometry); }
+        { Teer.Add(((GeoElement.Area)elem.Geometry).BaseGeometry); }
       }
       if (!(strecken.Count == Ddx.Strecken.Count)) throw new InvalidOperationException($"#strecken ({strecken.Count}) != #Ddx.Strecken ({Ddx.Strecken.Count})");
       if (!(nummern.Count == Ddx.Strecken.Count)) throw new InvalidOperationException($"#nummern ({nummern.Count}) != #Ddx.Strecken ({Ddx.Strecken.Count})");
@@ -204,7 +203,7 @@ namespace Asvz.Sola
         int iMin = -1;
         for (int iGeom = 0; iGeom < Strecken.Count; iGeom++)
         {
-          Polyline pLine = (strecken[iGeom]).Geometry as Polyline;
+          Polyline pLine = ((GeoElement.Line)strecken[iGeom].Geometry).BaseGeometry;
           double dMin = -1;
           foreach (var pSeg in pLine.EnumSegments())
           {
@@ -223,7 +222,7 @@ namespace Asvz.Sola
         }
 
         Strecken[iStrecke - 1].GetCategorie(Kategorie.Default).SetGeometry(
-          (Polyline)(strecken[iMin]).Geometry, this);
+          ((GeoElement.Line)strecken[iMin].Geometry).BaseGeometry, this);
       }
     }
 
@@ -291,7 +290,7 @@ namespace Asvz.Sola
 
       Transport t = new Transport(streckeFrom, streckeTo);
 
-      UebergabeTransport.GetLayout(streckeFrom, out Polyline borderFrom, out Point legendPos);
+      UebergabeTransport.GetLayout(streckeFrom, out Polyline borderFrom, out IPoint legendPos);
 
       UebergabeTransport.GetLayout(streckeTo, out Polyline borderTo, out legendPos);
 
@@ -310,8 +309,8 @@ namespace Asvz.Sola
         foreach (var pair in _transport)
         {
           Polyline trans = pair.Key;
-          if (boxFrom.IsWithin(trans.Points[0])
-            && boxTo.IsWithin(trans.Points.Last()))
+          if (BoxOp.IsWithin(boxFrom, trans.Points[0])
+            && BoxOp.IsWithin(boxTo, trans.Points.Last()))
           {
             t.Elements.AddRange(CombineTransport(trans, pair.Value));
             return t;
@@ -326,7 +325,7 @@ namespace Asvz.Sola
           { continue; }
 
           Polyline trans = pair.Key;
-          if (boxFrom.IsWithin(trans.Points[0]))
+          if (BoxOp.IsWithin(boxFrom, trans.Points[0]))
           {
             t.Elements.AddRange(CombineTransport(trans, SymT.Transport));
             return t;
@@ -341,7 +340,7 @@ namespace Asvz.Sola
           { continue; }
 
           Polyline trans = pair.Key;
-          if (boxTo.IsWithin(trans.Points.Last()))
+          if (BoxOp.IsWithin(boxTo, trans.Points.Last()))
           {
             t.Elements.AddRange(CombineTransport(trans, SymT.Transport));
             return t;
@@ -381,14 +380,14 @@ namespace Asvz.Sola
           symbol = pair.Value;
 
           Polyline p = pair.Key;
-          if (symbol != currentFirstSymbol && PointOperator.Dist2(p.Points.Last(), s) < 20.0)
+          if (symbol != currentFirstSymbol && PointOp.Dist2(p.Points.Last(), s) < 20.0)
           {
             next = true;
             s = p.Points[0];
             currentFirstSymbol = symbol;
           }
 
-          if (symbol != currentLastSymbol && PointOperator.Dist2(p.Points[0], e) < 20.0)
+          if (symbol != currentLastSymbol && PointOp.Dist2(p.Points[0], e) < 20.0)
           {
             next = true;
             e = p.Points.Last();

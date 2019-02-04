@@ -69,7 +69,7 @@ namespace Basics.Geom
     {
       PointCollection pPrjList = new PointCollection();
       foreach (var p in this)
-      { pPrjList.Add(p.Project(projection)); }
+      { pPrjList.Add(PointOp.Project(p, projection)); }
 
       return pPrjList;
     }
@@ -113,8 +113,13 @@ namespace Basics.Geom
     {
       return this;
     }
+    [Obsolete("refactor for IPoint")]
+    public IEnumerable<PointCore> Subparts_()
+    {
+      foreach (var p in this) yield return Point.CastOrWrap(p);
+    }
     IEnumerable<IGeometry> IMultipartGeometry.Subparts()
-    { return Subparts(); }
+    { return Subparts_(); }
 
     #endregion
   }

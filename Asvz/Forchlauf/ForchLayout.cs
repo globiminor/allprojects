@@ -67,7 +67,7 @@ namespace Asvz.Forchlauf
 
       double f = cat.Faktor();
       WriteKm(writer, cat.Strecke, f, null, false);
-      IPoint top = ((IList<IPoint>)_elemLegende.Geometry)[0];
+      IPoint top = (((GeoElement.Points)_elemLegende.Geometry).BaseGeometry)[0];
       IPoint above = WriteText(writer, name, symText, cat, top);
       WriteBackground(writer, top, above);
 
@@ -120,7 +120,7 @@ namespace Asvz.Forchlauf
 
       foreach (var dataElement in data.StreckenTeile)
       {
-        Polyline strecke = (Polyline)dataElement.Geometry;
+        Polyline strecke = ((GeoElement.Line)dataElement.Geometry).BaseGeometry;
         strecke = ReducedStrecke(strecke, startClip);
 
         Element elem = new GeoElement(strecke);
@@ -129,7 +129,7 @@ namespace Asvz.Forchlauf
         writer.Append(elem);
       }
 
-      IPoint top = ((IList<IPoint>)_elemLegende.Geometry)[0];
+      IPoint top = ((GeoElement.Points)_elemLegende.Geometry).BaseGeometry[0];
       IPoint above = top;
       Kategorie[] kats = { Kategorie.Lang, Kategorie.Mittel, Kategorie.Kurz };
       IEqualityComparer<KmElem> cmp = new KmComparer();
@@ -258,7 +258,7 @@ namespace Asvz.Forchlauf
       ForchCategorie categorie, IPoint above)
     {
       IPoint min = above;
-      Point prj = Point.CastOrCreate(min.Project(Setup.Prj2Map));
+      Point prj = Point.CastOrCreate(PointOp.Project(min, Setup.Prj2Map));
       prj.Y -= symText.LineSpace / 100.0 * symText.Size * 2.54;
 
       min = prj.Project(Setup.Map2Prj);
@@ -284,8 +284,8 @@ namespace Asvz.Forchlauf
 
     private void WriteBackground(OcadWriter writer, IPoint max, IPoint min)
     {
-      IPoint prjMax = max.Project(Setup.Prj2Map);
-      IPoint prjMin = min.Project(Setup.Prj2Map);
+      IPoint prjMax = PointOp.Project(max, Setup.Prj2Map);
+      IPoint prjMin = PointOp.Project(min, Setup.Prj2Map);
 
       double xMin = prjMax.X - 100;
       double xMax = prjMax.X + TextWidth + 100;
@@ -328,19 +328,19 @@ namespace Asvz.Forchlauf
 
       writer.Append(elem);
 
-      IGeometry max = null;
+      GeoElement.Geom max = null;
       foreach (var graphics in _startSymbol.Graphics)
       {
-        if (max == null || max.Extent.GetMaxExtent() <
-          graphics.MapGeometry.Extent.GetMaxExtent())
+        if (max == null || BoxOp.GetMaxExtent(max.Extent) <
+          BoxOp.GetMaxExtent(graphics.MapGeometry.Extent))
         { max = graphics.MapGeometry; }
       }
 
-      IPoint translate = start.Project(Setup.Prj2Map);
+      IPoint translate = PointOp.Project(start, Setup.Prj2Map);
       Basics.Geom.Projection.Translate trans = new Basics.Geom.Projection.Translate(translate);
       max = max.Project(trans);
       max = max.Project(Setup.Map2Prj);
-      return (Polyline)max;
+      return ((GeoElement.Line)max).BaseGeometry;
     }
     private int SymbolStrecke(Kategorie kategorie)
     {
@@ -406,12 +406,12 @@ namespace Asvz.Forchlauf
       public int GetHashCode(KmElem obj)
       {
         int[] o = GetValues(obj);
-        Point p = (Point)obj.Strich.Geometry;
+        IPoint p = ((GeoElement.Point)obj.Strich.Geometry).BaseGeometry;
         return o[0].GetHashCode() ^ o[1].GetHashCode();
       }
       private int[] GetValues(KmElem obj)
       {
-        Point p = (Point)obj.Strich.Geometry;
+        IPoint p = ((GeoElement.Point)obj.Strich.Geometry).BaseGeometry;
         return new[] { (int)Math.Round(p.X * _prec), (int)Math.Round(p.Y * _prec) };
       }
     }

@@ -337,7 +337,7 @@ namespace OCourse.Route
 
         CostFromTo add = new CostFromTo(
           routeCost.From, routeCost.To, routeCost.Start, routeCost.End, resolution,
-          Math.Sqrt(PointOperator.Dist2(routeCost.Start, routeCost.End)), dh, route, optimal, cost);
+          Math.Sqrt(PointOp.Dist2(routeCost.Start, routeCost.End)), dh, route, optimal, cost);
         result.Add(add);
 
         OnStatusChanged(null);
@@ -352,7 +352,7 @@ namespace OCourse.Route
       foreach (var info in calcList)
       {
         endList.Add(info.End);
-        double l = Math.Sqrt(PointOperator.Dist2(info.Start, info.End)) / 2.0 + 200;
+        double l = Math.Sqrt(PointOp.Dist2(info.Start, info.End)) / 2.0 + 200;
         Box infoBox = new Box(Point.Create(info.Start), Point.Create(info.End), true);
 
         infoBox.Min.X -= l;
@@ -403,7 +403,7 @@ namespace OCourse.Route
       if (_heightGrid == null || VeloPath == null || resol < 0)
       {
         routeCost = new CostFromTo(from, to, start, end, resol,
-          Math.Sqrt(PointOperator.Dist2(start, end)), 0, null, 0, 0);
+          Math.Sqrt(PointOp.Dist2(start, end)), 0, null, 0, 0);
 
         if (_calcList != null && _calcList.TryGetValue(routeCost, out existingInfo) == false)
         { _calcList.Add(routeCost, routeCost); }
@@ -413,7 +413,7 @@ namespace OCourse.Route
 
       OnStatusChanged(section + " : ");
 
-      double l = Math.Sqrt(PointOperator.Dist2(start, end));
+      double l = Math.Sqrt(PointOp.Dist2(start, end));
       // Box box = GetBox(start, end, l / 2 + 200);
 
       TerrainVeloModel costProvider = GetTerrainVeloModel();

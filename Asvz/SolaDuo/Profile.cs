@@ -320,7 +320,7 @@ namespace Asvz
       {
         foreach (var poly in polygons)
         {
-          if (poly.Extent.Intersects(pnt.Extent) && poly.IsWithin(pnt))
+          if (BoxOp.Intersects(poly.Extent, Point.CastOrWrap(pnt).Extent) && poly.IsWithin(pnt))
           {
             inside[iPoint] = true;
             break;
@@ -378,13 +378,13 @@ namespace Asvz
 
         if (pSymbol.Number == ProfileSymbol.Haus)
         {
-          pExtent = pSymbol.Graphics.Extent().Project(_templateSetup.Map2Prj).Extent;
+          pExtent = BoxOp.ProjectRaw(pSymbol.Graphics.Extent(), _templateSetup.Map2Prj).Extent;
           _haus0 = _fHeight * pExtent.Min.X;
           _dHaus1 = _fHeight * pExtent.Max.X;
         }
         else if (pSymbol.Number == ProfileSymbol.Baum)
         {
-          pExtent = pSymbol.Graphics.Extent().Project(_templateSetup.Map2Prj).Extent;
+          pExtent = BoxOp.ProjectRaw(pSymbol.Graphics.Extent(), _templateSetup.Map2Prj).Extent;
           _wald0 = _fHeight * pExtent.Min.X;
           _dWald1 = _fHeight * pExtent.Max.X;
         }

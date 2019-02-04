@@ -155,7 +155,7 @@ namespace Asvz
         double[] param = cat.GetLineParams(iKm * 1000.0);
         IPoint p = line.GetSegment((int)param[0]).PointAt(param[1]);
 
-        p = p.Project(prj);
+        p = PointOp.Project(p, prj);
 
         Pt wpt = new Pt { Lat = p.X, Lon = p.Y, Name = string.Format("Km {0}", iKm) };
         kms.Add(wpt);
@@ -199,7 +199,7 @@ namespace Asvz
   public abstract class Data
   {
     private List<Polyline> _indexList;
-    private List<Point> _verpfList;
+    private List<IPoint> _verpfList;
 
     private IList<Area> _wald;
     private IList<Area> _siedlung;
@@ -314,12 +314,12 @@ namespace Asvz
       }
     }
 
-    public List<Point> VerpfList
+    public List<IPoint> VerpfList
     {
       get
       {
         if (_verpfList == null)
-        { _verpfList = new List<Point>(); }
+        { _verpfList = new List<IPoint>(); }
         return _verpfList;
       }
     }
@@ -327,9 +327,9 @@ namespace Asvz
     public struct VerpflegungSym
     {
       public Polyline Index;
-      public Point Symbol;
+      public IPoint Symbol;
 
-      public VerpflegungSym(Polyline idx, Point sym)
+      public VerpflegungSym(Polyline idx, IPoint sym)
       {
         Index = idx;
         Symbol = sym;
@@ -350,7 +350,7 @@ namespace Asvz
 
         foreach (var verpf in VerpfList)
         {
-          Box box = (Box)SymVerpf.Graphics.Extent().Project(Setup.Map2Prj).Extent;
+          Box box = BoxOp.ProjectRaw(SymVerpf.Graphics.Extent(), Setup.Map2Prj).Extent;
           box = new Box(Point.Create(box.Min) + verpf, Point.Create(box.Max) + verpf);
           if (box.Intersection(cross) != null)
           { list.Add(new VerpflegungSym(idx, verpf)); }

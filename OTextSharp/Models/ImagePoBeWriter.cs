@@ -210,12 +210,12 @@ namespace OTextSharp.Models
         if (graphics.Type == SymbolGraphicsType.Line)
         {
           Pcb.SetLineWidth(graphics.LineWidth);
-          DrawCurve((Polyline)graphics.MapGeometry);
+          DrawCurve(((GeoElement.Line)graphics.MapGeometry).BaseGeometry);
           Pcb.Stroke();
         }
         if (graphics.Type == SymbolGraphicsType.Area)
         {
-          foreach (var border in ((Area)graphics.MapGeometry).Border)
+          foreach (var border in (((GeoElement.Area)graphics.MapGeometry).BaseGeometry).Border)
           {
             DrawCurve(border);
             Pcb.Fill();
@@ -224,7 +224,7 @@ namespace OTextSharp.Models
         else if (graphics.Type == SymbolGraphicsType.Circle)
         {
           Pcb.SetLineWidth(graphics.LineWidth);
-          DrawCurve((Polyline)graphics.MapGeometry);
+          DrawCurve(((GeoElement.Line)graphics.MapGeometry).BaseGeometry);
           //IPoint center = (IPoint)graphics.Geometry;
           //Pcb.MoveTo((float)center.X + graphics.Diameter, (float)center.Y);
           //Pcb.Circle((float)center.X, (float)center.Y, graphics.Diameter);
@@ -232,7 +232,7 @@ namespace OTextSharp.Models
         }
         else if (graphics.Type == SymbolGraphicsType.Dot)
         {
-          DrawCurve((Polyline)graphics.MapGeometry);
+          DrawCurve(((GeoElement.Line)graphics.MapGeometry).BaseGeometry);
           Pcb.Fill();
         }
       }

@@ -112,18 +112,18 @@ namespace Ocad.Data
       Dictionary<Match, List<Offset>> revers = new Dictionary<Match, List<Offset>>();
       foreach (var nb in neighbors)
       {
-        IPoint nbGeom = nb.Element.Geometry as IPoint;
+        IPoint nbGeom = (nb.Element.Geometry as GeoElement.Point)?.BaseGeometry;
         if (nbGeom == null)
         {
-          if (nb.Element.Geometry is PointCollection txt && txt.Count > 0)
-          { nbGeom = txt[0]; }
+          if (nb.Element.Geometry is GeoElement.Points txt && txt.BaseGeometry.Count > 0)
+          { nbGeom = txt.BaseGeometry[0]; }
         }
 
         if (nbGeom == null)
         { throw new NotImplementedException(); }
         Point2D nbP = new Point2D(nbGeom);
 
-        IBox extent = nbGeom.Extent;
+        IBox extent = Point.CastOrWrap(nbGeom).Extent;
         Point min = extent.Min + off;
         Point max = extent.Max - off;
         Box search = new Box(min, max);
@@ -133,11 +133,11 @@ namespace Ocad.Data
           if (elem.Symbol != nb.Element.Symbol)
           { continue; }
 
-          IPoint p = elem.Geometry as IPoint;
+          IPoint p = (elem.Geometry as GeoElement.Point)?.BaseGeometry;
           if (p == null)
           {
-            if (elem.Geometry is PointCollection txt && txt.Count > 0)
-            { p = txt[0]; }
+            if (elem.Geometry is GeoElement.Points txt && txt.BaseGeometry.Count > 0)
+            { p = txt.BaseGeometry[0]; }
           }
 
           if (p == null)

@@ -298,7 +298,7 @@ namespace Grid
     }
     public bool Intersects(IGeometry geometry)
     {
-      return Extent.Intersects(geometry);
+      return BoxOp.Intersects(Extent, geometry);
     }
     public GeometryCollection Intersection(IGeometry geometry)
     {

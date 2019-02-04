@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
-using PntOp = Basics.Geom.PointOperator;
 
 namespace Basics.Geom
 {
-  public class Arc : Curve, IMultipartSegment, ISegment<Arc>
+  public abstract class ArcCore : Curve, IArc, IMultipartSegment, ISegment<Arc>
   {
     #region nested classes
     private class _InnerCurve : InnerCurve
@@ -29,63 +28,254 @@ namespace Basics.Geom
     }
     #endregion
 
+    private IPoint _start;
+    private IPoint _end;
+
+    private readonly bool _isQuadrant; // indicates if it is a subpart
+    private double? _maxOffset;
+
+    protected ArcCore()
+    { }
+    protected ArcCore(IPoint start, IPoint end)
+    {
+      _start = start;
+      _end = end;
+    }
+    protected ArcCore(bool isQuadrant)
+    {
+      _isQuadrant = isQuadrant;
+    }
+
+    protected abstract IPoint GetCenter();
+    protected abstract double GetRadius();
+    protected abstract double GetDirStart();
+    protected abstract double GetAngle();
+
+    public IPoint Center => GetCenter();
+    public double Radius => GetRadius();
+    public double DirStart => GetDirStart();
+    public double Angle => GetAngle();
+
+    public override IPoint Start => _start ?? (_start = ArcOp.GetStart(this));
+    public override IPoint End => _end ?? (_end = ArcOp.GetEnd(this));
+
+    public double Diameter => 2 * Radius;
+    public new Box Extent => ArcOp.GetExtent(this);
+    protected override IBox GetExtent() => Extent; 
+
+    protected override Curve CloneCore() => ArcOp.Clone(this);
+    public new Arc Clone() => ArcOp.Clone(this);
+    public IEnumerable<Bezier> EnumBeziers() => ArcOp.EnumBeziers(this);
+
+    protected override IGeometry ProjectCore(IProjection projection) => ArcOp.Project(this, projection);
+    public Arc Project(IProjection projection) => ArcOp.Project(this, projection);
+
+    public IList<ParamGeometryRelation> CutLine(ILine line) => ArcOp.CutLine(this, line);
+
+    public override bool EqualGeometry(IGeometry other)
+    {
+      if (this == other)
+      { return true; }
+
+      if (!(other is IArc o))
+      { return false; }
+
+      return ArcOp.EqualGeometry(this, o);
+    }
+    public override IEnumerable<ParamGeometryRelation> CreateRelations(IParamGeometry other,
+      TrackOperatorProgress trackProgress)
+    {
+      IEnumerable<ParamGeometryRelation> list;
+      if (other is Curve o)
+      { list = CreateRelations(o, trackProgress); }
+      else
+      { list = base.CreateRelations(other, trackProgress); }
+      return list;
+    }
+    protected override IEnumerable<ParamGeometryRelation> CreateRelations(Curve other,
+      TrackOperatorProgress trackProgress)
+    {
+      IList<ParamGeometryRelation> result;
+      if (other is ILine line)
+      {
+        IList<ParamGeometryRelation> list = ArcOp.CutLine(this, line);
+        result = AddRelations(list, trackProgress);
+        return result;
+      }
+      if (other is IArc arc)
+      {
+        IList<ParamGeometryRelation> list = ArcOp.CutArc(this, arc);
+        result = AddRelations(list, trackProgress);
+        return result;
+      }
+
+      return base.CreateRelations(other, trackProgress);
+    }
+
+    double IMultipartSegment.Parameter(ParamGeometryRelation split) => Parameter(split);
+    private double Parameter(ParamGeometryRelation split)
+    {
+      if (HasSubparts == false)
+      { throw new InvalidProgramException(); }
+
+      double angle = 0;
+      foreach (var subpart in Subparts())
+      {
+        if (split.CurrentX.EqualGeometry(subpart))
+        {
+          double p = split.XParam[0];
+
+          angle += p * subpart.Angle;
+
+          return angle / Angle;
+        }
+        angle += subpart.Angle;
+      }
+      throw new InvalidProgramException();
+    }
+
+    public override InnerCurve GetInnerCurve()
+    {
+      return new _InnerCurve(Center, Radius, DirStart, Angle);
+    }
+    /// <summary>
+    /// Punkt bei Parameter t
+    /// </summary>
+    /// <param name="t">Wert zwischen 0 und 1</param>
+    /// <returns></returns>
+    public override Point PointAt(double t) => ArcOp.PointAt(this, t);
+    public override double ParamAt(double distance) => ArcOp.ParamAt(this, distance);
+    public override Point TangentAt(double t) => ArcOp.TangentAt(this, t);
+
+    public override double Length() => ArcOp.Length(this);
+    public override bool IsLinear => false;
+    protected override double NormedMaxOffsetCore => _maxOffset ?? (_maxOffset = ArcOp.GetNormedMaxOffsetCore(this)).Value;
+    protected override Curve InvertCore() => ArcOp.Invert(this);
+
+    protected override Curve SubpartCurve(double t0, double t1) => ArcOp.Subpart(this, t0, t1);
+    public new Arc Subpart(double t0, double t1) => ArcOp.Subpart(this, t0, t1);
+
+    public bool IsContinuous => true;
+    public bool HasSubparts
+    {
+      get
+      {
+        if (_isQuadrant)
+        { return false; }
+
+        double qStart = Math.Floor(DirStart / (0.5 * Math.PI));
+        double qEnd = Math.Floor((DirStart + Angle) / (0.5 * Math.PI));
+        return qStart - qEnd != 0;
+      }
+    }
+
+    protected override IList<IPoint> LinearizeCore(double offset, bool includeFirstPoint) => ArcOp.LinearizeCore(this, offset, includeFirstPoint);
+    public IList<ParamGeometryRelation> CutArc(IArc other) => ArcOp.CutArc(this, other);
+
+    public IEnumerable<Arc> Subparts()
+    {
+      if (HasSubparts == false)
+      { yield break; }
+
+      if (Angle > 0)
+      {
+        double next = 0;
+        double dirEnd = DirStart + Angle;
+        for (double dDir = DirStart; dDir < dirEnd; dDir = next)
+        {
+          next = (1 + Math.Floor(dDir / (0.5 * Math.PI))) * 0.5 * Math.PI;
+          next = Math.Min(next, dirEnd);
+          yield return new Arc(Center, Radius, dDir, next - dDir, isQuadrant: true);
+        }
+      }
+      else
+      {
+        double next = 0;
+        double dirEnd = DirStart + Angle;
+        for (double dDir = DirStart; dDir > dirEnd; dDir = next)
+        {
+          next = (Math.Ceiling(dDir / (0.5 * Math.PI)) - 1) * 0.5 * Math.PI;
+          next = Math.Max(next, dirEnd);
+          yield return new Arc(Center, Radius, dDir, next - dDir, isQuadrant: true);
+        }
+      }
+    }
+    IEnumerable<IGeometry> IMultipartGeometry.Subparts()
+    { return Subparts(); }
+  }
+
+  public class ArcWrap : ArcCore
+  {
+    public IArc Arc { get; }
+    public ArcWrap(IArc arc)
+    {
+      Arc = arc;
+    }
+    protected override IPoint GetCenter() => Arc.Center;
+    protected override double GetRadius() => Arc.Radius;
+    protected override double GetDirStart() => Arc.DirStart;
+    protected override double GetAngle() => Arc.Angle;
+  }
+  public class Arc : ArcCore
+  {
     private readonly IPoint _center;
     private readonly double _radius;
     private readonly double _dirStart;
     private readonly double _angle;
 
-    private IPoint _start;
-    private IPoint _end;
-    private readonly bool _isQuadrant; // indicates if it is a subpart
-    private double _maxOffset = -1;
+    protected override IPoint GetCenter() => _center;
+    protected override double GetRadius() => _radius;
+    protected override double GetDirStart() => _dirStart;
+    protected override double GetAngle() => _angle;
 
-    private Arc(IPoint start, IPoint end,
+    internal Arc(IPoint start, IPoint end,
       IPoint center, double radius, double startDirection, double angle)
+      : base(start, end)
     {
       _center = center;
       _radius = radius;
       _dirStart = startDirection;
       _angle = angle;
-
-      _start = start;
-      _end = end;
     }
 
     public Arc(IPoint center, double radius, double startDirection, double angle)
       : this(center, radius, startDirection, angle, isQuadrant: false)
     { }
-    private Arc(IPoint center,
-      double radius, double startDirection, double angle, bool isQuadrant)
+    internal Arc(IPoint center, double radius, double startDirection, double angle, bool isQuadrant)
+      : base(isQuadrant)
     {
       _center = center;
       _radius = radius;
       _dirStart = startDirection;
       _angle = angle;
-
-      _isQuadrant = isQuadrant;
     }
 
-    protected override Curve CloneCore()
-    { return Clone(); }
-    public new Arc Clone()
+    public static ArcCore CastOrWrap(IArc arc)
     {
-      return new Arc(Point.Create(_center), _radius, _dirStart, _angle);
+      return arc as ArcCore ?? new ArcWrap(arc);
     }
+  }
 
-    public IEnumerable<Bezier> EnumBeziers()
+  public static class ArcOp
+  {
+    public static Arc Clone(IArc arc)
+    {
+      return new Arc(Point.Create(arc.Center), arc.Radius, arc.DirStart, arc.Angle);
+    }
+    public static IEnumerable<Bezier> EnumBeziers(IArc arc)
     {
       double dir0;
       double dir1;
 
-      if (Math.Abs(_angle) < 2 * Math.PI - 0.1)
+      if (Math.Abs(arc.Angle) < 2 * Math.PI - 0.1)
       {
-        dir0 = _dirStart;
-        if (_angle < 0)
-        { dir0 += _angle; }
+        dir0 = arc.DirStart;
+        if (arc.Angle < 0)
+        { dir0 += arc.Angle; }
         dir0 = dir0 / (2 * Math.PI);
         dir0 = 4 * (dir0 - Math.Floor(dir0));
 
-        dir1 = dir0 + 2 * Math.Abs(_angle) / Math.PI;
+        dir1 = dir0 + 2 * Math.Abs(arc.Angle) / Math.PI;
       }
       else
       {
@@ -93,9 +283,9 @@ namespace Basics.Geom
         dir1 = 4;
       }
 
-      double x = Center.X;
-      double y = Center.Y;
-      double r = Radius;
+      double x = arc.Center.X;
+      double y = arc.Center.Y;
+      double r = arc.Radius;
 
       int i = (int)dir0;
 
@@ -118,7 +308,7 @@ namespace Basics.Geom
         }
         i++;
       }
-      if (_angle < 0)
+      if (arc.Angle < 0)
       {
         parts.Reverse();
         for (int iPart = 0; iPart < parts.Count; iPart++)
@@ -126,7 +316,7 @@ namespace Basics.Geom
       }
       return parts;
     }
-    private Bezier GetQuart(int quart, double x, double y, double r)
+    private static Bezier GetQuart(int quart, double x, double y, double r)
     {
       int q = quart % 4;
       double t = 0.55 * r;
@@ -139,237 +329,135 @@ namespace Basics.Geom
       return null;
     }
 
-    public override bool EqualGeometry(IGeometry other)
+    public static bool EqualGeometry(IArc x, IArc y)
     {
-      if (this == other)
-      { return true; }
-
-      if (!(other is Arc o))
-      { return false; }
       bool equal =
-        _center.EqualGeometry(o._center) &&
-        _radius == o._radius &&
-        _dirStart == o._dirStart &&
-        _angle == o._angle;
+        PointOp.EqualGeometry(x.Center, y.Center) &&
+        x.Radius == y.Radius &&
+        x.DirStart == y.DirStart &&
+        x.Angle == y.Angle;
       return equal;
     }
 
-    public override IEnumerable<ParamGeometryRelation> CreateRelations(IParamGeometry other,
-      TrackOperatorProgress trackProgress)
+    public static Point GetStart(IArc arc)
     {
-      IEnumerable<ParamGeometryRelation> list;
-      if (other is Curve o)
-      { list = CreateRelations(o, trackProgress); }
-      else
-      { list = base.CreateRelations(other, trackProgress); }
-      return list;
-    }
-    protected override IEnumerable<ParamGeometryRelation> CreateRelations(Curve other,
-      TrackOperatorProgress trackProgress)
-    {
-      IList<ParamGeometryRelation> result;
-      if (other is Line line)
-      {
-        IList<ParamGeometryRelation> list = CutLine(line);
-        result = AddRelations(list, trackProgress);
-        return result;
-      }
-      if (other is Arc arc)
-      {
-        IList<ParamGeometryRelation> list = CutArc(arc);
-        result = AddRelations(list, trackProgress);
-        return result;
-      }
-
-      return base.CreateRelations(other, trackProgress);
+      Point start = arc.Center + (new Point2D(arc.Radius * Math.Cos(arc.DirStart),
+           arc.Radius * Math.Sin(arc.DirStart)));
+      return start;
     }
 
-    double IMultipartSegment.Parameter(ParamGeometryRelation split) => Parameter(split);
-    private double Parameter(ParamGeometryRelation split)
+    public static Point GetEnd(IArc arc)
     {
-      if (HasSubparts == false)
-      { throw new InvalidProgramException(); }
-
-      double angle = 0;
-      foreach (var subpart in Subparts())
-      {
-        if (split.CurrentX.EqualGeometry(subpart))
-        {
-          double p = split.XParam[0];
-
-          angle += p * subpart._angle;
-
-          return angle / _angle;
-        }
-        angle += subpart._angle;
-      }
-      throw new InvalidProgramException();
+      Point end = arc.Center + new Point2D(arc.Radius * Math.Cos(arc.DirStart + arc.Angle),
+           arc.Radius * Math.Sin(arc.DirStart + arc.Angle));
+      return end;
     }
 
-    public IPoint Center { get { return _center; } }
-
-    public double Radius { get { return _radius; } }
-
-    public override IPoint Start
+    public static IList<IPoint> LinearizeCore(IArc arc, double offset, bool includeFirstPoint)
     {
-      get
-      {
-        if (_start == null)
-        {
-          _start = _center + (new Point2D(_radius * Math.Cos(_dirStart),
-            _radius * Math.Sin(_dirStart)));
-        }
-        return _start;
-      }
-    }
+      ArcCore a = Arc.CastOrWrap(arc);
+      if (offset > arc.Radius)
+      { return new IPoint[] { a.Start, PointAt(arc, 0.5), a.End }; }
 
-    public override IPoint End
-    {
-      get
-      {
-        if (_end == null)
-        {
-          _end = _center + (new Point2D(_radius * Math.Cos(_dirStart + _angle),
-            _radius * Math.Sin(_dirStart + _angle)));
-        }
-        return _end;
-      }
-    }
+      double phi = 2 * Math.Acos(1 - offset / arc.Radius);
+      if (phi >= Math.Abs(arc.Angle))
+      { return new IPoint[] { a.Start, PointAt(arc, 0.5), a.End }; }
 
-    protected override IList<IPoint> LinearizeCore(double offset, bool includeFirstPoint)
-    {
-      if (offset > _radius)
-      { return new IPoint[] { Start, PointAt(0.5), End }; }
-
-      double phi = 2 * Math.Acos(1 - offset / _radius);
-      if (phi >= Math.Abs(_angle))
-      { return new IPoint[] { Start, PointAt(0.5), End }; }
-
-      int n = (int)Math.Ceiling((Math.Abs(_angle) / phi));
+      int n = (int)Math.Ceiling((Math.Abs(arc.Angle) / phi));
       List<IPoint> list = new List<IPoint>(n + 1);
 
       if (includeFirstPoint)
-      { list.Add(Start); }
+      { list.Add(a.Start); }
 
       double at = 1.0 / n;
       for (int i = 1; i < n; i++)
-      { list.Add(PointAt(at * i)); }
+      { list.Add(PointAt(arc, at * i)); }
 
-      list.Add(End);
+      list.Add(a.End);
 
       return list;
     }
 
-    public double Diameter
+    public static Box GetExtent(IArc arc)
     {
-      get
-      { return 2 * _radius; }
-    }
-    public override IBox Extent
-    {
-      get
+      ArcCore arc_ = Arc.CastOrWrap(arc);
+      Box box = new Box(Point.Create(arc_.Start), Point.Create(arc_.End), true);
+      if (arc_.HasSubparts)
       {
-        Box box = new Box(Point.Create(Start), Point.Create(End), true);
-        if (HasSubparts)
-        {
-          foreach (var subPart in Subparts())
-          { box.Include(subPart.Extent); }
-        }
-        return box;
+        foreach (var subPart in arc_.Subparts())
+        { box.Include(subPart.Extent); }
       }
+      return box;
     }
 
-    /// <summary>
-    /// Punkt bei Parameter t
-    /// </summary>
-    /// <param name="t">Wert zwischen 0 und 1</param>
-    /// <returns></returns>
-    public override Point PointAt(double t)
+    public static Point PointAt(IArc arc, double t)
     {
-      double dDir = _dirStart + t * _angle;
-      return new Point2D(_center.X + _radius * Math.Cos(dDir),
-        _center.Y + _radius * Math.Sin(dDir));
+      double dDir = arc.DirStart + t * arc.Angle;
+      return new Point2D(arc.Center.X + arc.Radius * Math.Cos(dDir),
+        arc.Center.Y + arc.Radius * Math.Sin(dDir));
     }
 
-    public override double ParamAt(double distance)
+    public static double ParamAt(IArc arc, double distance)
     {
-      return distance / Length();
+      return distance / Length(arc);
     }
 
-    public override double Length()
+    public static double Length(IArc arc)
     {
-      return Math.Abs(_radius * _angle);
+      return Math.Abs(arc.Radius * arc.Angle);
     }
 
-    public override bool IsLinear
+    public static double GetNormedMaxOffsetCore(IArc arc)
     {
-      get { return false; }
+      ArcCore a = Arc.CastOrWrap(arc);
+      // TODO: verify
+      Point p = PointOp.Sub(a.End, a.Start);
+      double p2 = p.OrigDist2();
+      Point m = 2.0 * (PointAt(a, 0.5) - a.Start);
+      double m2 = m.OrigDist2();
+
+      double maxOffset = Math.Sqrt((m2 - p2) / p2);
+      return maxOffset;
     }
-    protected override double NormedMaxOffsetCore
+
+    public static Arc Invert(IArc arc)
     {
-      get
-      {
-        if (_maxOffset < 0)
-        {
-          // TODO: verify
-          Point p = PntOp.Sub(End, Start);
-          double p2 = p.OrigDist2();
-          Point m = 2.0 * (PointAt(0.5) - Start);
-          double m2 = m.OrigDist2();
-
-          _maxOffset = Math.Sqrt((m2 - p2) / p2);
-        }
-        return _maxOffset;
-      }
+      return new Arc(arc.Center, arc.Radius, arc.DirStart + arc.Angle, -arc.Angle);
     }
 
-    protected override Curve InvertCore() => Invert();
-    public Arc Invert()
-    {
-      return new Arc(_center, _radius, _dirStart + _angle, -_angle);
-    }
-
-    protected override IGeometry ProjectCore(IProjection projection) => Project(projection);
-    public Arc Project(IProjection projection)
+    public static Arc Project(IArc arc, IProjection projection)
     { // TODO
       // only valid if only scaled and rotation
-      IPoint center = _center.Project(projection);
-      IPoint start = Start.Project(projection);
-      IPoint end = End.Project(projection);
-      double radius = Math.Sqrt(PntOp.Dist2(center, start));
+      IPoint center = PointOp.Project(arc.Center, projection);
+      ArcCore a = Arc.CastOrWrap(arc);
+      IPoint start = PointOp.Project(a.Start, projection);
+      IPoint end = PointOp.Project(a.End, projection);
+      double radius = Math.Sqrt(PointOp.Dist2(center, start));
       double dirStart = Math.Atan2(start.Y - center.Y, start.X - center.X);
-      return new Arc(start, end, center, radius, dirStart, _angle);
+      return new Arc(start, end, center, radius, dirStart, arc.Angle);
     }
 
-    public new Arc Subpart(double t0, double t1)
+    public static Arc Subpart(IArc arc, double t0, double t1)
     {
-      return new Arc(_center, _radius,
-        _dirStart + t0 * _angle, _dirStart + t1 * _angle);
-    }
-    protected override Curve SubpartCurve(double t0, double t1)
-    { return Subpart(t0, t1); }
-
-
-    public override InnerCurve GetInnerCurve()
-    {
-      return new _InnerCurve(_center, _radius, _dirStart, _angle);
+      return new Arc(arc.Center, arc.Radius,
+        arc.DirStart + t0 * arc.Angle, arc.DirStart + t1 * arc.Angle);
     }
 
-    public IList<ParamGeometryRelation> CutLine(Line line)
+    public static IList<ParamGeometryRelation> CutLine(IArc arc, ILine line)
     {
       // (x - cx)^2 + (y - cy)^2 = r^2
       // x = sx + t*dx
       // y = sy + t*dy
-      Point dir = PntOp.Sub(line.End, line.Start);
+      Point dir = PointOp.Sub(line.End, line.Start);
 
       Point ortho = new Point2D(dir.Y, -dir.X);
-      Point center = new Point2D(_center.X, _center.Y);
-      ParamGeometryRelation rel = line.CutLine(new Line(center, center + ortho));
+      Point center = new Point2D(arc.Center.X, arc.Center.Y);
+      ParamGeometryRelation rel = LineOp.CutLine(line, new Line(center, center + ortho));
 
       IPoint cut = (IPoint)rel.IntersectionAnywhere;
 
       double drOtho2 = center.Dist2(cut);
-      double dr2 = _radius * _radius;
+      double dr2 = arc.Radius * arc.Radius;
       double dCut2 = dr2 - drOtho2;
       if (dCut2 < 0)
       { return null; }
@@ -379,25 +467,27 @@ namespace Basics.Geom
       List<ParamGeometryRelation> list = new List<ParamGeometryRelation>();
       double l0 = f0 + f1;
       double l1 = f0 - f1;
-      IPoint arc0 = line.PointAt(l0);
-      IPoint arc1 = line.PointAt(l1);
+      Point arc0 = LineOp.PointAt(line, l0);
+      Point arc1 = LineOp.PointAt(line, l1);
       double phi0 = Math.Atan2(arc0.Y - center.Y, arc0.X - center.X);
       double phi1 = Math.Atan2(arc1.Y - center.Y, arc1.X - center.X);
-      double a0 = GetA(phi0);
-      double a1 = GetA(phi1);
+      double a0 = GetA(arc, phi0);
+      double a1 = GetA(arc, phi1);
 
+      LineCore line_ = Line.CastOrWrap(line);
+      ArcCore arc_ = Arc.CastOrWrap(arc);
       IPoint pl, pa;
       ParamGeometryRelation r;
       pl = Point.Create(new double[] { l0 });
       pa = Point.Create(new double[] { a0 });
-      r = new ParamGeometryRelation(line, pl, this, pa, Point.Create(line.Dimension));
+      r = new ParamGeometryRelation(line_, pl, arc_, pa, Point.Create_0(line.Dimension));
       if (r.IsWithin)
       { r.Intersection = arc0; }
       list.Add(r);
 
       pl = Point.Create(new double[] { l1 });
       pa = Point.Create(new double[] { a1 });
-      r = new ParamGeometryRelation(line, pl, this, pa, Point.Create(line.Dimension));
+      r = new ParamGeometryRelation(line_, pl, arc_, pa, Point.Create_0(line.Dimension));
       if (r.IsWithin)
       { r.Intersection = arc1; }
       list.Add(r);
@@ -405,9 +495,9 @@ namespace Basics.Geom
     }
 
     private static readonly double _math2PI = 2 * Math.PI;
-    private double GetA(double phi)
+    private static double GetA(IArc arc, double phi)
     {
-      double startAngle = phi - _dirStart;
+      double startAngle = phi - arc.DirStart;
       while (startAngle >= _math2PI)
       {
         startAngle -= _math2PI;
@@ -417,29 +507,31 @@ namespace Basics.Geom
         startAngle += _math2PI;
       }
 
-      while (startAngle < 0 && _angle > 0)
+      while (startAngle < 0 && arc.Angle > 0)
       {
         startAngle += _math2PI;
       }
-      while (startAngle > 0 && _angle < 0)
+      while (startAngle > 0 && arc.Angle < 0)
       {
         startAngle -= _math2PI;
       }
-      double a = startAngle / _angle;
+      double a = startAngle / arc.Angle;
 
       return a;
     }
-    public IList<ParamGeometryRelation> CutArc(Arc other)
+    public static IList<ParamGeometryRelation> CutArc(IArc x, IArc y)
     {
       IGeometry intersect;
-      if (PntOp.Dist2(_center, other._center) == 0 && _radius == other._radius)
+      ArcCore xCore = Arc.CastOrWrap(x);
+      ArcCore yCore = Arc.CastOrWrap(y);
+      if (PointOp.Dist2(x.Center, y.Center) == 0 && x.Radius == y.Radius)
       { // same circles
         // TODO: verify angles 2 PI
-        double thisMin = Math.Min(_dirStart, _dirStart + _angle);
-        double thisMax = Math.Max(_dirStart, _dirStart + _angle);
+        double thisMin = Math.Min(x.DirStart, x.DirStart + x.Angle);
+        double thisMax = Math.Max(x.DirStart, x.DirStart + x.Angle);
 
-        double otherMin = Math.Min(other._dirStart, other._dirStart + other._angle);
-        double otherMax = Math.Max(other._dirStart, other._dirStart + _angle);
+        double otherMin = Math.Min(y.DirStart, y.DirStart + y.Angle);
+        double otherMax = Math.Max(y.DirStart, y.DirStart + y.Angle);
 
         double max = Math.Min(thisMax, otherMax);
         double min = Math.Max(thisMin, otherMin);
@@ -448,28 +540,28 @@ namespace Basics.Geom
         { return null; }
         if (min == max)
         {
-          if (_angle > 0)
-          { intersect = Start; }
+          if (x.Angle > 0)
+          { intersect = Point.CastOrWrap(xCore.Start); }
           else
-          { intersect = End; }
+          { intersect = Point.CastOrWrap(xCore.End); }
         }
         else
         {
-          if (_angle > 0)
-          { intersect = new Arc(Point.Create(_center), _radius, min, max - min); }
+          if (x.Angle > 0)
+          { intersect = new Arc(Point.Create(x.Center), x.Radius, min, max - min); }
           else
-          { intersect = new Arc(Point.Create(_center), _radius, max, min - max); }
+          { intersect = new Arc(Point.Create(x.Center), x.Radius, max, min - max); }
         }
-        ParamGeometryRelation rel = new ParamGeometryRelation(this, other, intersect);
+        ParamGeometryRelation rel = new ParamGeometryRelation(xCore, yCore, intersect);
         return new ParamGeometryRelation[] { rel };
       } // end ident circle
 
       // Apply cosinus law
-      Point delta = PntOp.Sub(other._center, _center);
+      Point delta = PointOp.Sub(y.Center, x.Center);
       double dist2 = delta.OrigDist2();
-      double this2 = _radius * _radius;
-      double other2 = other._radius * other._radius;
-      double cos = this2 + other2 - 2 * _radius * other._radius - dist2;
+      double this2 = x.Radius * x.Radius;
+      double other2 = y.Radius * y.Radius;
+      double cos = this2 + other2 - 2 * x.Radius * y.Radius - dist2;
       if (cos < -1)
       { return null; }
       if (cos > 1)
@@ -478,98 +570,44 @@ namespace Basics.Geom
       intersect = null;
       if (cos == 1)
       {
-        double f = _radius / (_radius - other._radius);
-        intersect = _center + f * delta;
+        double f = x.Radius / (x.Radius - y.Radius);
+        intersect = x.Center + f * delta;
       }
       else if (cos == -1)
       {
-        double f = _radius / (_radius + other._radius);
-        intersect = _center + f * delta;
+        double f = x.Radius / (x.Radius + y.Radius);
+        intersect = x.Center + f * delta;
       }
 
       if (intersect != null)
       {
-        ParamGeometryRelation rel = new ParamGeometryRelation(this, other, intersect);
+        ParamGeometryRelation rel = new ParamGeometryRelation(xCore, yCore, intersect);
         return new ParamGeometryRelation[] { rel };
       }
 
       double dDist = Math.Sqrt(dist2); // now we need the real distance
-      cos = this2 + dist2 - 2 * _radius * dDist - other2;
+      cos = this2 + dist2 - 2 * x.Radius * dDist - other2;
       double dAlpha = Math.Acos(cos);
       double dDir = Math.Atan2(delta.Y, delta.X);
       double angle = dDir + dAlpha;
 
       // TODO check other arc
       List<ParamGeometryRelation> list = new List<ParamGeometryRelation>();
-      if (angle >= _dirStart == _dirStart + _angle >= angle)
-      { list.Add(new ParamGeometryRelation(this, other, PointAt(angle - _dirStart / _angle))); }
+      if (angle >= x.DirStart == x.DirStart + x.Angle >= angle)
+      { list.Add(new ParamGeometryRelation(xCore, yCore, PointAt(x, angle - x.DirStart / x.Angle))); }
       angle = dDir - dAlpha;
-      if (angle >= _dirStart == _dirStart + _angle >= angle)
-      { list.Add(new ParamGeometryRelation(this, other, PointAt(angle - _dirStart / _angle))); }
+      if (angle >= x.DirStart == x.DirStart + x.Angle >= angle)
+      { list.Add(new ParamGeometryRelation(xCore, yCore, PointAt(x, angle - x.DirStart / x.Angle))); }
 
       return list;
     }
 
-    public override Point TangentAt(double t)
+    public static Point TangentAt(IArc arc, double t)
     {
-      Point p = PointAt(t) - _center;
+      Point p = PointAt(arc, t) - arc.Center;
       Point tangent = new Point2D(-p.Y, p.X);
-      return _angle * tangent;
+      return arc.Angle * tangent;
     }
-
-
-    #region IMultipartGeometry Members
-
-    public bool IsContinuous
-    {
-      get
-      { return true; }
-    }
-    public bool HasSubparts
-    {
-      get
-      {
-        if (_isQuadrant)
-        { return false; }
-
-        double qStart = Math.Floor(_dirStart / (0.5 * Math.PI));
-        double qEnd = Math.Floor((_dirStart + _angle) / (0.5 * Math.PI));
-        return qStart - qEnd != 0;
-      }
-    }
-
-    public IEnumerable<Arc> Subparts()
-    {
-      if (HasSubparts == false)
-      { yield break; }
-
-      if (_angle > 0)
-      {
-        double next = 0;
-        double dirEnd = _dirStart + _angle;
-        for (double dDir = _dirStart; dDir < dirEnd; dDir = next)
-        {
-          next = (1 + Math.Floor(dDir / (0.5 * Math.PI))) * 0.5 * Math.PI;
-          next = Math.Min(next, dirEnd);
-          yield return new Arc(_center, _radius, dDir, next - dDir, isQuadrant: true);
-        }
-      }
-      else
-      {
-        double next = 0;
-        double dirEnd = _dirStart + _angle;
-        for (double dDir = _dirStart; dDir > dirEnd; dDir = next)
-        {
-          next = (Math.Ceiling(dDir / (0.5 * Math.PI)) - 1) * 0.5 * Math.PI;
-          next = Math.Max(next, dirEnd);
-          yield return new Arc(_center, _radius, dDir, next - dDir, isQuadrant: true);
-        }
-      }
-    }
-    IEnumerable<IGeometry> IMultipartGeometry.Subparts()
-    { return Subparts(); }
-
-    #endregion
   }
 
 }

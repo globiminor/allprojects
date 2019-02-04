@@ -321,7 +321,7 @@ namespace Basics.Geom
         if (_intersect == null)
         {
           if (Offset2 == 0 && _x.Param != null)
-          { _intersect = _x.Geometry.PointAt(_x.Param); }
+          { _intersect = Point.CastOrWrap(_x.Geometry.PointAt(_x.Param)); }
         }
         return _intersect;
       }
@@ -358,7 +358,7 @@ namespace Basics.Geom
       {
         if (_offset2 < 0)
         {
-          _offset2 = PointOperator.OrigDist2(_offset);
+          _offset2 = PointOp.OrigDist2(_offset);
           if (_offset2 < 1.0e-12)
           { _offset2 = 0; }
         }
@@ -421,14 +421,14 @@ namespace Basics.Geom
 
       IPoint x0 = xLine.PointAt(p0);
       IPoint x1 = xLine.PointAt(p1);
-      IPoint dx = PointOperator.Sub(x1, x0);
+      IPoint dx = PointOp.Sub(x1, x0);
       IPoint y0 = xLine.PointAt(p0);
       IPoint y1 = xLine.PointAt(p1);
-      IPoint dy = PointOperator.Sub(y1, y0);
-      double xy0 = PointOperator.SkalarProduct(dx, PointOperator.Sub(y0, x0));
-      double xy1 = PointOperator.SkalarProduct(dx, PointOperator.Sub(y1, x0));
-      double yx0 = PointOperator.SkalarProduct(dy, PointOperator.Sub(x0, y0));
-      double yx1 = PointOperator.SkalarProduct(dy, PointOperator.Sub(x1, y0));
+      IPoint dy = PointOp.Sub(y1, y0);
+      double xy0 = PointOp.SkalarProduct(dx, PointOp.Sub(y0, x0));
+      double xy1 = PointOp.SkalarProduct(dx, PointOp.Sub(y1, x0));
+      double yx0 = PointOp.SkalarProduct(dy, PointOp.Sub(x0, y0));
+      double yx1 = PointOp.SkalarProduct(dy, PointOp.Sub(x1, y0));
 
       List<ParamGeometryRelation> rels = new List<ParamGeometryRelation>(4);
       ParamGeometryRelation r0 = new ParamGeometryRelation(xLine, p0, yLine, Point.Create(new double[] { yx0 }), null);
@@ -639,9 +639,9 @@ namespace Basics.Geom
           else
           {
             Point end = Point.CastOrCreate(border.Points.Last());
-            if (border.Points.Count == 0 || end.EqualGeometry(line.Points[0]))
+            if (border.Points.Count == 0 || PointOp.EqualGeometry(end, line.Points[0]))
             { }
-            else if (end.EqualGeometry(line.Points.Last()))
+            else if (PointOp.EqualGeometry(end, line.Points.Last()))
             {
               line = line.Clone().Invert();
             }

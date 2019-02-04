@@ -381,7 +381,7 @@ namespace Shape
 
     public bool Intersects(IBox box)
     {
-      return Extent.Intersects(box);
+      return BoxOp.Intersects(Extent, box);
     }
     public bool Intersects(IGeometry geometry)
     {

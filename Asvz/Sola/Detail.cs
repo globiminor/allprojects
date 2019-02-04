@@ -116,9 +116,9 @@ namespace Asvz.Sola
 
         foreach (var legPos in _legendPos)
         {
-          if (border.Extent.Intersects(legPos.Geometry))
+          if (BoxOp.Intersects(border.Extent, legPos.Geometry.Extent))
           {
-            AddLegend(writer, border, (Point)legPos.Geometry);
+            AddLegend(writer, border, (Point)legPos.Geometry.Extent);
             break;
           }
         }
@@ -162,7 +162,7 @@ namespace Asvz.Sola
     {
       // Get Uebergabe Geometry
       Setup setup = new Setup();
-      Point p = (Point)border.Geometry;
+      IPoint p = ((GeoElement.Point)border.Geometry).BaseGeometry;
       setup.PrjTrans.X = p.X;
       setup.PrjTrans.Y = p.Y;
       setup.Scale = 1 / FileParam.OCAD_UNIT;
@@ -203,7 +203,7 @@ namespace Asvz.Sola
         if (symbol.Number == SymD.Detail)
         {
           if (!(symbol.Graphics.Count == 1)) throw new InvalidOperationException($"Expected 1 'Detail', got {symbol.Graphics.Count}");
-          _symUebergabe = (Polyline)symbol.Graphics[0].MapGeometry.Project(setup.Map2Prj);
+          _symUebergabe = ((GeoElement.Line)symbol.Graphics[0].MapGeometry).Project(setup.Map2Prj).BaseGeometry;
         }
       }
     }
@@ -218,7 +218,7 @@ namespace Asvz.Sola
       double dDist = -1;
       foreach (var pnt in border.Points)
       {
-        double d2 = PointOperator.Dist2(pnt, rawPosition, GeometryOperator.DimensionXY);
+        double d2 = PointOp.Dist2(pnt, rawPosition, GeometryOperator.DimensionXY);
         if (dDist < 0 || dDist > d2)
         {
           dDist = d2;

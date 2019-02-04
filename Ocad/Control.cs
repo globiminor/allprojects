@@ -92,14 +92,14 @@ namespace Ocad
 
     public IPoint GetPoint()
     {
-      IGeometry geom = Element.Geometry;
+      GeoElement.Geom geom = Element.Geometry;
       IPoint point;
-      if (geom is IPoint)
-      { point = (IPoint)geom; }
-      else if (geom is PointCollection)
-      { point = ((PointCollection)geom)[0]; }
-      else if (geom is Polyline)
-      { point = ((Polyline)geom).Points[0]; }
+      if (geom is GeoElement.Point p)
+      { point = p.BaseGeometry; }
+      else if (geom is GeoElement.Points pts)
+      { point = pts.BaseGeometry[0]; }
+      else if (geom is GeoElement.Line l)
+      { point = l.BaseGeometry.Points[0]; }
       else
       { throw new NotImplementedException("Unhandled geometry type " + geom.GetType()); }
       return point;

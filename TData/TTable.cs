@@ -1,12 +1,13 @@
+using Basics.Data;
+using Basics.Geom;
+using Ocad;
+using Shape.Data;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Text;
-using Basics.Data;
-using Basics.Geom;
-using Shape.Data;
 
 namespace TData
 {
@@ -345,7 +346,7 @@ namespace TData
     public abstract DataColumnCollection Schema { get; }
     public abstract TTableX Select(string where);
     public abstract TTableX Select(GeometryQuery query);
-    System.Collections.IEnumerator IEnumerable.GetEnumerator()
+    IEnumerator IEnumerable.GetEnumerator()
     { return GetEnumerator(); }
     public abstract IEnumerator<DataRow> GetEnumerator();
     public abstract int Topology { get; }
@@ -666,7 +667,7 @@ namespace TData
     #region nested classes
     private class Enumerator : IEnumerator<DataRow>
     {
-      private IEnumerator<Ocad.GeoElement> _enumerator;
+      private IEnumerator<GeoElement> _enumerator;
       private OcadReader _schema;
       private DataRow _currentRow;
 
@@ -720,7 +721,7 @@ namespace TData
           { _currentRow[_fieldShape] = DBNull.Value; }
 
           _currentRow[_fieldSymbol] = _enumerator.Current.Symbol;
-          if (_enumerator.Current.Geometry is Point)
+          if (_enumerator.Current.Geometry is GeoElement.Point)
           { _currentRow[_fieldAngle] = _enumerator.Current.Angle; }
 
           bConditions = _schema.CheckConditions(_currentRow);

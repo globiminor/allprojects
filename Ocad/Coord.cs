@@ -145,37 +145,37 @@ namespace Ocad
     }
 
 
-    public static IGeometry GetGeometry(GeomType type, IList<Coord> coords)
+    public static GeoElement.Geom GetGeometry(GeomType type, IList<Coord> coords)
     {
       if (type == GeomType.point || type == GeomType.unformattedText ||
         type == GeomType.formattedText)
       {
         if (coords.Count == 1)
-        { return coords[0].GetPoint(); }
+        { return new GeoElement.Point(coords[0].GetPoint()); }
         else if (type == GeomType.point)
-        { return PartPoint.Create(coords); }
+        { return new GeoElement.Point(PartPoint.Create(coords)); }
         else
         {
           PointCollection points = new PointCollection();
           foreach (var coord in coords)
           { points.Add(coord.GetPoint()); }
-          return points;
+          return new GeoElement.Points(points);
         }
       }
       else if (type == GeomType.line || type == GeomType.lineText)
       {
         Polyline line = GetPolyline(coords);
-        return line;
+        return new GeoElement.Line(line);
       }
       else if (type == GeomType.rectangle)
       {
         Polyline line = GetPolyline(coords);
-        return line;
+        return new GeoElement.Line(line);
       }
       else if (type == GeomType.area)
       {
         Area pArea = GetArea(coords);
-        return pArea;
+        return new GeoElement.Area(pArea);
       }
       else
       { // unknown geometry type
@@ -244,39 +244,52 @@ namespace Ocad
       return line;
     }
 
-    public static IEnumerable<Coord> EnumCoords(IGeometry geometry)
+    public static bool TryEnumCoords(IGeometry geom, out IEnumerable<Coord> coords)
     {
-      if (geometry is Point pt)
-      {
-        yield return Coord.Create(pt, Coord.Flags.none);
-        if (pt is PartPoint ppt)
-        {
-          foreach (Coord angle in ppt.Angles)
-          { yield return angle; }
-        }
-      }
-      else if (geometry is PointCollection pts)
-      {
-        foreach (var p in pts)
-        { yield return Coord.Create(p, Coord.Flags.none); }
-      }
-      else if (geometry is Polyline line)
-      {
-        foreach (var coord in EnumLineCoords(line, false))
-        { yield return coord; }
-      }
-      else if (geometry is Area area)
-      {
-        bool isInnerRing = false;
-        foreach (var border in area.Border)
-        {
-          foreach (var coord in EnumLineCoords(border, isInnerRing))
-          { yield return coord; }
-          isInnerRing = true;
-        }
-      }
+      if (geom is IPoint pt) coords = EnumCoords(pt);
+      else if (geom is PointCollection pts) coords = EnumCoords(pts);
+      else if (geom is Polyline line) coords = EnumCoords(line);
+      else if (geom is Area area) coords = EnumCoords(area);
+
       else
-      { throw new Exception("Unhandled geometry type " + geometry.GetType()); }
+      {
+        coords = null;
+        return false;
+      }
+      return true;
+    }
+    public static IEnumerable<Coord> EnumCoords(IPoint pt)
+    {
+      yield return Coord.Create(pt, Coord.Flags.none);
+      if (pt is PartPoint ppt)
+      {
+        foreach (Coord angle in ppt.Angles)
+        { yield return angle; }
+      }
+    }
+
+    public static IEnumerable<Coord> EnumCoords(PointCollection pts)
+    {
+      foreach (var p in pts)
+      { yield return Coord.Create(p, Coord.Flags.none); }
+    }
+
+    public static IEnumerable<Coord> EnumCoords(Polyline line)
+    {
+      foreach (var coord in EnumLineCoords(line, isInnerRing: false))
+      { yield return coord; }
+    }
+
+
+    public static IEnumerable<Coord> EnumCoords(Area area)
+    {
+      bool isInnerRing = false;
+      foreach (var border in area.Border)
+      {
+        foreach (var coord in EnumLineCoords(border, isInnerRing))
+        { yield return coord; }
+        isInnerRing = true;
+      }
     }
 
     private static IEnumerable<Coord> EnumLineCoords(Polyline polyline, bool isInnerRing)

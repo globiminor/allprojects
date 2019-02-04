@@ -163,7 +163,7 @@ namespace OcadTest
       for (int i = 0; i < 256; i++)
       {
         byte bb = (byte)(255 - i);
-        r[i] = bb; g[i] = bb; b[i] = bb; 
+        r[i] = bb; g[i] = bb; b[i] = bb;
       }
       foreach (var key in tiles.Keys)
       {
@@ -173,7 +173,7 @@ namespace OcadTest
     }
 
     private void Export(string dir, string key, string resName, double resolution,
-      Func<int, int, Func<int, int, List<Vector>>, double> grdFct,
+      Func<int, int, Func<int, int, List<Point>>, double> grdFct,
        byte[] r, byte[] g, byte[] b)
     {
       string lazName = Path.Combine(dir, key + ".laz");
@@ -226,25 +226,21 @@ namespace OcadTest
       using (OcadWriter w = OcadWriter.AppendTo(@"C:\daten\felix\kapreolo\scool\regensdorf_ruggenacher\test.ocd"))
       {
         {
-          Element elem = new GeoElement(new Point2D(677000, 254000))
-          {
-            Type = GeomType.unformattedText,
-            Color = Color.ColorToCmyk(System.Drawing.Color.Blue).ToNumber(),
-            Text = "A",
-            Symbol = -3
-          };
+          Element elem = new GeoElement(new Point2D(677000, 254000));
+          elem.Type = GeomType.unformattedText;
+          elem.Color = Color.ColorToCmyk(System.Drawing.Color.Blue).ToNumber();
+          elem.Text = "A";
+          elem.Symbol = -3;
 
           w.Append(elem);
         }
 
         {
-          Element elem = new GeoElement(Polyline.Create(new[] { new Point2D(677010, 254000), new Point2D(677020, 254010) }))
-          {
-            Type = GeomType.line,
-            Color = Color.ColorToCmyk(System.Drawing.Color.Green).ToNumber(),
-            LineWidth = 30,
-            Symbol = -3
-          };
+          Element elem = new GeoElement(Polyline.Create(new[] { new Point2D(677010, 254000), new Point2D(677020, 254010) }));
+          elem.Type = GeomType.line;
+          elem.Color = Color.ColorToCmyk(System.Drawing.Color.Green).ToNumber();
+          elem.LineWidth = 30;
+          elem.Symbol = -3;
 
           w.Append(elem);
         }
@@ -258,9 +254,8 @@ namespace OcadTest
     {
       using (OcadReader r = OcadReader.Open(@"C:\daten\felix\kapreolo\scool\regensdorf_ruggenacher\ruggenacher_2017.ocd"))
       {
-        foreach (var idx in r.GetIndices())
+        foreach (var e in r.EnumGeoElements())
         {
-          r.ReadElement(idx, out GeoElement e);
           if (!string.IsNullOrWhiteSpace(e.Text))
           {
           }
@@ -289,7 +284,7 @@ namespace OcadTest
         foreach (var idx in w.GetIndices())
         {
           w.ReadElement(idx, out GeoElement elem);
-          if (elem != null && elem.Geometry is Area)
+          if (elem != null && elem.Geometry is GeoElement.Area)
           {
             elem.Angle = 0;
             w.Overwrite(elem, idx.Index);
@@ -370,8 +365,8 @@ namespace OcadTest
       {
         reader.ReadElement(326, out GeoElement h1);
         reader.ReadElement(3583, out GeoElement h2);
-        t1 = CreateTree((Polyline)h1.Geometry);
-        t2 = CreateTree((Polyline)h2.Geometry);
+        t1 = CreateTree(((GeoElement.Line)h1.Geometry).BaseGeometry);
+        t2 = CreateTree(((GeoElement.Line)h2.Geometry).BaseGeometry);
       }
 
       int nPairs = 0;

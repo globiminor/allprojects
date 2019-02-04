@@ -1,16 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Xml;
-using Grid;
 using Basics.Geom;
 using Basics.Geom.Projection;
+using Grid;
 using Ocad;
 using Ocad.StringParams;
 using OCourse.Route;
 using OCourse.Tracking;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
+using System.Xml;
 
 namespace OCourse.Ext
 {
@@ -656,7 +656,7 @@ namespace OCourse.Ext
 
         if (startElem != null &&
           control.Code == ControlCode.Start &&
-          ((Point)control.Element.Geometry).Dist2((IPoint)startElem.Geometry) < 1)
+          PointOp.Dist2(((GeoElement.Point)control.Element.Geometry).BaseGeometry, ((GeoElement.Point)startElem.Geometry).BaseGeometry) < 1)
         {
           control.Element = startElem;
         }
@@ -726,11 +726,9 @@ namespace OCourse.Ext
         if (clippedStart != null)
         {
           writer.DeleteElements(new int[] { 701000 });
-          Element start = new GeoElement(clippedStart)
-          {
-            Symbol = 704000,
-            Type = GeomType.line
-          };
+          Element start = new GeoElement(clippedStart);
+          start.Symbol = 704000;
+          start.Type = GeomType.line;
           writer.Append(start);
         }
         foreach (var element in controlNames.Values)
@@ -757,9 +755,9 @@ namespace OCourse.Ext
           Control to = FindControl(appl.ToName, controls);
           GeometryCollection fromSymbol = symbols[from.Code];
           GeometryCollection toSymbol = symbols[to.Code];
-          Polyline geom = appl.Clip((Polyline)appl.Geometry, from.Element, fromSymbol, Grafics.ClipParam.AtStart);
+          Polyline geom = appl.Clip(((GeoElement.Line)appl.Geometry).BaseGeometry, from.Element, fromSymbol, Grafics.ClipParam.AtStart);
           geom = appl.Clip(geom, to.Element, toSymbol, Grafics.ClipParam.AtEnd);
-          appl.Apply(writer, geom);
+          appl.Apply(writer, new GeoElement.Line(geom));
         }
       }
     }
@@ -773,10 +771,10 @@ namespace OCourse.Ext
       { return null; }
 
       GeoElement startElem = startControl.Element;
-      GeometryCollection startColl = Ocad.Utils.SymbolGeometry(startSymbol, (IPoint)startElem.Geometry.Project(setup.Map2Prj), startElem.Angle);
+      GeometryCollection startColl = Ocad.Utils.SymbolGeometry(startSymbol, ((GeoElement.Point)startElem.Geometry).Project(setup.Map2Prj).BaseGeometry, startElem.Angle);
       Polyline startGeom = (Polyline)startColl[0];
       GeoElement controlElem = lastControl.Element;
-      GeometryCollection controlGeom = Ocad.Utils.SymbolGeometry(controlSymbol, (IPoint)controlElem.Geometry.Project(setup.Map2Prj), 0);
+      GeometryCollection controlGeom = Ocad.Utils.SymbolGeometry(controlSymbol, ((GeoElement.Point)controlElem.Geometry).Project(setup.Map2Prj).BaseGeometry, 0);
 
       IEnumerable<ParamGeometryRelation> cuts =
         GeometryOperator.CreateRelations(startGeom, controlGeom, new TrackOperatorProgress());

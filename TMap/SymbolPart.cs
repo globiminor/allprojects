@@ -84,6 +84,7 @@ namespace TMap
     }
 
     public abstract int Topology { get; }
+    [Obsolete("refactor IGeometry")]
     public abstract void Draw(IGeometry geometry, DataRow properties, IDrawable drawable);
 
     public int DrawLevel { get; set; }

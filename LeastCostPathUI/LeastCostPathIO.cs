@@ -551,7 +551,7 @@ namespace LeastCostPathUI
           foreach (var grdPt in grdRoute)
           {
             IPoint cell = sum.Extent.CellLL((int)grdPt.X, (int)grdPt.Y);
-            Vector prjPt = new Vector(4)
+            Point prjPt = new Point(4)
             {
               X = cell.X,
               Y = cell.Y

@@ -59,17 +59,17 @@ namespace OcadTest
         foreach (var element in reader.EnumGeoElements(null))
         {
           IEnumerable<int[]> cells = null;
-          if (element.Geometry is Area area)
+          if (element.Geometry is GeoElement.Area area)
           {
-            area.CloseBorders();
-            cells = symGrid.EnumerateCells(area);
+            area.BaseGeometry.CloseBorders();
+            cells = symGrid.EnumerateCells(area.BaseGeometry);
           }
-          else if (element.Geometry is Polyline line)
+          else if (element.Geometry is GeoElement.Line line)
           {
             if (symWidths.TryGetValue(element.Symbol, out double symWidth)
               && symWidth > 0)
             {
-              cells = symGrid.EnumerateCells(line, symWidth, false);
+              cells = symGrid.EnumerateCells(line.BaseGeometry, symWidth, false);
             }
           }
 

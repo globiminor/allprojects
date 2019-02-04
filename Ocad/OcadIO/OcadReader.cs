@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace Ocad
 {
@@ -64,7 +63,7 @@ namespace Ocad
     {
       return _io.ReadElement(index, out element);
     }
-    public T ReadElement<T>(int index, out T element) where T: Element, new()
+    public T ReadElement<T>(int index, out T element) where T : Element, new()
     {
       return _io.ReadElement(index, out element);
     }
@@ -149,9 +148,13 @@ namespace Ocad
       return true;
     }
 
-    public IEnumerable<GeoElement> EnumGeoElements(IBox extentIntersect, IList<ElementIndex> indexList)
+    public IEnumerable<GeoElement> EnumGeoElements(IBox extentIntersect = null, IList<ElementIndex> indexList = null)
     {
       return _io.EnumGeoElements(extentIntersect, indexList);
+    }
+    public IEnumerable<GeoElement> EnumGeoElements(IList<ElementIndex> indexList)
+    {
+      return _io.EnumGeoElements(null, indexList);
     }
 
     public IEnumerable<MapElement> EnumMapElements(IBox extentIntersect, IList<ElementIndex> indexList)
@@ -163,12 +166,6 @@ namespace Ocad
     {
       return EnumMapElements(null, indexList);
     }
-
-    public IEnumerable<GeoElement> EnumGeoElements(IList<ElementIndex> indexList)
-    {
-      return EnumGeoElements(null, indexList);
-    }
-
 
     public void Close()
     {

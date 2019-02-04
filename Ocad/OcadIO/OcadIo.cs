@@ -25,7 +25,7 @@ namespace Ocad
     public IEnumerable<GeoElement> EnumGeoElements(IBox extentIntersect, IList<ElementIndex> indexList)
     {
       indexList = indexList ?? GetIndices();
-      IBox extent = extentIntersect?.Project(Setup.Prj2Map).Extent;
+      IBox extent = BoxOp.ProjectRaw(extentIntersect, Setup.Prj2Map)?.Extent;
 
       return EnumElements<GeoElement>(extent, indexList);
     }
@@ -41,7 +41,7 @@ namespace Ocad
       {
         if (index.Status == ElementIndex.StatusDeleted)
         { continue; }
-        if (extent?.Intersects(index.MapBox) ?? true)
+        if (extent == null || BoxOp.Intersects(extent, index.MapBox))
         {
           ReadElement(index, out T element);
           if (element == null)
@@ -400,9 +400,10 @@ namespace Ocad
       WriteCoords(element.GetCoords(Setup));
     }
 
-    internal void WriteGeometry(IGeometry geometry)
+    internal void WriteGeometry(GeoElement.Geom geometry)
     {
-      WriteCoords(Coord.EnumCoords(geometry));
+      IEnumerable<Coord> coords = geometry.EnumCoords();
+      WriteCoords(coords);
     }
 
     internal void WriteCoords(IEnumerable<Coord> coords)

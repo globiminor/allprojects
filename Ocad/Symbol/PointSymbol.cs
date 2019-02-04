@@ -14,7 +14,7 @@ namespace Ocad.Symbol
       GeometryCollection lst = new GeometryCollection();
       foreach (var graphics in Graphics)
       {
-        IGeometry geom = graphics.MapGeometry.Project(setup.Map2Prj);
+        IGeometry geom = graphics.MapGeometry.Project(setup.Map2Prj).GetGeometry();
         lst.Add(geom);
       }
       return lst;

@@ -1,6 +1,6 @@
+using Basics.Geom;
 using System;
 using System.Collections.Generic;
-using Basics.Geom;
 
 namespace Ocad
 {
@@ -49,7 +49,7 @@ namespace Ocad
         if (extent != null)
         {
           IBox box = extent;
-          _extent = box.Project(GetSetup().Map2Prj).Extent;
+          _extent = BoxOp.ProjectRaw(box, GetSetup().Map2Prj).Extent;
         }
       }
       return _extent;

@@ -195,9 +195,9 @@ namespace Basics.Geom.Network
       List<DirectedRow> dirList = new List<DirectedRow>();
       foreach (var tLine in tList)
       {
-        if (PointOperator.Dist2(point, tLine.FromPoint) == 0)
+        if (PointOp.Dist2(point, tLine.FromPoint) == 0)
         { dirList.Add(new DirectedRow(tLine, false)); }
-        if (PointOperator.Dist2(point, tLine.ToPoint) == 0)
+        if (PointOp.Dist2(point, tLine.ToPoint) == 0)
         { dirList.Add(new DirectedRow(tLine, true)); }
       }
 

@@ -1,12 +1,12 @@
+using Basics.Geom;
+using Ocad;
+using Ocad.Data;
+using Ocad.StringParams;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Basics.Geom;
-using Ocad;
-using Ocad.StringParams;
-using System.Text;
-using Ocad.Data;
 using System.Linq;
+using System.Text;
 
 namespace Asvz.Sola
 {
@@ -89,8 +89,8 @@ namespace Asvz.Sola
       {
         foreach (var elemStrecke in _lstStrecke)
         {
-          PointCollection points = (PointCollection)elemStrecke.Geometry;
-          Point center = 0.5 * PointOperator.Add(points[1], points[3]);
+          PointCollection points = ((GeoElement.Points)elemStrecke.Geometry).BaseGeometry;
+          Point center = 0.5 * PointOp.Add(points[1], points[3]);
 
           Element elemBox = new GeoElement(center);
           elemBox.Symbol = SymT.TextStreckeBox;
@@ -139,8 +139,8 @@ namespace Asvz.Sola
 
         foreach (var strecke in _lstStrecke)
         {
-          PointCollection points = (PointCollection)strecke.Geometry;
-          Point center = 0.5 * PointOperator.Add(points[1], points[3]);
+          PointCollection points = ((GeoElement.Points)strecke.Geometry).BaseGeometry;
+          Point center = 0.5 * PointOp.Add(points[1], points[3]);
 
           GeoElement elem = new GeoElement(center);
           elem.Symbol = SymT.TextStreckeBox;
@@ -152,8 +152,8 @@ namespace Asvz.Sola
           int iStrecke = int.Parse(strecke.Text);
           foreach (var elemInfo in _lstStreckeInfo)
           {
-            PointCollection infoPoints = (PointCollection)elemInfo.Geometry;
-            Point infoCenter = 0.5 * PointOperator.Add(infoPoints[1], infoPoints[3]);
+            PointCollection infoPoints = ((GeoElement.Points)elemInfo.Geometry).BaseGeometry;
+            Point infoCenter = 0.5 * PointOp.Add(infoPoints[1], infoPoints[3]);
             double dist2 = center.Dist2(infoCenter);
             if (dist2 < minDist2)
             {
@@ -173,12 +173,12 @@ namespace Asvz.Sola
             text.AppendFormat("{0} m", cat.SteigungRound(5));
             minInfo.Text = text.ToString();
 
-            PointCollection infoPoints = (PointCollection)minInfo.Geometry;
-            Point infoCenter = 0.5 * PointOperator.Add(infoPoints[1], infoPoints[3]);
+            PointCollection infoPoints = ((GeoElement.Points)minInfo.Geometry).BaseGeometry;
+            Point infoCenter = 0.5 * PointOp.Add(infoPoints[1], infoPoints[3]);
             if (infoCenter.X > points[3].X)
-            { minInfo.Geometry = Transfer(center + new Point2D(240, 70), infoPoints); }
+            { minInfo.Geometry = new GeoElement.Points(Transfer(center + new Point2D(240, 70), infoPoints)); }
             else if (infoCenter.Y < points[3].Y)
-            { minInfo.Geometry = Transfer(center + new Point2D(-150, -260), infoPoints); }
+            { minInfo.Geometry = new GeoElement.Points(Transfer(center + new Point2D(-150, -260), infoPoints)); }
 
             writer.Append(minInfo);
             wConstr.Append(minInfo);
@@ -191,7 +191,7 @@ namespace Asvz.Sola
 
         foreach (var pSanBg in _lstSanBg)
         {
-          Element pElem = new GeoElement(((Area)pSanBg.Geometry).Border[0]);
+          Element pElem = new GeoElement(((GeoElement.Area)pSanBg.Geometry).BaseGeometry.Border[0]);
           pElem.Symbol = SymT.TextRahmen;
           pElem.Type = GeomType.line;
           writer.Append(pElem);
@@ -223,8 +223,8 @@ namespace Asvz.Sola
       { _printParam = new PrintPar(); }
       if (_printParam != null)
       {
-        ll = ll.Project(_templateSetup.Prj2Map);
-        ur = ur.Project(_templateSetup.Prj2Map);
+        ll = PointOp.Project(ll, _templateSetup.Prj2Map);
+        ur = PointOp.Project(ur, _templateSetup.Prj2Map);
         _printParam.Scale = 60000;
         _printParam.Range = PrintPar.RangeType.PartialMap;
         _printParam.Left = ll.X / 100;
@@ -294,7 +294,7 @@ namespace Asvz.Sola
         Streckenplan.WriteKm(writer, cat, _symKmText, _templateSetup, false);
 
         if (strecke0 == null ||
-          PointOperator.Dist2(strecke0.Points.Last(), strecke.Points[0]) > 10)
+          PointOp.Dist2(strecke0.Points.Last(), strecke.Points[0]) > 10)
         {
           elem = new GeoElement(strecke.Points[0]);
           elem.Symbol = SymT.KmStartEnd;
@@ -315,7 +315,7 @@ namespace Asvz.Sola
       int n = Ddx.Uebergabe.Count;
       for (int i = 0; i < n; i++)
       {
-        UebergabeTransport.GetLayout(i, out Polyline box, out Point pos, false);
+        UebergabeTransport.GetLayout(i, out Polyline box, out IPoint pos, false);
 
         if (box != null)
         {
@@ -615,7 +615,7 @@ namespace Asvz.Sola
 
       foreach (var pText in textList)
       {
-        PointCollection pts = (PointCollection)pText.Geometry;
+        PointCollection pts = ((GeoElement.Points)pText.Geometry).BaseGeometry;
         pts = pts.Project(setup.Prj2Map);
 
         Polyline line = new Polyline();

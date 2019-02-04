@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using PntOp = Basics.Geom.PointOperator;
 
 namespace Basics.Geom
 {
@@ -137,7 +135,8 @@ namespace Basics.Geom
     protected abstract IGeometry BorderGeom { get; }
     IGeometry IGeometry.Border
     { get { return BorderGeom; } }
-    public abstract IBox Extent { get; }
+    public IBox Extent => GetExtent();
+    protected abstract IBox GetExtent();
 
     public static double epsi = 1e-12;
     public static double Precision = 1e-4;
@@ -166,38 +165,38 @@ namespace Basics.Geom
       if (s0.Dimension != 2)
       { throw new InvalidOperationException("Dimension != 2"); }
 
-      Point p = PntOp.Sub(s1, s0);
+      Point p = PointOp.Sub(s1, s0);
       double det;
 
-      det = PntOp.VectorProduct(dir0, dir1); // -dir0.X * dir1.Y + dir0.Y * dir1.X;
+      det = PointOp.VectorProduct(dir0, dir1); // -dir0.X * dir1.Y + dir0.Y * dir1.X;
       if (Math.Abs(det) > epsi * (Math.Abs(s0.X) + Math.Abs(s1.X) +
         Math.Abs(s0.Y) + Math.Abs(s1.Y)) / 1000.0)
       {
         f = p.VectorProduct(dir1) / det;
-        return (Point2D)(s0 + PntOp.Scale(f, dir0));
+        return (Point2D)(s0 + PointOp.Scale(f, dir0));
       }
       else
       {
         // parallel lines 
         det = p.VectorProduct(dir0);
-        f = (det * det) / PntOp.OrigDist2(dir0);
+        f = (det * det) / PointOp.OrigDist2(dir0);
         return null;
       }
     }
 
     public static Point2D OutCircleCenter(IPoint p0, IPoint p1, IPoint p2)
     {
-      Point s0 = 0.5 * PntOp.Add(p0, p1);
-      Point dir0 = PntOp.Sub(p1, p0);
-      Point s1 = 0.5 * PntOp.Add(p1, p2);
-      Point dir1 = PntOp.Sub(p2, p1);
+      Point s0 = 0.5 * PointOp.Add(p0, p1);
+      Point dir0 = PointOp.Sub(p1, p0);
+      Point s1 = 0.5 * PointOp.Add(p1, p2);
+      Point dir1 = PointOp.Sub(p2, p1);
       return CutDirDir(s0, new Point2D(dir0.Y, -dir0.X), s1,
         new Point2D(dir1.Y, -dir1.X), out double f);
     }
     public static double TriArea(IPoint p0, IPoint p1, IPoint p2)
     {
-      Point d0 = PntOp.Sub(p1, p0);
-      Point d1 = PntOp.Sub(p2, p0);
+      Point d0 = PointOp.Sub(p1, p0);
+      Point d1 = PointOp.Sub(p2, p0);
       return d0.VectorProduct(d1);
     }
 

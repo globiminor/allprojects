@@ -1,8 +1,8 @@
+using Basics.Geom;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using Basics.Geom;
 
 namespace TMap
 {
@@ -51,11 +51,11 @@ namespace TMap
       _basePoint.Tag = Tag;
       if ((_linePointType & LinePointType.StartPoint) != 0)
       {
-        _basePoint.Draw(line.Points[0], properties, drawable);
+        _basePoint.Draw(Basics.Geom.Point.CastOrWrap(line.Points[0]), properties, drawable);
       }
       if ((_linePointType & LinePointType.EndPoint) != 0)
       {
-        _basePoint.Draw(line.Points.Last(), properties, drawable);
+        _basePoint.Draw(Basics.Geom.Point.CastOrWrap(line.Points.Last()), properties, drawable);
       }
       if ((_linePointType & LinePointType.VertexPoint) != 0)
       {

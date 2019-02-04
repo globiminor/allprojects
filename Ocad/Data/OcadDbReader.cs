@@ -58,7 +58,7 @@ namespace Ocad.Data
       }
       else if (OcadConnection.FieldShape.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase))
       {
-        return _enum.Current.Geometry;
+        return _enum.Current.Geometry.GetGeometry();
       }
       else if (OcadConnection.FieldSymbol.Equals(name, StringComparison.InvariantCultureIgnoreCase))
       {

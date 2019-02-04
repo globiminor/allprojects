@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using PntOp = Basics.Geom.PointOperator;
 
 namespace Basics.Geom
 {
@@ -11,7 +10,7 @@ namespace Basics.Geom
     public static int[] DimensionXY = new int[] { 0, 1 };
     public static int[] DimensionXYZ = new int[] { 0, 1, 2 };
 
-    public static IEnumerable<int> GetDimensions(params IGeometry[] geoms)
+    public static IEnumerable<int> GetDimensions(params IDimension[] geoms)
     {
       int dim = int.MaxValue;
       foreach (var g in geoms)
@@ -136,7 +135,7 @@ namespace Basics.Geom
       {
         _range = range;
 
-        _center = 0.5 * PntOp.Add(_range.Min, _range.Max);
+        _center = 0.5 * PointOp.Add(_range.Min, _range.Max);
         int dim = _center.Dimension;
         _dimensions = new int[dim];
         for (int i = 0; i < dim; i++)
@@ -221,7 +220,7 @@ namespace Basics.Geom
         get
         {
           if (_delta == null)
-          { _delta = PntOp.Sub(_paramGeom.ParameterRange.Max, Min); }
+          { _delta = PointOp.Sub(_paramGeom.ParameterRange.Max, Min); }
           return _delta;
         }
       }
@@ -229,7 +228,7 @@ namespace Basics.Geom
       public Point GeometryParamAt(IPoint param)
       {
         Point paramAt = Point.Create(param);
-        for (int iDim = 0; iDim < param.Topology; iDim++)
+        for (int iDim = 0; iDim < param.Dimension; iDim++)
         {
           paramAt[iDim] = Min[iDim] + param[iDim] * Delta[iDim];
         }
@@ -447,13 +446,13 @@ namespace Basics.Geom
               {
                 double d2;
 
-                d2 = PntOp.OrigDist2(axes[i0]);
+                d2 = PointOp.OrigDist2(axes[i0]);
                 if (d2 > d20)
                 { d20 = d2; }
 
                 for (int i1 = i0 + 1; i1 < n; i1++)
                 {
-                  d2 = PntOp.Dist2(axes[i0], axes[i1]);
+                  d2 = PointOp.Dist2(axes[i0], axes[i1]);
                   if (d2 > d20)
                   { d20 = d2; }
                 }
@@ -491,10 +490,10 @@ namespace Basics.Geom
               else
               {
                 IPoint ax0 = _axes[0];
-                border._origin = PntOp.Add(Origin, ax0);
+                border._origin = PointOp.Add(Origin, ax0);
                 for (int i = 1; i < n - 1; i++)
                 {
-                  border._axes.Add(PntOp.Sub(Axes[i], ax0));
+                  border._axes.Add(PointOp.Sub(Axes[i], ax0));
                 }
               }
 
@@ -557,7 +556,7 @@ namespace Basics.Geom
           { _origin = corner; }
           else
           {
-            Point axis = PntOp.Sub(corner, _origin);
+            Point axis = PointOp.Sub(corner, _origin);
             _axes.Add(axis);
           }
         }
@@ -603,7 +602,7 @@ namespace Basics.Geom
 
         foreach (var axis in part.Axes)
         {
-          Point a = PntOp.Add(axis, part.Origin) - center;
+          Point a = PointOp.Add(axis, part.Origin) - center;
           p._axes.Add(a);
         }
         return p;
@@ -663,7 +662,7 @@ namespace Basics.Geom
           ParamGeometryRelation rel = intersect.GetCommonRel();
           IGeometry i = rel.Intersection;
           if (i is IPoint)
-          { rel.Intersection = _x.ParamInfo.BaseGeometry.PointAt(rel.XParam); }
+          { rel.Intersection = Point.CastOrWrap(_x.ParamInfo.BaseGeometry.PointAt(rel.XParam)); }
           else
           { throw new NotImplementedException(); }
           _paramRelation = rel;
@@ -675,9 +674,9 @@ namespace Basics.Geom
           _intersection = intersect.Near;
           _paramRelation = new ParamGeometryRelation(
             _x.ParamInfo.BaseGeometry, null, _y.ParamInfo.BaseGeometry, null,
-            Point.Create(_x.ParamInfo.BaseGeometry.Dimension))
+            Point.Create_0(_x.ParamInfo.BaseGeometry.Dimension))
           {
-            Intersection = _intersection
+            Intersection = Point.CastOrWrap(_intersection)
           };
           return;
         }
@@ -698,7 +697,7 @@ namespace Basics.Geom
 
         IPoint xAt = xGeom.PointAt(xParam);
         IPoint yAt = yGeom.PointAt(yParam);
-        Point d = PntOp.Sub(xAt, yAt);
+        Point d = PointOp.Sub(xAt, yAt);
         double d2 = d.OrigDist2();
 
         bool solveExtended = false;
@@ -767,7 +766,7 @@ namespace Basics.Geom
 
           xAt = xGeom.PointAt(xParam);
           yAt = yGeom.PointAt(yParam);
-          d = PntOp.Sub(xAt, yAt);
+          d = PointOp.Sub(xAt, yAt);
           d2 = d.OrigDist2();
           if (solveExtended)
           { }
@@ -780,9 +779,9 @@ namespace Basics.Geom
         _intersection = xAt;
         _paramRelation = new ParamGeometryRelation(
           _x.ParamInfo.BaseGeometry, xParam, _y.ParamInfo.BaseGeometry, yParam,
-          Point.Create(_x.ParamInfo.BaseGeometry.Dimension))
+          Point.Create_0(_x.ParamInfo.BaseGeometry.Dimension))
         {
-          Intersection = _intersection
+          Intersection = Point.CastOrWrap(_intersection)
         };
 
       }
@@ -863,7 +862,7 @@ namespace Basics.Geom
           try
           {
             IPoint ipoint = geom.PointAt(param);
-            Point isek = (1 / idt) * PntOp.Sub(ipoint, at);
+            Point isek = (1 / idt) * PointOp.Sub(ipoint, at);
             sek.Add(isek);
           }
           finally
@@ -1030,15 +1029,15 @@ namespace Basics.Geom
         if (pMin == null)
         {
           pMin = ClosestPoint(p, part);
-          d2 = PntOp.Dist2(p, pMin);
+          d2 = PointOp.Dist2(p, pMin);
         }
         else
         {
           IPoint extent = ClosestPoint(p, part.Extent);
-          if (PntOp.Dist2(extent, p) < d2)
+          if (PointOp.Dist2(extent, p) < d2)
           {
             IPoint pPart = ClosestPoint(p, part);
-            double dPart2 = PntOp.Dist2(pPart, p);
+            double dPart2 = PointOp.Dist2(pPart, p);
 
             if (dPart2 < d2)
             {
@@ -1054,7 +1053,7 @@ namespace Basics.Geom
     private static Point ClosestPoint(IPoint p, IBox b)
     {
       int dim = Math.Min(p.Dimension, b.Dimension);
-      Point closest = Point.Create(dim);
+      Point closest = Point.Create_0(dim);
       for (int i = 0; i < dim; i++)
       {
         double t;
@@ -1128,7 +1127,7 @@ namespace Basics.Geom
       if (x.Extent == null)
       { rel = Relation.Disjoint; }
       else
-      { rel = x.Extent.RelationTo(y.Extent); }
+      { rel = BoxOp.GetRelation(x.Extent, y.Extent); }
       return CreateRelations(x, y, track, rel, calcLinearized);
     }
 
@@ -1158,7 +1157,7 @@ namespace Basics.Geom
           IBox xExtent = x.Extent;
           IBox yExtent = y.Extent;
 
-          if (xExtent.GetMaxExtent() > yExtent.GetMaxExtent())
+          if (BoxOp.GetMaxExtent(xExtent) > BoxOp.GetMaxExtent(yExtent))
           {
             return MpRelations(x, y, track);
           }
@@ -1207,7 +1206,7 @@ namespace Basics.Geom
         if (track != null && track.Cancel)
         { yield break; }
 
-        Relation extentRelation = xPart.Extent.RelationTo(yExtent);
+        Relation extentRelation = BoxOp.GetRelation(xPart.Extent, yExtent);
         IEnumerable<ParamGeometryRelation> list = CreateRelations(xPart, y,
           track, extentRelation, false);
         if (list != null)
@@ -1327,7 +1326,7 @@ namespace Basics.Geom
           double o = _box.Max[i] - _box.Min[i];
           if (o > 0)
           {
-            Point p = Point.Create(d);
+            Point p = Point.Create_0(d);
             p[i] = o;
             tangents.Add(p);
           }
@@ -1343,8 +1342,8 @@ namespace Basics.Geom
           if (_paramRange == null)
           {
             int t = Topology;
-            Point min = Point.Create(t);
-            Point max = Point.Create(t);
+            Point min = Point.Create_0(t);
+            Point max = Point.Create_0(t);
             for (int i = 0; i < t; i++)
             { max[i] = 1; }
 
@@ -1413,16 +1412,16 @@ namespace Basics.Geom
       { get { return _box.Topology; } }
 
       public bool IsWithin(IPoint point)
-      { return _box.IsWithin(point); }
+      { return BoxOp.IsWithin(_box, point); }
 
       public IBox Extent
       { get { return _box; } }
 
       public IGeometry Border
-      { get { return _box.Border; } }
+      { get { return BoxOp.GetBorder(_box); } }
 
       public IGeometry Project(IProjection projection)
-      { return _box.Project(projection); }
+      { return BoxOp.ProjectRaw(_box, projection); }
 
       public bool EqualGeometry(IGeometry other)
       { return _box == other; }
@@ -1558,7 +1557,7 @@ namespace Basics.Geom
           param[i] = paramMax[i];
 
           IPoint corner = _geom.PointAt(param);
-          Point axis = PntOp.Sub(corner, origin);
+          Point axis = PointOp.Sub(corner, origin);
           axes.Add(axis);
 
           param[i] = paramMin[i];
@@ -1606,7 +1605,7 @@ namespace Basics.Geom
             double normed = _geom.NormedMaxOffset;
             Point min = extent.Min;
             Point max = extent.Max;
-            double maxOffset = normed * normed * PntOp.Dist2(min, max);
+            double maxOffset = normed * normed * PointOp.Dist2(min, max);
             for (int iDim = 0; iDim < dim; iDim++)
             {
               min[iDim] -= maxOffset;
@@ -1635,7 +1634,7 @@ namespace Basics.Geom
           if (_center == null)
           {
             IBox extent = Extent;
-            _center = 0.5 * PntOp.Add(extent.Min, extent.Max);
+            _center = 0.5 * PointOp.Add(extent.Min, extent.Max);
           }
           return _center;
         }
@@ -1695,7 +1694,7 @@ namespace Basics.Geom
         int dim = paramRange.Dimension;
         IPoint min = paramRange.Min;
         IPoint max = paramRange.Max;
-        IPoint center = 0.5 * PntOp.Add(min, max);
+        IPoint center = 0.5 * PointOp.Add(min, max);
         IPoint[] cs = new IPoint[] { min, center, max };
 
         int nCombs = 1;
@@ -1709,8 +1708,8 @@ namespace Basics.Geom
         List<GagaBuilder> builders = new List<GagaBuilder>(nCombs);
         for (int iComb = 0; iComb < nCombs; iComb++)
         {
-          Point splitMin = Point.Create(dim);
-          Point splitMax = Point.Create(dim);
+          Point splitMin = Point.Create_0(dim);
+          Point splitMax = Point.Create_0(dim);
           int comb = iComb;
           int[] pos = new int[dim];
           for (int iDim = 0; iDim < dim; iDim++)
@@ -1759,7 +1758,7 @@ namespace Basics.Geom
           Box extent = builder.GeomExtent;
           Point sMin = extent.Min;
           Point sMax = extent.Max;
-          double off = PntOp.Dist2(sMin, sMax) * normed;
+          double off = PointOp.Dist2(sMin, sMax) * normed;
           for (int iDim = 0; iDim < sMin.Dimension; iDim++)
           {
             sMin[iDim] -= off;
@@ -1780,7 +1779,7 @@ namespace Basics.Geom
         Box extent = null;
         for (int iComb = 0; iComb < nCombs; iComb++)
         {
-          Point p = Point.Create(dim);
+          Point p = Point.Create_0(dim);
           int comb = iComb;
           for (int iDim = 0; iDim < dim; iDim++)
           {
@@ -1819,7 +1818,7 @@ namespace Basics.Geom
           if (_rel == ParamRelate.Unknown)
           {
             ParamRelate rel;
-            if (!_x.Extent.Intersects(_y.Extent))
+            if (!BoxOp.Intersects(_x.Extent, _y.Extent))
             {
               rel = ParamRelate.Disjoint;
             }
@@ -1843,7 +1842,7 @@ namespace Basics.Geom
             }
             else
             {
-              if (_x.Extent.Intersects(_y.Extent))
+              if (BoxOp.Intersects(_x.Extent, _y.Extent))
               {
                 rel = ParamRelate.Near;
               }
@@ -1872,7 +1871,7 @@ namespace Basics.Geom
       {
         OrthogonalSystem o = linear.OrthoSys;
 
-        IPoint cy = PntOp.Sub(y.Center, linear.Origin);
+        IPoint cy = PointOp.Sub(y.Center, linear.Origin);
         Axis ay = o.GetOrthogonal(cy);
         //if (ay.Length2 < y.MaxOffset)
         //{

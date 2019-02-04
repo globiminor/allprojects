@@ -51,7 +51,7 @@ namespace Basics.Geom.Network
     {
       if (_directedRows.Count == 0)
       { return 0; }
-      if (PointOperator.Dist2(FromPoint, ToPoint) != 0)
+      if (PointOp.Dist2(FromPoint, ToPoint) != 0)
       { return 0; }
       if (_hasEquals)
       {
@@ -161,7 +161,7 @@ namespace Basics.Geom.Network
 
     public LineList RemoveEquals()
     {
-      Debug.Assert(PointOperator.Dist2(FromPoint, ToPoint) == 0,
+      Debug.Assert(PointOp.Dist2(FromPoint, ToPoint) == 0,
         "invalid context for calling of method");
 
       LineList removedList = null;
@@ -223,7 +223,7 @@ namespace Basics.Geom.Network
 
     public bool IsClosed
     {
-      get { return PointOperator.Dist2(FromPoint, ToPoint) == 0; }
+      get { return PointOp.Dist2(FromPoint, ToPoint) == 0; }
     }
 
     public void AddInnerRing(LineList innerRing)

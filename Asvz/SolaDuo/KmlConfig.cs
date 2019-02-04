@@ -123,8 +123,7 @@ namespace Asvz
       XmlElement pElem = doc.CreateElement("Point");
       XmlUtils.AppendElement(doc, pElem, "extrude", "1");
 
-      IPoint x = p;
-      x = x.Project(prj);
+      IPoint x = PointOp.Project(p, prj);
       XmlUtils.AppendElement(doc, pElem, "coordinates", string.Format("{0:F6},{1:F6},0 ", x.X, x.Y));
 
       elem.AppendChild(pElem);

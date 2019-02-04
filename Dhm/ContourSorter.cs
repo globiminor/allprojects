@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Basics.Geom;
-using PntOp = Basics.Geom.PointOperator;
 
 namespace Dhm
 {
@@ -631,8 +629,8 @@ namespace Dhm
         //if (contour.Id == 50 && (cLeft.Id == 48 || cRight.Id == 48))
         //{ }
         double l = line.Length();
-        double fLeft = p0.VectorProduct(PntOp.Sub(lLeft.Start, line.Start));
-        double fRight = p0.VectorProduct(PntOp.Sub(lRight.Start, line.Start));
+        double fLeft = p0.VectorProduct(PointOp.Sub(lLeft.Start, line.Start));
+        double fRight = p0.VectorProduct(PointOp.Sub(lRight.Start, line.Start));
         double fPara = 1 - 2 * Math.Abs(0.5 - (fLeft / (fLeft - fRight)));
         fPara *= fPara;
 
@@ -820,7 +818,7 @@ namespace Dhm
           continue;
         }
 
-        Point fallConstructed = PntOp.Sub(l0.End, l0.Start);
+        Point fallConstructed = PointOp.Sub(l0.End, l0.Start);
         double vecProd =
           fallConstructed.X * Math.Sin(fallDir.Direction + Math.PI / 2) -
           fallConstructed.Y * Math.Cos(fallDir.Direction + Math.PI / 2);
@@ -848,7 +846,7 @@ namespace Dhm
         if (contour.Orientation != Orientation.Unknown)
         { continue; }
         Polyline line = contour.Polyline;
-        if (PntOp.Dist2(line.Points[0], line.Points.Last()) > 0)
+        if (PointOp.Dist2(line.Points[0], line.Points.Last()) > 0)
         { continue; }
 
         double xMax = line.Extent.Max.X;
@@ -872,7 +870,7 @@ namespace Dhm
               p2 = line.Points[iNext];
             }
 
-            if ((PntOp.Sub(p1, p0)).VectorProduct(PntOp.Sub(p2, p1)) < 0)
+            if ((PointOp.Sub(p1, p0)).VectorProduct(PointOp.Sub(p2, p1)) < 0)
             { contour.Orientation = Orientation.LeftSideDown; }
             else
             { contour.Orientation = Orientation.RightSideDown; }
@@ -891,8 +889,8 @@ namespace Dhm
 
     private void ErrorFallDir(FallDir fallDir)
     {
-      Point2D p0 = fallDir.Point;
-      Point2D p1 = p0.Clone();
+      IPoint p0 = fallDir.Point;
+      Point p1 = Point.Create(p0);
       p1.X += Math.Cos(fallDir.Direction); ;
       p1.Y += Math.Sin(fallDir.Direction); ;
       OnProgressChanged(Progress.ErrorFallDir,

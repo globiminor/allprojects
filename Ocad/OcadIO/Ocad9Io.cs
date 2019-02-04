@@ -451,14 +451,14 @@ namespace Ocad
       else if (elem.Type == Symbol.SymbolGraphicsType.Circle ||
         elem.Type == Symbol.SymbolGraphicsType.Dot)
       {
-        Point center = (Point)Coord.GetGeometry(GeomType.point, coords);
+        IPoint center = ((GeoElement.Point)Coord.GetGeometry(GeomType.point, coords)).BaseGeometry;
         Arc arc = new Arc(center, 0.5 * diameter, 0, 2 * Math.PI);
         Polyline circle = new Polyline();
         circle.Add(arc);
         if (elem.Type == Symbol.SymbolGraphicsType.Circle)
-        { elem.MapGeometry = circle; }
+        { elem.MapGeometry = new GeoElement.Line(circle); }
         else if (elem.Type == Symbol.SymbolGraphicsType.Dot)
-        { elem.MapGeometry = new Area(circle); }
+        { elem.MapGeometry = new GeoElement.Area(new Area(circle)); }
         else
         { throw new NotImplementedException(elem.Type.ToString()); }
       }

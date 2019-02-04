@@ -35,7 +35,7 @@ namespace Asvz.Sola
       Polyline combined = new Polyline();
       foreach (var elem in SortedElements)
       {
-        Polyline add = (Polyline)elem.Geometry;
+        Polyline add = ((GeoElement.Line)elem.Geometry).BaseGeometry;
         combined.Add(add.Points[0]);
         foreach (var seg in add.EnumSegments())
         { combined.Add(seg); }
@@ -52,12 +52,12 @@ namespace Asvz.Sola
       List<GeoElement> startLines = new List<GeoElement>();
       foreach (var elem in Elements)
       {
-        Point start = Point.CastOrCreate(((Polyline)elem.Geometry).Points[0]);
+        Point start = Point.CastOrCreate((((GeoElement.Line)elem.Geometry).BaseGeometry).Points[0]);
         double minDist = double.MaxValue;
         Element pre = null;
         foreach (var nb in Elements)
         {
-          IPoint end = ((Polyline)nb.Geometry).Points.Last();
+          IPoint end = (((GeoElement.Line)nb.Geometry).BaseGeometry).Points.Last();
           double d2 = start.Dist2(end);
           if (d2 < 2000 && d2 < minDist)
           {
@@ -187,7 +187,7 @@ namespace Asvz.Sola
     }
 
     private Polyline _transportBox;
-    private Point _legendPos;
+    private IPoint _legendPos;
 
     private Polyline _symUebergabe;
     private Polyline _symUeCircle;
@@ -222,7 +222,7 @@ namespace Asvz.Sola
 
     private Setup _templateSetup;
 
-    public static void GetLayout(int strecke, out Polyline box, out Point legendPos)
+    public static void GetLayout(int strecke, out Polyline box, out IPoint legendPos)
     {
       if (strecke >= 0)
       {
@@ -238,7 +238,7 @@ namespace Asvz.Sola
     public Transport TransFrom { get { return _transFrom; } }
     public Transport TransTo { get { return _transTo; } }
 
-    public static void GetLayout(int strecke, out Polyline box, out Point legendPos,
+    public static void GetLayout(int strecke, out Polyline box, out IPoint legendPos,
       bool checkEqualUebergabe)
     {
       UebergabeTransport t = new UebergabeTransport(null, strecke);
@@ -501,7 +501,7 @@ namespace Asvz.Sola
       }
 
       IBox full = transportBox.Extent;
-      Point center = 0.5 * PointOperator.Add(full.Max, full.Min);
+      Point center = 0.5 * PointOp.Add(full.Max, full.Min);
       Polyline border = new Polyline();
       foreach (var point in transportBox.Points)
       { border.Add(center + 1.5 * (point - center)); }
@@ -511,12 +511,14 @@ namespace Asvz.Sola
       {
         foreach (var elem in _transFrom.Elements)
         {
-          GeometryCollection col = GeometryOperator.Intersection(elem.Geometry, box);
+          GeometryCollection col = GeometryOperator.Intersection(elem.Geometry.GetGeometry(), box);
           if (col == null)
           { continue; }
           foreach (var part in col)
           {
-            GeoElement pElem = new GeoElement(part);
+            if (!(part is Polyline line))
+            { continue; }
+            GeoElement pElem = new GeoElement(line);
             pElem.Type = GeomType.line;
             if (elem.Symbol == SymT.Transport)
             { pElem.Symbol = SymD.Anfahrt; }
@@ -534,12 +536,13 @@ namespace Asvz.Sola
       {
         foreach (var elem in _transTo.Elements)
         {
-          GeometryCollection col = GeometryOperator.Intersection(elem.Geometry, box);
+          GeometryCollection col = GeometryOperator.Intersection(elem.Geometry.GetGeometry(), box);
           if (col == null)
           { continue; }
           foreach (var part in col)
           {
-            GeoElement pElem = new GeoElement(part);
+            if (!(part is Polyline line)) continue;
+            GeoElement pElem = new GeoElement(line);
             pElem.Type = GeomType.line;
             if (elem.Symbol == SymT.Transport)
             { pElem.Symbol = SymD.Abfahrt; }
@@ -585,7 +588,7 @@ namespace Asvz.Sola
       if (_runTo != null)
       { centerStart = _runTo.Points[0]; }
 
-      if (centerEnd != null && centerStart != null && PointOperator.Dist2(centerEnd, centerStart) < 100)
+      if (centerEnd != null && centerStart != null && PointOp.Dist2(centerEnd, centerStart) < 100)
       { centerStart = centerEnd; }
 
       Polyline pCircle = null;
@@ -612,7 +615,7 @@ namespace Asvz.Sola
     private Polyline BorderGeometry(GeoElement border)
     {
       Setup pSetup = new Setup();
-      Point p = (Point)border.Geometry;
+      IPoint p = ((GeoElement.Point)border.Geometry).BaseGeometry;
       pSetup.PrjTrans.X = p.X;
       pSetup.PrjTrans.Y = p.Y;
       pSetup.Scale = 1 / FileParam.OCAD_UNIT;
@@ -672,7 +675,7 @@ namespace Asvz.Sola
         else if (elem.Symbol == SymD.TrNordRoh)
         {
           Trace.Assert(_legendPos == null, "Multiple Transport Legendeposition");
-          _legendPos = (Point)elem.Geometry;
+          _legendPos = ((GeoElement.Point)elem.Geometry).BaseGeometry;
         }
         else if (elem.Symbol == SymD.TextGross)
         { _textList.Add(elem); }
@@ -729,19 +732,19 @@ namespace Asvz.Sola
 
       Ocad.Symbol.PointSymbol sym = (Ocad.Symbol.PointSymbol)symbols[symbol];
       IBox box = sym.Graphics.Extent();
-      new Box((Point)gepaeck.Geometry + Point.Create(box.Min),
-        (Point)gepaeck.Geometry + Point.Create(box.Max));
+      new Box(((GeoElement.Point)gepaeck.Geometry).BaseGeometry + Point.Create(box.Min),
+        ((GeoElement.Point)gepaeck.Geometry).BaseGeometry + Point.Create(box.Max));
 
       foreach (var elem in elements)
       {
         if (elem.Symbol == SymD.IdxSchwarz)
         {
-          Polyline line = (Polyline)elem.Geometry;
+          Polyline line = ((GeoElement.Line)elem.Geometry).BaseGeometry;
 
           ISegment c0 = line.GetSegment(0);
           ISegment c1 = line.GetSegment(-1);
 
-          Element elemStart = FindIndexElement(c0.Start, PointOperator.Scale(-1, c0.TangentAt(0)), elements);
+          Element elemStart = FindIndexElement(c0.Start, PointOp.Scale(-1, c0.TangentAt(0)), elements);
           Element elemEnd = FindIndexElement(c1.End, c1.TangentAt(1), elements);
         }
       }
@@ -753,13 +756,13 @@ namespace Asvz.Sola
       double x0 = 0;
       foreach (var elem in elements)
       {
-        if (!(elem.Geometry is Point p))
+        if (!(elem.Geometry is GeoElement.Point p))
         { continue; }
 
-        Point d = p - p0;
-        IPoint dirPrj = direction.Project(Geometry.ToXY);
-        double x = PointOperator.SkalarProduct(dirPrj, d);
-        double y = PointOperator.VectorProduct(dirPrj, d);
+        Point d = PointOp.Sub(p.BaseGeometry, p0);
+        IPoint dirPrj = PointOp.Project(direction, Geometry.ToXY);
+        double x = PointOp.SkalarProduct(dirPrj, d);
+        double y = PointOp.VectorProduct(dirPrj, d);
 
         if (x > 0 &&
           (indexElement == null || (Math.Abs(y / x) < 0.3 && x < x0)))
@@ -834,12 +837,12 @@ namespace Asvz.Sola
         if (symbol.Number == SymD.TrAusschnitt)
         {
           if (!(symbol.Graphics.Count == 1)) throw new InvalidOperationException($"Expected 1 'TrAusschnitt', got {symbol.Graphics.Count}");
-          _symUebergabe = (Polyline)symbol.Graphics[0].MapGeometry.Project(pSetup.Map2Prj);
+          _symUebergabe = ((GeoElement.Line)symbol.Graphics[0].MapGeometry).Project(pSetup.Map2Prj).BaseGeometry;
         }
         else if (symbol.Number == SymD.UeCircle)
         {
           if (!(symbol.Graphics.Count == 1)) throw new InvalidOperationException($"Expected 1 'UeCircle', got {symbol.Graphics.Count}");
-          _symUeCircle = (Polyline)symbol.Graphics[0].MapGeometry.Project(pSetup.Map2Prj);
+          _symUeCircle = ((GeoElement.Line)symbol.Graphics[0].MapGeometry).Project(pSetup.Map2Prj).BaseGeometry;
         }
 
       }
@@ -880,7 +883,7 @@ namespace Asvz.Sola
 
       foreach (var pText in textList)
       {
-        PointCollection pList = (PointCollection)pText.Geometry;
+        PointCollection pList = ((GeoElement.Points)pText.Geometry).BaseGeometry;
         pList = pList.Project(setup.Prj2Map);
 
         Polyline pLine = new Polyline();
@@ -900,7 +903,7 @@ namespace Asvz.Sola
       }
     }
 
-    private void AddLegend(OcadWriter writer, Polyline border, Point rawPosition)
+    private void AddLegend(OcadWriter writer, Polyline border, IPoint rawPosition)
     {
       IPoint edge = null;
 
@@ -910,12 +913,12 @@ namespace Asvz.Sola
       writer.Append(pElem);
 
       border = border.Project(_templateSetup.Prj2Map);
-      rawPosition = rawPosition.Project(_templateSetup.Prj2Map);
+      rawPosition = PointOp.Project(rawPosition, _templateSetup.Prj2Map);
 
       double dist2 = -1;
       foreach (var pnt in border.Points)
       {
-        double d2 = PointOperator.Dist2(pnt, rawPosition);
+        double d2 = PointOp.Dist2(pnt, rawPosition);
         if (dist2 < 0 || dist2 > d2)
         {
           dist2 = d2;

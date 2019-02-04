@@ -212,22 +212,9 @@ namespace OCourse.Gui
       {
         if (c == null)
         { return null; }
-        IGeometry g = c.Element.Geometry;
-        IPoint p;
-        if (g is IPoint)
-        { p = (IPoint)g; }
-        else if (g is Polyline l)
-        {
-          if (start)
-          { p = l.Points[0]; }
-          else
-          { p = l.Points.Last(); }
-        }
-        else
-        { throw new InvalidOperationException("Unhandle control geometry " + g.GetType()); }
 
+        IPoint p = Utils.GetBorderPoint(c.Element.Geometry, atEnd: !start);
         line.Add(p);
-
         return p;
       }
     }

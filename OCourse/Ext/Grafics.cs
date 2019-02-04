@@ -12,7 +12,7 @@ namespace OCourse.Ext
     private Element _elem;
     private int _replaceSymbol = -1;
 
-    private IGeometry _geom;
+    private GeoElement.Geom _geom;
     private string _fromName;
     private string _toName;
 
@@ -31,7 +31,7 @@ namespace OCourse.Ext
     { get { return _fromName; } }
     public string ToName
     { get { return _toName; } }
-    public IGeometry Geometry
+    public GeoElement.Geom Geometry
     { get { return _geom; } }
 
     public int ReplaceSymbol
@@ -81,13 +81,13 @@ namespace OCourse.Ext
       {
         g._fromName = where[0];
         Control cntFrom = controls[g._fromName];
-        if (cntFrom.Element.Geometry is IPoint)
-        { g._fromPnt = (IPoint)cntFrom.Element.Geometry; }
-        else if (cntFrom.Element.Geometry is Polyline)
-        { g._fromPnt = ((Polyline)cntFrom.Element.Geometry).Points.Last(); }
+        if (cntFrom.Element.Geometry is GeoElement.Point p)
+        { g._fromPnt = p.BaseGeometry; }
+        else if (cntFrom.Element.Geometry is GeoElement.Line l)
+        { g._fromPnt = l.BaseGeometry.Points.Last(); }
         else
         {
-          throw new NotImplementedException("Unhandled geometry type " + cntFrom.Element.Geometry);
+          throw new NotImplementedException("Unhandled geometry type " + cntFrom.Element.Geometry.GetType());
         }
       }
 
@@ -95,13 +95,13 @@ namespace OCourse.Ext
       {
         g._toName = where[1];
         Control cntTo = controls[g._toName];
-        if (cntTo.Element.Geometry is IPoint)
-        { g._toPnt = (IPoint)cntTo.Element.Geometry; }
-        else if (cntTo.Element.Geometry is Polyline)
-        { g._toPnt = ((Polyline)cntTo.Element.Geometry).Points[0]; }
+        if (cntTo.Element.Geometry is GeoElement.Point p)
+        { g._toPnt = p.BaseGeometry; }
+        else if (cntTo.Element.Geometry is GeoElement.Line l)
+        { g._toPnt = l.BaseGeometry.Points[0]; }
         else
         {
-          throw new NotImplementedException("Unhandled geometry type " + cntTo.Element.Geometry);
+          throw new NotImplementedException("Unhandled geometry type " + cntTo.Element.Geometry.GetType());
         }
       }
 
@@ -149,7 +149,7 @@ namespace OCourse.Ext
       Apply(writer, _geom);
     }
 
-    public void Apply(OcadWriter writer, IGeometry geoGeometry)
+    public void Apply(OcadWriter writer, GeoElement.Geom geoGeometry)
     {
       AdaptLine adapt = new AdaptLine(this, writer);
       writer.DeleteElements(adapt.DeleteLine);
@@ -168,7 +168,7 @@ namespace OCourse.Ext
       {
         return geometry;
       }
-      IPoint pntGeom = (IPoint)pnt.Geometry;
+      IPoint pntGeom = ((GeoElement.Point)pnt.Geometry).BaseGeometry;
       IList<Polyline> split = Ocad.Utils.Split(geometry, symbol, pntGeom, pnt.Angle);
       Polyline clipped;
       if (split == null)
@@ -189,10 +189,10 @@ namespace OCourse.Ext
 
     public bool IsConnection(GeoElement elem)
     {
-      Polyline line = (Polyline)elem.Geometry;
+      Polyline line = ((GeoElement.Line)elem.Geometry).BaseGeometry;
 
-      double d2From = PointOperator.Dist2(_fromPnt, line.Points[0], GeometryOperator.DimensionXY);
-      double d2To = PointOperator.Dist2(_toPnt, line.Points.Last(), GeometryOperator.DimensionXY);
+      double d2From = PointOp.Dist2(_fromPnt, line.Points[0], GeometryOperator.DimensionXY);
+      double d2To = PointOp.Dist2(_toPnt, line.Points.Last(), GeometryOperator.DimensionXY);
 
       if (d2From > 200000)
       { return false; }

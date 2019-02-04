@@ -6,7 +6,7 @@ namespace Basics.Geom
   /// <summary>
   /// Summary description for Line2D.
   /// </summary>
-  public class Polyline : Geometry, IMultipartGeometry, ICurve
+  public class Polyline : Geometry, IMultipartGeometry, ICurve, ISimplePolyline
   {
     private readonly List<IPoint> _pointList;
     private List<IInnerSegment> _innerCurveList;
@@ -60,8 +60,8 @@ namespace Basics.Geom
     {
       get
       {
-        Point min = Point.Create(1);
-        Point max = Point.Create(1);
+        Point min = Point.Create_0(1);
+        Point max = Point.Create_0(1);
         min[0] = 0;
         max[0] = Points.Count - 1;
         return new Box(min, max);
@@ -173,7 +173,7 @@ namespace Basics.Geom
         {
           IPoint last = _pointList[_pointList.Count - 1];
           IPoint start = segment.Start;
-          if (last != start && PointOperator.Dist2(last, start) > 0.0001 * segment.Length())
+          if (last != start && PointOp.Dist2(last, start) > 0.0001 * segment.Length())
           { throw new InvalidOperationException("segment does not fit to the end of polyline"); }
         }
       }
@@ -403,7 +403,8 @@ namespace Basics.Geom
       get { return 1; }
     }
 
-    public override IBox Extent
+    protected override IBox GetExtent() => Extent;
+    public new Box Extent
     {
       get
       {
@@ -422,7 +423,7 @@ namespace Basics.Geom
           }
           if (extent == null && _pointList.Count > 0)
           {
-            IBox box = _pointList[0].Extent;
+            IBox box = Point.CastOrWrap(_pointList[0]);
             extent = new Box(box);
           }
           _extent = extent;
@@ -708,7 +709,7 @@ namespace Basics.Geom
         for (int iSeg = Points.Count - 2; iSeg >= 0; iSeg--)
         {
 
-          ISegment curve = GetSegment(iSeg); 
+          ISegment curve = GetSegment(iSeg);
 
           IInnerSegment invertedSeg = curve.Invert().GetInnerSegment();
           invert._innerCurveList.Add(invertedSeg);

@@ -5,17 +5,114 @@ using System.Linq;
 
 namespace Ocad
 {
-  public class GeoElement:Element
+  public class GeoElement : Element
   {
-    public GeoElement(IGeometry geometry)
+    public abstract class Geom
+    {
+      internal Geom() { }
+      public abstract IEnumerable<Coord> EnumCoords();
+      public Geom Project(IProjection prj) => ProjectCore(prj);
+      public IBox Extent { get { return GetExtent(); } }
+      public abstract IGeometry GetGeometry();
+
+      protected abstract Geom ProjectCore(IProjection prj);
+      protected abstract IBox GetExtent();
+
+      public static Geom Create(object geom)
+      {
+        if (geom is Basics.Geom.Area area) return new Area(area);
+        if (geom is Polyline l) return new Line(l);
+        if (geom is PointCollection ps) return new Points(ps);
+        if (geom is IPoint p) return new Point(p);
+
+        throw new NotImplementedException("Unhandled type " + geom.GetType());
+      }
+    }
+    public sealed class Point : Geom
+    {
+      public Point(IPoint pnt) { BaseGeometry = pnt; }
+      public IPoint BaseGeometry { get; }
+
+      public override IEnumerable<Coord> EnumCoords() => Coord.EnumCoords(BaseGeometry);
+
+      protected override Geom ProjectCore(IProjection prj) => Project(prj);
+      public new Point Project(IProjection prj) => new Point(prj.Project(BaseGeometry));
+
+      protected override IBox GetExtent() => Basics.Geom.Point.CastOrWrap(BaseGeometry);
+      public override IGeometry GetGeometry() => Basics.Geom.Point.CastOrWrap(BaseGeometry);
+    }
+    public sealed class Points : Geom
+    {
+      public Points(PointCollection pnts) { BaseGeometry = pnts; }
+      public PointCollection BaseGeometry { get; }
+
+      public override IEnumerable<Coord> EnumCoords() => Coord.EnumCoords(BaseGeometry);
+
+      protected override Geom ProjectCore(IProjection prj) => Project(prj);
+      public new Points Project(IProjection prj) => new Points(BaseGeometry.Project(prj));
+      protected override IBox GetExtent() => BaseGeometry.Extent;
+      public override IGeometry GetGeometry() => BaseGeometry;
+    }
+    public sealed class Line : Geom
+    {
+      public Line(Polyline line) { BaseGeometry = line; }
+      public Polyline BaseGeometry { get; }
+
+      public override IEnumerable<Coord> EnumCoords() => Coord.EnumCoords(BaseGeometry);
+
+      protected override Geom ProjectCore(IProjection prj) => Project(prj);
+      public new Line Project(IProjection prj) => new Line(BaseGeometry.Project(prj));
+      protected override IBox GetExtent() => BaseGeometry.Extent;
+      public override IGeometry GetGeometry() => BaseGeometry;
+    }
+    public sealed class Area : Geom
+    {
+      public Area(Basics.Geom.Area area) { BaseGeometry = area; }
+      public Basics.Geom.Area BaseGeometry { get; }
+
+      public override IEnumerable<Coord> EnumCoords() => Coord.EnumCoords(BaseGeometry);
+
+      protected override Geom ProjectCore(IProjection prj) => Project(prj);
+      public new Area Project(IProjection prj) => new Area(BaseGeometry.Project(prj));
+      protected override IBox GetExtent() => BaseGeometry.Extent;
+      public override IGeometry GetGeometry() => BaseGeometry;
+    }
+
+    public GeoElement(IPoint point) : this(new Point(point)) { }
+    public GeoElement(PointCollection points) : this(new Points(points)) { }
+    public GeoElement(Polyline line) : this(new Line(line)) { }
+    public GeoElement(Basics.Geom.Area area) : this(new Area(area)) { }
+
+    public GeoElement(Geom geometry)
     {
       Geometry = geometry;
     }
 
-    public IGeometry Geometry { get; set; }
-
-    [Obsolete("use only internally")]
+    [Obsolete("Use only internally")]
     public GeoElement() { }
+
+    public Geom Geometry { get; set; }
+
+    // public void SetGeometry(GeoElement elem) { Geometry = elem.Geometry; }
+    //public void SetGeometry(IPoint point) { Geometry = new Point(point); }
+    //public void SetGeometry(Polyline line) { Geometry = new Line(line); }
+    //public void SetGeometry(PointCollection points) { Geometry = new Points(points); }
+    //public void SetGeometry(Basics.Geom.Area area) { Geometry = new Area(area); }
+    //public bool TrySetGeometry(IGeometry geom)
+    //{
+    //  if (geom is IPoint pt) SetGeometry(Point.CastOrCreate(pt));
+    //  else if (geom is PointCollection pts) SetGeometry(pts);
+    //  else if (geom is Polyline line) SetGeometry(line);
+    //  else if (geom is Area area) SetGeometry(area);
+
+    //  else
+    //  {
+    //    return false;
+    //  }
+    //  return true;
+
+    //}
+
     internal override void InitGeometry(IList<Coord> coords, Setup setup)
     {
       Geometry = Coord.GetGeometry(Type, coords).Project(setup.Map2Prj);
@@ -24,16 +121,16 @@ namespace Ocad
 
     internal override IEnumerable<Coord> GetCoords(Setup setup)
     {
-      return Coord.EnumCoords(Geometry.Project(setup.Prj2Map));
+      return Geometry.Project(setup.Prj2Map).EnumCoords();
     }
 
     internal override int PointCountCore()
     {
-      return Coord.EnumCoords(Geometry).Count();
+      return Geometry.EnumCoords().Count();
     }
 
   }
-  public class MapElement:Element
+  public class MapElement : Element
   {
     private List<Coord> _coords;
     public MapElement(IEnumerable<Coord> coords)
@@ -58,7 +155,7 @@ namespace Ocad
       return _coords.Count;
     }
 
-    public IGeometry GetMapGeometry()
+    public GeoElement.Geom GetMapGeometry()
     {
       return (_coords.Count == 0) ? null : Coord.GetGeometry(Type, _coords);
     }
@@ -88,7 +185,6 @@ namespace Ocad
       graphics.MapGeometry = element.GetMapGeometry();
       return graphics;
     }
-
   }
   public abstract class Element
   {

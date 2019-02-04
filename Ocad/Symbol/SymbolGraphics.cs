@@ -27,7 +27,7 @@ namespace Ocad.Symbol
     private int _color;
     private int _lineWidth;
 
-    private IGeometry _geometry;
+    private GeoElement.Geom _geometry;
 
     public SymbolGraphicsType Type
     {
@@ -65,28 +65,28 @@ namespace Ocad.Symbol
       get
       {
         Polyline line;
-        if (_geometry is Polyline)
-        { line = (Polyline)_geometry; }
-        else if (_geometry is Area area)
+        if (_geometry is GeoElement.Line l)
+        { line = l.BaseGeometry; }
+        else if (_geometry is GeoElement.Area area)
         {
-          if (area.Border.Count != 1)
+          if (area.BaseGeometry.Border.Count != 1)
           { return 0; }
-          line = area.Border[0];
+          line = area.BaseGeometry.Border[0];
         }
         else
         { return 0; }
 
         if (line.Points.Count == 2 &&
-            line.GetSegment(0) is Arc arc)
+            line.GetSegment(0) is IArc arc)
         {
-          return (int)arc.Diameter;
+          return (int)(2 * arc.Radius);
         }
         else
         { return 0; }
       }
     }
 
-    public IGeometry MapGeometry
+    public GeoElement.Geom MapGeometry
     {
       get { return _geometry; }
       set { _geometry = value; }

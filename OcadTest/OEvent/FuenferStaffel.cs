@@ -298,11 +298,11 @@ namespace OcadTest.OEvent
           if (elem == null)
           { continue; }
 
-          if (elem.Geometry is Polyline line && line.Points.Count == 2)
+          if (elem.Geometry is GeoElement.Line line && line.BaseGeometry.Points.Count == 2)
           {
             line = line.Project(setup.Map2Prj);
-            IPoint s = line.Points[0];
-            IPoint t = line.Points.Last();
+            IPoint s = line.BaseGeometry.Points[0];
+            IPoint t = line.BaseGeometry.Points.Last();
             if (Math.Abs(s.X - 693505.3) < 1 && Math.Abs(s.Y - 260302.3) < 1 &&
               Math.Abs(t.X - 693058.2) < 1 && Math.Abs(t.Y - 260252.2) < 1)
             {
@@ -310,12 +310,12 @@ namespace OcadTest.OEvent
               replaceElem = elem;
             }
           }
-          Point x = elem.Geometry as Point;
-          if (x == null && elem.Geometry is PointCollection)
-          { x = ((PointCollection)(elem.Geometry))[0] as Point; }
+          IPoint x = (elem.Geometry as GeoElement.Point)?.BaseGeometry;
+          if (x == null && elem.Geometry is GeoElement.Points pts)
+          { x = pts.BaseGeometry[0]; }
           if (x != null)
           {
-            x = x.Project(setup.Map2Prj);
+            x = PointOp.Project(x, setup.Map2Prj);
             if (Math.Abs(x.X - 693421.7) < 1 && Math.Abs(x.Y - 260274.1) < 1)
             { controlIndex = e; }
           }
@@ -329,7 +329,7 @@ namespace OcadTest.OEvent
           { new Point2D(693503.4,  260320.9),
             new Point2D(693431.4,  260347.1),
             new Point2D(693058.2,  260252.2) });
-          replaceElem.Geometry = replace;
+          replaceElem.Geometry = new GeoElement.Line(replace);
 
           w.Append(replaceElem);
         }
@@ -375,7 +375,7 @@ namespace OcadTest.OEvent
             new Point2D(2675726.4, 1266287.6),
             new Point2D(2675554.3, 1266287.6)
           };
-          replaceElem.Geometry = replace;
+          replaceElem.Geometry = new GeoElement.Points(replace);
 
           w.Append(replaceElem);
         }

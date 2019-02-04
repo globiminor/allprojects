@@ -52,22 +52,22 @@ namespace Basics.Geom
 
       if (_base is IPoint pnt)
       {
-        double dist2 = PointOperator.Dist2(point, pnt);
+        double dist2 = PointOp.Dist2(point, pnt);
         double tol2 = _tolerance * _tolerance;
         bool within = dist2 < tol2;
         return within;
       }
 
-      ToleranceGeometry pntTolerance = new ToleranceGeometry(point, _tolerance);
+      ToleranceGeometry pntTolerance = new ToleranceGeometry(Point.CastOrWrap(point), _tolerance);
       bool intersects = GeometryOperator.Intersects(_base.Border, pntTolerance);
       return intersects;
     }
     public IGeometry Project(IProjection prj)
     {
       IGeometry basePrj = _base.Project(prj);
-      IGeometry extPrj = _extent.Project(prj);
-      double maxExt = extPrj.Extent.GetMaxExtent();
-      double maxBase = basePrj.Extent.GetMaxExtent();
+      IGeometry extPrj = BoxOp.ProjectRaw(_extent, prj);
+      double maxExt = BoxOp.GetMaxExtent(extPrj.Extent);
+      double maxBase = BoxOp.GetMaxExtent(basePrj.Extent);
       double approxTol = (maxExt - maxBase) / 2.0;
 
       return new ToleranceGeometry(basePrj, approxTol);

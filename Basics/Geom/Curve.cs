@@ -54,8 +54,8 @@ namespace Basics.Geom
 
     static Curve()
     {
-      Point min = Point.Create(1);
-      Point max = Point.Create(1);
+      Point min = Point.Create_0(1);
+      Point max = Point.Create_0(1);
       min[0] = 0;
       max[0] = 1;
       _paramBox = new Box(min, max);
@@ -86,7 +86,7 @@ namespace Basics.Geom
 
         IRelationGeometry paramGeom = this;
         double normed = paramGeom.NormedMaxOffset;
-        double l2 = PointOperator.Sub(End, Start).OrigDist2();
+        double l2 = PointOp.Sub(End, Start).OrigDist2();
         if (normed * normed * l2 > d2)
         {
           Curve c0 = Subpart(0, 0.5);
@@ -419,8 +419,8 @@ namespace Basics.Geom
       result[0] = p0;
       result[2] = p2;
 
-      Line line0 = new Line(p0, PointOperator.Add(p0, TangentAt(min)));
-      Line line1 = new Line(p2, PointOperator.Add(p2, TangentAt(max)));
+      Line line0 = new Line(p0, PointOp.Add(p0, TangentAt(min)));
+      Line line1 = new Line(p2, PointOp.Add(p2, TangentAt(max)));
 
       result[1] = (IPoint)line0.CutLine(line1).Intersection;
 

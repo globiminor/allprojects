@@ -16,9 +16,9 @@ namespace Dhm
       public float Z { get; set; }
       public int Intesity { get; set; }
 
-      public Vector ToVector(double x0, double y0)
+      public Point ToVector(double x0, double y0)
       {
-        Vector v = new Vector(4);
+        Point v = new Point(4);
         v[0] = x0 + X;
         v[1] = y0 + Y;
         v[2] = Z;
@@ -27,9 +27,9 @@ namespace Dhm
         return v;
       }
 
-      public static List<Vector> GetVectors(double x0, double y0, List<LasPoint> pts)
+      public static List<Point> GetVectors(double x0, double y0, List<LasPoint> pts)
       {
-        List<Vector> vectors = new List<Vector>(pts.Count);
+        List<Point> vectors = new List<Point>(pts.Count);
         foreach (var pt in pts)
         { vectors.Add(pt.ToVector(x0, y0)); }
         return vectors;
@@ -72,9 +72,9 @@ namespace Dhm
       }
     }
 
-    public static double VegeHeight(int ix, int iy, Func<int, int, List<Vector>> getPts)
+    public static double VegeHeight(int ix, int iy, Func<int, int, List<Point>> getPts)
     {
-      List<Vector> pts = getPts(ix, iy);
+      List<Point> pts = getPts(ix, iy);
 
       double h = pts[pts.Count - 1][2] - pts[0][2];
       if (h > 19.2)
@@ -108,14 +108,14 @@ namespace Dhm
       b[0] = 255;
     }
 
-    public static double Struct(int ix, int iy, Func<int, int, List<Vector>> getPts)
+    public static double Struct(int ix, int iy, Func<int, int, List<Point>> getPts)
     {
-      List<Vector> pts = getPts(ix, iy);
+      List<Point> pts = getPts(ix, iy);
 
-      Vector pA0 = getPts(ix + 1, iy)?[0];
-      Vector p0A = getPts(ix, iy + 1)?[0];
-      Vector pM0 = getPts(ix - 1, iy)?[0];
-      Vector p0M = getPts(ix, iy - 1)?[0];
+      Point pA0 = getPts(ix + 1, iy)?[0];
+      Point p0A = getPts(ix, iy + 1)?[0];
+      Point pM0 = getPts(ix - 1, iy)?[0];
+      Point p0M = getPts(ix, iy - 1)?[0];
 
       Quads q = new Quads(pts[0], pA0, p0A, pM0, p0M);
       double vegMin = 0.3;
@@ -196,19 +196,19 @@ namespace Dhm
       }
     }
 
-    public static double Dom(int ix, int iy, Func<int, int, List<Vector>> getPts)
+    public static double Dom(int ix, int iy, Func<int, int, List<Point>> getPts)
     {
-      List<Vector> pts = getPts(ix, iy);
+      List<Point> pts = getPts(ix, iy);
 
-      List<Vector> pA0 = getPts(ix + 1, iy);
-      List<Vector> p0A = getPts(ix, iy + 1);
-      List<Vector> pM0 = getPts(ix - 1, iy);
-      List<Vector> p0M = getPts(ix, iy - 1);
+      List<Point> pA0 = getPts(ix + 1, iy);
+      List<Point> p0A = getPts(ix, iy + 1);
+      List<Point> pM0 = getPts(ix - 1, iy);
+      List<Point> p0M = getPts(ix, iy - 1);
 
       if (pts == null || p0A == null || pA0 == null || pM0 == null || p0M == null)
       { return 0; }
 
-      Vector p0 = pts[pts.Count - 1];
+      Point p0 = pts[pts.Count - 1];
 
       double da = (p0A[p0A.Count - 1].Z + pA0[pA0.Count - 1].Z - 2 * p0.Z);
       double dm = (p0M[p0M.Count - 1].Z + pM0[pM0.Count - 1].Z - 2 * p0.Z);
@@ -222,16 +222,16 @@ namespace Dhm
       //      return Math.Min(16 * iColor + iStd, 255);
     }
 
-    public static double Obstruction(int ix, int iy, Func<int, int, List<Vector>> getPts)
+    public static double Obstruction(int ix, int iy, Func<int, int, List<Point>> getPts)
     {
       int dens = 0;
 
-      List<Vector> pts = getPts(ix, iy);
+      List<Point> pts = getPts(ix, iy);
 
-      Vector pA0 = getPts(ix + 1, iy)?[0];
-      Vector p0A = getPts(ix, iy + 1)?[0];
-      Vector pM0 = getPts(ix - 1, iy)?[0];
-      Vector p0M = getPts(ix, iy - 1)?[0];
+      Point pA0 = getPts(ix + 1, iy)?[0];
+      Point p0A = getPts(ix, iy + 1)?[0];
+      Point pM0 = getPts(ix - 1, iy)?[0];
+      Point p0M = getPts(ix, iy - 1)?[0];
 
       Quads q = new Quads(pts[0], pA0, p0A, pM0, p0M);
       double min = 0.3;
@@ -261,16 +261,16 @@ namespace Dhm
 
     private class Quads
     {
-      private readonly Vector _center;
-      private readonly Vector _pA0;
-      private readonly Vector _p0A;
-      private readonly Vector _pM0;
-      private readonly Vector _p0M;
+      private readonly Point _center;
+      private readonly Point _pA0;
+      private readonly Point _p0A;
+      private readonly Point _pM0;
+      private readonly Point _p0M;
 
       private double _max = double.NaN;
       private double _min = double.NaN;
 
-      public Quads(Vector center, Vector pA0, Vector p0A, Vector pM0, Vector p0M)
+      public Quads(Point center, Point pA0, Point p0A, Point pM0, Point p0M)
       {
         _center = center;
         _pA0 = pA0;
@@ -347,7 +347,7 @@ namespace Dhm
         return (1.0 / Math.Sqrt(sumN.OrigDist2())) * sumN;
       }
 
-      public double GetDh(Vector p)
+      public double GetDh(Point p)
       {
         if (_center == p)
         { return 0; }
@@ -356,7 +356,7 @@ namespace Dhm
       }
     }
 
-    public static DoubleGrid CreateGrid(TextReader reader, double res, Func<int, int, Func<int, int, List<Vector>>, double> grdFct)
+    public static DoubleGrid CreateGrid(TextReader reader, double res, Func<int, int, Func<int, int, List<Point>>, double> grdFct)
     {
       Dictionary<Cell, List<LasPoint>> ptsDict = new Dictionary<Cell, List<LasPoint>>(new CellComparer());
 

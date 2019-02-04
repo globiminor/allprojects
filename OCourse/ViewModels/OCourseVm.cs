@@ -585,7 +585,7 @@ namespace OCourse.ViewModels
           ctrl1.Name = to.Trim();
           IPoint start = new Point2D(route.Points[0]);
           IPoint end = new Point2D(route.Points.Last());
-          double direct = Math.Sqrt(PointOperator.Dist2(start, end));
+          double direct = Math.Sqrt(PointOp.Dist2(start, end));
           CostFromTo routeCost = new CostFromTo(ctrl0, ctrl1, start, end,
             resol, direct, climb, route, optimal, cost);
 

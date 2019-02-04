@@ -3,13 +3,17 @@ using System.Collections.Generic;
 
 namespace Basics.Geom
 {
-  public class Box : IBox
+  public class Box : BoxCore
   {
     private Point _min;
     private Point _max;
     private readonly int _dimension;
     private int _topology = -1;
 
+    public static BoxCore CastOrWrap(IBox box)
+    {
+      return box as BoxCore ?? new BoxWrap(box);
+    }
     public Box(IBox source) :
       this(Point.Create(source.Min), Point.Create(source.Max))
     { }
@@ -40,175 +44,104 @@ namespace Basics.Geom
       _min = p0;
       _max = p1;
     }
+
+    public new Point Min => _min;
+    public new Point Max => _max;
+
+    public new int Topology
+    {
+      get
+      {
+        if (_topology >= 0)
+        { return _topology; }
+        else
+        { return _dimension; }
+      }
+      internal set { _topology = value; }
+    }
+
+    protected override IPoint GetMin() => _min;
+    protected override IPoint GetMax() => _max;
+    protected override int GetDimension() => _dimension;
+    protected override int GetTopology() => Topology;
+
+    /// <summary>
+    /// set this box to the bounding box of this and box
+    /// </summary>
+    /// <param name="box"></param>
+    public void Include(IBox box, IEnumerable<int> dimensions = null)
+    {
+      dimensions = dimensions ?? GeometryOperator.GetDimensions(this, box);
+      foreach (int i in dimensions)
+      {
+        if (box.Min[i] < _min[i])
+        { _min[i] = box.Min[i]; }
+        if (box.Max[i] > _max[i])
+        { _max[i] = box.Max[i]; }
+      }
+    }
+
+    /// <summary>
+    /// set this box to the bounding box of this and point
+    /// </summary>
+    public void Include(IPoint point, IEnumerable<int> dimensions = null)
+    {
+      dimensions = dimensions ?? GeometryOperator.GetDimensions(this, point);
+      if (_min == _max)
+      {
+        _min = Point.Create(_min);
+        _max = Point.Create(_max);
+      }
+      foreach (int i in dimensions)
+      {
+        if (point[i] < _min[i])
+        { _min[i] = point[i]; }
+        else if (point[i] > _max[i])
+        { _max[i] = point[i]; }
+      }
+    }
+
+  }
+  public class BoxWrap : BoxCore
+  {
+    private readonly IBox _box;
+    public BoxWrap(IBox box)
+    {
+      _box = box;
+    }
+    protected override IPoint GetMin() => _box.Min;
+    protected override IPoint GetMax() => _box.Max;
+    protected override int GetDimension() => _box.Dimension;
+    protected override int GetTopology() => _box.Topology;
+  }
+
+  public abstract class BoxCore : IBox, IGeometry
+  {
     public bool EqualGeometry(IGeometry other)
     { return this == other; }
 
+    protected abstract IPoint GetMin();
+    protected abstract IPoint GetMax();
+    protected abstract int GetDimension();
+    protected abstract int GetTopology();
     // properties
-    IPoint IBox.Min => Min;
-    public Point Min => _min;
+    public IPoint Min => GetMin();
+    public IPoint Max => GetMax();
 
-    IPoint IBox.Max => Max;
-    public Point Max => _max;
+    public double GetMaxExtent(IEnumerable<int> dimensions = null) => BoxOp.GetMaxExtent(this, dimensions);
 
-    public double GetMaxExtent()
-    {
-      double dMax = 0;
-      for (int i = 0; i < Dimension; i++)
-      {
-        double dExtent = _max[i] - _min[i];
-        if (dExtent > dMax)
-        { dMax = dExtent; }
-      }
-      return dMax;
-    }
+    public double Dist2(IBox box, IEnumerable<int> dimensions = null) => BoxOp.Dist2(this, box, dimensions);
 
-    public double Dist2(IBox box, IList<int> calcDimensions)
-    {
-      double d2 = 0;
-      foreach (var i in calcDimensions)
-      {
-        double d;
-        if (Max[i] < box.Min[i])
-        { d = box.Min[i] - Max[i]; }
-        else if (Min[i] > box.Max[i])
-        { d = Min[i] - box.Max[i]; }
-        else
-        { continue; }
-
-        d2 += d * d;
-      }
-      return d2;
-    }
-
-    // methodes
-    public static bool IsWithin(IBox box, IPoint p)
-    {
-      int dim = box.Dimension;
-      for (int i = 0; i < dim; i++)
-      {
-        if (p[i] < box.Min[i])
-        { return false; }
-        if (p[i] > box.Max[i])
-        { return false; }
-      }
-      return true;
-    }
-    public bool IsWithin(IPoint p)
-    {
-      return IsWithin(this, p);
-    }
+    public bool IsWithin(IPoint p, IEnumerable<int> dimensions = null) => BoxOp.IsWithin(this, p, dimensions);
 
     /// <summary>
     /// Indicates if box is within this
     /// </summary>
     /// <returns></returns>
-    public bool Contains(IBox box, IEnumerable<int> dimensionList)
-    {
-      return (ExceedDimension(box, dimensionList) == 0);
-    }
-    /// <summary>
-    /// Indicates if box is within this
-    /// </summary>
-    /// <param name="box"></param>
-    /// <returns></returns>
-    public bool Contains(IBox box)
-    {
-      return Contains(box, GeometryOperator.DimensionList(_dimension));
-    }
+    public bool Contains(IBox box, IEnumerable<int> dimensionList = null) => BoxOp.ExceedDimension(this, box, dimensionList) == 0;
+    public int ExceedDimension(IBox box, IEnumerable<int> dimensionList = null) => BoxOp.ExceedDimension(this, box, dimensionList);
 
-    public int ExceedDimension(IBox box)
-    {
-      return ExceedDimension(this, box, GeometryOperator.DimensionList(_dimension));
-    }
-    public int ExceedDimension(IBox box, IEnumerable<int> dimensionList)
-    {
-      return ExceedDimension(this, box, dimensionList);
-    }
-    public static int ExceedDimension(IBox x, IBox y, IEnumerable<int> dimensionList)
-    {
-      foreach (var i in dimensionList)
-      {
-        if (y.Min[i] < x.Min[i])
-        { return -i - 1; }
-        if (y.Max[i] > x.Max[i])
-        { return i + 1; }
-      }
-      return 0;
-    }
-
-    public static Relation Relate(IBox x, IBox y)
-    {
-      bool xIny = true;
-      bool yInx = true;
-
-      int maxDim = Math.Min(x.Dimension, y.Dimension);
-
-      for (int dim = 0; dim < maxDim; dim++)
-      {
-        double x0 = x.Min[dim];
-        double x1 = x.Max[dim];
-
-        double y0 = y.Min[dim];
-        double y1 = y.Max[dim];
-
-        if (x1 < y0)
-        { return Relation.Disjoint; }
-        else if (x1 < y1)
-        { yInx = false; }
-        else if (x1 > y1)
-        { xIny = false; }
-
-        if (x0 > y1)
-        { return Relation.Disjoint; }
-        else if (x0 > y0)
-        { yInx = false; }
-        else if (x0 < y0)
-        { xIny = false; }
-      }
-
-      if (xIny)
-      { return Relation.Within; }
-      if (yInx)
-      { return Relation.Contains; }
-
-      return Relation.Intersect;
-    }
-
-    public Relation RelationTo(IBox box)
-    {
-      return Relate(this, box);
-    }
-
-    //private IList<int> Dimensions()
-    //{
-    //  if (Topology == Dimension)
-    //  { return Geometry.DimensionList(Dimension); }
-    //  List<int> dims = new List<int>();
-    //  for (int dim = 0; dim < Dimension; dim++)
-    //  {
-    //    if (Min[dim] != Max[dim])
-    //    { dims.Add(dim); }
-    //  }
-    //  if (dims.Count != Topology)
-    //  { throw new NotImplementedException(); }
-    //  return dims;
-    //}
-    public bool Intersects(IGeometry other)
-    {
-      Relation relation = RelationTo(other.Extent);
-      if (relation == Relation.Contains)
-      { return true; }
-      if (other is Box)
-      {
-        if (relation == Relation.Disjoint)
-        { return false; }
-        else
-        { return true; }
-      }
-
-      bool intersects = GeometryOperator.Intersects(this, other);
-      return intersects;
-    }
+    public Relation RelationTo(IBox box, IEnumerable<int> dimensions = null) => BoxOp.GetRelation(this, box, dimensions);
 
     public GeometryCollection Intersection(IGeometry other)
     {
@@ -220,7 +153,7 @@ namespace Basics.Geom
         result = new GeometryCollection(new[] { other });
         return result;
       }
-      else if (other is Box)
+      else if (other is IBox)
       {
         if (relation == Relation.Within)
         { return new GeometryCollection(new IGeometry[] { this }); }
@@ -253,110 +186,191 @@ namespace Basics.Geom
     {
       if (!(obj is Box cmpr))
       { return false; }
-      return _min.Equals(cmpr._min) && _max.Equals(cmpr.Max);
+      return PointOp.EqualGeometry(Min, cmpr.Min) && PointOp.EqualGeometry(Max, cmpr.Max);
     }
     public override int GetHashCode()
     {
-      return _min.GetHashCode();
-    }
-
-    /// <summary>
-    /// set this box to the bounding box of this and box
-    /// </summary>
-    /// <param name="box"></param>
-    /// <param name="dimension"></param>
-    public void Include(IBox box, int dimension)
-    {
-      for (int i = 0; i < dimension; i++)
-      {
-        if (box.Min[i] < _min[i])
-        { _min[i] = box.Min[i]; }
-        if (box.Max[i] > _max[i])
-        { _max[i] = box.Max[i]; }
-      }
-    }
-
-    /// <summary>
-    /// set this box to the bounding box of this and box
-    /// </summary>
-    /// <param name="box"></param>
-    public void Include(IBox box)
-    {
-      Include(box, Math.Min(_dimension, box.Dimension));
-    }
-
-    /// <summary>
-    /// set this box to the bounding box of this and point
-    /// </summary>
-    public void Include(IPoint point, int dimension)
-    {
-      if (_min == _max)
-      {
-        _min = Point.Create(_min);
-        _max = Point.Create(_max);
-      }
-      for (int i = 0; i < dimension; i++)
-      {
-        if (point[i] < _min[i])
-        { _min[i] = point[i]; }
-        else if (point[i] > _max[i])
-        { _max[i] = point[i]; }
-      }
-    }
-
-    /// <summary>
-    /// set this box to the bounding box of this and point
-    /// </summary>
-    public void Include(IPoint point)
-    {
-      Include(point, Math.Min(_dimension, point.Dimension));
+      return Min.GetHashCode();
     }
 
     #region IGeometry Members
 
-    public int Dimension
-    { get { return _dimension; } }
+    public int Dimension => GetDimension();
 
-    public int Topology
-    {
-      get
-      {
-        if (_topology >= 0)
-        { return _topology; }
-        else
-        { return _dimension; }
-      }
-    }
+    public int Topology => GetTopology();
 
     public IBox Extent
     { get { return this; } }
 
-    public BoxCollection Border
+    IGeometry IGeometry.Border => Border;
+    public BoxCollection Border => BoxOp.GetBorder(this);
+
+    bool IGeometry.IsWithin(IPoint point) => BoxOp.IsWithin(this, point);
+    IGeometry IGeometry.Project(IProjection projection) => BoxOp.ProjectRaw(this, projection);
+    #endregion
+
+    public Box Clone() => BoxOp.Clone(this);
+  }
+
+  public static class BoxOp
+  {
+    public static Box Clone(IBox box)
     {
-      get
+      return new Box(Point.Create(box.Min), Point.Create(box.Max));
+    }
+
+    public static double GetMaxExtent(IBox box, IEnumerable<int> dimensions = null)
+    {
+      dimensions = dimensions ?? GeometryOperator.GetDimensions(box);
+      double dMax = 0;
+      foreach (int i in dimensions)
       {
+        double dExtent = box.Max[i] - box.Min[i];
+        if (dExtent > dMax)
+        { dMax = dExtent; }
+      }
+      return dMax;
+    }
+
+    public static double Dist2(IBox x, IBox box, IEnumerable<int> dimensions = null)
+    {
+      dimensions = dimensions ?? GeometryOperator.GetDimensions(x, box);
+
+      double d2 = 0;
+      foreach (var i in dimensions)
+      {
+        double d;
+        if (x.Max[i] < box.Min[i])
+        { d = box.Min[i] - x.Max[i]; }
+        else if (x.Min[i] > box.Max[i])
+        { d = x.Min[i] - box.Max[i]; }
+        else
+        { continue; }
+
+        d2 += d * d;
+      }
+      return d2;
+    }
+
+    public static bool Contains(IBox x, IBox y, IEnumerable<int> dimensionList = null) => BoxOp.ExceedDimension(x, y, dimensionList) == 0;
+
+    public static int ExceedDimension(IBox x, IBox y, IEnumerable<int> dimensionList = null)
+    {
+      dimensionList = dimensionList ?? GeometryOperator.GetDimensions(x, y);
+      foreach (var i in dimensionList)
+      {
+        if (y.Min[i] < x.Min[i])
+        { return -i - 1; }
+        if (y.Max[i] > x.Max[i])
+        { return i + 1; }
+      }
+      return 0;
+    }
+
+    public static Relation GetRelation(IBox x, IBox y, IEnumerable<int> dimensions = null)
+    {
+      dimensions = dimensions ?? GeometryOperator.GetDimensions(x, y);
+      bool xIny = true;
+      bool yInx = true;
+
+
+      foreach (var dim in dimensions)
+      {
+        double x0 = x.Min[dim];
+        double x1 = x.Max[dim];
+
+        double y0 = y.Min[dim];
+        double y1 = y.Max[dim];
+
+        if (x1 < y0)
+        { return Relation.Disjoint; }
+        else if (x1 < y1)
+        { yInx = false; }
+        else if (x1 > y1)
+        { xIny = false; }
+
+        if (x0 > y1)
+        { return Relation.Disjoint; }
+        else if (x0 > y0)
+        { yInx = false; }
+        else if (x0 < y0)
+        { xIny = false; }
+      }
+
+      if (xIny)
+      { return Relation.Within; }
+      if (yInx)
+      { return Relation.Contains; }
+
+      return Relation.Intersect;
+    }
+
+    public static bool Intersects(IBox box, IBox other)
+    {
+      Relation relation = GetRelation(box, other);
+      return relation != Relation.Disjoint;
+    }
+
+    public static bool Intersects(IBox box, IGeometry other)
+    {
+      Relation relation = GetRelation(box, other.Extent);
+      if (relation == Relation.Contains)
+      { return true; }
+      if (other is IBox)
+      {
+        return relation != Relation.Disjoint;
+      }
+      if (relation == Relation.Disjoint)
+      { return false; }
+
+      bool intersects = GeometryOperator.Intersects(Box.CastOrWrap(box), other);
+      return intersects;
+    }
+
+    public static bool IsWithin(IBox box, IPoint p, IEnumerable<int> dimensions = null)
+    {
+      dimensions = dimensions ?? GeometryOperator.GetDimensions(box, p);
+      foreach (int i in dimensions)
+      {
+        if (p[i] < box.Min[i])
+        { return false; }
+        if (p[i] > box.Max[i])
+        { return false; }
+      }
+      return true;
+    }
+
+    public static Line ProjectRaw(IBox box, IProjection projection)
+    {
+      if (box == null) return null;
+
+      return new Line(box.Min, box.Max).Project(projection);
+    }
+
+    public static BoxCollection GetBorder(IBox box)
+    {
         int nDiff = 0;
         BoxCollection border = new BoxCollection();
-        for (int i = 0; i < _dimension; i++)
+        for (int i = 0; i < box.Dimension; i++)
         {
-          if (_min[i] != _max[i])
+          if (box.Min[i] != box.Max[i])
           { nDiff++; }
         }
-        if (nDiff >= Topology)
+        if (nDiff >= box.Topology)
         {
-          System.Diagnostics.Debug.Assert(nDiff == Topology, "Error in software design assumption");
-          for (int i = 0; i < _dimension; i++)
+          System.Diagnostics.Debug.Assert(nDiff == box.Topology, "Error in software design assumption");
+          for (int i = 0; i < box.Dimension; i++)
           {
-            if (_min[i] != _max[i])
+            if (box.Min[i] != box.Max[i])
             {
-              Point p0 = Point.Create(_min);
-              Point p1 = Point.Create(_max);
+              Point p0 = Point.Create(box.Min);
+              Point p1 = Point.Create(box.Max);
               p1[i] = p0[i];
-              Point p2 = Point.Create(_min);
-              Point p3 = Point.Create(_max);
+              Point p2 = Point.Create(box.Min);
+              Point p3 = Point.Create(box.Max);
               p2[i] = p3[i];
-              Box b0 = new Box(p0, p1) { _topology = Topology - 1 };
-              Box b1 = new Box(p2, p3) { _topology = Topology - 1 };
+              Box b0 = new Box(p0, p1) { Topology = box.Topology - 1 };
+              Box b1 = new Box(p2, p3) { Topology = box.Topology - 1 };
 
               border.Add(b0);
               border.Add(b1);
@@ -365,36 +379,15 @@ namespace Basics.Geom
         }
         else
         {
-          Box b = Clone();
-          b._topology = Topology - 1;
+          Box b = Clone(box);
+          b.Topology = box.Topology - 1;
           border.Add(b);
         }
         return border;
-      }
-    }
-    IGeometry IGeometry.Border
-    { get { return Border; } }
-
-    IGeometry IGeometry.Project(IProjection projection)
-    {
-      IPoint p0 = _min.Project(projection);
-      IPoint p1 = _max.Project(projection);
-      return Polyline.Create(new[] { p0, p1 });
     }
 
-    #endregion
-
-    #region ICloneable Members
-
-    public Box Clone()
-    {
-      return new Box(Point.Create(_min), Point.Create(_max));
-    }
-    IBox IBox.Clone()
-    { return Clone(); }
-
-    #endregion
   }
+
   public class BoxCollection : List<Box>, IMultipartGeometry
   {
     #region IGeometry Members
@@ -447,7 +440,7 @@ namespace Basics.Geom
       foreach (var b in this)
       {
         IBox box = b;
-        prj.Add(box.Project(projection));
+        prj.Add(BoxOp.ProjectRaw(box, projection));
       }
       return prj;
     }

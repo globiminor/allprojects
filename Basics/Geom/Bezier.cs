@@ -1,14 +1,10 @@
+using Basics.Num;
 using System;
 using System.Collections.Generic;
-using Basics.Num;
-using PntOp = Basics.Geom.PointOperator;
 
 namespace Basics.Geom
 {
-  /// <summary>
-  /// Summary description for Bezier.
-  /// </summary>
-  public class Bezier : Curve, IMultipartSegment, ISegment<Bezier>
+  public abstract class BezierCore : Curve, IBezier, IMultipartSegment, ISegment<Bezier>
   {
     #region nested classes
     private class _InnerCurve : InnerCurve
@@ -40,13 +36,13 @@ namespace Basics.Geom
 
     private class _SubpartsEnumerator : IEnumerator<Bezier>
     {
-      private Bezier _bezier;
+      private BezierCore _bezier;
 
       private Bezier _currentPart;
       private int _iPart;
       private int _iNParts;
 
-      public _SubpartsEnumerator(Bezier bezier)
+      public _SubpartsEnumerator(BezierCore bezier)
       {
         _bezier = bezier;
 
@@ -90,8 +86,7 @@ namespace Basics.Geom
           if (t1 > t0)
           {
             _currentPart = _bezier.Subpart(t0, t1);
-            _currentPart._bHasSubparts = false;
-            _currentPart._bSubpartsKnown = true;
+            _currentPart._hasSubparts = false;
             return true;
           }
         }
@@ -102,9 +97,9 @@ namespace Basics.Geom
 
     private class _SubpartsEnumerable : IEnumerable<Bezier>
     {
-      private readonly Bezier _bezier;
+      private readonly BezierCore _bezier;
 
-      public _SubpartsEnumerable(Bezier bezier)
+      public _SubpartsEnumerable(BezierCore bezier)
       {
         _bezier = bezier;
       }
@@ -121,95 +116,137 @@ namespace Basics.Geom
       #endregion
     }
 
+    private class ParamAtFct
+    {
+      private readonly IBezier _bezier;
+      private readonly double _distance;
+
+      public ParamAtFct(IBezier bezier, double distance)
+      {
+        _bezier = bezier;
+        _distance = distance;
+      }
+      public double LengthAt(double t)
+      {
+        double l0 = BezierOp.Subpart(_bezier, 0, t).Length();
+        if (t < 0) l0 = -l0;
+        double diff = l0 - _distance;
+        return diff;
+      }
+    }
+
     #endregion
 
-    private readonly IPoint _pStart;
-    private readonly IPoint _pEnd;
-    private IPoint _p1;
-    private IPoint _p2;
     private _InnerCurve _innerCurve;
-
-    private double _maxOffset = -1;
-
-    private bool _paramKnown = false;
-    private bool _bSubpartsKnown = false;
-    private bool _bHasSubparts;
+    private double? _maxOffset;
     private List<double> _dParts;
 
+    private bool _paramKnown = false;
     private double[] _dA0;
     private double[] _dA1;
     private double[] _dA2;
     private double[] _dA3;
 
-    public Bezier(IPoint p0, IPoint p1, IPoint p2, IPoint p3)
+    private bool? _hasSubparts;
+
+    public override IPoint Start => GetStart();
+    public override IPoint End => GetEnd();
+    public IPoint P1 => GetP1();
+    public IPoint P2 => GetP2();
+
+    protected abstract IPoint GetStart();
+    protected abstract IPoint GetP1();
+    protected abstract IPoint GetP2();
+    protected abstract IPoint GetEnd();
+
+    protected override Curve CloneCore() => BezierOp.Clone(this);
+    public new Bezier Clone() => BezierOp.Clone(this);
+    public override bool IsLinear => false;
+    public new Box Extent => BezierOp.GetExtent(this);
+    protected override IBox GetExtent() => BezierOp.GetExtent(this);
+
+    public override bool EqualGeometry(IGeometry other)
     {
-      _pStart = p0;
-      _p1 = p1;
-      _p2 = p2;
-      _pEnd = p3;
+      if (this == other)
+      { return true; }
+      if (!(other is IBezier o))
+      { return false; }
+      if (Dimension != other.Dimension)
+      { return false; }
+
+      return BezierOp.EqualGeometry(this, o);
     }
 
-    public IPoint P1
-    {
-      get { return _p1; }
-    }
-    public IPoint P2
-    {
-      get { return _p2; }
-    }
+    public override double Length() => BezierOp.Length(this);
 
-    public override IBox Extent
+    protected override Curve InvertCore() => BezierOp.Invert(this);
+    public Bezier Invert() => BezierOp.Invert(this);
+
+    public override double ParamAt(double distance) => BezierOp.ParamAt(this, distance);
+    /// <summary>
+    /// Punkt bei Parameter t
+    /// </summary>
+    /// <param name="t">Wert zwischen 0 und 1</param>
+    /// <returns></returns>
+    public override Point PointAt(double t) => BezierOp.PointAt(this, t);
+
+    public override Point TangentAt(double param) => BezierOp.TangentAt(this, param);
+    public double RadiusAt(double param) => BezierOp.RadiusAt(this, param);
+
+    protected override IGeometry ProjectCore(IProjection projection) => BezierOp.Project(this, projection);
+    public Bezier Project(IProjection projection) => BezierOp.Project(this, projection);
+
+    public IEnumerable<Bezier> Subparts()
+    {
+      return new _SubpartsEnumerable(this);
+    }
+    IEnumerable<IGeometry> IMultipartGeometry.Subparts()
+    { return Subparts(); }
+
+    private List<double> PartParams
     {
       get
       {
-        Box box = new Box(Point.Create(_pStart), Point.Create(_pEnd), true);
-        box.Include(_p1);
-        box.Include(_p2);
-        return box;
+        if (_innerCurve != null)
+        { return _innerCurve.PartParams; }
+        else
+        { return _dParts; }
       }
-    }
-
-    public override IPoint Start
-    {
-      get { return _pStart; }
-    }
-    public override IPoint End
-    {
-      get { return _pEnd; }
-    }
-
-    public double NormedMaxOffset
-    {
-      get { return NormedMaxOffsetCore; }
-    }
-    protected override double NormedMaxOffsetCore
-    {
-      get
+      set
       {
-        if (_maxOffset < 0)
-        {
-          // TODO: verify
-          Point p = PntOp.Sub(End, Start);
-          double l2 = p.OrigDist2();
-          OrthogonalSystem sys = OrthogonalSystem.Create(new IPoint[] { p });
-          double o0 = sys.GetOrthogonal(PntOp.Sub(P1, Start)).Length2Epsi / l2;
-          double o1 = sys.GetOrthogonal(PntOp.Sub(P2, P1)).Length2Epsi / l2;
-          double o2 = sys.GetOrthogonal(PntOp.Sub(End, P2)).Length2Epsi / l2;
-          _maxOffset = Math.Sqrt(o0) + Math.Sqrt(o1) + Math.Sqrt(o2);
-        }
-        return _maxOffset;
+        _dParts = value;
+        if (_innerCurve != null)
+        { _innerCurve.PartParams = value; }
       }
     }
-    public override bool IsLinear
-    { get { return false; } }
 
-    protected override Curve CloneCore()
-    { return Clone(); }
-    public new Bezier Clone()
+    private void AssignParams()
     {
-      return new Bezier(Point.Create(_pStart), Point.Create(_p1),
-        Point.Create(_p2), Point.Create(_pEnd));
+      //               
+      // P(t) = (1 - t)^3 P0 + 3 t (1 - t)^2 P1 + 3 t^2 (1 - t) P2 + t^3 P1
+      //
+      if (_paramKnown)
+      { return; }
+      int iDim = Dimension;
+
+      _dA0 = new double[iDim];
+      _dA1 = new double[iDim];
+      _dA2 = new double[iDim];
+      _dA3 = new double[iDim];
+
+      for (int i = 0; i < iDim; i++)
+      {
+        _dA0[i] = Start[i];
+        _dA1[i] = 3 * (P1[i] - Start[i]);
+        _dA3[i] = End[i] - 3 * P2[i] + _dA1[i] + 2 * _dA0[i];
+        _dA2[i] = End[i] - _dA3[i] - _dA1[i] - _dA0[i];
+      }
+
+      _paramKnown = true;
     }
+
+    public double NormedMaxOffset => NormedMaxOffsetCore;
+    protected override double NormedMaxOffsetCore => _maxOffset ?? (_maxOffset = BezierOp.GetNormedMaxOffset(this)).Value;
 
     double IMultipartSegment.Parameter(ParamGeometryRelation split) => Parameter(split);
     private double Parameter(ParamGeometryRelation split)
@@ -230,196 +267,35 @@ namespace Basics.Geom
       }
       throw new InvalidProgramException();
     }
-    public override bool EqualGeometry(IGeometry other)
-    {
-      if (this == other)
-      { return true; }
 
-      if (!(other is Bezier o))
-      { return false; }
-      bool equal =
-        Start.EqualGeometry(o.Start) &&
-        P1.EqualGeometry(o.P1) &&
-        P2.EqualGeometry(o.P2) &&
-        End.EqualGeometry(o.End);
-      return equal;
-    }
-
-    protected override Curve InvertCore() => Invert();
-    public Bezier Invert()
+    internal Point PointAtCore(double t, IEnumerable<int> dimensions = null)
     {
-      return new Bezier(_pEnd, _p2, _p1, _pStart);
-    }
-
-    /// <summary>
-    /// Punkt bei Parameter t
-    /// </summary>
-    /// <param name="t">Wert zwischen 0 und 1</param>
-    /// <returns></returns>
-    public override Point PointAt(double t)
-    {
+      dimensions = dimensions ?? GeometryOperator.GetDimensions(this);
       AssignParams();
-      Point p = Point.Create(Dimension);
-      for (int i = 0; i < Dimension; i++)
+      List<double> coords = new List<double>();
+      foreach (int iDim in dimensions)
       {
-        p[i] = _dA0[i] + t * (_dA1[i] + t * (_dA2[i] + t * _dA3[i]));
+        coords.Add(_dA0[iDim] + t * (_dA1[iDim] + t * (_dA2[iDim] + t * _dA3[iDim])));
       }
 
-      return p;
+      return Point.Create(coords.ToArray());
     }
 
-    public override double Length()
+    internal double ParamAtCore(double distance)
+    {
+      Calc numMath = new Calc(1e-6);
+      ParamAtFct fct = new ParamAtFct(this, distance);
+
+      return numMath.SolveNewton(fct.LengthAt, LengthFactor, distance / BezierOp.Length(this));
+    }
+
+
+    internal double LengthCore()
     {
       AssignParams();
       Calc pCalc = new Calc(1e-8);
 
       return pCalc.Integral(LengthFactor, 0, 1);
-    }
-    public IPoint PointAt(double t, CurveAtType type)
-    {
-      if (type == CurveAtType.Parameter)
-      { return PointAt(t); }
-      else if (type == CurveAtType.Distance)
-      {
-        return null;
-      }
-      else
-      { throw new ArgumentException(type + " not implemented"); }
-    }
-
-    private class ParamAtFct
-    {
-      private Bezier _bezier;
-      private readonly double _distance;
-
-      public ParamAtFct(Bezier bezier, double distance)
-      {
-        _bezier = bezier;
-        _distance = distance;
-      }
-      public double LengthAt(double t)
-      {
-        double l0 = _bezier.Subpart(0, t).Length();
-        if (t < 0) l0 = -l0;
-        double diff = l0 -_distance;
-        return diff;
-      }
-    }
-    public override double ParamAt(double distance)
-    {
-      Calc numMath = new Calc(1e-6);
-      ParamAtFct fct = new ParamAtFct(this, distance);
-
-      return numMath.SolveNewton(fct.LengthAt, LengthFactor, distance / Length());
-    }
-    [Obsolete("use ParamAt")]
-    public double ParamAt_(double distance)
-    {
-      double dEpsi = 1e-5;
-      Point t0 = (1.0 / 3.0) * TangentAt(0);
-      Point t1 = (1.0 / 3.0) * TangentAt(1);
-
-      double l0 = Math.Sqrt(t0.OrigDist2());
-      double l1 = Math.Sqrt(t1.OrigDist2());
-
-      return ParamAt(distance, 1, 0, _pStart, t0, l0, 1, _pEnd, t1, l1, dEpsi);
-    }
-    private double ParamAt(double distance, double f,
-      double d0, IPoint p0, Point t0, double l0,
-      double d1, IPoint p1, Point t1, double l1, double dEpsi)
-    {
-      Point f0 = p0 - f * t0;
-      Point f1 = p1 - f * t1;
-      double l2 = Math.Sqrt(f0.Dist2(f1));
-
-      double lMin = Math.Sqrt(PntOp.Dist2(p0, p1));
-
-      double lMax = (l0 + l1 + l2);
-      if (distance > lMax)
-      { return 0; }
-
-      double lMean = (lMax + lMin) / 2.0;
-
-      if (lMean - lMin > dEpsi * lMin)
-      {
-        double dm = (d0 + d1) / 2;
-        Point pm = PointAt(dm);
-        Point tm = (1.0 / 3.0) * TangentAt(dm);
-
-        f /= 2;
-        double lm = Math.Sqrt(tm.OrigDist2()) * f;
-
-        double lSub0 = ParamAt(distance, f, d0, p0, t0, l0 / 2, dm, pm, tm, lm, dEpsi);
-        double lSub1 = ParamAt(distance, f, d0, p0, t0, l0 / 2, dm, pm, tm, lm, dEpsi);
-
-        lMean = lSub0 + lSub1;
-      }
-
-      return lMean;
-    }
-
-    protected override IGeometry ProjectCore(IProjection projection) => Project(projection);
-    public Bezier Project(IProjection projection)
-    {
-      return new Bezier(Start.Project(projection),
-        _p1.Project(projection), _p2.Project(projection),
-        End.Project(projection));
-    }
-
-    public override InnerCurve GetInnerCurve()
-    {
-      return new _InnerCurve(_p1, _p2);
-    }
-
-    public new Bezier Subpart(double t0, double t1)
-    {
-      double dt = (t1 - t0) / 3;
-
-      Point p0 = PointAt(t0);
-      Point p3 = PointAt(t1);
-
-      Point p1 = p0 + dt * TangentAt(t0);
-      Point p2 = p3 - dt * TangentAt(t1);
-
-      return new Bezier(p0, p1, p2, p3);
-    }
-    protected override Curve SubpartCurve(double t0, double t1)
-    { return Subpart(t0, t1); }
-
-    public override Point TangentAt(double param)
-    {
-      AssignParams();
-      int iDim = Dimension;
-
-      Point p0 = Point.Create(iDim);
-
-      for (int i = 0; i < iDim; i++)
-      { p0[i] = _dA1[i] + param * (2 * _dA2[i] + param * 3 * _dA3[i]); }
-      return p0;
-    }
-    public double RadiusAt(double param)
-    {
-      // R(t) = (x'^2 + y'^2)^3/2 / (x'y" - x"y')
-      int iDim = Dimension;
-
-      Point tan = TangentAt(param);
-
-      Point p0 = Point.Create(iDim);
-
-      for (int i = 0; i < iDim; i++)
-      { p0[i] = 2 * _dA2[i] + param * (6 * _dA3[i]); }
-
-      double ds = Math.Pow(tan[0] * tan[0] + tan[1] * tan[1], 1.5);
-      double dn = tan[0] * p0[1] - p0[0] * tan[1];
-
-      double r = ds / dn;
-      return r;
-    }
-
-    public override IList<IPoint> LinApprox(double t0, double t1)
-    {
-      Bezier pPart = Subpart(t0, t1);
-      return new IPoint[] { pPart.Start, pPart._p1, pPart._p2, pPart.End };
     }
 
     private double LengthFactor(double t)
@@ -427,86 +303,64 @@ namespace Basics.Geom
       return Math.Sqrt(TangentAt(t).OrigDist2());
     }
 
-    private void AssignParams()
+    public override InnerCurve GetInnerCurve()
     {
-      //               
-      // P(t) = (1 - t)^3 P0 + 3 t (1 - t)^2 P1 + 3 t^2 (1 - t) P2 + t^3 P1
-      //
-      if (_paramKnown)
-      { return; }
-      int iDim = Dimension;
-
-      _dA0 = new double[iDim];
-      _dA1 = new double[iDim];
-      _dA2 = new double[iDim];
-      _dA3 = new double[iDim];
-
-      for (int i = 0; i < iDim; i++)
-      {
-        _dA0[i] = Start[i];
-        _dA1[i] = 3 * (_p1[i] - Start[i]);
-        _dA3[i] = End[i] - 3 * _p2[i] + _dA1[i] + 2 * _dA0[i];
-        _dA2[i] = End[i] - _dA3[i] - _dA1[i] - _dA0[i];
-      }
-
-      _paramKnown = true;
+      return new _InnerCurve(P1, P2);
     }
 
-    #region IMultipartGeometry Members
-
-    public bool IsContinuous
+    internal Point TangentAtCore(double param, IEnumerable<int> dimensions = null)
     {
-      get { return true; }
+      AssignParams();
+
+      dimensions = dimensions ?? GeometryOperator.GetDimensions(this);
+      List<double> coords = new List<double>();
+
+      foreach (int i in dimensions)
+      { coords.Add(_dA1[i] + param * (2 * _dA2[i] + param * 3 * _dA3[i])); }
+      return Point.Create(coords.ToArray());
     }
+
+    internal double RadiusAtCore(double param, IEnumerable<int> dimensions = null)
+    {
+      dimensions = dimensions ?? GeometryOperator.GetDimensions(this);
+      // R(t) = (x'^2 + y'^2)^3/2 / (x'y" - x"y')
+
+      Point tan = TangentAtCore(param, dimensions);
+
+      List<double> coords = new List<double>();
+
+      foreach (int i in dimensions)
+      { coords.Add(2 * _dA2[i] + param * (6 * _dA3[i])); }
+
+      double ds = Math.Pow(tan[0] * tan[0] + tan[1] * tan[1], 1.5);
+      double dn = tan[0] * coords[1] - coords[0] * tan[1];
+
+      double r = ds / dn;
+      return r;
+    }
+
+    public bool IsContinuous => true;
     public bool HasSubparts
     {
       get
       {
-        if (_bSubpartsKnown)
-        { return _bHasSubparts; }
+        if (this._hasSubparts.HasValue)
+        { return this._hasSubparts.Value; }
 
         AssignParams();
-        _bSubpartsKnown = true;
-        _bHasSubparts = true; // will be overwritten at the end of the method when false
+        _hasSubparts = true; // will be overwritten at the end of the method when false
         for (int iDim = 0; iDim < Dimension; iDim++)
         {
           if (IsMonoton(iDim) == false)
           { return true; }
         }
-        _bHasSubparts = false;
+        _hasSubparts = false;
         return false;
       }
     }
 
-    private bool IsMonoton(int dim)
-    {
-      bool b01 = Start[dim] < _p1[dim];
-      bool b12 = _p1[dim] < _p2[dim];
-      bool b23 = _p2[dim] < End[dim];
-      return ((b01 == b12 && b12 == b23) ||
-        (Start[dim] == _p1[dim] &&
-        (b12 == b23 || _p1[dim] == _p2[dim] || _p2[dim] == End[dim])) ||
-        (_p1[dim] == _p2[dim] &&
-        (b01 == b23 || _p2[dim] == End[dim])) ||
-        (_p2[dim] == End[dim] && b01 == b12));
-    }
+    private bool IsMonoton(int dim) => BezierOp.IsMonoton(this, dim);
 
-    private List<double> PartParams
-    {
-      get
-      {
-        if (_innerCurve != null)
-        { return _innerCurve.PartParams; }
-        else
-        { return _dParts; }
-      }
-      set
-      {
-        _dParts = value;
-        if (_innerCurve != null)
-        { _innerCurve.PartParams = value; }
-      }
-    }
     private List<double> CalcSubparts()
     {
       List<double> pParts = new List<double>();
@@ -541,14 +395,161 @@ namespace Basics.Geom
       return pParts;
     }
 
-    public IEnumerable<Bezier> Subparts()
-    {
-      return new _SubpartsEnumerable(this);
-    }
-    IEnumerable<IGeometry> IMultipartGeometry.Subparts()
-    { return Subparts(); }
+    protected override Curve SubpartCurve(double t0, double t1) => Subpart(t0, t1);
+    public new Bezier Subpart(double t0, double t1) => BezierOp.Subpart(this, t0, t1);
 
-    #endregion
+    public override IList<IPoint> LinApprox(double t0, double t1) => BezierOp.LinApprox(this, t0, t1);
+
+  }
+  public class BezierWrap : BezierCore
+  {
+    public IBezier Bezier { get; }
+    public BezierWrap(IBezier bezier)
+    {
+      Bezier = bezier;
+    }
+    protected override IPoint GetStart() => Bezier.Start;
+    protected override IPoint GetP1() => Bezier.P1;
+    protected override IPoint GetP2() => Bezier.P2;
+    protected override IPoint GetEnd() => Bezier.End;
+
+  }
+
+  public class Bezier : BezierCore
+  {
+    private readonly IPoint _pStart;
+    private readonly IPoint _pEnd;
+    private readonly IPoint _p1;
+    private readonly IPoint _p2;
+
+    public Bezier(IPoint p0, IPoint p1, IPoint p2, IPoint p3)
+    {
+      _pStart = p0;
+      _p1 = p1;
+      _p2 = p2;
+      _pEnd = p3;
+    }
+
+    protected override IPoint GetStart() => _pStart;
+    protected override IPoint GetP1() => _p1;
+    protected override IPoint GetP2() => _p2;
+    protected override IPoint GetEnd() => _pEnd;
+  }
+
+  public static class BezierOp
+  {
+    public static Box GetExtent(IBezier bezier)
+    {
+      Box box = new Box(Point.Create(bezier.Start), Point.Create(bezier.End), true);
+      box.Include(bezier.P1);
+      box.Include(bezier.P2);
+      return box;
+    }
+
+    public static double GetNormedMaxOffset(IBezier bezier)
+    {
+      // TODO: verify
+      Point p = PointOp.Sub(bezier.End, bezier.Start);
+      double l2 = p.OrigDist2();
+      OrthogonalSystem sys = OrthogonalSystem.Create(new IPoint[] { p });
+      double o0 = sys.GetOrthogonal(PointOp.Sub(bezier.P1, bezier.Start)).Length2Epsi / l2;
+      double o1 = sys.GetOrthogonal(PointOp.Sub(bezier.P2, bezier.P1)).Length2Epsi / l2;
+      double o2 = sys.GetOrthogonal(PointOp.Sub(bezier.End, bezier.P2)).Length2Epsi / l2;
+      double maxOffset = Math.Sqrt(o0) + Math.Sqrt(o1) + Math.Sqrt(o2);
+      return maxOffset;
+    }
+
+    public static Bezier Clone(IBezier bezier)
+    {
+      return new Bezier(Point.Create(bezier.Start), Point.Create(bezier.P1),
+        Point.Create(bezier.P2), Point.Create(bezier.End));
+    }
+
+    public static bool EqualGeometry(IBezier x, IBezier o, IEnumerable<int> dimensions = null)
+    {
+      dimensions = dimensions ?? GeometryOperator.GetDimensions(x, o);
+      bool equal =
+        PointOp.EqualGeometry(x.Start, o.Start, dimensions) &&
+        PointOp.EqualGeometry(x.P1, o.P1, dimensions) &&
+        PointOp.EqualGeometry(x.P2, o.P2, dimensions) &&
+        PointOp.EqualGeometry(x.End, o.End, dimensions);
+      return equal;
+    }
+
+    public static BezierCore CastOrWrap(IBezier bezier) => bezier as BezierCore ?? new BezierWrap(bezier);
+
+    public static Bezier Invert(IBezier bezier)
+    {
+      return new Bezier(bezier.End, bezier.P2, bezier.P1, bezier.Start);
+    }
+
+    public static Point PointAt(IBezier bezier, double t, IEnumerable<int> dimensions = null)
+    {
+      BezierCore b = CastOrWrap(bezier);
+      return b.PointAtCore(t, dimensions);
+    }
+
+    public static double Length(IBezier bezier)
+    {
+      BezierCore b = CastOrWrap(bezier);
+      return b.LengthCore();
+    }
+
+    public static double ParamAt(IBezier bezier, double distance)
+    {
+      BezierCore b = CastOrWrap(bezier);
+      return b.ParamAtCore(distance);
+    }
+
+    public static Bezier Project(IBezier bezier, IProjection projection)
+    {
+      return new Bezier(PointOp.Project(bezier.Start, projection),
+        PointOp.Project(bezier.P1, projection), PointOp.Project(bezier.P2, projection),
+        PointOp.Project(bezier.End, projection));
+    }
+
+    public static Bezier Subpart(IBezier bezier, double t0, double t1)
+    {
+      double dt = (t1 - t0) / 3;
+
+      Point p0 = PointAt(bezier, t0);
+      Point p3 = PointAt(bezier, t1);
+
+      Point p1 = p0 + dt * TangentAt(bezier, t0);
+      Point p2 = p3 - dt * TangentAt(bezier, t1);
+
+      return new Bezier(p0, p1, p2, p3);
+    }
+
+    public static Point TangentAt(IBezier bezier, double param, IEnumerable<int> dimensions = null)
+    {
+      BezierCore b = CastOrWrap(bezier);
+      return b.TangentAtCore(param, dimensions);
+    }
+    public static double RadiusAt(IBezier bezier, double param, IEnumerable<int> dimensions = null)
+    {
+      BezierCore b = CastOrWrap(bezier);
+      return b.RadiusAtCore(param, dimensions);
+    }
+
+    public static IList<IPoint> LinApprox(IBezier bezier, double t0, double t1)
+    {
+      Bezier pPart = Subpart(bezier, t0, t1);
+      return new IPoint[] { pPart.Start, pPart.P1, pPart.P2, pPart.End };
+    }
+
+    public static bool IsMonoton(IBezier bezier, int dim)
+    {
+      bool b01 = bezier.Start[dim] < bezier.P1[dim];
+      bool b12 = bezier.P1[dim] < bezier.P2[dim];
+      bool b23 = bezier.P2[dim] < bezier.End[dim];
+      return ((b01 == b12 && b12 == b23) ||
+        (bezier.Start[dim] == bezier.P1[dim] &&
+        (b12 == b23 || bezier.P1[dim] == bezier.P2[dim] || bezier.P2[dim] == bezier.End[dim])) ||
+        (bezier.P1[dim] == bezier.P2[dim] &&
+        (b01 == b23 || bezier.P2[dim] == bezier.End[dim])) ||
+        (bezier.P2[dim] == bezier.End[dim] && b01 == b12));
+    }
   }
 
 }

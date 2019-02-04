@@ -3,7 +3,7 @@ namespace Basics.Geom.Projection
 {
   public class Translate : IProjection
   {
-    private IPoint _translate;
+    private readonly IPoint _translate;
     public Translate(IPoint translate)
     {
       _translate = translate;
@@ -11,7 +11,7 @@ namespace Basics.Geom.Projection
 
     public IPoint Project(IPoint point)
     {
-      return PointOperator.Add(point, _translate);
+      return PointOp.Add(point, _translate);
     }
   }
 }

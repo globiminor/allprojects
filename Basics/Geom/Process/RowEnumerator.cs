@@ -180,8 +180,8 @@ namespace Basics.Geom.Process
         yield break;
       }
 
-      Point min = Point.Create(dim);
-      Point max = Point.Create(dim);
+      Point min = Point.Create_0(dim);
+      Point max = Point.Create_0(dim);
       foreach (var tile in GetTiles(extent, min, max, 0))
       {
         yield return tile;

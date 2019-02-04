@@ -890,12 +890,12 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
       {
         if (_ocadSymbols.TryGetValue(elem.Symbol, out ContourType type))
         {
-          Polyline line = (Polyline)elem.Geometry;
+          Polyline line = ((Ocad.GeoElement.Line)elem.Geometry).BaseGeometry;
           contours.Add(new Contour(elem.Index, line.Linearize(tolerance), type));
         }
         else if (_ocadFallDirSymbols.Contains(elem.Symbol))
         {
-          fallDirs.Add(new FallDir((Point2D)elem.Geometry, elem.Angle));
+          fallDirs.Add(new FallDir(((Ocad.GeoElement.Point)elem.Geometry).BaseGeometry, elem.Angle));
         }
         else
         {
