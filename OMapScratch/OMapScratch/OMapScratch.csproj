@@ -56,7 +56,6 @@
       <Link>Serializer.cs</Link>
     </Compile>
     <Compile Include="Data.Android.cs" />
-    <Compile Include="Data.cs" />
     <Compile Include="ImageLoader.cs" />
     <Compile Include="ViewModels\CompassVm.cs" />
     <Compile Include="ViewModels\LocationVm.cs" />
@@ -141,6 +140,7 @@
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\RotCompass.png" />
   </ItemGroup>
+  <Import Project="..\..\OScratchShared\OScratchShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
      Other similar extension points exist, see Microsoft.Common.targets.

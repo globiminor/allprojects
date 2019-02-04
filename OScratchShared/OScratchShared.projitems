@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>282449a6-0c44-41b9-926b-04eaf832e23d</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>OMapScratch</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ContextAction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Data.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Geometry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Map.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Map.Operations.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MapVm.Actions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MapVm.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Symbol.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Xml.cs" />
+  </ItemGroup>
+</Project>
