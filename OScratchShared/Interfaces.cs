@@ -59,12 +59,51 @@ namespace OMapScratch
     void AppendToText(StringBuilder sb);
   }
 
+  public interface IPathMeasure : System.IDisposable
+  {
+    float Length { get; }
+    Lin GetTangentAt(float dist);
+  }
+
+  public interface IGraphics<T>
+    where T :IPaint
+  {
+    T CreatePaint();
+
+    void Save();
+    void Restore();
+
+    void Translate(float dx, float dy);
+    void Scale(float fx, float fy);
+    void Rotate_(float rad);
+
+    void DrawPath(Curve path, IProjection toLocal, T p);
+    void DrawText(string text, float x0, float y0, T p);
+
+    IPathMeasure GetPathMeasure(Curve path);
+  }
+  public interface IPaint : System.IDisposable
+  {
+    ColorRef Color { set; }
+
+    float StrokeWidth { get; set; }
+    void SetStyle(bool fill, bool stroke);
+    void SetDashEffect(float[] dash, float offset);
+    void ResetPathEffect();
+
+    float TextSize { get; set; }
+    void TextAlignSetCenter();
+  }
+
   public partial interface IDrawable
   {
     IBox Extent { get; }
     string ToText();
     IEnumerable<Pnt> GetVertices();
     IDrawable Project(IProjection prj);
+
+    void Draw<T>(IGraphics<T> canvas, Symbol symbol, MatrixProps matrix, float symbolScale, T paint)
+      where T : IPaint;
   }
 
   public interface IProjection

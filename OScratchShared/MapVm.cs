@@ -199,17 +199,7 @@ namespace OMapScratch
     }
 
     public int ImageCount { get { return _map?.Images?.Count ?? 0; } }
-    public IEnumerable<XmlImage> Images
-    {
-      get
-      {
-        if (_map.Images == null)
-        { yield break; }
-
-        foreach (var img in _map.Images)
-        { yield return img; }
-      }
-    }
+    public IReadOnlyList<GeoImageViews> Images => _map.Images ?? new List<GeoImageViews>();
 
     public IEnumerable<Elem> Elems
     { get { return _map.Elems; } }
@@ -319,6 +309,45 @@ namespace OMapScratch
         Loaded?.Invoke(this, null);
       }
     }
-  }
 
+    public void DrawElems<T>(IGraphics<T> canvas, Box maxExtent,
+      float[] elemMatrixValues, float[] dd, IEnumerable<Elem> elems = null) where T: IPaint
+    {
+      elems = elems ?? Elems;
+      if (elems == null)
+      { return; }
+
+      using (T p = canvas.CreatePaint())
+      {
+        p.TextSize = ElemTextSize;
+        canvas.Save();
+        try
+        {
+          float[] matrix = elemMatrixValues;
+
+          if (dd != null)
+          {
+            matrix = (float[])matrix.Clone();
+            matrix[2] -= dd[0];
+            matrix[5] -= dd[1];
+          }
+
+          float symbolScale = SymbolScale;
+          MatrixProps matrixProps = new MatrixProps(matrix);
+
+          foreach (var elem in elems)
+          {
+            if (!maxExtent.Intersects(elem.Geometry.Extent))
+            { continue; }
+
+            p.Color = elem.Color;
+            elem.Geometry.Draw(canvas, elem.Symbol, matrixProps, symbolScale, p);
+          }
+        }
+        finally
+        { canvas.Restore(); }
+      }
+    }
+
+  }
 }

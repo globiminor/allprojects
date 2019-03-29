@@ -13,7 +13,8 @@ namespace OMapScratch
     private List<ColorRef> _colors;
 
     private Elem _currentCurve;
-    private string _currentImagePath;
+    private IGeoImage _currentGeoImage;
+    private List<GeoImageViews> _images;
 
     private XmlConfig _config;
     private string _configPath;
@@ -21,14 +22,15 @@ namespace OMapScratch
     private XmlWorld _world;
     private float? _declination;
 
+    public IGeoImage CurrentGeoImage => _currentGeoImage;
 
     private Stack<Operation> _undoOps = new Stack<Operation>();
     private Stack<Operation> _redoOps = new Stack<Operation>();
 
     private Stack<Operation> UndoOps => _undoOps ?? (_undoOps = new Stack<Operation>());
-    internal IList<XmlImage> Images
+    internal IReadOnlyList<GeoImageViews> Images
     {
-      get { return _config?.Images; }
+      get { return _images ?? (_images = GeoImage.CreateImages(_config?.Images, GetConfigDir())); }
     }
 
     public const string DefaultScratchImg = "ScratchImg.jpg";
@@ -216,38 +218,9 @@ namespace OMapScratch
       _declination = declination;
     }
 
-    public static string GetWorldPath(string imagePath)
-    {
-      if (string.IsNullOrEmpty(imagePath))
-      { return null; }
-
-      string ext = Path.GetExtension(imagePath);
-      if (string.IsNullOrEmpty(ext) || ext.Length < 3)
-      { return null; }
-
-      string worldExt = $"{ext.Substring(0, 2)}{ext[ext.Length - 1]}w";
-      string worldFile = Path.ChangeExtension(imagePath, worldExt);
-      return worldFile;
-    }
-
     public double[] GetCurrentWorldMatrix()
     {
-      string worldFile = GetWorldPath(_currentImagePath);
-
-      if (worldFile == null || !File.Exists(worldFile))
-      { return null; }
-
-      using (TextReader r = new StreamReader(worldFile))
-      {
-        if (!double.TryParse(r.ReadLine(), out double x00)) return null;
-        if (!double.TryParse(r.ReadLine(), out double x01)) return null;
-        if (!double.TryParse(r.ReadLine(), out double x10)) return null;
-        if (!double.TryParse(r.ReadLine(), out double x11)) return null;
-        if (!double.TryParse(r.ReadLine(), out double dx)) return null;
-        if (!double.TryParse(r.ReadLine(), out double dy)) return null;
-
-        return new double[] { x00, x01, x10, x11, dx, dy };
-      }
+      return _currentGeoImage?.GetWorldMatrix();
     }
 
     public void AddPoint(float x, float y, Symbol sym, ColorRef color)
@@ -339,10 +312,11 @@ namespace OMapScratch
 
     private void Reset()
     {
-      _currentImagePath = null;
+      _currentGeoImage = null;
       _colors = null;
       _symbols = null;
       _elems = null;
+      _images = null;
       _world = null;
       _declination = null;
       _undoOps = new Stack<Operation>();
@@ -522,6 +496,14 @@ namespace OMapScratch
       return fullPath;
     }
 
+    public string GetConfigDir()
+    {
+      if (string.IsNullOrEmpty(_configPath))
+      { return null; }
+      string dir = Path.GetDirectoryName(_configPath);
+
+      return dir;
+    }
     internal string VerifyLocalPath(string path)
     {
       if (string.IsNullOrEmpty(path) || string.IsNullOrEmpty(_configPath))

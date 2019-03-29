@@ -112,7 +112,7 @@ namespace OMapScratch
   }
 
 
-  public static class SymbolUtils
+  public static partial class SymbolUtils
   {
     private static readonly float _fontSize = 12;
 

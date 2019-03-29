@@ -1,11 +1,11 @@
 ﻿using Android.App;
-using Android.Widget;
-using Android.OS;
 using Android.Graphics;
-using Android.Views;
-using OMapScratch.Views;
 using Android.Locations;
+using Android.OS;
+using Android.Views;
+using Android.Widget;
 using OMapScratch.ViewModels;
+using OMapScratch.Views;
 
 namespace OMapScratch
 {
@@ -179,7 +179,7 @@ namespace OMapScratch
             _mapView.ResetMap();
             _mapView.ConstrView.ResetMap();
 
-            map.LoadLocalImage(0);
+            map.LoadLocalImage(0, null, _mapView.Width, _mapView.Height);
           };
           _map = map;
         }
@@ -310,249 +310,27 @@ namespace OMapScratch
 
       LinearLayout lloTools = FindViewById<LinearLayout>(Resource.Id.lloTools);
 
-      Button imageButton = FindViewById<Button>(Resource.Id.btnImages);
-      //ImageButton imageButton = FindViewById<ImageButton>(Resource.Id.btnImages);
-      imageButton.Click += (s, e) => Utils.Try(() =>
-      {
-        _imageList.RemoveAllViews();
-        {
-          foreach (var img in MapVm.Images)
-          {
-            Button btn = new Button(this)
-            { Text = img.Name };
-            RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
-            btn.LayoutParameters = lprams;
-            btn.Click += (bs, be) => Utils.Try(() =>
-            {
-              _imageList.Visibility = ViewStates.Invisible;
-              MapVm.LoadLocalImage(img.Path);
-            });
+      HandleImageButton();
 
-            _imageList.AddView(btn);
-          }
-          _imageList.Visibility = ViewStates.Visible;
-        }
-      });
-      if (!(_mapView?.MapVm?.ImageCount > 1))
+      HandleCurrentMode(lloTools);
+
+      HandleZoom(lloTools);
+
+      HandleOperations(lloTools);
+
+      HandleRotation(lloTools);
+
       {
-        imageButton.Visibility = ViewStates.Gone;
+        View dummy = new View(this);
+        {
+          LinearLayout.LayoutParams lprams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.MatchParent, 1f);
+          dummy.LayoutParameters = lprams;
+        }
+        lloTools.AddView(dummy);
       }
 
-      {
-        _btnCurrentMode = new ModeButton(this, new SymbolButton(MapVm.GetSymbols()[0], this));
-        _btnCurrentMode.SetMinimumWidth(50);
-        RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-        _btnCurrentMode.LayoutParameters = lprams;
-        _btnCurrentMode.Id = View.GenerateViewId();
+      HandleLocation(lloTools);
 
-        _btnCurrentMode.Click += (s, e) => Utils.Try(() =>
-        {
-          _setModeFct = null;
-          MapView.ResetContextMenu(clearMenu: true);
-          MapVm.CommitCurrentOperation();
-          if (_symbolGrid.Visibility == ViewStates.Visible)
-          {
-            _symbolGrid.Visibility = ViewStates.Invisible;
-          }
-          else
-          {
-            ShowSymbols((btn) =>
-            {
-              _btnCurrentMode.CurrentMode = btn;
-              _btnCurrentMode.PostInvalidate();
-            });
-            _symbolGrid.Visibility = ViewStates.Visible;
-          }
-        });
-
-        lloTools.AddView(_btnCurrentMode);
-      }
-
-      {
-
-        float dScale = 1.5f;
-        {
-          ImageButton btnZoomIn = new ImageButton(this);
-          btnZoomIn.SetBackgroundResource(Resource.Drawable.ZoomIn);
-          {
-            RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-            lprams.MarginStart = (int)(0.2 * Utils.GetMmPixel(btnZoomIn));
-            btnZoomIn.LayoutParameters = lprams;
-          }
-          btnZoomIn.Id = View.GenerateViewId();
-          btnZoomIn.Click += (s, a) =>
-          {
-            _mapView.Scale(dScale);
-            _mapView.PostInvalidate();
-          };
-          lloTools.AddView(btnZoomIn);
-        }
-        {
-          ImageButton btnZoomOut = new ImageButton(this);
-          btnZoomOut.SetBackgroundResource(Resource.Drawable.ZoomOut);
-          {
-            RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-            lprams.MarginStart = (int)(0.2 * Utils.GetMmPixel(btnZoomOut));
-            btnZoomOut.LayoutParameters = lprams;
-          }
-          btnZoomOut.Id = View.GenerateViewId();
-          btnZoomOut.Click += (s, a) =>
-          {
-            _mapView.Scale(1 / dScale);
-          };
-          lloTools.AddView(btnZoomOut);
-        }
-
-        {
-          ImageButton btnUndo = new ImageButton(this);
-          btnUndo.SetBackgroundResource(Resource.Drawable.Undo);
-          {
-            RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-            lprams.MarginStart = (int)(0.2 * Utils.GetMmPixel(btnUndo));
-            btnUndo.LayoutParameters = lprams;
-          }
-          btnUndo.Id = View.GenerateViewId();
-          btnUndo.Click += (s, a) => Utils.Try(() =>
-          {
-            MapVm.Undo();
-            _mapView.PostInvalidate();
-          });
-          lloTools.AddView(btnUndo);
-        }
-
-        {
-          ImageButton btnRedo = new ImageButton(this);
-          btnRedo.SetBackgroundResource(Resource.Drawable.Redo);
-          {
-            RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-            lprams.MarginStart = (int)(0.2 * Utils.GetMmPixel(btnRedo));
-            btnRedo.LayoutParameters = lprams;
-          }
-          btnRedo.Id = View.GenerateViewId();
-          btnRedo.Click += (s, a) => Utils.Try(() =>
-          {
-            MapVm.Redo();
-            _mapView.PostInvalidate();
-          });
-          lloTools.AddView(btnRedo);
-        }
-
-        //{
-        //  chkDrawOnly = new CheckBox(this);
-        //  RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-        //  chkDrawOnly.LayoutParameters = lprams;
-        //  chkDrawOnly.Text = " ";
-        //  chkDrawOnly.SetButtonDrawable(Resource.Drawable.ExtentMove);
-        //  chkDrawOnly.Click += (s, e) =>
-        //  {
-        //    chkDrawOnly.Text = " ";
-        //    if (chkDrawOnly.Checked)
-        //    {
-        //      chkDrawOnly.SetButtonDrawable(Resource.Drawable.ExtentFix);
-        //    }
-        //    else
-        //    {
-        //      chkDrawOnly.SetButtonDrawable(Resource.Drawable.ExtentMove);
-        //    }
-        //  };
-
-        //  chkDrawOnly.Id = View.GenerateViewId();
-
-        //  lloTools.AddView(chkDrawOnly);
-        //}
-
-        {
-          ImageButton btnRotation = new ImageButton(this);
-          {
-            RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-            lprams.MarginStart = (int)(0.2 * Utils.GetMmPixel(btnRotation));
-            btnRotation.LayoutParameters = lprams;
-          }
-          btnRotation.SetBackgroundResource(ImageLoader.GetResource(Settings.DrawOption));
-          btnRotation.Click += (s, e) =>
-          {
-            if (_rotateGrid.Visibility == ViewStates.Visible)
-            {
-              _rotateGrid.Visibility = ViewStates.Invisible;
-              return;
-            }
-
-            if (Settings.DrawOption == DrawOptions.DetailUR)
-            {
-              Settings.DrawOption = DrawOptions.DetailLL;
-              Settings.DetailUR = false;
-              btnRotation.SetBackgroundResource(ImageLoader.GetResource(Settings.DrawOption));
-            }
-            else if (Settings.DrawOption == DrawOptions.DetailLL)
-            {
-              Settings.DrawOption = DrawOptions.DetailUR;
-              Settings.DetailUR = true;
-              btnRotation.SetBackgroundResource(ImageLoader.GetResource(Settings.DrawOption));
-            }
-            else
-            {
-              _rotateGrid.Apply(Settings.DrawOption);
-            }
-          };
-          btnRotation.LongClick += (s, e) =>
-          {
-            _rotateGrid.ShowAll(btnRotation);
-            _rotateGrid.Visibility = ViewStates.Visible;
-            _rotateGrid.PostInvalidate();
-          };
-
-          btnRotation.Id = View.GenerateViewId();
-
-          lloTools.AddView(btnRotation);
-
-          {
-            _rotateGrid = new RotateModeGrid(this);
-            {
-              RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-              lprams.AddRule(LayoutRules.Below, Resource.Id.lloTools);
-              _rotateGrid.LayoutParameters = lprams;
-            }
-            _rotateGrid.Init();
-            _rotateGrid.Visibility = ViewStates.Invisible;
-            _parentLayout.AddView(_rotateGrid);
-          }
-
-        }
-
-        {
-          View dummy = new View(this);
-          {
-            LinearLayout.LayoutParams lprams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.MatchParent, 1f);
-            dummy.LayoutParameters = lprams;
-          }
-          lloTools.AddView(dummy);
-        }
-
-        {
-          ImageButton btnLoc = new ImageButton(this);
-          btnLoc.SetBackgroundResource(Resource.Drawable.Location);
-          {
-            RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-            btnLoc.LayoutParameters = lprams;
-          }
-          btnLoc.Id = View.GenerateViewId();
-          btnLoc.Click += (s, a) => Utils.Try(() =>
-          {
-            Pnt pnt = MapView.GetCurrentMapLocation();
-            if (pnt != null)
-            {
-              _btnCurrentMode.MapClicked(pnt.X, pnt.Y);
-              MapView.PostInvalidate();
-            }
-            else
-            {
-              MapView.ShowText("Unknown location. Ensure location is active and set", false);
-            }
-          });
-          lloTools.AddView(btnLoc);
-        }
-
-      }
 
       MotionListener listener = new MotionListener(this);
       _mapView.LongClickable = true;
@@ -594,10 +372,357 @@ namespace OMapScratch
 
       {
         if (MapVm.CurrentImage == null)
-        { ShowBrowser(); }
+        {
+          // Check and request permissions
+          System.Collections.Generic.List<string> missingPermissions = new System.Collections.Generic.List<string>();
+          foreach (string permission in new[] { Android.Manifest.Permission.WriteExternalStorage, Android.Manifest.Permission.AccessFineLocation })
+          {
+            if (CheckSelfPermission(permission) != (int)Android.Content.PM.Permission.Granted)
+            { missingPermissions.Add(permission); }
+          }
+          if (missingPermissions.Count > 0)
+          {
+            RequestPermissions(missingPermissions.ToArray(), (int)Android.Content.PM.Permission.Granted);
+            // -> completed in OnRequestPermissionsResult
+          }
+          else
+          {
+            Utils.Try(ShowBrowser);
+          }
+        }
         else
         { MapVm.RefreshImage(); }
       }
+    }
+
+    [System.Obsolete("Refactor for multiple Images")]
+    private void HandleImageButton()
+    {
+      Button imageButton = FindViewById<Button>(Resource.Id.btnImages);
+      //ImageButton imageButton = FindViewById<ImageButton>(Resource.Id.btnImages);
+      imageButton.Click += (s, e) => Utils.Try(() =>
+      {
+        _imageList.RemoveAllViews();
+        {
+          foreach (var imgViews in MapVm.Images)
+          {
+            LinearLayout imgLayout = new LinearLayout(this)
+            { Orientation = Orientation.Horizontal };
+            {
+              RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
+              imgLayout.LayoutParameters = lprams;
+            }
+
+            {
+              Button defaultBtn = new Button(this)
+              { Text = imgViews.BaseImage.Name };
+              {
+                RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+                lprams.Width = (int)(30 * Utils.GetMmPixel(defaultBtn));
+                defaultBtn.LayoutParameters = lprams;
+              }
+              defaultBtn.Click += (bs, be) => Utils.Try(() =>
+              {
+                _imageList.Visibility = ViewStates.Invisible;
+                MapVm.LoadLocalImage(imgViews.DefaultView, _mapView.InversElemMatrix, _mapView.Width, _mapView.Height);
+              });
+              imgLayout.AddView(defaultBtn);
+            }
+
+            for (int idx = 1; idx < imgViews.Views.Count; idx++)
+            {
+              ImgViewButton imgBtn = new ImgViewButton(this)
+              { Text = $"{idx}", GeoImage = imgViews.Views[idx] };
+              {
+                RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+                lprams.Width = (int)(7 * Utils.GetMmPixel(imgBtn));
+                imgBtn.LayoutParameters = lprams;
+              }
+              imgBtn.Click += (bs, be) => Utils.Try(() =>
+              {
+                _imageList.Visibility = ViewStates.Invisible;
+                MapVm.LoadLocalImage(imgBtn.GeoImage, _mapView.InversElemMatrix, _mapView.Width, _mapView.Height);
+              });
+              imgBtn.LongClick += (bs, be) => Utils.Try(() =>
+              {
+                _imageList.Visibility = ViewStates.Invisible;
+                //              Configure image;
+              });
+              imgLayout.AddView(imgBtn);
+            }
+            {
+              Button addBtn = new ImgViewButton(this)
+              { Text = "+" };
+              {
+                RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.FillParent);
+                lprams.Width = (int)(7 * Utils.GetMmPixel(addBtn));
+                addBtn.LayoutParameters = lprams;
+              }
+              addBtn.Click += (bs, be) => Utils.Try(() =>
+              {
+                _imageList.Visibility = ViewStates.Invisible;
+                float[] pnt = new float[] { 0, 0 };
+                _mapView.InversElemMatrix.MapPoints(pnt);
+                float[] mtr = new float[9];
+                _mapView.InversElemMatrix.GetValues(mtr);
+                double[] offset = MapVm.GetOffset();
+
+                ImageConfigView configView = new ImageConfigView(_parentLayout, null, imgViews, MapVm.Images,
+                  new MatrixPrj(new double[] { mtr[0], -mtr[1], mtr[3], -mtr[4], offset[0] + pnt[0], offset[1] - pnt[1] }));
+                {
+                  RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
+                  //lprams.TopMargin = 800;
+                  configView.LayoutParameters = lprams;
+                }
+                _parentLayout.AddView(configView);
+                //         Create and     Configure image;
+              });
+              imgLayout.AddView(addBtn);
+            }
+
+
+            _imageList.AddView(imgLayout);
+          }
+          _imageList.Visibility = ViewStates.Visible;
+        }
+      });
+      if (!(_mapView?.MapVm?.ImageCount > 1))
+      {
+        imageButton.Visibility = ViewStates.Gone;
+      }
+    }
+
+    private void HandleCurrentMode(LinearLayout lloTools)
+    {
+      _btnCurrentMode = new ModeButton(this, new SymbolButton(MapVm.GetSymbols()[0], this));
+      _btnCurrentMode.SetMinimumWidth(50);
+      RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+      _btnCurrentMode.LayoutParameters = lprams;
+      _btnCurrentMode.Id = View.GenerateViewId();
+
+      _btnCurrentMode.Click += (s, e) => Utils.Try(() =>
+      {
+        _setModeFct = null;
+        MapView.ResetContextMenu(clearMenu: true);
+        MapVm.CommitCurrentOperation();
+        if (_symbolGrid.Visibility == ViewStates.Visible)
+        {
+          _symbolGrid.Visibility = ViewStates.Invisible;
+        }
+        else
+        {
+          ShowSymbols((btn) =>
+          {
+            _btnCurrentMode.CurrentMode = btn;
+            _btnCurrentMode.PostInvalidate();
+          });
+          _symbolGrid.Visibility = ViewStates.Visible;
+        }
+      });
+
+      lloTools.AddView(_btnCurrentMode);
+    }
+
+    private void HandleZoom(LinearLayout lloTools)
+    {
+      float dScale = 1.5f;
+      {
+        ImageButton btnZoomIn = new ImageButton(this);
+        btnZoomIn.SetBackgroundResource(Resource.Drawable.ZoomIn);
+        {
+          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+          lprams.MarginStart = (int)(0.2 * Utils.GetMmPixel(btnZoomIn));
+          btnZoomIn.LayoutParameters = lprams;
+        }
+        btnZoomIn.Id = View.GenerateViewId();
+        btnZoomIn.Click += (s, a) =>
+        {
+          _mapView.Scale(dScale);
+          _mapView.PostInvalidate();
+        };
+        lloTools.AddView(btnZoomIn);
+      }
+      {
+        ImageButton btnZoomOut = new ImageButton(this);
+        btnZoomOut.SetBackgroundResource(Resource.Drawable.ZoomOut);
+        {
+          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+          lprams.MarginStart = (int)(0.2 * Utils.GetMmPixel(btnZoomOut));
+          btnZoomOut.LayoutParameters = lprams;
+        }
+        btnZoomOut.Id = View.GenerateViewId();
+        btnZoomOut.Click += (s, a) =>
+        {
+          _mapView.Scale(1 / dScale);
+        };
+        lloTools.AddView(btnZoomOut);
+      }
+
+    }
+
+    private void HandleOperations(LinearLayout lloTools)
+    {
+      {
+        ImageButton btnUndo = new ImageButton(this);
+        btnUndo.SetBackgroundResource(Resource.Drawable.Undo);
+        {
+          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+          lprams.MarginStart = (int)(0.2 * Utils.GetMmPixel(btnUndo));
+          btnUndo.LayoutParameters = lprams;
+        }
+        btnUndo.Id = View.GenerateViewId();
+        btnUndo.Click += (s, a) => Utils.Try(() =>
+        {
+          MapVm.Undo();
+          _mapView.PostInvalidate();
+        });
+        lloTools.AddView(btnUndo);
+      }
+
+      {
+        ImageButton btnRedo = new ImageButton(this);
+        btnRedo.SetBackgroundResource(Resource.Drawable.Redo);
+        {
+          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+          lprams.MarginStart = (int)(0.2 * Utils.GetMmPixel(btnRedo));
+          btnRedo.LayoutParameters = lprams;
+        }
+        btnRedo.Id = View.GenerateViewId();
+        btnRedo.Click += (s, a) => Utils.Try(() =>
+        {
+          MapVm.Redo();
+          _mapView.PostInvalidate();
+        });
+        lloTools.AddView(btnRedo);
+      }
+
+    }
+
+    private void HandleRotation(LinearLayout lloTools)
+    {
+      //{
+      //  chkDrawOnly = new CheckBox(this);
+      //  RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+      //  chkDrawOnly.LayoutParameters = lprams;
+      //  chkDrawOnly.Text = " ";
+      //  chkDrawOnly.SetButtonDrawable(Resource.Drawable.ExtentMove);
+      //  chkDrawOnly.Click += (s, e) =>
+      //  {
+      //    chkDrawOnly.Text = " ";
+      //    if (chkDrawOnly.Checked)
+      //    {
+      //      chkDrawOnly.SetButtonDrawable(Resource.Drawable.ExtentFix);
+      //    }
+      //    else
+      //    {
+      //      chkDrawOnly.SetButtonDrawable(Resource.Drawable.ExtentMove);
+      //    }
+      //  };
+
+      //  chkDrawOnly.Id = View.GenerateViewId();
+
+      //  lloTools.AddView(chkDrawOnly);
+      //}
+
+      {
+        ImageButton btnRotation = new ImageButton(this);
+        {
+          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+          lprams.MarginStart = (int)(0.2 * Utils.GetMmPixel(btnRotation));
+          btnRotation.LayoutParameters = lprams;
+        }
+        btnRotation.SetBackgroundResource(ImageLoader.GetResource(Settings.DrawOption));
+        btnRotation.Click += (s, e) =>
+        {
+          if (_rotateGrid.Visibility == ViewStates.Visible)
+          {
+            _rotateGrid.Visibility = ViewStates.Invisible;
+            return;
+          }
+
+          if (Settings.DrawOption == DrawOptions.DetailUR)
+          {
+            Settings.DrawOption = DrawOptions.DetailLL;
+            Settings.DetailUR = false;
+            btnRotation.SetBackgroundResource(ImageLoader.GetResource(Settings.DrawOption));
+          }
+          else if (Settings.DrawOption == DrawOptions.DetailLL)
+          {
+            Settings.DrawOption = DrawOptions.DetailUR;
+            Settings.DetailUR = true;
+            btnRotation.SetBackgroundResource(ImageLoader.GetResource(Settings.DrawOption));
+          }
+          else
+          {
+            _rotateGrid.Apply(Settings.DrawOption);
+          }
+        };
+        btnRotation.LongClick += (s, e) =>
+        {
+          _rotateGrid.ShowAll(btnRotation);
+          _rotateGrid.Visibility = ViewStates.Visible;
+          _rotateGrid.PostInvalidate();
+        };
+
+        btnRotation.Id = View.GenerateViewId();
+
+        lloTools.AddView(btnRotation);
+
+        {
+          _rotateGrid = new RotateModeGrid(this);
+          {
+            RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+            lprams.AddRule(LayoutRules.Below, Resource.Id.lloTools);
+            _rotateGrid.LayoutParameters = lprams;
+          }
+          _rotateGrid.Init();
+          _rotateGrid.Visibility = ViewStates.Invisible;
+          _parentLayout.AddView(_rotateGrid);
+        }
+
+      }
+
+    }
+
+    private void HandleLocation(LinearLayout lloTools)
+    {
+      ImageButton btnLoc = new ImageButton(this);
+      btnLoc.SetBackgroundResource(Resource.Drawable.Location);
+      {
+        RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+        btnLoc.LayoutParameters = lprams;
+      }
+      btnLoc.Id = View.GenerateViewId();
+      btnLoc.Click += (s, a) => Utils.Try(() =>
+      {
+        Pnt pnt = MapView.GetCurrentMapLocation();
+        if (pnt != null)
+        {
+          _btnCurrentMode.MapClicked(pnt.X, pnt.Y);
+          MapView.PostInvalidate();
+        }
+        else
+        {
+          MapView.ShowText("Unknown location. Ensure location is active and set", false);
+        }
+      });
+      lloTools.AddView(btnLoc);
+    }
+
+    public override void OnRequestPermissionsResult(int requestCode, string[] permissions,
+      [Android.Runtime.GeneratedEnum] Android.Content.PM.Permission[] grantResults)
+    {
+      base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+      Utils.Try(ShowBrowser);
+    }
+
+    private async System.Threading.Tasks.Task RequestPerms(string[] missingPermissions)
+    {
+      if (missingPermissions.Length <= 0)
+      {
+        return;
+      }
+      await System.Threading.Tasks.Task.Run(() => RequestPermissions(missingPermissions, (int)Android.Content.PM.Permission.Granted));
     }
 
     private void ShowBrowser()

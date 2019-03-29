@@ -17,6 +17,8 @@
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
     <TargetFrameworkVersion>v7.1</TargetFrameworkVersion>
     <AndroidManifest>Properties\AndroidManifest.xml</AndroidManifest>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -29,6 +31,9 @@
     <AndroidUseSharedRuntime>True</AndroidUseSharedRuntime>
     <AndroidLinkMode>None</AndroidLinkMode>
     <EmbedAssembliesIntoApk>False</EmbedAssembliesIntoApk>
+    <AotAssemblies>false</AotAssemblies>
+    <EnableLLVM>false</EnableLLVM>
+    <BundleAssemblies>false</BundleAssemblies>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>PdbOnly</DebugType>
@@ -56,6 +61,7 @@
       <Link>Serializer.cs</Link>
     </Compile>
     <Compile Include="Data.Android.cs" />
+    <Compile Include="GeoImage.Android.cs" />
     <Compile Include="ImageLoader.cs" />
     <Compile Include="ViewModels\CompassVm.cs" />
     <Compile Include="ViewModels\LocationVm.cs" />
@@ -65,9 +71,12 @@
     <Compile Include="Settings.cs" />
     <Compile Include="ViewModels\ConstrVm.cs" />
     <Compile Include="Views\ActionButton.cs" />
+    <Compile Include="Views\Bindings.cs" />
     <Compile Include="Views\ConstrView.cs" />
     <Compile Include="Views\ContextMenuView.cs" />
     <Compile Include="Views\FileBrowser.cs" />
+    <Compile Include="Views\Graphics.cs" />
+    <Compile Include="Views\ImageConfigView.cs" />
     <Compile Include="Views\MapView.cs" />
     <Compile Include="Views\MotionListener.cs" />
     <Compile Include="Views\RecentFileBrowser.cs" />

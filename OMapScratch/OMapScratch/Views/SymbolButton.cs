@@ -1,6 +1,5 @@
 using Android.Graphics;
 using Android.Widget;
-using System.Collections.Generic;
 
 namespace OMapScratch.Views
 {
@@ -101,9 +100,10 @@ namespace OMapScratch.Views
 
     internal override void OnDrawCore(MapButton canvasOwner, Canvas canvas)
     {
-      using (Paint p = new Paint())
+      Graphics gr = new Graphics(canvas);
+      using (GraphicsPaint p = gr.CreatePaint())
       {
-        p.Color = Color.White;
+        p.Paint.Color = Color.White;
 
         canvas.Save();
         try
@@ -111,7 +111,7 @@ namespace OMapScratch.Views
           float width = canvasOwner.Width;
           float height = canvasOwner.Height;
           canvas.Translate(width / 2, height / 2);
-          SymbolUtils.DrawCurve(canvas, Arrow, null, 3, false, true, p);
+          SymbolUtils.DrawCurve(gr, Arrow, null, p, 3, false, true);
         }
         finally
         { canvas.Restore(); }
@@ -140,7 +140,7 @@ namespace OMapScratch.Views
     internal override void OnDrawCore(MapButton canvasOwner, Canvas canvas)
     {
       //base.OnDraw(canvas);
-      Utils.DrawSymbol(canvas, Symbol, Color.Color, canvasOwner.Width, canvasOwner.Height, 2);
+      Utils.DrawSymbol(new Graphics(canvas), Symbol, Color.Color, canvasOwner.Width, canvasOwner.Height, 2);
     }
   }
 
@@ -163,4 +163,22 @@ namespace OMapScratch.Views
       { base.OnLayout(changed, left, top, right, bottom); }
     }
   }
+
+  public class ImgViewButton : Button
+  {
+    public ImgViewButton(Android.Content.Context context)
+  : base(context)
+    { }
+
+    public IGeoImage GeoImage { get; set; }
+
+    protected sealed override void OnLayout(bool changed, int left, int top, int right, int bottom)
+    {
+      if (right - left > bottom - top)
+      { SetWidth(bottom - top); }
+      else
+      { base.OnLayout(changed, left, top, right, bottom); }
+    }
+  }
+
 }

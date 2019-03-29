@@ -1,7 +1,7 @@
 using System;
-using System.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 
 namespace Grid
 {
@@ -91,21 +91,9 @@ namespace Grid
       }
     }
 
-    public static void GridToTif(IntGrid grd, string name, byte[] r = null, byte[] g = null, byte[] b = null)
+    public static void WriteTiffWorldFile(BaseGrid grd, string name)
     {
-      if (r == null)
-      {
-        r = new byte[256];
-        g = new byte[256];
-        b = new byte[256];
-        Common.InitColors(r, g, b);
-      }
-
-      Encoder pEnc = Encoder.SaveFlag;
-      EncoderParameters pEncParams = new EncoderParameters();
-      pEncParams.Param[0] = new EncoderParameter(pEnc, (long)EncoderValue.CompressionLZW);
-
-      string tfw = Path.Combine( Path.GetDirectoryName(name),
+      string tfw = Path.Combine(Path.GetDirectoryName(name),
         Path.GetFileNameWithoutExtension(name) + ".tfw");
       using (TextWriter tfwWriter = new StreamWriter(tfw))
       using (new InvariantCulture())
@@ -117,48 +105,69 @@ namespace Grid
         tfwWriter.WriteLine(grd.Extent.X0);
         tfwWriter.WriteLine(grd.Extent.Y0);
       }
+    }
+    public static void GridToTif(IntGrid grd, string name, byte[] r = null, byte[] g = null, byte[] b = null)
+    {
+      WriteTiffWorldFile(grd, name);
 
-      FileStream pFile = new FileStream(name, FileMode.Create);
-      try
-      {
-        ImageFormat pFormat = ImageFormat.Tiff;
-        int Width = grd.Extent.Nx;
-        int Height = grd.Extent.Ny;
-        int nColors = r.GetLength(0);
-        if (nColors > 256)
+      int width = grd.Extent.Nx;
+      int height = grd.Extent.Ny;
+      GridToTif(name, width, height,
+        getValue: (col, row) =>
         {
-          nColors = 256;
-        }
+          int iVal = grd[col, row];
+          return (byte)iVal;
+        },
+        r: r, g: g, b: b);
+    }
 
-        Bitmap pBitmap = new Bitmap(Width, Height, PixelFormat.Format8bppIndexed);
-        BitmapData pData = pBitmap.LockBits(new Rectangle(0, 0, Width, Height),
-          ImageLockMode.WriteOnly, PixelFormat.Format8bppIndexed);
+    public static void GridToTif(string name, int width, int height, Func<int, int, byte> getValue,
+      byte[] r = null, byte[] g = null, byte[] b = null)
+    {
+      if (r == null)
+      {
+        r = new byte[256];
+        g = new byte[256];
+        b = new byte[256];
+        Common.InitColors(r, g, b);
+      }
 
+      int nColors = r.GetLength(0);
+      if (nColors > 256)
+      {
+        nColors = 256;
+      }
+
+      using (Bitmap bitmap = new Bitmap(width, height, PixelFormat.Format8bppIndexed))
+      {
         // It seems Bitmap.Palette does not return the instance of the bitmap palette (if this exists) but derives
         // the "get" palette from internal properties
         // Therefore, get the palette standalone, assign the colors and set the Bitmap.Palette afterwards
-        ColorPalette pPalette = pBitmap.Palette;
+        ColorPalette palette = bitmap.Palette;
         for (int i = 0; i < nColors; i++)
         {
-          pPalette.Entries[i] = Color.FromArgb(r[i], g[i], b[i]);
+          palette.Entries[i] = Color.FromArgb(r[i], g[i], b[i]);
         }
-        pBitmap.Palette = pPalette;
+        bitmap.Palette = palette;
 
+
+        BitmapData data = bitmap.LockBits(new Rectangle(0, 0, width, height),
+          ImageLockMode.WriteOnly, PixelFormat.Format8bppIndexed);
 
         // Write to the temporary buffer that is provided by LockBits.
         // Copy the pixels from the source image in this loop.
         // Because you want an index, convert RGB to the appropriate
         // palette index here.
-        IntPtr pPixel = pData.Scan0;
+        IntPtr pixels = data.Scan0;
 
         unsafe
         {
           // Get the pointer to the image bits.
           // This is the unsafe operation.
-          byte* pBits;
-          if (pData.Stride > 0)
+          byte* bytes;
+          if (data.Stride > 0)
           {
-            pBits = (byte*)pPixel.ToPointer();
+            bytes = (byte*)pixels.ToPointer();
           }
           else
           {
@@ -166,40 +175,113 @@ namespace Grid
             // scanline in the buffer. To normalize the loop, obtain
             // a pointer to the front of the buffer that is located
             // (Height-1) scanlines previous.
-            pBits = (byte*)pPixel.ToPointer() + pData.Stride * (pBitmap.Height - 1);
+            bytes = (byte*)pixels.ToPointer() + data.Stride * (bitmap.Height - 1);
           }
-          uint stride = (uint)Math.Abs(pData.Stride);
+          uint stride = (uint)Math.Abs(data.Stride);
 
-          for (int row = 0; row < Height; row++)
+          for (int row = 0; row < height; row++)
           {
-            for (int col = 0; col < Width; col++)
+            for (int col = 0; col < width; col++)
             {
+              byte val = getValue(col, row);
+
               // The destination pixel.
               // The pointer to the color index byte of the
               // destination; this real pointer causes this
               // code to be considered unsafe.
-              byte* p8bppPixel = pBits + row * stride + col;
-
-              int iVal = grd[col, row];
-
-              byte val = (byte)iVal;
+              byte* p8bppPixel = bytes + row * stride + col;
               *p8bppPixel = val;
-
             }
           }
         } /* end unsafe */
 
         // To commit the changes, unlock the portion of the bitmap.
-        pBitmap.UnlockBits(pData);
+        bitmap.UnlockBits(data);
 
-        pBitmap.Save(pFile, pFormat);
+        using (FileStream file = new FileStream(name, FileMode.Create))
+        {
+          ImageFormat format = ImageFormat.Tiff;
 
-        pBitmap.Dispose(); // free resources
-      }
-      finally
-      {
-        pFile.Close();
+          //Encoder enc = Encoder.SaveFlag;
+          //EncoderParameters encPars = new EncoderParameters();
+          //encPars.Param[0] = new EncoderParameter(enc, (long)EncoderValue.CompressionLZW);
+
+          bitmap.Save(file, format);
+        }
       }
     }
+
+    public static void GridToTif(string name, int width, int height, 
+      Func<int, int, byte> getRValue, Func<int, int, byte> getGValue)
+    {
+      using (Bitmap bitmap = new Bitmap(width, height, PixelFormat.Format32bppArgb))
+      {
+        BitmapData data = bitmap.LockBits(new Rectangle(0, 0, width, height),
+          ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+
+        // Write to the temporary buffer that is provided by LockBits.
+        // Copy the pixels from the source image in this loop.
+        // Because you want an index, convert RGB to the appropriate
+        // palette index here.
+        IntPtr pixels = data.Scan0;
+
+        unsafe
+        {
+          // Get the pointer to the image bits.
+          // This is the unsafe operation.
+          byte* bytes;
+          if (data.Stride > 0)
+          {
+            bytes = (byte*)pixels.ToPointer();
+          }
+          else
+          {
+            // If the Stride is negative, Scan0 points to the last
+            // scanline in the buffer. To normalize the loop, obtain
+            // a pointer to the front of the buffer that is located
+            // (Height-1) scanlines previous.
+            bytes = (byte*)pixels.ToPointer() + data.Stride * (bitmap.Height - 1);
+          }
+          uint stride = (uint)Math.Abs(data.Stride);
+
+          for (int row = 0; row < height; row++)
+          {
+            for (int col = 0; col < width; col++)
+            {
+              byte rVal = getRValue(col, row);
+              byte bVal = getGValue(col, row);
+
+              // The destination pixel.
+              // The pointer to the color index byte of the
+              // destination; this real pointer causes this
+              // code to be considered unsafe.
+              {
+                byte* p8bppPixel = bytes + row * stride + 4 * col + 1;
+                *p8bppPixel = rVal;
+              }
+              {
+                byte* p8bppPixel = bytes + row * stride + 4 * col + 2;
+                *p8bppPixel = bVal;
+              }
+            }
+          }
+        } /* end unsafe */
+
+        // To commit the changes, unlock the portion of the bitmap.
+        bitmap.UnlockBits(data);
+
+        using (FileStream file = new FileStream(name, FileMode.Create))
+        {
+          //Encoder enc = Encoder.SaveFlag;
+          //EncoderParameters encPars = new EncoderParameters();
+          //encPars.Param[0] = new EncoderParameter(enc, (long)EncoderValue.CompressionLZW);
+
+          ImageFormat format = ImageFormat.Tiff;
+
+          bitmap.Save(file, format);
+        }
+      }
+    }
+
   }
 }

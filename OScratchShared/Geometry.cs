@@ -97,17 +97,6 @@ namespace OMapScratch
       return clone;
     }
 
-    public Pnt Trans(float[] matrix)
-    {
-      Pnt trans = Clone();
-      if (matrix == null)
-      { return trans; }
-
-      trans.X = matrix[0] * X + matrix[1] * Y + matrix[2];
-      trans.Y = matrix[3] * X + matrix[4] * Y + matrix[5];
-      return trans;
-    }
-
     Pnt IBox.Min { get { return this; } }
     Pnt IBox.Max { get { return this; } }
 
@@ -138,6 +127,12 @@ namespace OMapScratch
     {
       yield return new Pnt { X = X, Y = Y };
     }
+
+    void IDrawable.Draw<T>(IGraphics<T> canvas, Symbol symbol, MatrixProps matrix, float symbolScale, T paint)
+    {
+      SymbolUtils.DrawPoint(canvas, symbol, matrix, symbolScale, this, paint);
+    }
+
   }
 
   public partial class Lin : ISegment
@@ -462,6 +457,8 @@ namespace OMapScratch
 
     private float _tx, _ty;
 
+    public Curve MoveTo(Pnt pnt) => MoveTo(pnt.X, pnt.Y);
+    public Curve MoveTo(double[] xy) => MoveTo((float)xy[0], (float)xy[1]);
     public Curve MoveTo(float x, float y)
     {
       _tx = x;
@@ -531,7 +528,7 @@ namespace OMapScratch
         return new Pnt { X = _tx, Y = _ty };
       }
     }
-    public void Append(ISegment segment)
+    public Curve Append(ISegment segment)
     {
       Add(segment);
       Pnt end = segment.To;
@@ -539,8 +536,11 @@ namespace OMapScratch
       _ty = end.Y;
 
       _extent = null;
+      return this;
     }
 
+    public Curve LineTo(Pnt pnt) => LineTo(pnt.X, pnt.Y);
+    public Curve LineTo(double[] xy) => LineTo((float)xy[0], (float)xy[1]);
     public Curve LineTo(float x, float y)
     {
       Add(new Lin { From = new Pnt { X = _tx, Y = _ty }, To = new Pnt { X = x, Y = y } });
@@ -635,6 +635,89 @@ namespace OMapScratch
       { flip.Add(seg.Flip()); }
       return flip;
     }
+
+    void IDrawable.Draw<T>(IGraphics<T> canvas, Symbol symbol, MatrixProps matrix, float symbolScale, T paint)
+    {
+      SymbolUtils.DrawLine(canvas, symbol, matrix, symbolScale, this, paint);
+    }
   }
 
+  public class MatrixProps
+  {
+    private readonly float[] _m;
+    private float? _scale;
+    private float? _rotate;
+
+    public MatrixProps(float[] matrix)
+    {
+      _m = matrix;
+    }
+    public float[] Matrix { get { return _m; } }
+
+    public float Scale
+    {
+      get
+      {
+        return _scale ??
+          (_scale = (float)Math.Sqrt(Math.Abs(_m[0] * _m[4] - _m[1] * _m[3]))).Value;
+      }
+    }
+
+    public float Rotate
+    {
+      get
+      {
+        return _rotate ??
+          (_rotate = (float)Math.Atan2(_m[1], _m[0])).Value;
+      }
+    }
+  }
+
+  public partial class MatrixPrj : IProjection
+  {
+    private readonly double[] _matrix;
+    public MatrixPrj(double[] matrix)
+    { _matrix = matrix; }
+    public Pnt Project(Pnt p)
+    {
+      double[] xy = Project(p.X, p.Y);
+      return new Pnt((float)xy[0], (float)xy[1]);
+    }
+    public double[] Matrix => _matrix;
+
+    public double[] Project(double[] xy)
+    {
+      return Project(xy[0], xy[1]);
+    }
+    public double[] Project(double x, double y)
+    {
+      return new double[]
+      {
+        _matrix[0] * x + _matrix[1] * y + _matrix[4],
+        _matrix[2] * x + _matrix[3] * y + _matrix[5] };
+    }
+
+    public MatrixPrj GetInverse()
+    {
+      double[] m = _matrix;
+      double det = m[0] * m[3] - m[1] * m[2];
+      double[] inv = new double[] {
+        m[3] / det , - m[1] / det,
+        -m[2] / det,  m[0] / det,
+        (m[5] * m[1] - m[4] * m[3]) / det, (m[4] * m[2] - m[5] * m[0]) / det
+      };
+      return new MatrixPrj(inv);
+    }
+
+    public static Curve GetLocalBox(MatrixPrj targetInversePrj, Pnt boxMax, MatrixPrj boxPrj)
+    {
+      double[] p0 = targetInversePrj.Project(boxPrj.Project(0, 0));
+      double[] p1 = targetInversePrj.Project(boxPrj.Project(boxMax.X, 0));
+      double[] p2 = targetInversePrj.Project(boxPrj.Project(0, boxMax.Y));
+      double[] p3 = targetInversePrj.Project(boxPrj.Project(boxMax.X, boxMax.Y));
+      Curve c = new Curve().MoveTo(p0).LineTo(p1).LineTo(p2).LineTo(p3);
+
+      return c;
+    }
+  }
 }

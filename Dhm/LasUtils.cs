@@ -222,6 +222,17 @@ namespace Dhm
       //      return Math.Min(16 * iColor + iStd, 255);
     }
 
+    public static double Dtm(int ix, int iy, Func<int, int, List<Point>> getPts)
+    {
+      List<Point> pts = getPts(ix, iy);
+
+      if (pts == null)
+      { return 0; }
+
+      return pts[0].Z;
+    }
+
+
     public static double Obstruction(int ix, int iy, Func<int, int, List<Point>> getPts)
     {
       int dens = 0;

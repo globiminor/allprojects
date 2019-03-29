@@ -172,11 +172,47 @@ namespace OcadTest
       }
     }
 
+    [TestMethod]
+    public void TestLasMulti()
+    {
+      double resolution = 0.5;
+      string dir = @"C:\daten\felix\kapreolo\karten\hardwald\2017\lidar";
+
+      Dictionary<string, string> tiles = new Dictionary<string, string>();
+      foreach (var path in Directory.EnumerateFiles(dir))
+      {
+        string key = Path.GetFileNameWithoutExtension(path);
+        if (!char.IsDigit(key[0]))
+        { continue; }
+        tiles[key] = path;
+      }
+      //foreach (var key in tiles.Keys)
+      {
+        string key = "26880_12545";
+
+        DoubleGrid grd = GetGrid(dir, key, resolution, LasUtils.Dtm);
+
+        string tifPath = Path.Combine(dir, $"multi{key}.tif");
+        ImageGrid.WriteTiffWorldFile(grd, tifPath);
+        ImageGrid.GridToTif(tifPath, grd.Extent.Nx, grd.Extent.Ny,
+           getRValue: (ix, iy) =>
+           {
+             double dh = ix > 0 ? grd[ix, iy] - grd[ix - 1, iy] : grd[1, iy] - grd[0, iy];
+             return (byte)Math.Max(0, Math.Min(255, (int)(128 + 128 * dh)));
+           },
+           getGValue: (ix, iy) =>
+           {
+             double dh = iy > 0 ? grd[ix, iy] - grd[ix, iy - 1] : grd[ix, 1] - grd[ix, 0];
+             return (byte)Math.Max(0, Math.Min(255, (int)(128 + 128 * dh)));
+           }
+           );
+      }
+    }
+
     private void Export(string dir, string key, string resName, double resolution,
       Func<int, int, Func<int, int, List<Point>>, double> grdFct,
        byte[] r, byte[] g, byte[] b)
     {
-      string lazName = Path.Combine(dir, key + ".laz");
       string tifPath = Path.Combine(dir, $"{resName}.tif");
 
       if (File.Exists(tifPath))
@@ -189,6 +225,14 @@ namespace OcadTest
         return;
       }
 
+      DoubleGrid grd = GetGrid(dir, key, resolution, grdFct);
+      ImageGrid.GridToTif(grd.ToIntGrid(), tifPath, r, g, b);
+    }
+
+    private DoubleGrid GetGrid(string dir, string key, double resolution,
+      Func<int, int, Func<int, int, List<Point>>, double> grdFct)
+    {
+      string lazName = Path.Combine(dir, key + ".laz");
       if (!File.Exists(Path.ChangeExtension(lazName, ".txt")))
       {
         if (!File.Exists(lazName))
@@ -197,7 +241,7 @@ namespace OcadTest
           { File.Move(Path.ChangeExtension(lazName, ".html"), lazName); }
         }
         if (!File.Exists(lazName))
-        { return; }
+        { return null; }
 
         Process p = new Process
         {
@@ -211,13 +255,11 @@ namespace OcadTest
         p.WaitForExit();
       }
 
-      DoubleGrid grd;
       using (TextReader reader = new StreamReader(Path.ChangeExtension(lazName, ".txt")))
       {
-        grd = LasUtils.CreateGrid(reader, resolution, grdFct);
+        DoubleGrid grd = LasUtils.CreateGrid(reader, resolution, grdFct);
+        return grd;
       }
-
-      ImageGrid.GridToTif(grd.ToIntGrid(), tifPath, r, g, b);
     }
 
     [TestMethod]
@@ -377,23 +419,24 @@ namespace OcadTest
       System.Console.WriteLine(nPairs);
     }
 
-    [ClassInitialize]
-    public static void ReadShape(TestContext context)
+    private BoxTree<CurveInfo> _curves_;
+    private BoxTree<CurveInfo> _curves => _curves_ ?? (_curves_ = ReadShape());
+    private BoxTree<CurveInfo> ReadShape()
     {
-      _curves = new BoxTree<CurveInfo>(2, 4, true);
+      BoxTree<CurveInfo> curves = new BoxTree<CurveInfo>(2, 4, true);
       using (ShpReader reader = new ShpReader(@"C:\daten\felix\test\Export_Output.shp"))
       {
         foreach (var geom in reader)
         {
           Area area = (Area)geom;
-          _curves.InitSize(new[] { geom });
+          curves.InitSize(new[] { geom });
           int i = 0;
 
           foreach (var line in area.Border)
           {
             foreach (var curve in line.EnumSegments())
             {
-              _curves.Add(curve.Extent, new CurveInfo { Curve = curve, Index = i });
+              curves.Add(curve.Extent, new CurveInfo { Curve = curve, Index = i });
               i++;
             }
           }
@@ -401,8 +444,8 @@ namespace OcadTest
           break;
         }
       }
+      return curves;
     }
-    private static BoxTree<CurveInfo> _curves;
 
     private class CurveInfo
     {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows.Media.Imaging;
 
 namespace OMapScratch
 {
@@ -19,6 +20,13 @@ namespace OMapScratch
     public Basics.Geom.Point2D GetGeometry()
     {
       return new Basics.Geom.Point2D(X, Y);
+    }
+
+    public Pnt Trans(float[] matrix)
+    {
+      if (matrix == null)
+        return Clone();
+      return Project(new MatrixPrj(matrix));
     }
   }
 
@@ -81,6 +89,22 @@ namespace OMapScratch
       }
 
       return line;
+    }
+  }
+
+  partial class GeoImage
+  {
+    public Part InitPart(string path)
+    {
+      using (var imageStream = System.IO.File.OpenRead(path))
+      {
+        BitmapDecoder decoder = BitmapDecoder.Create(imageStream, BitmapCreateOptions.IgnoreColorProfile,
+            BitmapCacheOption.Default);
+        int height = decoder.Frames[0].PixelHeight;
+        int width = decoder.Frames[0].PixelWidth;
+
+        return new Part { Path = path, Height = height, Width = width };
+      }
     }
   }
 }

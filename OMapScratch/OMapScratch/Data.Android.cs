@@ -7,8 +7,8 @@ namespace OMapScratch
 {
   public partial interface ISegment
   {
-    void Init(Path path, float[] matrix);
-    void AppendTo(Path path, float[] matrix);
+    void Init(Path path);
+    void AppendTo(Path path);
   }
   public interface ILocationAction
   {
@@ -24,7 +24,6 @@ namespace OMapScratch
 
   public partial interface IDrawable
   {
-    void Draw(Canvas canvas, Symbol symbol, MatrixProps matrix, float symbolScale, Paint paint);
   }
 
   public partial class MapVm
@@ -44,6 +43,12 @@ namespace OMapScratch
       { return; }
 
       ImageChanged?.Invoke(this, null);
+    }
+
+    public void CheckUpdateImage(Matrix inversElemMatrix, int width, int height)
+    {
+      return;
+      LoadLocalImage(_map.CurrentGeoImage, inversElemMatrix, width, height);
     }
 
     public System.Collections.Generic.IList<string> GetRecents()
@@ -119,31 +124,40 @@ namespace OMapScratch
       _map.SynchLocation(mapCoord, location.Latitude, location.Longitude, location.Altitude, location.Accuracy);
     }
 
-    public void LoadLocalImage(int imageIndex)
+    public void LoadLocalImage(int imageIndex, Matrix inversElemMatrix, int width, int height)
     {
       if (_map.Images?.Count <= imageIndex)
       { return; }
 
-      string path = _map.Images[imageIndex].Path;
-      string valid = _map.VerifyLocalPath(path);
-      if (string.IsNullOrEmpty(valid))
-      { throw new System.InvalidOperationException($"Cannot find file '{path}' (Index {imageIndex})"); }
-      LoadImage(valid);
-    }
-    public void LoadLocalImage(string path)
-    {
-      LoadImage(_map.VerifyLocalPath(path));
+      GeoImageViews geoImages = _map.Images[imageIndex];
+      LoadLocalImage(geoImages.DefaultView, inversElemMatrix, width, height);
     }
 
-    private void LoadImage(string path)
+    public void LoadLocalImage(IGeoImage geoImg, Matrix inversElemMatrix, int width, int height)
     {
-      if (string.IsNullOrEmpty(path))
+      if (geoImg == null)
+      { return; }
+
+      MatrixPrj worldPrj = null;
+      if (inversElemMatrix != null)
+      {
+        float[] m = new float[9];
+        inversElemMatrix.GetValues(m);
+        double[] o = GetOffset();
+        worldPrj = new MatrixPrj(new double[] { m[0], m[1], -m[3], -m[4], o[0] + m[2], o[1] - m[5] });
+      }
+      LoadImage(geoImg, worldPrj, width, height);
+    }
+
+    private void LoadImage(IGeoImage geoImg, MatrixPrj worldPrj, int width, int height)
+    {
+      if (geoImg == null)
       { return; }
 
       if (EventUtils.Cancel(this, ImageChanging))
       { return; }
 
-      _map.LoadImage(path);
+      _map.LoadImage(geoImg, worldPrj, width, height);
 
       ImageChanged?.Invoke(this, null);
     }
@@ -157,40 +171,13 @@ namespace OMapScratch
 
     public Matrix ImageMatrix { get; set; }
 
-    public void LoadImage(string path)
+    public void LoadImage(IGeoImage geoImg, MatrixPrj worldPrj, int width, int height)
     {
-      //BitmapFactory.Options bounds = new BitmapFactory.Options();
-      //bounds.InJustDecodeBounds = true;
-      //BitmapFactory.DecodeFile(path, bounds);
-      //int width = bounds.OutWidth;
-      //int height = bounds.OutHeight;
-      //long size = height * width;
-      //const long max = 4096 * 4096;
-      //int resample = 1;
-      //while (size > max)
-      //{
-      //  size /= 4;
-      //  resample *= 2;
-      //}
-
-      //using (BitmapRegionDecoder decoder = BitmapRegionDecoder.NewInstance(path, isShareable: false))
-      //{
-      //}
-
-      BitmapFactory.Options opts = new BitmapFactory.Options
-      { InPreferredConfig = Bitmap.Config.Argb8888 };
-      //if (resample > 1)
-      //{ opts.InSampleSize = resample; }
-
-      Bitmap img;
-      try
-      { img = BitmapFactory.DecodeFile(path, opts); }
-      catch (Java.Lang.OutOfMemoryError e)
-      { throw new System.Exception("Use images smaller than 5000 x 5000 pixels", e); }
+      Bitmap img = geoImg.LoadImage(worldPrj, width, height);
 
       _currentImage?.Dispose();
       _currentImage = img;
-      _currentImagePath = path;
+      _currentGeoImage = geoImg;
     }
 
     public string SaveImg(Bitmap currentScratch, double[] worldMatrix)
@@ -208,7 +195,7 @@ namespace OMapScratch
         stream.Close();
       }
 
-      string worldPath = GetWorldPath(imgPath);
+      string worldPath = GeoImage.GetWorldPath(imgPath);
       using (System.IO.TextWriter w = new System.IO.StreamWriter(worldPath))
       {
         for (int i = 0; i < 6; i++)
@@ -265,37 +252,27 @@ namespace OMapScratch
     public Color Color { get; set; }
   }
 
-  public partial class Pnt
-  {
-    void IDrawable.Draw(Canvas canvas, Symbol symbol, MatrixProps matrix, float symbolScale, Paint paint)
-    {
-      SymbolUtils.DrawPoint(canvas, symbol, matrix, symbolScale, this, paint);
-    }
-  }
-
   public partial class Lin
   {
-    void ISegment.Init(Path path, float[] matrix)
+    void ISegment.Init(Path path)
     {
-      Pnt t = From.Trans(matrix);
-      path.MoveTo(t.X, t.Y);
+      path.MoveTo(From.X, From.Y);
     }
 
-    void ISegment.AppendTo(Path path, float[] matrix)
+    void ISegment.AppendTo(Path path)
     {
-      Pnt t = To.Trans(matrix);
-      path.LineTo(t.X, t.Y);
+      path.LineTo(To.X, To.Y);
     }
   }
 
   partial class Circle
   {
-    void ISegment.Init(Path path, float[] matrix)
+    void ISegment.Init(Path path)
     { }
-    void ISegment.AppendTo(Path path, float[] matrix)
+    void ISegment.AppendTo(Path path)
     {
-      Pnt lt = new Pnt(Center.X - Radius, Center.Y - Radius).Trans(matrix);
-      Pnt rb = new Pnt(Center.X + Radius, Center.Y + Radius).Trans(matrix);
+      Pnt lt = new Pnt(Center.X - Radius, Center.Y - Radius);
+      Pnt rb = new Pnt(Center.X + Radius, Center.Y + Radius);
       RectF r = new RectF
       {
         Left = lt.X,
@@ -309,251 +286,34 @@ namespace OMapScratch
 
   public partial class Bezier
   {
-    void ISegment.Init(Path path, float[] matrix)
+    void ISegment.Init(Path path)
     {
-      Pnt t = From.Trans(matrix);
-      path.MoveTo(t.X, t.Y);
+      path.MoveTo(From.X, From.Y);
     }
-    void ISegment.AppendTo(Path path, float[] matrix)
+    void ISegment.AppendTo(Path path)
     {
-      Pnt i0 = I0.Trans(matrix);
-      Pnt i1 = I1.Trans(matrix);
-      Pnt to = To.Trans(matrix);
-      path.CubicTo(i0.X, i0.Y, i1.X, i1.Y, to.X, to.Y);
+      path.CubicTo(I0.X, I0.Y, I1.X, I1.Y, To.X, To.Y);
     }
   }
 
-  public partial class Curve
+  partial class MatrixPrj
   {
-    void IDrawable.Draw(Canvas canvas, Symbol symbol, MatrixProps matrix, float symbolScale, Paint paint)
+    public MatrixPrj(Matrix matrix)
+      : this(GetValues(matrix))
+    { }
+
+    public static float[] GetValues(Matrix matrix)
     {
-      SymbolUtils.DrawLine(canvas, symbol, matrix, symbolScale, this, paint);
+      float[] values = new float[9];
+      matrix.GetValues(values);
+      return values;
     }
+
+    public MatrixPrj(float[] matrix)
+    {
+      float[] m = matrix;
+      _matrix = new double[] { m[0], m[1], m[3], m[4], m[2], m[5] };
+    }
+
   }
-
-  public class MatrixProps
-  {
-    private readonly float[] _m;
-    private float? _scale;
-    private float? _rotate;
-
-    public MatrixProps(float[] matrix)
-    {
-      _m = matrix;
-    }
-    public float[] Matrix { get { return _m; } }
-
-    public float Scale
-    {
-      get
-      {
-        return _scale ??
-          (_scale = (float)System.Math.Sqrt(System.Math.Abs(_m[0] * _m[4] - _m[1] * _m[3]))).Value;
-      }
-    }
-
-    public float Rotate
-    {
-      get
-      {
-        return _rotate ??
-          (_rotate = (float)System.Math.Atan2(_m[1], _m[0])).Value;
-      }
-    }
-  }
-  public static class SymbolUtils
-  {
-    private class Dash : System.IDisposable
-    {
-      private readonly Paint _p;
-      private DashPathEffect _dash;
-      private readonly PathEffect _orig;
-      public Dash(SymbolCurve sym, float scale, float symbolScale, Paint p, Curve line)
-      {
-        _p = p;
-        if (sym.Dash == null)
-        { return; }
-
-        if (sym.Dash.EndOffset != 0 && line.Count > 0)
-        {
-          using (Path path = GetPath(line, null))
-          {
-            using (PathMeasure m = new PathMeasure(path, false))
-            {
-              float l = m.Length / symbolScale;
-              scale = (float)(scale * sym.Dash.GetFactor(l));
-            }
-          }
-        }
-
-        _orig = p.PathEffect;
-        int n = sym.Dash.Intervals.Length;
-        float[] dash = new float[n];
-        for (int i = 0; i < n; i++)
-        { dash[i] = sym.Dash.Intervals[i] * scale; }
-
-        _dash = new DashPathEffect(dash, sym.Dash.StartOffset * scale);
-        p.SetPathEffect(_dash);
-      }
-      public void Dispose()
-      {
-        if (_dash != null)
-        {
-          _p.SetPathEffect(_orig);
-          _dash.Dispose();
-          _dash = null;
-        }
-      }
-    }
-    public static void DrawLine(Canvas canvas, Symbol symbol, MatrixProps matrix, float symbolScale, Curve line, Paint p)
-    {
-      float lineScale = matrix?.Scale * symbolScale ?? 1;
-      bool drawn = false;
-      foreach (var sym in symbol.Curves)
-      {
-        if (sym.Curve == null)
-        {
-          using (new Dash(sym, lineScale, symbolScale, p, line))
-          {
-            DrawCurve(canvas, line, matrix?.Matrix, sym.LineWidth * lineScale, sym.Fill, sym.Stroke, p);
-          }
-          drawn = true;
-        }
-        else if (sym.Dash != null && line.Count > 0)
-        {
-          using (Path path = GetPath(line, null))
-          {
-            using (PathMeasure m = new PathMeasure(path, false))
-            {
-              float l = m.Length;
-
-              Symbol pntSym = new Symbol { Curves = new System.Collections.Generic.List<SymbolCurve> { sym }, };
-              OMapScratch.Dash scaled = matrix != null ? sym.Dash.Scale(symbolScale) : sym.Dash;
-
-              foreach (var dist in scaled.GetPositions(l))
-              {
-                if (dist > l)
-                { break; }
-
-                float[] pos = new float[2];
-                float[] tan = new float[2];
-                m.GetPosTan((float)dist, pos, tan);
-
-                DirectedPnt pnt = new DirectedPnt { X = pos[0], Y = pos[1], Azimuth = (float)(System.Math.Atan2(tan[0], tan[1]) + System.Math.PI / 2) };
-                DrawPoint(canvas, pntSym, matrix, symbolScale, pnt, p);
-              }
-              drawn = true;
-            }
-          }
-        }
-      }
-
-      if (!drawn) // empty line with only symbols along line (i.e dotted line)
-      {
-        DrawCurve(canvas, line, matrix?.Matrix, lineScale, fill: false, stroke: true, p: p);
-      }
-    }
-
-    private class ScalePrj : IProjection
-    {
-      private readonly float _scale;
-
-      public ScalePrj(float scale)
-      { _scale = scale; }
-
-      public Pnt Project(Pnt pnt)
-      {
-        return new Pnt(pnt.X * _scale, pnt.Y * _scale);
-      }
-    }
-    public static void DrawPoint(Canvas canvas, Symbol sym, MatrixProps matrix, float symbolScale, Pnt point, Paint p)
-    {
-      if (!string.IsNullOrEmpty(sym.Text))
-      {
-        DrawText(canvas, sym.Text, matrix, symbolScale, point, p);
-        return;
-      }
-      canvas.Save();
-      try
-      {
-        Pnt t = point.Trans(matrix?.Matrix);
-        canvas.Translate(t.X, t.Y);
-        float pntScale = matrix?.Scale * symbolScale ?? 1;
-        canvas.Scale(1, -1);
-
-        float azi = ((point as DirectedPnt)?.Azimuth ?? 0) + (matrix?.Rotate ?? 0);
-        if (azi != 0)
-        { canvas.Rotate(azi * 180 / (float)System.Math.PI); }
-
-        ScalePrj prj = new ScalePrj(pntScale);
-        foreach (var curve in sym.Curves)
-        {
-          DrawCurve(canvas, curve.Curve.Project(prj), null, curve.LineWidth * pntScale, curve.Fill, curve.Stroke, p);
-        }
-      }
-      finally
-      { canvas.Restore(); }
-    }
-
-    public static void DrawText(Canvas canvas, string text, MatrixProps matrix, float symbolScale, Pnt point, Paint p)
-    {
-      canvas.Save();
-      try
-      {
-        p.SetStyle(Paint.Style.Stroke);
-        p.StrokeWidth = 0;
-        p.TextAlign = Paint.Align.Center;
-
-        Pnt t = point.Trans(matrix?.Matrix);
-        canvas.Translate(t.X, t.Y);
-        if (matrix != null)
-        {
-          float f = matrix.Scale;
-          canvas.Scale(f * symbolScale, f * symbolScale);
-          float rot = matrix.Rotate;
-          if (rot != 0)
-          { canvas.Rotate(-rot * 180 / (float)System.Math.PI); }
-        }
-        canvas.DrawText(text, 0, 0 + p.TextSize / 2.5f, p);
-      }
-      finally
-      { canvas.Restore(); }
-    }
-
-    public static Path GetPath(Curve curve, float[] matrix = null)
-    {
-      Path path = new Path();
-      curve[0].Init(path, matrix);
-      foreach (var segment in curve.Segments)
-      { segment.AppendTo(path, matrix); }
-      return path;
-    }
-
-    public static void DrawCurve(Canvas canvas, Curve curve, float[] matrix, float lineWidth, bool fill, bool stroke, Paint p)
-    {
-      p.StrokeWidth = lineWidth;
-
-      if (curve.Count == 0)
-      {
-        Pnt pt = curve.From.Trans(matrix);
-        canvas.DrawLine(pt.X - p.StrokeWidth, pt.Y, pt.X + p.StrokeWidth, pt.Y, p);
-        return;
-      }
-
-      using (Path path = GetPath(curve, matrix))
-      {
-        if (fill && stroke)
-        { p.SetStyle(Paint.Style.FillAndStroke); }
-        else if (fill)
-        { p.SetStyle(Paint.Style.Fill); }
-        else if (lineWidth > 0)
-        { p.SetStyle(Paint.Style.Stroke); }
-        else
-        { p.SetStyle(Paint.Style.Fill); }
-
-        canvas.DrawPath(path, p);
-      }
-    }
-  }
-
 }

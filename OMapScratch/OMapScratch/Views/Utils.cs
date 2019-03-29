@@ -8,6 +8,38 @@ namespace OMapScratch.Views
   public static class Utils
   {
     public static IMapView MapView { get; set; }
+    public static Matrix GetPairedMatrix(Matrix matrix, Matrix mapMatrix)
+    {
+      float d = 1000;
+      float[] pts = new float[]
+      {
+        0, 0,
+        d, 0,
+        0, d
+      };
+      using (Matrix invMat = new Matrix())
+      {
+        matrix.Invert(invMat);
+        invMat.MapPoints(pts);
+      }
+      mapMatrix.MapPoints(pts);
+
+      float xx = (pts[2] - pts[0]) / d;
+      float yx = (pts[3] - pts[1]) / d;
+      float xy = (pts[4] - pts[0]) / d;
+      float yy = (pts[5] - pts[1]) / d;
+
+      using (Matrix invPairedMat = new Matrix())
+      {
+        invPairedMat.SetValues(new float[] { xx, xy, pts[0], yx, yy, pts[1], 0, 0, 1 });
+
+        Matrix pairedMat = new Matrix();
+        invPairedMat.Invert(pairedMat);
+
+        return pairedMat;
+      }
+    }
+
     public static void Try(System.Action action)
     {
       try
@@ -59,7 +91,6 @@ namespace OMapScratch.Views
     {
       return Android.Util.TypedValue.ApplyDimension(Android.Util.ComplexUnitType.Mm, 1, res.DisplayMetrics);
     }
-
     public static float GetSurfaceOrientation()
     {
       IWindowManager windowManager = Android.App.Application.Context.GetSystemService(Android.Content.Context.WindowService).JavaCast<IWindowManager>();
@@ -79,11 +110,11 @@ namespace OMapScratch.Views
       return angle;
     }
 
-    public static void DrawSymbol(Canvas canvas, Symbol sym, Color color, float width, float height, float scale)
+    public static void DrawSymbol(Graphics canvas, Symbol sym, Color color, float width, float height, float scale)
     {
-      using (Paint p = new Paint())
+      using (GraphicsPaint p = canvas.CreatePaint())
       {
-        p.Color = color;
+        p.Paint.Color = color;
 
         canvas.Save();
         try

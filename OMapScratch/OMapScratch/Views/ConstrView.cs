@@ -6,19 +6,6 @@ namespace OMapScratch.Views
 {
   public class ConstrView : View, ViewModels.IConstrView
   {
-    private class Translation : IProjection
-    {
-      private readonly float[] _matrix;
-      public Translation(float[] matrix)
-      { _matrix = matrix; }
-      public Pnt Project(Pnt p)
-      {
-        return new Pnt(
-        _matrix[0] * p.X + _matrix[1] * p.Y + _matrix[2],
-        _matrix[3] * p.X + _matrix[4] * p.Y + _matrix[5]);
-      }
-    }
-
     private readonly MapView _parent;
     private Color? _constrClr;
     private float? _constrTxtSize;
@@ -70,7 +57,7 @@ namespace OMapScratch.Views
       if (compassPnt == null)
       { return false; }
 
-      IProjection prj = new Translation(_parent.ElemMatrixValues);
+      IProjection prj = new MatrixPrj(_parent.ElemMatrixValues);
 
       Pnt mapCompass = compassPnt.Project(prj);
       Pnt mapP = p.Project(prj);
@@ -105,7 +92,7 @@ namespace OMapScratch.Views
         double? declination = ViewModel.GetDeclination();
         if (declination != null)
         {
-          prj = prj ?? new Translation(_parent.ElemMatrixValues);
+          prj = prj ?? new MatrixPrj(_parent.ElemMatrixValues);
           DrawCompass(canvas, ViewModel.GetCompassPoint().Project(prj), declination.Value, wp, bp);
         }
 
@@ -123,7 +110,7 @@ namespace OMapScratch.Views
             bp.SetStyle(Paint.Style.Fill);
             first = false;
           }
-          prj = prj ?? new Translation(_parent.ElemMatrixValues);
+          prj = prj ?? new MatrixPrj(_parent.ElemMatrixValues);
           Pnt pos = (Pnt)textElem.Geometry;
           Pnt t = pos.Project(prj);
 
@@ -151,7 +138,7 @@ namespace OMapScratch.Views
           if (!_parent.MaxExtent.Intersects(geom.Extent))
           { continue; }
 
-          prj = prj ?? new Translation(_parent.ElemMatrixValues);
+          prj = prj ?? new MatrixPrj(_parent.ElemMatrixValues);
           Curve displayGeom = geom.Project(prj);
 
           DrawCurve(canvas, displayGeom, wp, bp);
@@ -164,7 +151,7 @@ namespace OMapScratch.Views
           canvas.ClipRect(detail);
 
           Box detailExtent = null;
-          Translation detPrj = null;
+          MatrixPrj detPrj = null;
           foreach (var geom in ViewModel.GetGeometries())
           {
             detailExtent = detailExtent ?? _parent.GetDetailExtent();
@@ -178,7 +165,7 @@ namespace OMapScratch.Views
               float f = 1;
               matrix[2] -= dd[0] * f;
               matrix[5] -= dd[1] * f;
-              detPrj = new Translation(matrix);
+              detPrj = new MatrixPrj(matrix);
             }
             Curve displayGeom = geom.Project(detPrj);
 
@@ -194,10 +181,13 @@ namespace OMapScratch.Views
       }
     }
 
-    private void DrawCurve(Canvas canvas, Curve displayGeom, Paint wp, Paint bp)
+    private void DrawCurve(Canvas canvas, Curve displayGeom, Paint wp, Paint bp) 
     {
-      SymbolUtils.DrawCurve(canvas, displayGeom, null, wp.StrokeWidth, false, true, wp);
-      SymbolUtils.DrawCurve(canvas, displayGeom, null, bp.StrokeWidth, false, true, bp);
+      Graphics gr = new Graphics(canvas);
+      GraphicsPaint gw = new GraphicsPaint(wp);
+      GraphicsPaint gb = new GraphicsPaint(bp);
+      SymbolUtils.DrawCurve(gr, displayGeom, null, gw, wp.StrokeWidth, fill: false, stroke: true);
+      SymbolUtils.DrawCurve(gr, displayGeom, null, gb, bp.StrokeWidth, fill: false, stroke: true);
     }
 
     private static readonly float _compassRadius = 8;
@@ -252,7 +242,7 @@ namespace OMapScratch.Views
         float b = 0.5f * mm;
         float l = 10 * mm;
         Curve c = new Curve().MoveTo(x0 + sin * b, x0 - cos * b).LineTo(x0 + l * cos, x0 + l * sin).LineTo(x0 - sin * b, x0 + cos * b);
-        using (Path path = SymbolUtils.GetPath(c))
+        using (Path path = Graphics.GetPath(c))
         {
           canvas.DrawPath(path, red);
         }

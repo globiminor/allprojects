@@ -221,8 +221,10 @@ namespace Asvz.Sola
       }
       else
       {
-        IBox infoBox = elemInfo[0].Geometry.Extent;
-        Point lrInfo = new Point2D(infoBox.Max.X, infoBox.Min.Y).Project(setup.Prj2Map);
+        IBox infoBox = elemInfo[0].Geometry.Project(setup.Prj2Map).Extent;
+        Point lrInfo = new Point2D(infoBox.Max.X, infoBox.Min.Y);
+        //IBox infoBox = elemInfo[0].Geometry.Extent;
+        //Point lrInfo = new Point2D(infoBox.Max.X, infoBox.Min.Y).Project(setup.Prj2Map);
 
         IBox box = symNrBack.Graphics[0].MapGeometry.Extent;
         Point p = new Point2D(lrInfo.X - box.Max.X,
@@ -311,7 +313,8 @@ namespace Asvz.Sola
       Point pMin = null;
       foreach (var infoElem in infoElems)
       {
-        IPoint p = PointOp.Project(infoElem.Geometry.Extent.Min, _templateSetup.Prj2Map);
+        IPoint p = infoElem.Geometry.Project(_templateSetup.Prj2Map).Extent.Min;
+        //IPoint p = PointOp.Project(infoElem.Geometry.Extent.Min, _templateSetup.Prj2Map);
         if (pMin == null || pMin.Y > p.Y)
         { pMin = Point.Create(p); }
       }
