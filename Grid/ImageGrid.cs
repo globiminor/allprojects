@@ -15,12 +15,16 @@ namespace Grid
     private Color[] _palette;
     private PixelFormat _pixelFormat;
 
+    public static string GetWorldPath(string imagePath)
+    {
+      string ext = Path.GetExtension(imagePath);
+      string sWorldName = Path.Combine(Path.GetDirectoryName(imagePath),
+        Path.GetFileNameWithoutExtension(imagePath) + "." + ext[1] + ext[3] + "w");
+      return sWorldName;
+    }
     public static ImageGrid FromFile(string name)
     {
-      string sWorldName =
-        Path.GetDirectoryName(name) + Path.DirectorySeparatorChar +
-        Path.GetFileNameWithoutExtension(name) + ".tfw";
-
+      string sWorldName = GetWorldPath(name);
       Bitmap bitmap = (Bitmap)Bitmap.FromFile(name, true);
       GridExtent extent = GridExtent.GetWorldFile(sWorldName);
       extent.SetSize(bitmap.Size.Width, bitmap.Size.Height);
@@ -91,38 +95,36 @@ namespace Grid
       }
     }
 
-    public static void WriteTiffWorldFile(BaseGrid grd, string name)
+    public static void WriteWorldFile(BaseGrid grd, string path)
     {
-      string tfw = Path.Combine(Path.GetDirectoryName(name),
-        Path.GetFileNameWithoutExtension(name) + ".tfw");
-      using (TextWriter tfwWriter = new StreamWriter(tfw))
+      using (TextWriter worldWriter = new StreamWriter(path))
       using (new InvariantCulture())
       {
-        tfwWriter.WriteLine(grd.Extent.Dx);
-        tfwWriter.WriteLine(0);
-        tfwWriter.WriteLine(0);
-        tfwWriter.WriteLine(grd.Extent.Dy);
-        tfwWriter.WriteLine(grd.Extent.X0);
-        tfwWriter.WriteLine(grd.Extent.Y0);
+        worldWriter.WriteLine(grd.Extent.Dx);
+        worldWriter.WriteLine(0);
+        worldWriter.WriteLine(0);
+        worldWriter.WriteLine(grd.Extent.Dy);
+        worldWriter.WriteLine(grd.Extent.X0);
+        worldWriter.WriteLine(grd.Extent.Y0);
       }
     }
-    public static void GridToTif(IntGrid grd, string name, byte[] r = null, byte[] g = null, byte[] b = null)
+    public static void GridToImage(IntGrid grd, string name, byte[] r = null, byte[] g = null, byte[] b = null, ImageFormat format = null)
     {
-      WriteTiffWorldFile(grd, name);
+      WriteWorldFile(grd, GetWorldPath(name));
 
       int width = grd.Extent.Nx;
       int height = grd.Extent.Ny;
-      GridToTif(name, width, height,
+      GridToImage(name, width, height,
         getValue: (col, row) =>
         {
           int iVal = grd[col, row];
           return (byte)iVal;
         },
-        r: r, g: g, b: b);
+        r: r, g: g, b: b, format: format);
     }
 
-    public static void GridToTif(string name, int width, int height, Func<int, int, byte> getValue,
-      byte[] r = null, byte[] g = null, byte[] b = null)
+    public static void GridToImage(string name, int width, int height, Func<int, int, byte> getValue,
+      byte[] r = null, byte[] g = null, byte[] b = null, ImageFormat format = null)
     {
       if (r == null)
       {
@@ -200,7 +202,7 @@ namespace Grid
 
         using (FileStream file = new FileStream(name, FileMode.Create))
         {
-          ImageFormat format = ImageFormat.Tiff;
+          format = format ?? ImageFormat.Tiff;
 
           //Encoder enc = Encoder.SaveFlag;
           //EncoderParameters encPars = new EncoderParameters();
@@ -211,8 +213,8 @@ namespace Grid
       }
     }
 
-    public static void GridToTif(string name, int width, int height, 
-      Func<int, int, byte> getRValue, Func<int, int, byte> getGValue)
+    public static void GridToImage(string name, int width, int height,
+      Func<int, int, byte> getRValue, Func<int, int, byte> getGValue, ImageFormat format = null)
     {
       using (Bitmap bitmap = new Bitmap(width, height, PixelFormat.Format32bppArgb))
       {
@@ -276,7 +278,7 @@ namespace Grid
           //EncoderParameters encPars = new EncoderParameters();
           //encPars.Param[0] = new EncoderParameter(enc, (long)EncoderValue.CompressionLZW);
 
-          ImageFormat format = ImageFormat.Tiff;
+          format = format ?? ImageFormat.Tiff;
 
           bitmap.Save(file, format);
         }

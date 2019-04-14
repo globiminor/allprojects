@@ -1,43 +1,41 @@
-
 using Android.Graphics;
 using Android.Runtime;
 using Android.Views;
+using Android.Widget;
+using Basics.ViewModels;
 
-namespace OMapScratch.Views
+namespace Basics.Views
 {
-  public static class Utils
+  public static partial class Utils
   {
-    public static IMapView MapView { get; set; }
-    public static Matrix GetPairedMatrix(Matrix matrix, Matrix mapMatrix)
+    public static TextView TextInfo { get; set; }
+    public static System.Action<bool> TextInfoSuccessAction { get; set; }
+    public static string AssemblyId { get; set; }
+    public static HorizontalScrollView CreateTextInfo(RelativeLayout parentLayout, string assemblyId)
     {
-      float d = 1000;
-      float[] pts = new float[]
+      HorizontalScrollView scroll = new HorizontalScrollView(parentLayout.Context);
       {
-        0, 0,
-        d, 0,
-        0, d
-      };
-      using (Matrix invMat = new Matrix())
-      {
-        matrix.Invert(invMat);
-        invMat.MapPoints(pts);
+        RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+        lprams.AddRule(LayoutRules.AlignParentBottom);
+        scroll.LayoutParameters = lprams;
       }
-      mapMatrix.MapPoints(pts);
+      parentLayout.AddView(scroll);
 
-      float xx = (pts[2] - pts[0]) / d;
-      float yx = (pts[3] - pts[1]) / d;
-      float xy = (pts[4] - pts[0]) / d;
-      float yy = (pts[5] - pts[1]) / d;
-
-      using (Matrix invPairedMat = new Matrix())
       {
-        invPairedMat.SetValues(new float[] { xx, xy, pts[0], yx, yy, pts[1], 0, 0, 1 });
+        TextView txtInfo = new TextView(parentLayout.Context);
 
-        Matrix pairedMat = new Matrix();
-        invPairedMat.Invert(pairedMat);
+        RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+        txtInfo.LayoutParameters = lprams;
+        txtInfo.Visibility = ViewStates.Invisible;
+        txtInfo.SetBackgroundColor(Color.LightGray);
+        txtInfo.SetTextColor(Color.Black);
+        txtInfo.SetHorizontallyScrolling(true);
 
-        return pairedMat;
+        TextInfo = txtInfo;
+        scroll.AddView(txtInfo);
       }
+      AssemblyId = assemblyId;
+      return scroll;
     }
 
     public static void Try(System.Action action)
@@ -62,7 +60,7 @@ namespace OMapScratch.Views
             {
               if (string.IsNullOrWhiteSpace(line))
               { continue; }
-              if (!line.Contains("OMapScratch"))
+              if (!line.Contains(AssemblyId))
               {
                 pre = line;
                 continue;
@@ -80,9 +78,29 @@ namespace OMapScratch.Views
             sb.AppendLine("[Inner Exception]");
           }
         }
-        MapView?.ShowText(sb.ToString(), false);
+        ShowText(sb.ToString(), false);
       }
     }
+    public static void ShowText(string text, bool success = true)
+    {
+      if (TextInfo == null)
+      {
+        return;
+      }
+      if (string.IsNullOrWhiteSpace(text))
+      {
+        TextInfo.Visibility = ViewStates.Gone;
+      }
+      else
+      {
+        TextInfo.Text = text;
+        TextInfo.SetTextColor(success ? Color.Black : Color.Red);
+        TextInfo.Visibility = ViewStates.Visible;
+        TextInfoSuccessAction?.Invoke(success);
+      }
+      TextInfo.PostInvalidate();
+    }
+
     public static float GetMmPixel(View view)
     {
       return GetMmPixel(view.Resources);
@@ -109,41 +127,36 @@ namespace OMapScratch.Views
       { angle = 90; }
       return angle;
     }
+  }
 
-    public static void DrawSymbol(Graphics canvas, Symbol sym, Color color, float width, float height, float scale)
+  public static class DepProps
+  {
+    public static Binding<int> BindToProgress(this SeekBar seekBar, BaseVm vm, string prop, BindingMode mode = BindingMode.TwoWay)
     {
-      using (GraphicsPaint p = canvas.CreatePaint())
-      {
-        p.Paint.Color = color;
+      Binding<int> b = new Binding<int>(vm, prop, (t) => seekBar.Progress = t, () => seekBar.Progress);
+      seekBar.ProgressChanged += b.ValueChanged;
+      b.DisposeFct = () => seekBar.ProgressChanged -= b.ValueChanged;
 
-        canvas.Save();
-        try
-        {
-          canvas.Translate(width / 2, height / 2);
-          canvas.Scale(scale, scale);
+      return b;
+    }
 
-          SymbolType symTyp = sym.GetSymbolType();
-          if (symTyp == SymbolType.Line)
-          {
-            float w = width / (2 * scale) * 0.8f;
-            SymbolUtils.DrawLine(canvas, sym, null, 1, new Curve().MoveTo(-w, 0).LineTo(w, 0), p);
-          }
-          else if (symTyp == SymbolType.Point)
-          {
-            SymbolUtils.DrawPoint(canvas, sym, null, 1, new Pnt(0, 0), p);
-          }
-          else if (symTyp == SymbolType.Text)
-          {
-            p.TextSize = height / 6;
-            SymbolUtils.DrawText(canvas, sym.Text, null, 1, new Pnt { X = 0, Y = 0 }, p);
-          }
-          else
-          { throw new System.NotImplementedException($"unknown SymbolType {symTyp}"); }
+    public static Binding<bool> BindToChecked(this CheckBox checkBox, BaseVm vm, string prop, BindingMode mode = BindingMode.TwoWay)
+    {
+      Binding<bool> b = new Binding<bool>(vm, prop, (t) => checkBox.Checked = t, () => checkBox.Checked);
+      checkBox.CheckedChange += b.ValueChanged;
+      b.DisposeFct = () => checkBox.CheckedChange -= b.ValueChanged;
 
-        }
-        finally
-        { canvas.Restore(); }
-      }
+      return b;
+    }
+
+    public static Binding<string> BindToText(this TextView textView, BaseVm vm, string prop, BindingMode mode = BindingMode.TwoWay)
+    {
+      Binding<string> b = new Binding<string>(vm, prop, (t) => textView.Text = t, () => textView.Text);
+      textView.TextChanged += b.ValueChanged;
+      b.DisposeFct = () => textView.TextChanged -= b.ValueChanged;
+
+      return b;
     }
   }
+
 }

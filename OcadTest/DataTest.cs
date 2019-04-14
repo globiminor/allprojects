@@ -1,6 +1,7 @@
 using Basics.Geom;
 using Dhm;
 using Grid;
+using laszip.net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Ocad;
 using Ocad.Data;
@@ -120,7 +121,8 @@ namespace OcadTest
     public void TestLasStruct()
     {
       double resolution = 1;
-      string dir = @"C:\daten\felix\kapreolo\karten\blauen\2018\lidar";
+      //string dir = @"C:\daten\felix\kapreolo\karten\blauen\2018\lidar";
+      string dir = @"C:\daten\felix\kapreolo\karten\irchel\2019\lidar";
       //string dir = @"C:\daten\felix\kapreolo\karten\hardwald\2017\lidar";
 
       Dictionary<string, string> tiles = new Dictionary<string, string>();
@@ -176,7 +178,8 @@ namespace OcadTest
     public void TestLasMulti()
     {
       double resolution = 0.5;
-      string dir = @"C:\daten\felix\kapreolo\karten\hardwald\2017\lidar";
+      string dir = @"C:\daten\felix\kapreolo\karten\irchel\2019\lidar";
+      //      string dir = @"C:\daten\felix\kapreolo\karten\hardwald\2017\lidar";
 
       Dictionary<string, string> tiles = new Dictionary<string, string>();
       foreach (var path in Directory.EnumerateFiles(dir))
@@ -186,15 +189,15 @@ namespace OcadTest
         { continue; }
         tiles[key] = path;
       }
-      //foreach (var key in tiles.Keys)
+      foreach (var key in tiles.Keys)
       {
-        string key = "26880_12545";
+        //string key = "26880_12545";
 
         DoubleGrid grd = GetGrid(dir, key, resolution, LasUtils.Dtm);
 
         string tifPath = Path.Combine(dir, $"multi{key}.tif");
-        ImageGrid.WriteTiffWorldFile(grd, tifPath);
-        ImageGrid.GridToTif(tifPath, grd.Extent.Nx, grd.Extent.Ny,
+        ImageGrid.WriteWorldFile(grd, ImageGrid.GetWorldPath(tifPath));
+        ImageGrid.GridToImage(tifPath, grd.Extent.Nx, grd.Extent.Ny,
            getRValue: (ix, iy) =>
            {
              double dh = ix > 0 ? grd[ix, iy] - grd[ix - 1, iy] : grd[1, iy] - grd[0, iy];
@@ -226,21 +229,77 @@ namespace OcadTest
       }
 
       DoubleGrid grd = GetGrid(dir, key, resolution, grdFct);
-      ImageGrid.GridToTif(grd.ToIntGrid(), tifPath, r, g, b);
+      ImageGrid.GridToImage(grd.ToIntGrid(), tifPath, r, g, b);
     }
 
     private DoubleGrid GetGrid(string dir, string key, double resolution,
       Func<int, int, Func<int, int, List<Point>>, double> grdFct)
     {
       string lazName = Path.Combine(dir, key + ".laz");
-      if (!File.Exists(Path.ChangeExtension(lazName, ".txt")))
+
+      IEnumerable<LasUtils.ILasPoint> lasPts = GetLazPoints(lazName);
+      //IEnumerable<LasUtils.ILasPoint> lasPts = GetTextLasPoints(lazName);
+
+      DoubleGrid grd = LasUtils.CreateGrid(lasPts, resolution, grdFct);
+      return grd;
+    }
+
+    private IEnumerable<LasUtils.ILasPoint> GetLazPoints(string lazPath)
+    {
+      var lazReader = new laszip_dll();
+      var compressed = true;
+      try
       {
-        if (!File.Exists(lazName))
+        lazReader.laszip_open_reader(lazPath, ref compressed);
+        var numberOfPoints = lazReader.header.number_of_point_records;
+
+        //// Check some header values
+        //Debug.WriteLine(lazReader.header.min_x);
+        //Debug.WriteLine(lazReader.header.min_y);
+        //Debug.WriteLine(lazReader.header.min_z);
+        //Debug.WriteLine(lazReader.header.max_x);
+        //Debug.WriteLine(lazReader.header.max_y);
+        //Debug.WriteLine(lazReader.header.max_z);
+
+        var coordArray = new double[3];
+
+        LasPoint point = new LasPoint();
+
+        // Loop through number of points indicated
+        for (int pointIndex = 0; pointIndex < numberOfPoints; pointIndex++)
         {
-          if (File.Exists(Path.ChangeExtension(lazName, ".html")))
-          { File.Move(Path.ChangeExtension(lazName, ".html"), lazName); }
+          // Read the point
+          lazReader.laszip_read_point();
+
+          // Get precision coordinates
+          lazReader.laszip_get_coordinates(coordArray);
+          point.X = coordArray[0];
+          point.Y = coordArray[1];
+          point.Z = coordArray[2];
+
+          // Get classification value
+          point.Intensity = lazReader.point.intensity;
+
+          yield return point;
         }
-        if (!File.Exists(lazName))
+      }
+      finally
+      {
+        // Close the reader
+        lazReader.laszip_close_reader();
+      }
+    }
+
+    private IEnumerable<LasUtils.ILasPoint> GetTextLasPoints(string lazPath)
+    {
+      if (!File.Exists(Path.ChangeExtension(lazPath, ".txt")))
+      {
+        if (!File.Exists(lazPath))
+        {
+          if (File.Exists(Path.ChangeExtension(lazPath, ".html")))
+          { File.Move(Path.ChangeExtension(lazPath, ".html"), lazPath); }
+        }
+        if (!File.Exists(lazPath))
         { return null; }
 
         Process p = new Process
@@ -248,19 +307,51 @@ namespace OcadTest
           StartInfo = new ProcessStartInfo
           {
             FileName = @"C:\daten\felix\src\temp\LAStools\bin\las2txt.exe",
-            Arguments = $"-i {lazName} -parse xyzi"
+            Arguments = $"-i {lazPath} -parse xyzi"
           }
         };
         p.Start();
         p.WaitForExit();
       }
 
-      using (TextReader reader = new StreamReader(Path.ChangeExtension(lazName, ".txt")))
+      string lasTxtPath = Path.ChangeExtension(lazPath, ".txt");
+      return LasTextReader.GetPoints(lasTxtPath);
+    }
+
+    private class LasPoint : LasUtils.ILasPoint
+    {
+      public double X { get; set; }
+      public double Y { get; set; }
+      public double Z { get; set; }
+      public int Intensity { get; set; }
+    }
+
+    private class LasTextReader
+    {
+      public static IEnumerable<LasUtils.ILasPoint> GetPoints(string lasFilePath)
       {
-        DoubleGrid grd = LasUtils.CreateGrid(reader, resolution, grdFct);
-        return grd;
+        using (TextReader reader = new StreamReader(lasFilePath))
+        {
+          return GetPoints(reader);
+        }
+      }
+      public static IEnumerable<LasUtils.ILasPoint> GetPoints(TextReader reader)
+      {
+        string line;
+        while ((line = reader.ReadLine()) != null)
+        {
+          IList<string> parts = line.Split();
+          yield return new LasPoint
+          {
+            X = double.Parse(parts[0]),
+            Y = double.Parse(parts[1]),
+            Z = double.Parse(parts[2]),
+            Intensity = int.Parse(parts[3])
+          };
+        }
       }
     }
+
 
     [TestMethod]
     public void TestWriteBildObjekte()

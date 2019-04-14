@@ -222,10 +222,11 @@ namespace Grid
     {
       if (!File.Exists(name))
       { return null; }
-      TextReader pFile = new StreamReader(name);
-      GridExtent pExtent = FromWorldFile(pFile);
-      pFile.Close();
-      return pExtent;
+      using (TextReader pFile = new StreamReader(name))
+      {
+        GridExtent pExtent = FromWorldFile(pFile);
+        return pExtent;
+      }
     }
 
     public int Nx

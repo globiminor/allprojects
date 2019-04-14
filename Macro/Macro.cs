@@ -113,14 +113,17 @@ namespace Macro
       public IList<WindowPtr> Windows { get { return _windows; } }
     }
 
-    public IntPtr SetForegroundWindow(string textStart)
+    public IntPtr SetForegroundWindow(string textStart) => SetForegroundWindow(textStart, out string fullText);
+    public IntPtr SetForegroundWindow(string textStart, out string fullText)
     {
       IntPtr hWnd = IntPtr.Zero;
       WindowsHandler w = new WindowsHandler();
       w.InitWindows();
+      fullText = null;
       foreach (var window in w.Windows)
       {
-        if (window.GetWindowText().ToUpper().Contains(textStart.ToUpper()))
+        fullText = window.GetWindowText();
+        if (fullText.ToUpper().Contains(textStart.ToUpper()))
         {
           hWnd = window.HWnd;
           break;

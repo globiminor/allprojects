@@ -1,9 +1,9 @@
 ﻿using Android.App;
-using Android.Graphics;
 using Android.Locations;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
+using Basics.Views;
 using OMapScratch.ViewModels;
 using OMapScratch.Views;
 
@@ -57,7 +57,7 @@ namespace OMapScratch
             string displayPath = imgPath;
             if (displayPath.StartsWith(defaultPath, System.StringComparison.InvariantCultureIgnoreCase))
             { displayPath = displayPath.Substring(defaultPath.Length).TrimStart('/'); }
-            _activity._mapView.ShowText($"Image saved to {displayPath}");
+            Utils.ShowText($"Image saved to {displayPath}");
           }
         });
         return true;
@@ -86,7 +86,7 @@ namespace OMapScratch
           {
             if (!_activity.MapVm.HasGlobalLocation())
             {
-              _activity.MapView.ShowText("Unknown Georeference, please set location (Edit tool -> map click -> set location).", false);
+              Utils.ShowText("Unknown Georeference, please set location (Edit tool -> map click -> set location).", false);
             }
             else
             {
@@ -261,7 +261,6 @@ namespace OMapScratch
         _mapView.Id = View.GenerateViewId();
       }
       _parentLayout.AddView(_mapView);
-      Utils.MapView = _mapView;
       ConstrView constrView = new ConstrView(_mapView);
       {
         RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent);
@@ -285,27 +284,8 @@ namespace OMapScratch
         _parentLayout.AddView(mapCtxMenu);
       }
       {
-        HorizontalScrollView scroll = new HorizontalScrollView(this);
-        {
-          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-          lprams.AddRule(LayoutRules.AlignParentBottom);
-          scroll.LayoutParameters = lprams;
-        }
-        _parentLayout.AddView(scroll);
-
-        {
-          TextView txtInfo = new TextView(this);
-
-          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-          txtInfo.LayoutParameters = lprams;
-          txtInfo.Visibility = ViewStates.Invisible;
-          txtInfo.SetBackgroundColor(Color.LightGray);
-          txtInfo.SetTextColor(Color.Black);
-          txtInfo.SetHorizontallyScrolling(true);
-
-          _mapView.TextInfo = txtInfo;
-          scroll.AddView(txtInfo);
-        }
+        Utils.CreateTextInfo(_parentLayout, "OMapScratch");
+        Utils.TextInfoSuccessAction = (success) => _mapView.KeepInfoOnDraw = success;
       }
 
       LinearLayout lloTools = FindViewById<LinearLayout>(Resource.Id.lloTools);
@@ -703,7 +683,7 @@ namespace OMapScratch
         }
         else
         {
-          MapView.ShowText("Unknown location. Ensure location is active and set", false);
+          Utils.ShowText("Unknown location. Ensure location is active and set", false);
         }
       });
       lloTools.AddView(btnLoc);

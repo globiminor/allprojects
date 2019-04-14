@@ -1,6 +1,7 @@
 
 using Android.Graphics;
 using Android.Widget;
+using Basics.Views;
 using OMapScratch.ViewModels;
 using System.Collections.Generic;
 
@@ -28,7 +29,7 @@ namespace OMapScratch.Views
           try
           {
             canvas.Translate(Width - 1.2f * Height, 0);
-            Utils.DrawSymbol(new Graphics(canvas), _elem.Symbol, _elem.Color?.Color ?? DefaultColor, Height, Height, 1);
+            MapUtils.DrawSymbol(new Graphics(canvas), _elem.Symbol, _elem.Color?.Color ?? DefaultColor, Height, Height, 1);
           }
           finally
           { canvas.Restore(); }
@@ -45,7 +46,7 @@ namespace OMapScratch.Views
     private IPointAction _nextPointAction;
 
     private ContextMenuView _contextMenu;
-    private bool _keepTextOnDraw;
+    public bool KeepInfoOnDraw { get; set; }
     private float? _elemTextSize;
 
     private static Matrix _staticElemMatrix;
@@ -78,7 +79,9 @@ namespace OMapScratch.Views
       ConstrView.PostInvalidate();
     }
     void ILocationView.ShowText(string text)
-    { ShowText(text); }
+    {
+      Utils.ShowText(text);
+    }
 
     void ICompassView.SetAngle(float? angle)
     {
@@ -95,8 +98,6 @@ namespace OMapScratch.Views
       get { return _contextMenu; }
       set { _contextMenu = value; }
     }
-    internal TextView TextInfo
-    { get; set; }
 
     internal bool HideCompass { get; set; }
 
@@ -106,8 +107,8 @@ namespace OMapScratch.Views
     {
       _editPnt = null;
       _nextPointAction = null;
-      TextInfo.Visibility = Android.Views.ViewStates.Gone;
-      TextInfo.PostInvalidate();
+      Utils.TextInfo.Visibility = Android.Views.ViewStates.Gone;
+      Utils.TextInfo.PostInvalidate();
 
       if (clearMenu && ContextMenu.Visibility == Android.Views.ViewStates.Visible)
       {
@@ -132,7 +133,7 @@ namespace OMapScratch.Views
     void IMapView.SetNextPointAction(IPointAction actionWithNextPoint)
     {
       _nextPointAction = actionWithNextPoint;
-      ShowText(actionWithNextPoint?.Description);
+      Utils.ShowText(actionWithNextPoint?.Description);
     }
 
     void IMapView.SetNextLocationAction(ILocationAction action)
@@ -149,46 +150,30 @@ namespace OMapScratch.Views
 
     void IMapView.ShowText(string text, bool success)
     {
-      ShowText(text, success);
-      _keepTextOnDraw = true;
-    }
-    public void ShowText(string text, bool success = true)
-    {
-      if (string.IsNullOrWhiteSpace(text))
-      {
-        TextInfo.Visibility = Android.Views.ViewStates.Gone;
-      }
-      else
-      {
-        TextInfo.Text = text;
-        TextInfo.SetTextColor(success ? Color.Black : Color.Red);
-        TextInfo.Visibility = Android.Views.ViewStates.Visible;
-        _keepTextOnDraw = success;
-      }
-      TextInfo.PostInvalidate();
+      Utils.ShowText(text, success);
     }
 
     void IMapView.SetGetSymbolAction(ISymbolAction symbolAction)
     {
-      ShowText(symbolAction.Description);
+      Utils.ShowText(symbolAction.Description);
 
       _context.ShowSymbols((mode) =>
       {
         if (mode is SymbolButton btn)
         {
           bool success = symbolAction.Action(btn.Symbol, btn.Color, out string message);
-          ShowText(message, success);
+          Utils.ShowText(message, success);
           if (success)
           { PostInvalidate(); }
         }
         else
-        { ShowText("No valid symbol button", false); }
+        { Utils.ShowText("No valid symbol button", false); }
       });
     }
 
     void IMapView.SetGetColorAction(IColorAction colorAction)
     {
-      ShowText(colorAction.Description);
+      Utils.ShowText(colorAction.Description);
 
       _context.ShowColors((clr) => colorAction.Action(clr));
     }
@@ -287,7 +272,7 @@ namespace OMapScratch.Views
       {
         if (_elemMatrix == null)
         {
-          _elemMatrix = Utils.GetPairedMatrix(ImageMatrix, ImageMapMatrix);
+          _elemMatrix = MapUtils.GetPairedMatrix(ImageMatrix, ImageMapMatrix);
           _staticElemMatrix?.Dispose();
           _staticElemMatrix = new Matrix(_elemMatrix);
         }
@@ -299,7 +284,7 @@ namespace OMapScratch.Views
       ResetElemMatrix();
       _elemMatrix?.Dispose();
       _elemMatrix = elem;
-      ImageMatrix = Utils.GetPairedMatrix(elem, InverseImageMapMatrix);
+      ImageMatrix = MapUtils.GetPairedMatrix(elem, InverseImageMapMatrix);
 
       if (postInvalidate)
       { PostInvalidate(); }
@@ -402,7 +387,7 @@ namespace OMapScratch.Views
       Matrix imgMat;
       if (_elemMatrix != null)
       {
-        imgMat = Utils.GetPairedMatrix(_elemMatrix, InverseImageMapMatrix);
+        imgMat = MapUtils.GetPairedMatrix(_elemMatrix, InverseImageMapMatrix);
       }
       else
       {
@@ -723,7 +708,7 @@ namespace OMapScratch.Views
           maxExtent = MaxExtent;
 
           Matrix imageMatrix = new Matrix();
-          Matrix elemMatrix = Utils.GetPairedMatrix(imageMatrix, GetImageMapMatrix(worldMatrix, MapOffset));
+          Matrix elemMatrix = MapUtils.GetPairedMatrix(imageMatrix, GetImageMapMatrix(worldMatrix, MapOffset));
           float[] elemMatrixValues = new float[9];
           elemMatrix.GetValues(elemMatrixValues);
           Matrix inverseElemMatrix = new Matrix();
@@ -746,8 +731,8 @@ namespace OMapScratch.Views
     {
       base.OnDraw(canvas);
 
-      if (!_keepTextOnDraw)
-      { ShowText(null); }
+      if (!KeepInfoOnDraw)
+      { Utils.ShowText(null); }
 
       //      DrawElems(canvas, _context.MapVm.Elems, MaxExtent, ElemMatrixValues, null);
       {

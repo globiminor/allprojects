@@ -55,8 +55,8 @@ namespace OcadTest
       List<DataDoubleGrid> grs = new List<DataDoubleGrid>();
       grs.Add(DataDoubleGrid.FromAsciiFile(dir + "ETH_Hoenggerberg_velo_e.agr", 0, 0.01, typeof(double)));
       grs.Add(DataDoubleGrid.FromAsciiFile(dir + "Chaeferberg_velo_e.agr", 0, 0.01, typeof(double)));
-      ImageGrid.GridToTif((grs[0] * 10).ToIntGrid() % 256, dir + "dhm0.tif", r, g, b);
-      ImageGrid.GridToTif((grs[1] * 10).ToIntGrid() % 256, dir + "dhm1.tif", r, g, b);
+      ImageGrid.GridToImage((grs[0] * 10).ToIntGrid() % 256, dir + "dhm0.tif", r, g, b);
+      ImageGrid.GridToImage((grs[1] * 10).ToIntGrid() % 256, dir + "dhm1.tif", r, g, b);
 
       DataDoubleGrid comb = new DataDoubleGrid(1500, 1000, typeof(double), 680001, 251999, 2);
       for (int ix = 0; ix < comb.Extent.Nx; ix++)
@@ -78,7 +78,7 @@ namespace OcadTest
         }
       }
       comb.SaveASCII(dir + "dhm.asc", "N2");
-      ImageGrid.GridToTif((comb * 10).ToIntGrid() % 256, dir + "dhm.tif", r, g, b);
+      ImageGrid.GridToImage((comb * 10).ToIntGrid() % 256, dir + "dhm.tif", r, g, b);
     }
 
     [TestMethod]

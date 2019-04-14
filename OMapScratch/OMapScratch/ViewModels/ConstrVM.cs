@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Basics.Views;
+using System;
 using System.Collections.Generic;
 
 namespace OMapScratch.ViewModels
@@ -223,7 +224,7 @@ namespace OMapScratch.ViewModels
 
       void IPointAction.Action(Pnt pnt)
       {
-        float? azi = 90 - (_constrVm._view.MapView.MapVm.CurrentOrientation + Views.Utils.GetSurfaceOrientation());
+        float? azi = 90 - (_constrVm._view.MapView.MapVm.CurrentOrientation + Utils.GetSurfaceOrientation());
         if (azi == null)
         { return; }
 
@@ -284,7 +285,7 @@ namespace OMapScratch.ViewModels
       string IPointAction.Description { get { return "Orientate this device corresponding to the environment, and click on map when ready"; } }
       void IPointAction.Action(Pnt pnt)
       {
-        float? decl = 90 - (_mapVm.CurrentOrientation + Views.Utils.GetSurfaceOrientation());
+        float? decl = 90 - (_mapVm.CurrentOrientation + Utils.GetSurfaceOrientation());
         decl = decl % 360;
         _mapVm.SetDeclination(decl);
         _mapView.StartCompass(hide: false);

@@ -3,12 +3,18 @@ using Basics.Geom;
 using Grid;
 using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace Dhm
 {
   public static class LasUtils
   {
+    public interface ILasPoint
+    {
+      double X { get; }
+      double Y { get; }
+      double Z { get; }
+      int Intensity { get; }
+    }
     private class LasPoint
     {
       public float X { get; set; }
@@ -367,19 +373,14 @@ namespace Dhm
       }
     }
 
-    public static DoubleGrid CreateGrid(TextReader reader, double res, Func<int, int, Func<int, int, List<Point>>, double> grdFct)
+    public static DoubleGrid CreateGrid(IEnumerable<ILasPoint> lasPointsEnum, double res, Func<int, int, Func<int, int, List<Point>>, double> grdFct)
     {
       Dictionary<Cell, List<LasPoint>> ptsDict = new Dictionary<Cell, List<LasPoint>>(new CellComparer());
 
-      string line;
-      while ((line = reader.ReadLine()) != null)
+      foreach (ILasPoint lp in lasPointsEnum)
       {
-        IList<string> parts = line.Split();
-        double x = double.Parse(parts[0]);
-        double y = double.Parse(parts[1]);
-        double z = double.Parse(parts[2]);
-        int intens = int.Parse(parts[3]);
-
+        double x = lp.X;
+        double y = lp.Y;
         int ix = (int)(x / res);
         int iy = (int)(y / res);
 
@@ -387,8 +388,8 @@ namespace Dhm
         {
           X = (float)(x - ix * res),
           Y = (float)(y - iy * res),
-          Z = (float)z,
-          Intesity = intens
+          Z = (float)lp.Z,
+          Intesity = lp.Intensity
         };
 
         Cell key = new Cell { IX = ix, IY = iy };

@@ -1,5 +1,6 @@
 ﻿
 using Android.Widget;
+using Basics.Views;
 
 namespace OMapScratch.Views
 {

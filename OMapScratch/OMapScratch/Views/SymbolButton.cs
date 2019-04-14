@@ -140,7 +140,7 @@ namespace OMapScratch.Views
     internal override void OnDrawCore(MapButton canvasOwner, Canvas canvas)
     {
       //base.OnDraw(canvas);
-      Utils.DrawSymbol(new Graphics(canvas), Symbol, Color.Color, canvasOwner.Width, canvasOwner.Height, 2);
+      MapUtils.DrawSymbol(new Graphics(canvas), Symbol, Color.Color, canvasOwner.Width, canvasOwner.Height, 2);
     }
   }
 

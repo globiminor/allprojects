@@ -9,6 +9,7 @@
     <Import_RootNamespace>OMapScratch</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)BaseVm.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ContextAction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Data.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GeoImage.cs" />

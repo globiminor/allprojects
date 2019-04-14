@@ -1,14 +1,12 @@
-﻿using Android.Widget;
-/*using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace ToDos.Views
+namespace Basics.ViewModels
 {
   public enum BindingMode { OneTime, OneWay, TwoWay };
 
-  [Obsolete("move")]
   public abstract class BaseVm
   {
     private class SetTransaction : IDisposable
@@ -89,7 +87,6 @@ namespace ToDos.Views
 
   }
 
-  [Obsolete("move")]
   public abstract class Binding
   {
     private readonly BaseVm _vm;
@@ -115,14 +112,17 @@ namespace ToDos.Views
 
     public bool PushValue()
     {
-      object value = _getMethod.Invoke(_vm, new object[] { });
-      bool pushed = PushValueCore(value);
+      bool pushed = false;
+      Views.Utils.Try(() =>
+      {
+        object value = _getMethod.Invoke(_vm, new object[] { });
+        pushed = PushValueCore(value);
+      });
       return pushed;
     }
     protected abstract bool PushValueCore(object value);
   }
 
-  [Obsolete("move")]
   public class Binding<T> : Binding
   {
     private readonly Action<T> _setFunc;
@@ -139,7 +139,10 @@ namespace ToDos.Views
 
     public void ValueChanged<TS, TA>(TS sender, TA arg)
     {
-      SetMethod.Invoke(Vm, new object[] { _getFunc() });
+      Views.Utils.Try(() =>
+      {
+        SetMethod?.Invoke(Vm, new object[] { _getFunc() });
+      });
     }
 
     protected override bool PushValueCore(object value)
@@ -152,35 +155,4 @@ namespace ToDos.Views
     }
   }
 
-  public static class DepProps
-  {
-    public static Binding<int> BindToProgress(this SeekBar seekBar, BaseVm vm, string prop, BindingMode mode = BindingMode.TwoWay)
-    {
-      Binding<int> b = new Binding<int>(vm, prop, (t) => seekBar.Progress = t, () => seekBar.Progress);
-      seekBar.ProgressChanged += b.ValueChanged;
-      b.DisposeFct = () => seekBar.ProgressChanged -= b.ValueChanged;
-
-      return b;
-    }
-
-    public static Binding<bool> BindToChecked(this CheckBox checkBox, BaseVm vm, string prop, BindingMode mode = BindingMode.TwoWay)
-    {
-      Binding<bool> b = new Binding<bool>(vm, prop, (t) => checkBox.Checked = t, () => checkBox.Checked);
-      checkBox.CheckedChange += b.ValueChanged;
-      b.DisposeFct = () => checkBox.CheckedChange -= b.ValueChanged;
-
-      return b;
-    }
-
-    public static Binding<string> BindToText(this TextView textView, BaseVm vm, string prop, BindingMode mode = BindingMode.TwoWay)
-    {
-      Binding<string> b = new Binding<string>(vm, prop, (t) => textView.Text = t, () => textView.Text);
-      textView.TextChanged += b.ValueChanged;
-      b.DisposeFct = () => textView.TextChanged -= b.ValueChanged;
-
-      return b;
-    }
-
-  }
 }
-*/

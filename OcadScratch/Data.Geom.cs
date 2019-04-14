@@ -26,7 +26,7 @@ namespace OMapScratch
     {
       if (matrix == null)
         return Clone();
-      return Project(new MatrixPrj(matrix));
+      return Project(new MatrixPrj(matrix)); // TODO
     }
   }
 
@@ -92,6 +92,13 @@ namespace OMapScratch
     }
   }
 
+  partial class MatrixPrj
+  {
+    internal MatrixPrj(float[] matrix)
+    {
+      _matrix = new double[] { matrix[0], matrix[1], matrix[3], matrix[4], matrix[2], matrix[5] };
+    }
+  }
   partial class GeoImage
   {
     public Part InitPart(string path)

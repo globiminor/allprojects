@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace ToDos.Shared
 {
-  public class ToDoVm : Views.BaseVm
+  public class ToDoVm : Basics.ViewModels.BaseVm
   {
     private readonly ToDo _toDo;
     private bool _timesSorted;
@@ -43,6 +43,21 @@ namespace ToDos.Shared
         Changed();
       }
     }
+
+    public string DueDateString => DueTime.ToString("dd.MM.yyyy HH:mm");
+
+    public string IntervallString
+    {
+      get
+      {
+        int minutes = (int)Math.Round(_toDo.Repeat.TotalMinutes);
+        int hours = minutes / 60;
+        int days = hours / 24;
+
+        return $"{days} {hours % 24:00}:{minutes % 60:00}";
+      }
+    }
+
     public IReadOnlyList<DateTime> CompletedTimes
     {
       get

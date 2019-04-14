@@ -1,7 +1,7 @@
-﻿using Android.Content;
-using Android.Graphics;
+﻿using Android.Graphics;
 using Android.Views;
 using Android.Widget;
+using Basics.Views;
 using OMapScratch.Views;
 using System.Collections.Generic;
 

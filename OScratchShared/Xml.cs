@@ -95,7 +95,23 @@ namespace OMapScratch
     public string Name { get; set; }
     [XmlAttribute("path")]
     public string Path { get; set; }
+
+    [XmlElement("komb")]
+    public List<XmlImageKomb> Kombinations { get; set; }
   }
+  public class XmlImageKomb
+  {
+    [XmlElement("part")]
+    public List<XmlImageKombPart> Parts { get; set; }
+  }
+  public class XmlImageKombPart
+  {
+    [XmlAttribute("name")]
+    public string Name { get; set; }
+    [XmlAttribute("t")]
+    public string ColorTransform { get; set; }
+  }
+
   public class XmlOffset
   {
     [XmlAttribute("x")]

@@ -346,12 +346,12 @@ namespace LeastCostPathUI
       }
       if (lcp.ssCostTif != null && startLcg?.CostGrid != null)
       {
-        ImageGrid.GridToTif(DoubleGrid.ToIntGrid(startLcg.CostGrid) % 256, lcp.ssCostTif, r, g, b);
+        ImageGrid.GridToImage(DoubleGrid.ToIntGrid(startLcg.CostGrid) % 256, lcp.ssCostTif, r, g, b);
       }
       if (lcp.ssDirTif != null && startLcg?.DirGrid != null)
       {
         // make sure that the start point cell returns a valid value for the step angle array
-        ImageGrid.GridToTif(((step[IntGrid.Add(startLcg.DirGrid, -1).Abs() % step.Count] / Math.PI + 1.0) * 128).ToIntGrid(),
+        ImageGrid.GridToImage(((step[IntGrid.Add(startLcg.DirGrid, -1).Abs() % step.Count] / Math.PI + 1.0) * 128).ToIntGrid(),
                             lcp.ssDirTif, r, g, b);
       }
       if (lcp.seCostGrd != null)
@@ -370,12 +370,12 @@ namespace LeastCostPathUI
       }
       if (lcp.seCostTif != null && endLcg?.CostGrid != null)
       {
-        ImageGrid.GridToTif(DoubleGrid.ToIntGrid(endLcg.CostGrid) % 256, lcp.seCostTif, r, g, b);
+        ImageGrid.GridToImage(DoubleGrid.ToIntGrid(endLcg.CostGrid) % 256, lcp.seCostTif, r, g, b);
       }
       if (lcp.seDirTif != null && endLcg?.DirGrid != null)
       {
         // make sure that the end point cell returns a valid value for the step angle array
-        ImageGrid.GridToTif(((step[IntGrid.Add(endLcg.DirGrid, -1).Abs() % step.Count] / Math.PI + 1.0) * 128).ToIntGrid(),
+        ImageGrid.GridToImage(((step[IntGrid.Add(endLcg.DirGrid, -1).Abs() % step.Count] / Math.PI + 1.0) * 128).ToIntGrid(),
                             lcp.seDirTif, r, g, b);
       }
 
@@ -390,7 +390,7 @@ namespace LeastCostPathUI
       if (lcp.sCostTif != null)
       {
         if (grdSum == null) grdSum = GetSum(startLcg.CostGrid, endLcg.CostGrid, costPath.GetGridExtent());
-        ImageGrid.GridToTif((grdSum - grdSum.Min()).ToIntGrid() % 256, lcp.sCostTif, r, g, b);
+        ImageGrid.GridToImage((grdSum - grdSum.Min()).ToIntGrid() % 256, lcp.sCostTif, r, g, b);
       }
       if (lcp.sRouteShp != null || lcp.sRouteTif != null)
       {
@@ -526,7 +526,7 @@ namespace LeastCostPathUI
         }
       }
 
-      ImageGrid.GridToTif(img, routeName, r, g, b);
+      ImageGrid.GridToImage(img, routeName, r, g, b);
     }
 
     private static double RouteValue(double value)

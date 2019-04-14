@@ -71,7 +71,7 @@
     <Compile Include="Settings.cs" />
     <Compile Include="ViewModels\ConstrVm.cs" />
     <Compile Include="Views\ActionButton.cs" />
-    <Compile Include="Views\Bindings.cs" />
+    <Compile Include="Views\MapUtils.cs" />
     <Compile Include="Views\ConstrView.cs" />
     <Compile Include="Views\ContextMenuView.cs" />
     <Compile Include="Views\FileBrowser.cs" />

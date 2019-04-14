@@ -124,7 +124,7 @@ namespace LeastCostPathUI
         if (CostGrid != null)
         { DoubleGrid.Save(lcg.CostGrid, CostGrid); }
         if (CostImage != null)
-        { ImageGrid.GridToTif(DoubleGrid.ToIntGrid(lcg.CostGrid) % 256, CostImage, r, g, b); }
+        { ImageGrid.GridToImage(DoubleGrid.ToIntGrid(lcg.CostGrid) % 256, CostImage, r, g, b); }
       }
       if (lcg.DirGrid != null)
       {
@@ -134,7 +134,7 @@ namespace LeastCostPathUI
         {
           // make sure that the start point cell returns a valid value for the step angle array
           IntGrid angleGrid = ((lcg.Steps[IntGrid.Add(lcg.DirGrid, -1).Abs() % lcg.Steps.Count] / Math.PI + 1.0) * 128).ToIntGrid();
-          ImageGrid.GridToTif(angleGrid, DirImage, r, g, b);
+          ImageGrid.GridToImage(angleGrid, DirImage, r, g, b);
         }
       }
     }
@@ -151,7 +151,7 @@ namespace LeastCostPathUI
         if (CostGrid != null)
         { DoubleGrid.Save(grid, CostGrid); }
         if (CostImage != null)
-        { ImageGrid.GridToTif(DoubleGrid.ToIntGrid(grid) % 256, CostImage, r, g, b); }
+        { ImageGrid.GridToImage(DoubleGrid.ToIntGrid(grid) % 256, CostImage, r, g, b); }
       }
     }
 

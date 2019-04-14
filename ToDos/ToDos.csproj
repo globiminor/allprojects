@@ -56,9 +56,13 @@
     <Reference Include="Mono.Android" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\OMapScratch\OMapScratch\Views\Utils.cs">
+      <Link>Views\Utils.cs</Link>
+    </Compile>
     <Compile Include="MainActivity.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Shared\BaseVm.cs" />
     <Compile Include="Shared\ToDo.cs" />
     <Compile Include="Shared\ToDosVm.cs" />
     <Compile Include="Shared\ToDoVm.cs" />

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace OMapScratch
 {
@@ -36,7 +37,8 @@ namespace OMapScratch
   {
     public GeoImage BaseImage { get; }
     private double[] _worldMatrix;
-    private double _transparency;
+    private float _transparency;
+    private float[] _colorTransform;
 
     public GeoImageView(GeoImage baseImage)
     {
@@ -49,10 +51,43 @@ namespace OMapScratch
       return _worldMatrix;
     }
 
-    public double Transparency
+    public float Transparency
     {
       get => _transparency;
-      set { _transparency = Math.Max(0, Math.Min(1, value)); }
+      set
+      {
+        _transparency = Math.Max(0, Math.Min(1, value));
+        _colorTransform = null;
+      }
+    }
+
+    public string ColorTransformText
+    {
+      get => string.Concat(_colorTransform?.Select(x => $"{x},")).Trim(',');
+      set
+      {
+        _colorTransform = null;
+        if (string.IsNullOrWhiteSpace(value))
+          return;
+        IList<string> parts = value.Split(',');
+        if (parts.Count == 0)
+          return;
+        if (parts.Count == 1)
+        {
+          _transparency = float.Parse(parts[0]);
+          return;
+        }
+        if (parts.Count != 20)
+        {
+          return;
+        }
+        List<float> colorTransform = new List<float>();
+        foreach (var part in parts)
+        {
+          colorTransform.Add(float.Parse(part));
+        }
+        _colorTransform = colorTransform.ToArray();
+      }
     }
   }
 
@@ -60,7 +95,7 @@ namespace OMapScratch
   {
     void Invalidate();
   }
-  public partial class GeoImageVm : Views.BaseVm
+  public partial class GeoImageVm : Basics.ViewModels.BaseVm
   {
     private readonly GeoImage _baseImage;
     private int _opacity;
@@ -122,7 +157,7 @@ namespace OMapScratch
 
       GeoImageComb comb = new GeoImageComb(_baseImage);
       GeoImageView baseImg = new GeoImageView(_baseImage);
-      baseImg.Transparency = 1 - Opacity / 100.0;
+      baseImg.Transparency = 1 - Opacity / 100.0f;
       comb.Add(baseImg);
       foreach (var img in _combinations)
       {
@@ -130,7 +165,7 @@ namespace OMapScratch
         { continue; }
 
         GeoImageView part = new GeoImageView(img.BaseImage);
-        part.Transparency = 1 - img.Opacity / 100.0;
+        part.Transparency = 1 - img.Opacity / 100.0f;
         comb.Add(part);
       }
       _container.Replace(_editView, comb);
@@ -332,11 +367,41 @@ namespace OMapScratch
       if (xmlImages == null)
       { return null; }
       List<GeoImageViews> images = new List<GeoImageViews>();
-      foreach (XmlImage xml in xmlImages)
+      Dictionary<string, GeoImageViews> baseImages = new Dictionary<string, GeoImageViews>();
+      foreach (var xml in xmlImages)
       {
         GeoImage img = Create(xml);
         img.ConfigDir = configDir;
-        images.Add(new GeoImageViews(img));
+        GeoImageViews views = new GeoImageViews(img);
+        images.Add(views);
+        baseImages[img.Name] = views;
+      }
+      foreach (var xml in xmlImages)
+      {
+        if (xml.Kombinations == null)
+        { continue; }
+        GeoImageViews views = baseImages[xml.Name];
+        if (views.BaseImage.ImagePath != xml.Path)
+        { continue; }
+        foreach (var xmlKomb in xml.Kombinations)
+        {
+          if (xmlKomb.Parts == null)
+          { continue; }
+          GeoImageComb view = new GeoImageComb(views.BaseImage);
+          foreach (var xmlPart in xmlKomb.Parts)
+          {
+            if (!baseImages.TryGetValue(xmlPart.Name, out GeoImageViews baseImage))
+            {
+              view = null;
+              break;
+            }
+            view.Add(new GeoImageView(baseImage.BaseImage) { ColorTransformText = xmlPart.ColorTransform });
+          }
+          if (view == null)
+          { continue; }
+
+          views.Replace(null, view);
+        }
       }
       return images;
     }

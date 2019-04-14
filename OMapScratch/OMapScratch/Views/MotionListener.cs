@@ -1,6 +1,7 @@
 
 using Android.Graphics;
 using Android.Views;
+using Basics.Views;
 
 namespace OMapScratch.Views
 {

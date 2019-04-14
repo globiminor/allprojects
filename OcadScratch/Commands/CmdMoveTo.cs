@@ -46,14 +46,24 @@ namespace OcadScratch.Commands
 
 
       Processor macro = new Processor();
-      if (macro.SetForegroundWindow("OCAD") == System.IntPtr.Zero)
+      string fullText;
+      if (macro.SetForegroundWindow("OCAD", out fullText) == System.IntPtr.Zero)
       {
         Error = "Keine OCAD-Instanz gefunden";
         return false;
       }
 
-      macro.SendCommands('n', Ui.VK_ALT);
-      macro.SendKey('c');
+      if (!fullText.Contains("2018"))
+      {
+        // OCAD 12
+        macro.SendCommands('n', Ui.VK_ALT);
+        macro.SendKey('c');
+      }
+      else
+      {
+        // OCAD 2018 mit Shortcut ALT + Z
+        macro.SendCommands('z', Ui.VK_ALT);
+      }
 
       System.Threading.Thread.Sleep(500);
       macro.SendKeys($"{x:f0}");

@@ -4,6 +4,8 @@ using Android.Graphics;
 using Android.Views;
 using Android.Widget;
 using ToDos.Shared;
+using Basics.Views;
+using Basics.ViewModels;
 
 namespace ToDos.Views
 {
@@ -11,6 +13,8 @@ namespace ToDos.Views
   {
     private readonly CheckBox _chkCompleted;
     private readonly TextView _txtName;
+    private readonly TextView _txtDueDate;
+    private readonly TextView _txtIntervall;
     private readonly View _warnView;
     private readonly IToDosView _toDosView;
 
@@ -48,11 +52,33 @@ namespace ToDos.Views
         TextView txtName = new TextView(Context);
         {
           RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+          lprams.Width = (int)(30 * Utils.GetMmPixel(txtName));
+          lprams.MarginStart = (int)Utils.GetMmPixel(txtName);
           txtName.LayoutParameters = lprams;
         }
         AddView(txtName);
         _txtName = txtName;
       }
+      {
+        TextView txtDateDue = new TextView(Context);
+        {
+          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+          txtDateDue.LayoutParameters = lprams;
+        }
+        AddView(txtDateDue);
+        _txtDueDate = txtDateDue;
+      }
+      {
+        TextView txtIntervall = new TextView(Context);
+        {
+          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+          lprams.MarginStart = (int)(2 * Utils.GetMmPixel(txtIntervall));
+          txtIntervall.LayoutParameters = lprams;
+        }
+        AddView(txtIntervall);
+        _txtIntervall = txtIntervall;
+      }
+
     }
 
     private double _urgency;
@@ -98,6 +124,8 @@ namespace ToDos.Views
 
         _chkCompleted.BindToChecked(value, nameof(value.IsCompleted));
         _txtName.BindToText(value, nameof(value.Name));
+        _txtDueDate.BindToText(value, nameof(value.DueDateString));
+        _txtIntervall.BindToText(value, nameof(value.IntervallString));
 
         new Binding<double>(value, nameof(value.Urgency), (t) => Urgency = t, () => Urgency);
         new Binding<int>(value, nameof(value.UrgencyChange), (t) => UrgencyChange = t, () => UrgencyChange);

@@ -63,7 +63,14 @@ namespace OMapScratch
       using (Paint p = new Paint())
       {
         p.Color = Color.White;
-        p.Alpha = Math.Max(0, Math.Min(255, (int)(255 * (1 - _transparency))));
+        if (_colorTransform == null)
+        {
+          p.Alpha = Math.Max(0, Math.Min(255, (int)(255 * (1 - _transparency))));
+        }
+        else
+        {
+          p.SetColorFilter(new ColorMatrixColorFilter(_colorTransform));
+        }
         BaseImage.LoadImageParts(imagePrj, nx, ny, ref bitmap, p);
       }
     }

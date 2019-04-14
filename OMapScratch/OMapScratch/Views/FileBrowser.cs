@@ -2,6 +2,7 @@
 using Android.Graphics;
 using Android.Views;
 using Android.Widget;
+using Basics.Views;
 using System.Collections.Generic;
 
 namespace OMapScratch.Views

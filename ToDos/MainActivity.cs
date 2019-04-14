@@ -24,9 +24,6 @@ namespace ToDos
       Android.Support.V7.Widget.Toolbar toolbar = FindViewById<Android.Support.V7.Widget.Toolbar>(Resource.Id.toolbar);
       SetSupportActionBar(toolbar);
 
-      FloatingActionButton fab = FindViewById<FloatingActionButton>(Resource.Id.fab);
-      fab.Click += FabOnClick;
-
       _parentLayout = FindViewById<RelativeLayout>(Resource.Id.parentLayout);
 
       ScrollView scroll = new ScrollView(this);
@@ -35,6 +32,7 @@ namespace ToDos
         scroll.LayoutParameters = lprams;
       }
       _parentLayout.AddView(scroll);
+      Basics.Views.Utils.CreateTextInfo(_parentLayout, "ToDos");
 
 
       _toDos = ToDosView.Create(this);
@@ -81,13 +79,6 @@ namespace ToDos
       }
 
       return base.OnOptionsItemSelected(item);
-    }
-
-    private void FabOnClick(object sender, EventArgs eventArgs)
-    {
-      View view = (View)sender;
-      Snackbar.Make(view, "Replace with your own action", Snackbar.LengthLong)
-          .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();
     }
   }
 }
