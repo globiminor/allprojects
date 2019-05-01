@@ -157,6 +157,13 @@ namespace Basics.Views
 
       return b;
     }
+
+    public static Binding<bool> BindToEnabled(this View view, BaseVm vm, string prop, BindingMode mode = BindingMode.TwoWay)
+    {
+      Binding<bool> b = new Binding<bool>(vm, prop, (t) => view.Enabled = t, () =>  view.Enabled);
+      return b;
+    }
+
   }
 
 }

@@ -61,6 +61,29 @@ namespace OMapScratch
       }
     }
 
+    private int _gray;
+    public int Gray
+    {
+      get => _gray;
+      set
+      {
+        _gray = value;
+        _colorTransform = null;
+      }
+    }
+
+    private int _colorRot;
+    public int ColorRotation
+    {
+      get => _colorRot;
+      set
+      {
+        _colorRot = value;
+        _colorTransform = null;
+      }
+    }
+
+
     public string ColorTransformText
     {
       get => string.Concat(_colorTransform?.Select(x => $"{x},")).Trim(',');
@@ -150,6 +173,36 @@ namespace OMapScratch
       }
     }
 
+    private int _gray;
+    public int Gray
+    {
+      get => _gray;
+      set
+      {
+        if (SetStruct(ref _gray, value))
+        {
+          Changed(null);
+          Container?.Invalidate();
+        }
+      }
+    }
+    public bool GrayEnabled => ColorRotation <= 0;
+
+    private int _colorRot;
+    public int ColorRotation
+    {
+      get => _colorRot;
+      set
+      {
+        if (SetStruct(ref _colorRot, value))
+        {
+          Changed(null);
+          Container?.Invalidate();
+        }
+      }
+    }
+    public bool ColorRotationEnabled => Gray <= 0;
+
     public void Save()
     {
       if (_container == null || _combinations == null)
@@ -158,6 +211,8 @@ namespace OMapScratch
       GeoImageComb comb = new GeoImageComb(_baseImage);
       GeoImageView baseImg = new GeoImageView(_baseImage);
       baseImg.Transparency = 1 - Opacity / 100.0f;
+      baseImg.Gray = Gray;
+      baseImg.ColorRotation = ColorRotation;
       comb.Add(baseImg);
       foreach (var img in _combinations)
       {
@@ -166,6 +221,8 @@ namespace OMapScratch
 
         GeoImageView part = new GeoImageView(img.BaseImage);
         part.Transparency = 1 - img.Opacity / 100.0f;
+        part.Gray = img.Gray;
+        part.ColorRotation = img.ColorRotation;
         comb.Add(part);
       }
       _container.Replace(_editView, comb);

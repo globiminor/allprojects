@@ -1,0 +1,119 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>OCourse Course</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <h3 id="idCourseFile">Course File</h3>
+    <p>
+        Any OCAD Course setting file can be used as Course file. Supported OCAD Version include OCAD 8 to OCAD 2018.<br />
+        A course Setting file can by either defined by typing the file name or using browser<br />
+        <img src="SelectCourseFile.png" />
+    </p>
+    <p>
+        After a course setting file is selected, the courses defined in the file are ready for selection in the course dropdown list
+        <br />
+        <img src="SelectCourse.png" /><br />
+        When a course gets selected, OCourse starts to interpret the corresponding course definition of the OCAD Course.<br />
+        For most cases, the sections correspond to the OCAD-interpretation.<br />
+        The course is displayed in the <b id="idSectionDisplay">section display</b> and the <a href="#idSectionTable">section table</a>.
+        (The section table is explained in the <a href="./Calculation.html#idCalculationModel">calculation model section)</a>
+        <br />
+        <img src="CourseSimpleSections2.png" /><br />
+        In some special cases, OCourse extends the interpretation of OCAD. For example, if a butterfly section is defined in OCAD,
+        OCourse automatically finds the different <b id="idVariation">variations</b> and displays them. Each found variation is displayed with a letter combination in the sections table.<br />
+        <img src="ButterflyOCAD.png" /><img src="ButterflySections.png" style="margin-left: 12px" /><img src="ButterflyTable.png" style="margin-left: 12px" />
+        <br />
+    </p>
+    <h4>Part Selection</h4>
+    <p>
+        When you press the mouse button on one control and move the mouse while pressed
+        to another control in the sections display, the statistics are displayed for the corresponding selection<br />
+        <img src="ButterflySelecting.png" /><img src="ButterflySelection.png" style="margin-left: 12px" /><img src="ButterflySelectionTable.png" style="margin-left: 12px" />
+    </p>
+    <p>
+        When you <b id="idHoverVariation">hover</b> the mouse over a variation in the sections table, the controls of the variation are displayed as tool tip.<br />
+        <img src="SectionTableHover.png" /><br />
+        When you <b id="idSelectVariation">select a variation</b> in the sections table, the controls are highlighted in the sections display.<br />
+        <img src="SectionTableSelect.png" /><br />
+    </p>
+    <h4>Relay</h4>
+    <p>
+        For each leg in a relay course, the possible variations for the leg are displayed in the sections table.
+        Additionally, the mean lengths of the legs are displayed in the top of the sections table.
+        <br />
+        <img src="RelaySections.png" /><img src="RelayTable.png" /><br />
+        <a href="#idHoverVariation">Hover</a> and <a href="#idSelectVariation">selecting a variation</a> in the sections table have the same effects as described in part selection.
+    </p>
+    <h4>One-Man Relay</h4>
+    <p>
+        Whereas in OCAD, one-man relay is a special mode, OCourse interprets a simple OCAD-course with multiple passages at the start control as one-man relay.<br />
+        <img src="SchlaufeOCAD.png" /><img src="SchlaufeSections.png" /><img src="SchlaufeTable.png" /><br />
+    </p>
+    <h3>Permutations</h3>
+    <p>
+        Permutations are are different possibilities to complete a entire course so, that all sections defined by the course are passed.
+        That means, the full distance of the course is the same, but the order of the passed sections may differ.<br />
+        OCourse calculates permutations for start numbers so, that the order of the sections between the different permutations differ as much as possible.<br />
+        <img src="Permutations.png" />
+    </p>
+    <table style="margin-top: 8px; margin-bottom: 16px">
+        <tr>
+            <td class="imgNr">1</td>
+            <td>Estimated number of permutations of the current course.</td>
+        </tr>
+        <tr>
+            <td class="imgNr">2</td>
+            <td>
+                Current category. If no categories are defined for a course, it's the course name.
+                When you change the categorie, Min. Nr and Max. Nr. changes as defined in OCAD.
+            </td>
+        </tr>
+        <tr>
+            <td class="imgNr">3</td>
+            <td>Min. Nr is the minimum start number to calculate permutations for. Initial value is taken from OCAD.</td>
+        </tr>
+        <tr>
+            <td class="imgNr">4</td>
+            <td>Max. Nr is the maximumn start number to calculate permutations for. Initial value is taken from OCAD.</td>
+        </tr>
+        <tr>
+            <td class="imgNr">5</td>
+            <td>Calculate the permutations for the defined start numbers by Min.Nr and Max.Nr</td>
+        </tr>
+        <tr>
+            <td class="imgNr">6</td>
+            <td>Export the calculated permutations as simple courses to OCAD courses or text files.</td>
+        </tr>
+    </table>
+    Each permutation that is calculated is verified that all sections of the corresponding course are passed.<br />
+    The calculation works so, that at first, the needed number of permutations are built in a sorted manner.
+    After that, the permutations are randomly linked to the start numbers.
+    If the course and the start numbers do not change, the random link does not change, either.
+    <p>
+        The calculated permutations are displayed in the permutation table.<br />
+        <img src="PermutationsTable.png" />
+    </p>
+    <table style="margin-top: 8px; margin-bottom: 16px">
+        <tr>
+            <td>StartNr</td>
+            <td>The linked start number of the permutation.</td>
+        </tr>
+        <tr>
+            <td>Index</td>
+            <td>The index of the permutation in the list of the sortedly calculated permutations.</td>
+        </tr>
+        <tr>
+            <td>Part 1, Part 2, ...</td>
+            <td>
+                Per start control, a part is defined. Generally, this is a leg for relays / one man relay.<br />
+                If you select a part in the permutation table, the corresponding section is highlighted in the <a href="#idSectionTable">section table</a> and the <a href="#idSectionDisplay">section display</a>.
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>

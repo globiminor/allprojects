@@ -229,12 +229,21 @@ namespace LeastCostPathUI
         _parent.SetStepLabel(this, "SUM:");
         _parent.CostPath_Status(this, new StatusEventArgs(null, null, 0, 0, 0, 0));
         _sum = DoubleGrid.Sum(_parent._fromResult.CostGrid, _parent._toResult.CostGrid);
-        _route = _sum - _sum.Min();
+        double min = _parent._fromResult.CostGrid.Value(_to.X, _to.Y);
+        _route = _sum - min;
 
         if (_parent._cancelled)
         {
           return false;
         }
+
+        double limit = 0.9 * min;
+        double replace = 2 * min;
+        DoubleGrid sum = DoubleGrid.Filter(_sum, (ix,iy) =>
+        {
+          double v = _sum[ix, iy];
+          return v < limit ? replace : v;
+        });
 
         if (_calcRoute)
         {
@@ -242,7 +251,7 @@ namespace LeastCostPathUI
           _parent.CostPath_Status(this, new StatusEventArgs(null, null, 0, 0, 0, 0));
 
           //CreateRouteImage(sum, cntRoute.FullName(txtRoute.Text));
-          List<RouteRecord> routes = LeastCostGrid.CalcBestRoutes(_sum, _parent._fromResult,
+          List<RouteRecord> routes = LeastCostGrid.CalcBestRoutes(sum, _parent._fromResult,
             _parent._toResult, _lengthFact, _offset, _parent.CostPath_Status);
 
           _routes = new Basics.Views.BindingListView<RouteRecord>();

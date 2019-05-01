@@ -440,14 +440,21 @@ namespace OCourse.Route
       return routeCost;
     }
 
-    //private Polyline GetRoute(GridTest.LeastCostPath path, 
     private Polyline GetRoute(LeastCostData lcg, IPoint start, IPoint end, out double climb, out double optimal)
     {
       Polyline line = lcg.GetPath(end);
-
-      line.Replace(0, Point.Create(start));
-      line.Replace(-1, Point.Create(end));
-
+      {
+        Point s = Point.Create(line.Points[0]);
+        s.X = start.X;
+        s.Y = start.Y;
+        line.Replace(0, s);
+      }
+      {
+        Point e = Point.Create(line.GetPoint(-1));
+        e.X = end.X;
+        e.Y = end.Y;
+        line.Replace(-1, e);
+      }
       climb = -1;
       double h0 = 0;
       foreach (var p1 in line.Points)

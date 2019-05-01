@@ -388,7 +388,7 @@ namespace OCourse.Gui
       Dictionary<Control, Control> oldNew = new Dictionary<Control, Control>();
       foreach (var section in simples)
       {
-        AddControl(section.From, null, uniqueDict, oldNew);
+        AddControl(section.From, section.Where, uniqueDict, oldNew);
         AddControl(section.To, section.Where, uniqueDict, oldNew);
       }
 
@@ -504,34 +504,34 @@ namespace OCourse.Gui
       if (start == null)
       { return; }
 
-      Dictionary<NextControl, ControlLabel> dict =
+      Dictionary<NextControl, ControlLabel> ctrlLblDict =
         new Dictionary<NextControl, ControlLabel>(next.Count,
         new NextControl.EqualControlComparer());
-      BuildTree(next, dict, new List<NextControl>(),
+      BuildTree(next, ctrlLblDict, new List<NextControl>(),
          start, 0, new List<Control> { startWrapper, endWrapper });
       // Compensate for startWrapper:
-      foreach (var value in dict.Values)
+      foreach (var value in ctrlLblDict.Values)
       { value.Pos--; }
 
       _nextDict = next;
-      _lblDict = dict;
+      _lblDict = ctrlLblDict;
       Dictionary<int, List<int>> rowOcc = new Dictionary<int, List<int>>();
 
       int h0 = 10;
-      for (int i = 0; i < dict.Count; i++)
+      for (int iPos = 0; iPos < ctrlLblDict.Count; iPos++)
       {
-        int j = -1;
+        int jCol = -1;
         int dh = 0;
-        if (!rowOcc.TryGetValue(i, out List<int> occupied))
+        if (!rowOcc.TryGetValue(iPos, out List<int> occupied))
         { occupied = null; }
 
-        foreach (var ctrLbl in dict.Values)
+        foreach (var ctrLbl in ctrlLblDict.Values)
         {
-          if (ctrLbl.Pos == i)
+          if (ctrLbl.Pos == iPos)
           {
-            j++;
-            while (occupied != null && occupied.Contains(j))
-            { j++; }
+            jCol++;
+            while (occupied != null && occupied.Contains(jCol))
+            { jCol++; }
 
             CLabel lbl = new CLabel(this, ctrLbl.Control);
             lbl.Text = ctrLbl.Control.Name;
@@ -544,7 +544,7 @@ namespace OCourse.Gui
 
             dh = Math.Max(dh, lbl.Height);
             Controls.Add(lbl);
-            lbl.Left = 30 + j * 30 - lbl.Width / 2;
+            lbl.Left = 30 + jCol * 30 - lbl.Width / 2;
 
             ctrLbl.Lbl = lbl;
 
@@ -552,31 +552,31 @@ namespace OCourse.Gui
             {
               foreach (var info in nextList.List)
               {
-                if (!dict.TryGetValue(info, out ControlLabel nl))
+                if (!ctrlLblDict.TryGetValue(info, out ControlLabel nextLabel))
                 { continue; }
 
-                int ni;
-                if (nl.Pos > i)
-                { ni = nl.Pos; }
+                int nextPos;
+                if (nextLabel.Pos > iPos)
+                { nextPos = nextLabel.Pos; }
                 else
-                { ni = nl.RecPos; }
-                for (int k = i + 1; k < ni; k++)
+                { nextPos = nextLabel.RecPos; }
+                for (int k = iPos + 1; k < nextPos; k++)
                 {
                   if (!rowOcc.TryGetValue(k, out List<int> occ))
                   {
                     occ = new List<int>();
                     rowOcc.Add(k, occ);
                   }
-                  occ.Add(j);
+                  occ.Add(jCol);
                 }
               }
             }
           }
-          if (ctrLbl.RecPos == i)
+          if (ctrLbl.RecPos == iPos)
           {
-            j++;
-            while (occupied != null && occupied.Contains(j))
-            { j++; }
+            jCol++;
+            while (occupied != null && occupied.Contains(jCol))
+            { jCol++; }
 
             CLabel lbl = new CLabel(this, ctrLbl.Control, true);
             lbl.Top = h0;
@@ -584,7 +584,7 @@ namespace OCourse.Gui
             dh = Math.Max(dh, lbl.Height);
             Controls.Add(lbl);
 
-            lbl.Left = 30 + j * 30 - lbl.Width / 2;
+            lbl.SetColumn(jCol);
             ctrLbl.RecLbl = lbl;
 
           }
@@ -703,6 +703,7 @@ namespace OCourse.Gui
       private readonly CntSection _parent;
       public Control Control;
       private readonly bool _isReverseControl;
+      private int _iCol;
       Timer _t;
 
       public CLabel(CntSection parent, Control ctr)
@@ -738,6 +739,13 @@ namespace OCourse.Gui
           _t.Tick += T_Tick;
           MouseMove += Tb_MouseMove;
         }
+      }
+
+      public int ColumnIndex => _iCol;
+      public void SetColumn(int iCol)
+      {
+        Left = 30 + iCol * 30 - Width / 2;
+        _iCol = iCol;
       }
 
       private void SetFont(bool bold)

@@ -214,8 +214,24 @@ namespace Ocad
       {
         get { return _legList; }
       }
+      public override string ToString()
+      {
+        return "Fork " + base.ToString();
+      }
     }
     #endregion
+
+    public override string ToString()
+    {
+      StringBuilder sb = new StringBuilder();
+      foreach (var branch in Branches)
+      {
+        sb.Append("{");
+        sb.Append(branch.ToShortString(-1));
+        sb.Append("}");
+      }
+      return "Fork: " + sb.ToString();
+    }
 
     public override int LegCount()
     {
@@ -428,6 +444,24 @@ namespace Ocad
         index++;
       }
       return -1;
+    }
+
+    public override string ToString()
+    {
+      StringBuilder sb = new StringBuilder();
+      foreach (var o in Branches)
+      {
+        Variation.Branch branch = (Variation.Branch)o;
+        sb.Append("[");
+        foreach (var leg in branch.Legs)
+        {
+          sb.Append($"{leg},");
+        }
+        sb.Remove(sb.Length - 1, 1);
+        sb.Append("]");
+      }
+
+      return "Variation" + sb.ToString();
     }
   }
 

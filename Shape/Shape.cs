@@ -276,10 +276,10 @@ namespace Shape
       for (int i = 0; i < nParts; i++)
       {
         int n = nPartPoints[i];
-        List<Point> pntList = new List<Point>();
+        List<Point> pntList = new List<Point>(n);
 
         for (int j = 0; j < n; j++)
-        { pntList[j] = ReadCoord(); }
+        { pntList.Add(ReadCoord()); }
 
         l[i] = pntList;
       }

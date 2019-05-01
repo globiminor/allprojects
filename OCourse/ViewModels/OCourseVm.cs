@@ -125,21 +125,29 @@ namespace OCourse.ViewModels
       using (TextReader r = new StreamReader(settingsPath))
       {
         Basics.Serializer.Deserialize(out OCourseSettings settings, r);
+        string settingsDir = Path.GetDirectoryName(settingsPath);
         using (Changing())
         {
-          CourseFile = settings.CourseFile;
-          LcpConfig.HeightPath = settings.HeightFile;
-          LcpConfig.VeloPath = settings.VeloFile;
+          CourseFile = GetFullPath(settings.CourseFile, settingsDir);
+          LcpConfig.HeightPath = GetFullPath(settings.HeightFile, settingsDir);
+          LcpConfig.VeloPath = GetFullPath(settings.VeloFile, settingsDir);
           LcpConfig.Resolution = settings.Resolution ?? LcpConfig.Resolution;
         }
-        if (settings.PathesFile != null && File.Exists(settings.PathesFile))
+        if (settings.PathesFile != null && File.Exists(GetFullPath(settings.PathesFile, settingsDir)))
         {
-          PathesFile = settings.PathesFile;
+          PathesFile = GetFullPath(settings.PathesFile, settingsDir);
           ImportRoutes(PathesFile);
         }
 
         SettingsName = settingsPath;
       }
+    }
+    private string GetFullPath(string fileName, string dir)
+    {
+      string fullPath = Path.IsPathRooted(fileName)
+        ? fileName
+        : Path.GetFullPath(Path.Combine(dir, fileName));
+      return fullPath;
     }
     public void SaveSettings(string settingsPath = null)
     {
@@ -967,6 +975,15 @@ namespace OCourse.ViewModels
       }
       public string Leg { get; set; }
       public Dictionary<Fork, string> Forks { get; private set; }
+
+      public override string ToString()
+      {
+        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        sb.Append($"{Leg}.");
+        foreach (var val in Forks.Values)
+        { sb.Append(val); }
+        return sb.ToString();
+      }
     }
 
     private class EventCalculator : IWorker

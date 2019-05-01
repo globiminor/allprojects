@@ -130,7 +130,7 @@ namespace Ocad
     }
     public string ToShortString(int leg)
     {
-      List<string> combs = GetValidCombinationStrings(leg, First, leg.ToString());
+//      List<string> combs = GetValidCombinationStrings(leg, First, leg.ToString());
       StringBuilder txt = new StringBuilder();
       foreach (var section in this)
       {

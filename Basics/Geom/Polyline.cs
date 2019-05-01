@@ -268,6 +268,12 @@ namespace Basics.Geom
     {
       get { return _pointList; }
     }
+    public IPoint GetPoint(int iPoint)
+    {
+      if (iPoint < 0)
+      { iPoint = Points.Count + iPoint; }
+      return Points[iPoint];
+    }
     public ISegment GetSegment(int iSegment)
     {
       if (iSegment < 0)

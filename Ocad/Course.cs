@@ -61,10 +61,7 @@ namespace Ocad
 
     public override string ToString()
     {
-      return string.Format(
-        "Name  : {0}\n" +
-        "{1}\n" +
-        _name, "__");
+      return $"Name : {_name}\n{base.ToString()}";
     }
 
     internal void AssignLegs()

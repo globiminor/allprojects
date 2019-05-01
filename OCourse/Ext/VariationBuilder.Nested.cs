@@ -326,15 +326,15 @@ namespace OCourse.Ext
         Dictionary<string, Control> controls = new Dictionary<string, Control>();
         foreach (var section in simples)
         {
-          Control from = GetUniqueControl(controls, section.From);
-          Control to = GetUniqueControl(controls, section.To);
+          Control from = GetUniqueControl(controls, section.From, section.Where);
+          Control to = GetUniqueControl(controls, section.To, section.Where);
 
           MultiSection add = new MultiSection(from, to);
           if (section is MultiSection s)
           {
             foreach (var c in s.Inter)
             {
-              Control u = GetUniqueControl(controls, c);
+              Control u = GetUniqueControl(controls, c, section.Where);
               add.Inter.Add(u);
             }
           }
@@ -391,8 +391,8 @@ namespace OCourse.Ext
         Dictionary<string, Control> controls = new Dictionary<string, Control>();
         foreach (var section in simples)
         {
-          Control from = GetUniqueControl(controls, section.From);
-          Control to = GetUniqueControl(controls, section.To);
+          Control from = GetUniqueControl(controls, section.From, section.Where);
+          Control to = GetUniqueControl(controls, section.To, section.Where);
 
           SimpleSection add = new SimpleSection(from, to);
           add.SetWhere(section.Where);
@@ -727,8 +727,8 @@ namespace OCourse.Ext
         List<SimpleSection> unique = new List<SimpleSection>(sections.Count);
         foreach (var section in sections)
         {
-          Control from = GetUniqueControl(controls, section.From);
-          Control to = GetUniqueControl(controls, section.To);
+          Control from = GetUniqueControl(controls, section.From, section.Where);
+          Control to = GetUniqueControl(controls, section.To, section.Where);
           SimpleSection add = new SimpleSection(from, to);
           add.SetWhere(section.Where);
           unique.Add(add);
@@ -736,15 +736,16 @@ namespace OCourse.Ext
         return unique;
       }
 
-      protected static Control GetUniqueControl(Dictionary<string, Control> controls, Control control)
+      protected static Control GetUniqueControl(Dictionary<string, Control> controls, Control control, string where)
       {
         if (control.Code == ControlCode.TextBlock || control.Code == ControlCode.MapChange)
         { return control; }
 
-        if (controls.TryGetValue(control.Name, out Control unique) == false)
+        string key = $"{where};{control.Name}";
+        if (controls.TryGetValue(key, out Control unique) == false)
         {
           unique = control;
-          controls.Add(unique.Name, unique);
+          controls.Add(key, unique);
         }
         return unique;
       }

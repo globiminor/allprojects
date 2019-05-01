@@ -1,0 +1,103 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>OCourse Calculation</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+    <h3 id="idCalculationModel">Calculation model</h3>
+    <p>
+        To find the &quot;optimal&quot; route of a section, you would need to know the runner&#39;s velocity at each point in any direction having a defined previous velocity vector.<br />
+        OCourse uses a simplified model, where the velocity a each point of an equally spaced grid is defined for up to 16 directions, independent of the previous velocity.
+        The velocity in a point is defined by a <a href="#idHeightModel">height model</a>, a <a href="#idVelocityModel">velocity model</a> and a method to <a href="#idVelocityCalculator">calculate the velocity</a>.
+    </p>
+    <h4 id="idHeightModel">Height model</h4>
+    The height model is defined by an esri ascii-grid file. This format is often provided by terrain model providers.
+    The resolution of the grid should be reasonably small (1 to 2 meters).<br />
+    <img src="HeightModel.png" />
+    <h4 id="idVelocityModel">Velocity model</h4>
+    The velocity model is a tif-File with a georeference file, that can be derived from the obstructions in an OCAD map and specialiced symoblisation.
+    <br />
+    <img src="VelocityModel.png" /><br />
+    The resolution of the image must be reasonably small. For a sprint map, a value &lt;= 0.5 meters is recommended.<br />
+    The symbolisation can have to manners: Dependent on obstruction colors as colored image or directly as velocity quotion as gray level image.
+    <h5>Colored image</h5>
+    Following colors are allowed:
+    <table>
+        <thead>
+            <tr>
+                <td>Color</td>
+                <td>Description</td>
+                <td>Velocity factor</td>
+            </tr>
+        </thead>
+        <tr>
+            <td>black</td>
+            <td>road or path</td>
+            <td>1.0</td>
+        </tr>
+        <tr>
+            <td>white</td>
+            <td>normal forrest or open land without any obstruction</td>
+            <td>0.9</td>
+        </tr>
+        <tr>
+            <td>light green</td>
+            <td>slight obstruction</td>
+            <td>0.7</td>
+        </tr>
+        <tr>
+            <td>medium green</td>
+            <td>medium obstruction</td>
+            <td>0.4</td>
+        </tr>
+        <tr>
+            <td>full green</td>
+            <td>strong obstruction</td>
+            <td>0.2</td>
+        </tr>
+        <tr>
+            <td>red</td>
+            <td>impassable/forbidden</td>
+            <td>0.0001</td>
+        </tr>
+    </table>
+    <h5>Gray scale</h5>
+    The Blackness defines the velocity. 100% black means a velocity of 1, 0% black means a velocity of 0 (0.0001 used for calculation reasons).
+    Values &gt; 95% are treated as roads. (See <a href="#idVelocityCalculator">velocity calculator)</a>
+    <h4 id="idModelResolution">Resolution and Steps</h4>
+    <p>
+        The resolution
+        <img src="Resolution.png" style="margin-top: 0px" />
+        defines the distance between two grid points of the calculation model.
+        The resolution must be reasonable small (0.5m for sprint), otherwise some relevant features like impassable walls may be ignored, which can lead to wrong routes.
+        The smaller the resolution, the longer takes the calculation time (in square relation).
+    </p>
+    <p>
+        Steps
+        <img src="Steps.png" style="margin-top: 0px" />
+        defines, which connections to neighboring points are calculated.<br />
+        The default option is, that all connections to points &lt;= Sqrt(5) * resolution are calculated.
+        Further options are only horizontal/vertical or horizontal/vertical/diagonal.
+    </p>
+    <h4 id="idVelocityCalculator">Velocity Calculator</h4>
+    <p>
+        The predefined velocity calculator is called TvmCalc (Terrain-Velocity-Model-Calculator) and
+        defines the velocity at a point based on the velocity model,
+        the slope based on the height model and ascent in running direction, also based on the height model.<br />
+        For velocities &gt; 0.95 in the velocity model, TvmCalc assumes a road and neglects the slope of the terrain. This leads to a higher runners velocity.<br />
+        <img src="VmSelect.png" />
+    </p>
+    <p>
+        Programmers can define a custom velocity calculator by implementing the interface <code>Grid.Lcp.ITvmCalc</code> and loading the generated type
+        <br />
+        <img src="VmPluginCode.png" /><br />
+        or defining custom code (c#)<br />
+        <img src="VmPluginCustom.png" /><br />
+    </p>
+
+</body>
+</html>

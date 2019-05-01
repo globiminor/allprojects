@@ -85,10 +85,16 @@ namespace OCourse.Ext
 
     public List<SectionList> AnalyzeLeg(int leg)
     {
-      LegBuilder builder = new LegBuilder(_course, leg);
-      builder.VariationAdded += Builder_VariationAdded;
-
-      List<SectionList> permuts = builder.Analyze();
+      List<SectionList> permuts;
+      DummyControl.InsertDummies(_course, _course);
+      try
+      {
+        LegBuilder builder = new LegBuilder(_course, leg);
+        builder.VariationAdded += Builder_VariationAdded;
+        permuts = builder.Analyze();
+      }
+      finally
+      { DummyControl.RemoveDummies(_course); }
 
       permuts = GetReduced(permuts);
       foreach (var permutation in permuts)
@@ -120,6 +126,45 @@ namespace OCourse.Ext
       VariationAdded?.Invoke(this, variation);
     }
 
+    private class DummyControl : Control
+    {
+      public static void InsertDummies(SectionCollection course, SectionCollection reference)
+      {
+        foreach (var section in course)
+        {
+          if (section is Variation var)
+          {
+            foreach (var branch in var.Branches)
+            {
+              InsertDummies(branch, reference);
+              if (branch.Count == 0)
+              {
+                Control dd = GetWrapperControl("dd", reference);
+                branch.AddLast(new DummyControl { Name = dd.Name, Code = ControlCode.Control });
+              }
+            }
+          }
+        }
+      }
+      public static void RemoveDummies(SectionCollection course)
+      {
+        foreach (var section in course)
+        {
+          if (section is Variation var)
+          {
+            foreach (var branch in var.Branches)
+            {
+              RemoveDummies(branch);
+              if (branch.Count == 1 && branch.Last.Value is DummyControl)
+              {
+                branch.RemoveLast();
+              }
+            }
+          }
+        }
+      }
+    }
+
     private static SectionList RemoveControls(SectionList variation, Control startWrapper, Control endWrapper)
     {
       SectionList reduced = null;
@@ -131,6 +176,9 @@ namespace OCourse.Ext
           continue;
         }
         if (control.Control == endWrapper)
+        { continue; }
+
+        if (control.Control is DummyControl)
         { continue; }
 
         if (reduced == null)

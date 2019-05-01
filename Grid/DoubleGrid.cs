@@ -70,6 +70,21 @@ namespace Grid
             double y = _dGrd0.Extent.Y0 + iy * _dGrd0.Extent.Dy;
             return _dGrd0[ix, iy] + _dGrd1.Value(x, y);
           }
+          else if (_eOperator == EOperator.maxGrd)
+          {
+            double x = _dGrd0.Extent.X0 + ix * _dGrd0.Extent.Dx;
+            double y = _dGrd0.Extent.Y0 + iy * _dGrd0.Extent.Dy;
+
+            double g0 = _dGrd0[ix, iy];
+            double g1 = _dGrd1.Value(x, y);
+
+            if (double.IsNaN(g0))
+              return g1;
+            if (double.IsNaN(g1))
+              return g0;
+
+            return Math.Max(g0, g1);
+          }
           else if (_eOperator == EOperator.multVal) return _dGrd0[ix, iy] * _dOperator;
           else if (_eOperator == EOperator.bracket) return _dArray[_iGrd[ix, iy]];
           else if (_eOperator == EOperator.none && _opFunc != null) return _opFunc(ix, iy);
@@ -89,6 +104,14 @@ namespace Grid
       return new DoubleOpGrid(dArray, grd);
     }
 
+    public static DoubleGrid Filter(DoubleGrid grid, Func<int,int, double> func)
+    {
+      return new DoubleOpGrid(grid, func);
+    }
+    public static DoubleGrid Max(DoubleGrid x, DoubleGrid y)
+    {
+      return new DoubleOpGrid(x, y, EOperator.maxGrd);
+    }
     public static DoubleGrid operator +(DoubleGrid grd, double val)
     { return Sum(grd, val); }
     public static DoubleGrid Sum(IGrid<double> grd, double val)
@@ -744,8 +767,10 @@ namespace Grid
         // data
         try
         {
-          if (ix < 0 || iy < 0) return double.NaN;
-          if (ix >= Extent.Nx || iy >= Extent.Ny) return double.NaN;
+          if (ix < 0 || iy < 0)
+            return double.NaN;
+          if (ix >= Extent.Nx || iy >= Extent.Ny)
+            return double.NaN;
 
           if (_iLength == 1) return _z0 + _bValue[ix, iy] * _dz;
           else if (_iLength == 2) return _z0 + _sValue[ix, iy] * _dz;

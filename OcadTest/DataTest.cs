@@ -352,7 +352,72 @@ namespace OcadTest
       }
     }
 
+    [TestMethod]
+    public void DhmIrchel()
+    {
+      List<string> keys = new List<string> {
+        "26850_12660", "26850_12670", "26850_12680",
+        "26860_12660", "26860_12670", "26860_12680",
+        "26870_12660", "26870_12670", "26870_12680"
+      };
+      double x0 = double.MaxValue;
+      double y0 = double.MinValue;
+      double x1 = double.MinValue;
+      double y1 = double.MaxValue;
+      double size = 2;
+      string root = @"C:\daten\felix\kapreolo\karten\irchel\2019\";
+      foreach (string key in keys)
+      {
+        string path = $"{root}{key}.asc.zip";
+        if (!File.Exists(path))
+        {
+          //          continue;
+          using (System.Net.WebClient wc = new System.Net.WebClient())
+          {
+            string url = $"https://maps.zh.ch/download/hoehen/2014/dtm/asc/{key}.asc.zip";
+            wc.DownloadFile(url, path);
+          }
+        }
 
+        DoubleGrid grdHeight;
+        using (var zipStream = new FileStream(path, FileMode.Open))
+        using (var archive = new System.IO.Compression.ZipArchive(zipStream))
+        {
+          var entry = archive.GetEntry($"{key}.asc");
+
+          using (var stream = entry.Open())
+          using (var reader = new StreamReader(stream))
+          {
+            grdHeight = DataDoubleGrid.FromAsciiFile(reader, 0, 0.01, typeof(double));
+          }
+        }
+        GridExtent ext = grdHeight.Extent;
+
+        x0 = Math.Min(x0, ext.X0);
+        y0 = Math.Max(y0, ext.Y0);
+        x1 = Math.Max(x1, ext.X1);
+        y1 = Math.Min(y1, ext.Y1);
+        DoubleGrid grdResample = new DataDoubleGrid(
+          (int)(ext.Nx / (size / ext.Dx)), (int)(ext.Ny / (size / ext.Dx)),
+          typeof(double), ext.X0, ext.Y0, size);
+
+        DoubleGrid grdRes = grdResample + grdHeight;
+        grdRes.SaveASCII($"{root}{key}__.asc", "N2");
+      }
+
+      DoubleGrid grdSum = new DataDoubleGrid((int)((x1 - x0) / size), (int)((y0 - y1) / size),
+          typeof(double), x0, y0, size);
+      foreach (string key in keys)
+      {
+        string path = $"{root}{key}__.asc";
+        if (!File.Exists(path))
+          continue;
+
+        DoubleGrid grdHeight = DataDoubleGrid.FromAsciiFile(path, 0, 0.01, typeof(double));
+        grdSum = DoubleGrid.Max(grdSum, grdHeight);
+      }
+      grdSum.SaveASCII($"{root}irchel.asc", "N2");
+    }
     [TestMethod]
     public void TestWriteBildObjekte()
     {

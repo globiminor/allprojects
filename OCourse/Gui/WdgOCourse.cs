@@ -482,13 +482,16 @@ namespace OCourse.Gui
       _vm.SetSelectionedComb(selected);
 
       btnRefreshSection.Enabled = false;
-      foreach (var o in dgvInfo.SelectedRows)
+      if ((_vm.Info?.Count ?? 0) >= dgvInfo.RowCount)
       {
-        DataGridViewRow row = (DataGridViewRow)o;
-        if (row.DataBoundItem is CostFromTo)
+        foreach (var o in dgvInfo.SelectedRows)
         {
-          btnRefreshSection.Enabled = true;
-          break;
+          DataGridViewRow row = (DataGridViewRow)o;
+          if (row.DataBoundItem is CostFromTo)
+          {
+            btnRefreshSection.Enabled = true;
+            break;
+          }
         }
       }
     }
@@ -565,12 +568,14 @@ namespace OCourse.Gui
       using (OcadReader reader = OcadReader.Open(_vm.CourseFile))
       { setup = reader.ReadSetup(); }
 
-      IPoint point;
+      //IPoint point;
+      //point = cStart.GetPoint();
+      //IPoint start = PointOp.Project(point, setup.Map2Prj);
+      //point = cEnd.GetPoint();
+      //IPoint end = PointOp.Project(point, setup.Map2Prj);
 
-      point = cStart.GetPoint();
-      IPoint start = PointOp.Project(point, setup.Map2Prj);
-      point = cEnd.GetPoint();
-      IPoint end = PointOp.Project(point, setup.Map2Prj);
+      IPoint start = cStart.GetPoint();
+      IPoint end = cEnd.GetPoint();
 
       double l = Math.Sqrt(PointOp.Dist2(start, end)) / 2.0;
       Box box = _vm.RouteCalculator.GetBox(start, end, l);

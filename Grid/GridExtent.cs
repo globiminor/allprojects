@@ -1,6 +1,6 @@
+using Basics.Geom;
 using System;
 using System.IO;
-using Basics.Geom;
 
 namespace Grid
 {
@@ -14,6 +14,7 @@ namespace Grid
     multVal, multGrd,
     quotVal, quotGrd,
     gridModVal,
+    maxGrd,
     typeDouble, bracket
   };
 
@@ -241,10 +242,13 @@ namespace Grid
     {
       get { return _x0; }
     }
+    public double X1 => X0 + Nx * _dx;
     public double Y0
     {
       get { return _y0; }
     }
+    public double Y1 => Y0 + Ny * _dy;
+
     public double Dx
     {
       get { return _dx; }

@@ -46,8 +46,8 @@ namespace OMapScratch.Views
         using (Paint p = new Paint())
         {
           Color color = Color.White;
-          color.A = (byte)Math.Min(255, (int)(255 * vm.Opacity / 100.0));
           p.Color = color;
+          IGeoImageViewUtils.SetColor(p, vm);
           canvas.DrawBitmap(vm.Bitmap, 0, 0, p);
         }
       }
@@ -112,14 +112,14 @@ namespace OMapScratch.Views
 
       {
         LinearLayout editLayout = new LinearLayout(Context)
-        { Orientation = Orientation.Horizontal };
+        { Orientation = Orientation.Vertical };
         {
           RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
           editLayout.LayoutParameters = lprams;
         }
         allLayout.AddView(editLayout);
-        InitEdit(editLayout);
         InitDisplay(editLayout, prj);
+        InitEdit(editLayout);
       }
     }
 
@@ -137,7 +137,7 @@ namespace OMapScratch.Views
       DisplayView mapDisplay = new DisplayView(_baseVm, _combinations, Context);
       {
         RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-        lprams.Width = (int)(30 * Utils.GetMmPixel(mapDisplay));
+        lprams.Width = (int)(60 * Utils.GetMmPixel(mapDisplay));
         lprams.Height = (int)(30 * Utils.GetMmPixel(mapDisplay));
 
         mapDisplay.LayoutParameters = lprams;
@@ -217,19 +217,12 @@ namespace OMapScratch.Views
     }
     private void AddImage(GeoImageVm vm, ViewGroup imageList)
     {
+      LinearLayout imageRow = new LinearLayout(Context);
       {
-        Button defaultBtn = new Button(Context)
-        { Text = vm.Name };
-        {
-          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-          lprams.Width = (int)(30 * Utils.GetMmPixel(defaultBtn));
-          defaultBtn.LayoutParameters = lprams;
-        }
-        defaultBtn.Click += (bs, be) => Utils.Try(() =>
-        {
-          //            MapVm.LoadLocalImage(imgViews.DefaultView, _mapView.InversElemMatrix, _mapView.Width, _mapView.Height);
-        });
-        imageList.AddView(defaultBtn);
+        imageRow.Orientation = Orientation.Horizontal;
+        RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
+        imageRow.LayoutParameters = lprams;
+        imageList.AddView(imageRow);
       }
       {
         CheckBox chkVisible = new CheckBox(Context);
@@ -237,10 +230,68 @@ namespace OMapScratch.Views
           RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
           chkVisible.LayoutParameters = lprams;
         }
-        imageList.AddView(chkVisible);
+        imageRow.AddView(chkVisible);
 
         chkVisible.BindToChecked(vm, nameof(vm.Visible));
         chkVisible.Enabled = vm.VisibleEnabled;
+      }
+      {
+        Button defaultBtn = new Button(Context)
+        { Text = vm.Name };
+        {
+          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+          lprams.Width = (int)(25 * Utils.GetMmPixel(defaultBtn));
+          defaultBtn.LayoutParameters = lprams;
+        }
+        defaultBtn.Click += (bs, be) => Utils.Try(() =>
+        {
+          //            MapVm.LoadLocalImage(imgViews.DefaultView, _mapView.InversElemMatrix, _mapView.Width, _mapView.Height);
+        });
+        imageRow.AddView(defaultBtn);
+      }
+      LinearLayout sliders = new LinearLayout(Context);
+      {
+        sliders.Orientation = Orientation.Vertical;
+        RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+        sliders.LayoutParameters = lprams;
+        imageRow.AddView(sliders);
+      }
+
+      {
+        SeekBar opacitySlider = AddSlider(sliders, "O");
+        opacitySlider.BindToProgress(vm, nameof(vm.Opacity));
+      }
+
+      {
+        SeekBar graySlider = AddSlider(sliders, "G");
+        graySlider.BindToProgress(vm, nameof(vm.Gray));
+        graySlider.BindToEnabled(vm, nameof(vm.GrayEnabled));
+      }
+
+      {
+        SeekBar colorRotSlider = AddSlider(sliders, "C");
+        colorRotSlider.BindToProgress(vm, nameof(vm.ColorRotation));
+        colorRotSlider.BindToEnabled(vm, nameof(vm.ColorRotationEnabled));
+      }
+    }
+
+    private SeekBar AddSlider(ViewGroup sliders, string name)
+    {
+      LinearLayout l = new LinearLayout(Context);
+      {
+        l.Orientation = Orientation.Horizontal;
+        RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+        l.LayoutParameters = lprams;
+        sliders.AddView(l);
+      }
+      {
+        TextView lbl = new TextView(Context);
+        {
+          RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
+          lbl.LayoutParameters = lprams;
+        }
+        lbl.Text = name;
+        l.AddView(lbl);
       }
       {
         SeekBar slider = new SeekBar(Context);
@@ -249,9 +300,8 @@ namespace OMapScratch.Views
           lprams.Width = (int)(30 * Utils.GetMmPixel(slider));
           slider.LayoutParameters = lprams;
         }
-        imageList.AddView(slider);
-
-        slider.BindToProgress(vm, nameof(vm.Opacity));
+        l.AddView(slider);
+        return slider;
       }
     }
   }

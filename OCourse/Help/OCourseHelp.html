@@ -1,0 +1,88 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>OCourse Help</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <h2>Quick start</h2>
+    <p>1. Open OCourse.exe</p>
+    <p>
+        2. Select a OCAD <a href="./Course.html#idCourseFile">Course Setting file</a> by typing the file name or using browser<br />
+        <img src="SelectCourseFile.png" />
+    </p>
+    <p>
+        3. Select a course
+        <br />
+        <img src="SelectCourse.png" /><br />
+        The selected course is analysed and displayed in two ways: In a display and as a table<br />
+        <img src="CourseSimpleSections.png" style="vertical-align: top" />
+        <img src="CourseSimpleTable.png" style="vertical-align: top; margin: 4px 7px 12px 16px" /><br />
+        Remark: If <a href="./Calculation.html#idHeightModel">height model</a> or <a href="./Calculation.html#idVelocityModel">velocity model</a> is not defined, columns # 2, 4, 5, 6, 7 are filled by default values.<br />
+        Column descriptions see <a href="#idSectionTable">section table</a>.
+    </p>
+    <p>
+        The top row in the table shows the sum of all the sections.<br />
+    </p>
+
+    <h3>Define a Model</h3>
+    A model is defined by a <a href="./Course.html">course file</a> and a <a href="./Calculation.html">calculation model</a>.
+    <br />
+    The settings of such a model can be saved and loaded as a settings-file.<br />
+    <img src="Settings.png" />
+    <h3>Calculate a course</h3>
+    When a model is completely defined and a specific course
+    <img src="CourseOption.png" style="margin-top: 0px" />
+    is selected, OCourse shows the course in the <a href="Course.html#idSectionDisplay">section display</a>, starts the calculation of the optimal routes, displays the progress in the status bar
+    <img src="CalculationProgress.png" style="margin-top: 0px" />
+    and adds completed routes continously to the section table.
+    <h3 id="idSectionTable">Section Table</h3>
+    After the course is calculated, the section table is filled with a lot of relevant information. See <a href="./Course.html">course</a> help for the purposes of special rows.<br />
+    <img src="CourseSimpleTable2.png" />
+    <table>
+        <tr>
+            <td>Name</td>
+            <td>Name of the section (From Control -> To Control), <a href="Course.html#idVariation">variation</a> or summary </td>
+        </tr>
+        <tr>
+            <td>DirectLKm</td>
+            <td>Leistungs-Km along the direct lines (=DirectKm + 10 * Climb)</td>
+        </tr>
+        <tr>
+            <td>DirectKm</td>
+            <td>Distance in km along the direct lines</td>
+        </tr>
+        <tr>
+            <td>Climb</td>
+            <td>Climb along the optimal route calculated by the <a href="Calculation.html">calculation model</a></td>
+        </tr>
+        <tr>
+            <td>OptimalLkm</td>
+            <td>(Distance + 10 * Climb) in km along the optimal route</td>
+        </tr>
+        <tr>
+            <td>OptimalKm</td>
+            <td>Distance in km along the optimal route</td>
+        </tr>
+        <tr>
+            <td>OptimalCost</td>
+            <td>Cost along the optimal route</td>
+        </tr>
+    </table>
+
+    The calculated routes can be saved as shape file by
+    <img src="ExportShape.png" style="margin-top: 0px; vertical-align: central" />. The name of the exported shape file is included in the current model (must be saved) 
+    and the routes are reloaded when loading the specific settings. 
+    By this, the calculation must only be done once.<br />
+    Remark: the calculated routes are specific for <a href="Calculation.html#idHeightModel">height model</a>, 
+    <a href="Calculation.html#idVelocityModel">velocity model</a>, <a href="Calculation.html#idModelResolution">resolution and steps</a>. 
+    If any parameter of these change, the routes are dismissed calculated again when needed.
+    <h3>Custom calculations</h3>
+    When 2 controls are selected in the <a href="Course.html#idSectionDisplay">section display</a>, 
+    additional calculations for this section can be performed after clicking
+    <img src="InitCalcSection.png" style="margin-top: 0px; vertical-align: central" />
+
+</body>
+</html>

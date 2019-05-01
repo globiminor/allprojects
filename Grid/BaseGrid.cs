@@ -1,6 +1,6 @@
+using Basics.Geom;
 using System;
 using System.Collections.Generic;
-using Basics.Geom;
 
 namespace Grid
 {
@@ -143,7 +143,15 @@ namespace Grid
 
     T IGrid<T>.this[int ix, int iy]
     {
-      get { return (T)base[ix, iy]; }
+      get
+      {
+        object b = base[ix, iy];
+        if (!(b is T t))
+        {
+          t = (T)Convert.ChangeType(base[ix, iy], typeof(T));
+        }
+        return t;
+      }
       set { base[ix, iy] = value; }
     }
 

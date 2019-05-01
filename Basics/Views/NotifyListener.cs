@@ -57,6 +57,7 @@ namespace Basics.Views
         _progress = progress;
         return;
       }
+      _progress = progress;
       _runner.SetProgress(progress);
     }
 
@@ -65,7 +66,7 @@ namespace Basics.Views
     {
       private readonly IWorker _worker;
       private readonly NotifyListener _parent;
-      private string _progress;
+      private volatile string _progress;
 
       private BackgroundWorker _bgw;
       public Runner(IWorker worker, NotifyListener parent)

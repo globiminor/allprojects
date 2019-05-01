@@ -8,8 +8,55 @@ namespace OMapScratch
   {
     Bitmap LoadImage(MatrixPrj worldPrj, int width, int height);
   }
+  public interface IGeoImageViewmodel
+  {
+    float Transparency { get; }
+    float? GrayTransform { get; }
+    float? ColorRotation { get; }
+  }
 
-  partial class GeoImageVm : IDisposable
+  public static class IGeoImageViewUtils
+  {
+    public static void SetColor(Paint p, IGeoImageViewmodel geoImage)
+    {
+      float o = 1 - geoImage.Transparency;
+
+      if (geoImage.ColorRotation != null || geoImage.GrayTransform != null)
+      {
+        float g = geoImage.GrayTransform ?? geoImage.ColorRotation.Value;
+        g = Math.Min(1, Math.Max(0, g));
+
+        float a = (g < 1 / 3f) ? 3 * (1 / 3f - g) : (g > 2 / 3f) ? 3 * (g - 2 / 3f) : 0;
+        float b = (g < 2 / 3f) ? 1 - 3 * Math.Abs(g - 1 / 3f) : 0;
+        float c = (g > 1 / 3f) ? 1 - 3 * Math.Abs(g - 2 / 3f) : 0;
+
+        if (geoImage.ColorRotation.HasValue)
+        {
+          p.SetColorFilter(new ColorMatrixColorFilter(new float[] {
+          a, b, c, 0, 0,
+          c, a, b, 0, 0,
+          b, c, a, 0, 0,
+          0, 0, 0, o, 0
+        }));
+        }
+        else if (geoImage.GrayTransform.HasValue)
+        {
+          p.SetColorFilter(new ColorMatrixColorFilter(new float[] {
+          a, b, c, 0, 0,
+          a, b, c, 0, 0,
+          a, b, c, 0, 0,
+          0, 0, 0, o, 0
+        }));
+        }
+      }
+      else
+      {
+        p.Alpha = Math.Max(0, Math.Min(255, (int)(255 * o)));
+      }
+    }
+  }
+
+  partial class GeoImageVm : IDisposable, IGeoImageViewmodel
   {
     private Bitmap _bitmap;
 
@@ -26,6 +73,10 @@ namespace OMapScratch
       _baseImage.LoadImageParts(Projection, Width, Height, ref bitmap, null);
       return bitmap;
     }
+
+    float IGeoImageViewmodel.Transparency => 1 - Opacity / 100.0f;
+    float? IGeoImageViewmodel.GrayTransform => Gray <= 0 ? (float?)null : Math.Min(1.0f, Gray / 100.0f);
+    float? IGeoImageViewmodel.ColorRotation => ColorRotation <= 0 ? (float?)null : Math.Min(1.0f, ColorRotation / 100.0f);
   }
   partial class GeoImageComb
   {
@@ -45,7 +96,7 @@ namespace OMapScratch
       return bitmap;
     }
   }
-  partial class GeoImageView
+  partial class GeoImageView : IGeoImageViewmodel
   {
     public Bitmap LoadImage(MatrixPrj worldPrj, int width, int height)
     {
@@ -58,6 +109,11 @@ namespace OMapScratch
       { _worldMatrix = imagePrj.Matrix; }
       return bitmap;
     }
+
+    float IGeoImageViewmodel.Transparency => Transparency;
+    float? IGeoImageViewmodel.GrayTransform => Gray <= 0 ? (float?)null : Math.Min(1.0f, Gray / 100.0f);
+    float? IGeoImageViewmodel.ColorRotation => ColorRotation <= 0 ? (float?)null : Math.Min(1.0f, ColorRotation / 100.0f);
+
     internal void LoadImage(MatrixPrj imagePrj, int nx, int ny, ref Bitmap bitmap)
     {
       using (Paint p = new Paint())
@@ -65,7 +121,7 @@ namespace OMapScratch
         p.Color = Color.White;
         if (_colorTransform == null)
         {
-          p.Alpha = Math.Max(0, Math.Min(255, (int)(255 * (1 - _transparency))));
+          IGeoImageViewUtils.SetColor(p, this);
         }
         else
         {
