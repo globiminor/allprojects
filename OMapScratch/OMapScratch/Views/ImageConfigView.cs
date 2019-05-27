@@ -2,8 +2,8 @@
 using Android.Views;
 using Android.Widget;
 using Basics.Views;
-using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OMapScratch.Views
 {
@@ -73,20 +73,45 @@ namespace OMapScratch.Views
     private readonly GeoImageVm _baseVm;
     private readonly List<GeoImageVm> _combinations;
 
+    public static ImageConfigView Create(ViewGroup parentLayout, MapView mapView, GeoImageComb editView, GeoImageViews imgViews)
+    {
+      MapVm mapVm = mapView.MapVm;
+      float[] pnt = new float[] { 0, 0 };
+      mapView.InversElemMatrix.MapPoints(pnt);
+      float[] mtr = new float[9];
+      mapView.InversElemMatrix.GetValues(mtr);
+      double[] offset = mapVm.GetOffset();
+
+      ImageConfigView configView = new ImageConfigView(parentLayout, editView, imgViews, mapVm.Images,
+        new MatrixPrj(new double[] { mtr[0], -mtr[1], mtr[3], -mtr[4], offset[0] + pnt[0], offset[1] - pnt[1] }));
+      configView._mapView = mapView;
+      {
+        RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
+        configView.LayoutParameters = lprams;
+      }
+
+      return configView;
+    }
+
+    private MapView _mapView;
 
     public ImageConfigView(ViewGroup parent, GeoImageComb editView, GeoImageViews baseImage, IReadOnlyList<GeoImageViews> combinations, MatrixPrj prj)
       : base(parent.Context)
     {
       _parent = parent;
       _combinations = new List<GeoImageVm>();
+
       foreach (var combi in combinations)
       {
         if (combi == baseImage)
         { continue; }
+
         GeoImageVm vm = new GeoImageVm(null, combi, null) { Opacity = 100, Visible = false, VisibleEnabled = true };
+        AdaptSettings(vm, editView);
         _combinations.Add(vm);
       }
       _baseVm = new GeoImageVm(editView, baseImage, _combinations) { Opacity = 50, Visible = true, VisibleEnabled = false };
+      AdaptSettings(_baseVm, editView);
 
       SetBackgroundColor(Color.White);
 
@@ -121,6 +146,21 @@ namespace OMapScratch.Views
         InitDisplay(editLayout, prj);
         InitEdit(editLayout);
       }
+    }
+
+    private void AdaptSettings(GeoImageVm target, GeoImageComb sourceViews)
+    {
+      if (sourceViews == null)
+      { return; }
+
+      GeoImageView source = sourceViews.Views.Where(x => x.BaseImage == target.BaseImage).FirstOrDefault();
+      if (source == null)
+      { return; }
+
+      target.Visible = true;
+      target.Opacity = (int)(100 * (1 - source.Transparency));
+      target.Gray = source.Gray;
+      target.ColorRotation = source.ColorRotation;
     }
 
     protected override void Dispose(bool disposing)
@@ -193,8 +233,11 @@ namespace OMapScratch.Views
 
         okBtn.Click += (bs, be) => Utils.Try(() =>
         {
-          _baseVm.Save();
+          GeoImageComb comb = _baseVm.Save();
           _parent.RemoveView(this);
+
+          _mapView?.MapVm.LoadLocalImage(comb, _mapView.InversElemMatrix, _mapView.Width, _mapView.Height);
+
           Dispose();
         });
         layout.AddView(okBtn);

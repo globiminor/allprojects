@@ -53,7 +53,7 @@ namespace OcadScratch.Commands
         return false;
       }
 
-      if (!fullText.Contains("2018"))
+      if (!fullText.Contains("Version 20")) // 2018, 2019 ...
       {
         // OCAD 12
         macro.SendCommands('n', Ui.VK_ALT);

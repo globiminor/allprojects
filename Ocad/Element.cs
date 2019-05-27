@@ -11,6 +11,7 @@ namespace Ocad
     {
       internal Geom() { }
       public abstract IEnumerable<Coord> EnumCoords();
+      public abstract IEnumerable<IPoint> EnumPoints();
       public Geom Project(IProjection prj) => ProjectCore(prj);
       public IBox Extent { get { return GetExtent(); } }
       public abstract IGeometry GetGeometry();
@@ -34,6 +35,10 @@ namespace Ocad
       public IPoint BaseGeometry { get; }
 
       public override IEnumerable<Coord> EnumCoords() => Coord.EnumCoords(BaseGeometry);
+      public override IEnumerable<IPoint> EnumPoints()
+      {
+        yield return BaseGeometry;
+      }
 
       protected override Geom ProjectCore(IProjection prj) => Project(prj);
       public new Point Project(IProjection prj) => new Point(prj.Project(BaseGeometry));
@@ -47,6 +52,11 @@ namespace Ocad
       public PointCollection BaseGeometry { get; }
 
       public override IEnumerable<Coord> EnumCoords() => Coord.EnumCoords(BaseGeometry);
+      public override IEnumerable<IPoint> EnumPoints()
+      {
+        foreach (var pt in BaseGeometry)
+          yield return pt;
+      }
 
       protected override Geom ProjectCore(IProjection prj) => Project(prj);
       public new Points Project(IProjection prj) => new Points(BaseGeometry.Project(prj));
@@ -59,6 +69,7 @@ namespace Ocad
       public Polyline BaseGeometry { get; }
 
       public override IEnumerable<Coord> EnumCoords() => Coord.EnumCoords(BaseGeometry);
+      public override IEnumerable<IPoint> EnumPoints() => BaseGeometry.Points;
 
       protected override Geom ProjectCore(IProjection prj) => Project(prj);
       public new Line Project(IProjection prj) => new Line(BaseGeometry.Project(prj));
@@ -71,6 +82,12 @@ namespace Ocad
       public Basics.Geom.Area BaseGeometry { get; }
 
       public override IEnumerable<Coord> EnumCoords() => Coord.EnumCoords(BaseGeometry);
+      public override IEnumerable<IPoint> EnumPoints()
+      {
+        foreach (var border in BaseGeometry.Border)
+          foreach (var pt in border.Points)
+            yield return pt;
+      }
 
       protected override Geom ProjectCore(IProjection prj) => Project(prj);
       public new Area Project(IProjection prj) => new Area(BaseGeometry.Project(prj));

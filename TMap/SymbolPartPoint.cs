@@ -77,7 +77,9 @@ namespace TMap
       set { _scale = value; }
     }
 
+#pragma warning disable CS0672 // Member 'SymbolPartPoint.Draw(IGeometry, DataRow, IDrawable)' overrides obsolete member 'SymbolPart.Draw(IGeometry, DataRow, IDrawable)'. Add the Obsolete attribute to 'SymbolPartPoint.Draw(IGeometry, DataRow, IDrawable)'.
     public override void Draw(IGeometry geometry, DataRow properties, IDrawable drawable)
+#pragma warning restore CS0672 // Member 'SymbolPartPoint.Draw(IGeometry, DataRow, IDrawable)' overrides obsolete member 'SymbolPart.Draw(IGeometry, DataRow, IDrawable)'. Add the Obsolete attribute to 'SymbolPartPoint.Draw(IGeometry, DataRow, IDrawable)'.
     {
       IPoint p = geometry as IPoint;
       if (drawable.Extent == null || IsPointVisible(p, drawable))

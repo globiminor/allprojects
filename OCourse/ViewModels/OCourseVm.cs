@@ -460,7 +460,7 @@ namespace OCourse.ViewModels
       }
     }
 
-    internal RouteCalculator RouteCalculator
+    public RouteCalculator RouteCalculator
     {
       get
       {

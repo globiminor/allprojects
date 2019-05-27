@@ -100,7 +100,7 @@
     </Compile>
     <Compile Include="OCourseCmd.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Route\CombinationTable.cs" />
+    <Compile Include="Route\CostMean.cs" />
     <Compile Include="Route\Cost.cs" />
     <Compile Include="Route\CostFromTo.cs" />
     <Compile Include="Route\RouteCalculator.cs" />

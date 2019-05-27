@@ -318,16 +318,18 @@ namespace OCourse.Ext
         SectionsBuilder b = new SectionsBuilder();
         List<SimpleSection> simples = b.GetSections(course, leg);
 
-        List<SimpleSection> parts = b.GetParts(course, leg);
-        //simples = parts;
-
+        // List<SimpleSection> parts = b.GetParts(course, leg);
+        // simples = parts;
 
         List<SimpleSection> sections = new List<SimpleSection>(simples.Count);
         Dictionary<string, Control> controls = new Dictionary<string, Control>();
         foreach (var section in simples)
         {
-          Control from = GetUniqueControl(controls, section.From, section.Where);
-          Control to = GetUniqueControl(controls, section.To, section.Where);
+          //Control from = GetUniqueControl(controls, section.From, section.Where);
+          //Control to = GetUniqueControl(controls, section.To, section.Where);
+
+          Control from = GetUniqueControl(controls, section.From, null);
+          Control to = GetUniqueControl(controls, section.To, null);
 
           MultiSection add = new MultiSection(from, to);
           if (section is MultiSection s)
@@ -721,14 +723,16 @@ namespace OCourse.Ext
         return dict;
       }
 
-      protected static List<SimpleSection> MakeUniqueControls(IList<SimpleSection> sections)
+      protected static List<SimpleSection> MakeUniqueControls(IList<SimpleSection> sections, 
+        bool whereDependent)
       {
         Dictionary<string, Control> controls = new Dictionary<string, Control>();
         List<SimpleSection> unique = new List<SimpleSection>(sections.Count);
         foreach (var section in sections)
         {
-          Control from = GetUniqueControl(controls, section.From, section.Where);
-          Control to = GetUniqueControl(controls, section.To, section.Where);
+          string where = whereDependent ? section.Where : null;
+          Control from = GetUniqueControl(controls, section.From, where);
+          Control to = GetUniqueControl(controls, section.To, where);
           SimpleSection add = new SimpleSection(from, to);
           add.SetWhere(section.Where);
           unique.Add(add);

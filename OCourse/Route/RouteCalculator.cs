@@ -7,6 +7,7 @@ using Ocad;
 using OCourse.Ext;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OCourse.Route
 {
@@ -43,6 +44,11 @@ namespace OCourse.Route
     internal Dictionary<CostFromTo, CostFromTo> RouteCostDict
     {
       get { return _calcList; }
+    }
+    public CostFromTo GetCost(string from, string to)
+    {
+      var pair = _calcList.FirstOrDefault(p => p.Key.From.Name == from && p.Key.To.Name == to);
+      return pair.Value;
     }
 
     public void CalcEvent(string courseFile, double resolution)

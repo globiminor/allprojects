@@ -45,17 +45,23 @@ namespace TMap
     {
       get { return _dash; }
     }
+#pragma warning disable CS0672 // Member 'SymbolPartLinePoint.Draw(IGeometry, DataRow, IDrawable)' overrides obsolete member 'SymbolPart.Draw(IGeometry, DataRow, IDrawable)'. Add the Obsolete attribute to 'SymbolPartLinePoint.Draw(IGeometry, DataRow, IDrawable)'.
     public override void Draw(IGeometry geometry, DataRow properties, IDrawable drawable)
+#pragma warning restore CS0672 // Member 'SymbolPartLinePoint.Draw(IGeometry, DataRow, IDrawable)' overrides obsolete member 'SymbolPart.Draw(IGeometry, DataRow, IDrawable)'. Add the Obsolete attribute to 'SymbolPartLinePoint.Draw(IGeometry, DataRow, IDrawable)'.
     {
       Polyline line = (Polyline)geometry;
       _basePoint.Tag = Tag;
       if ((_linePointType & LinePointType.StartPoint) != 0)
       {
+#pragma warning disable CS0618 // 'SymbolPart.Draw(IGeometry, DataRow, IDrawable)' is obsolete: 'refactor IGeometry'
         _basePoint.Draw(Basics.Geom.Point.CastOrWrap(line.Points[0]), properties, drawable);
+#pragma warning restore CS0618 // 'SymbolPart.Draw(IGeometry, DataRow, IDrawable)' is obsolete: 'refactor IGeometry'
       }
       if ((_linePointType & LinePointType.EndPoint) != 0)
       {
+#pragma warning disable CS0618 // 'SymbolPart.Draw(IGeometry, DataRow, IDrawable)' is obsolete: 'refactor IGeometry'
         _basePoint.Draw(Basics.Geom.Point.CastOrWrap(line.Points.Last()), properties, drawable);
+#pragma warning restore CS0618 // 'SymbolPart.Draw(IGeometry, DataRow, IDrawable)' is obsolete: 'refactor IGeometry'
       }
       if ((_linePointType & LinePointType.VertexPoint) != 0)
       {

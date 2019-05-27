@@ -19,6 +19,8 @@ namespace OcadTest.OEvent
       public string OutRoot;
       public string FrontBackground;
       public string RueckBackgroud;
+
+      public Func<string, string> GetFrontBackground;
     }
 
     [TestMethod]
@@ -32,6 +34,12 @@ namespace OcadTest.OEvent
     public void RunCreatePdfs2017()
     {
       CreatePdfs2017();
+    }
+
+    [TestMethod]
+    public void RunCreatePdfs2019()
+    {
+      CreatePdfs2019();
     }
 
     [TestMethod]
@@ -215,6 +223,103 @@ namespace OcadTest.OEvent
       //}
     }
 
+    [TestMethod]
+    public void Join2019()
+    {
+      FuenferSettings settings = new FuenferSettings
+      {
+        PdfRoot = @"C:\daten\felix\kapreolo\karten\irchel\2019\courses\",
+        GetFrontBackground = (x) =>
+        {
+          if (x.EndsWith(".3.pdf") || x.EndsWith(".5.pdf"))
+            return @"C:\daten\felix\kapreolo\karten\irchel\2019\courses\_Staffel.Front.3_5.pdf";
+          return @"C:\daten\felix\kapreolo\karten\irchel\2019\courses\_Staffel.Front.pdf";
+        },
+        RueckBackgroud = @"C:\daten\felix\kapreolo\karten\irchel\2019\courses\_Staffel.Rueck.pdf",
+        OutRoot = @"C:\daten\felix\kapreolo\karten\irchel\2019\Druck\Staffel"
+      };
+
+      int maxPages = 80;
+
+      FuenferJoinPdfs(settings, maxPages);
+      string pdfRoot = @"C:\daten\felix\kapreolo\karten\irchel\2019\courses";
+
+      {
+        string exp = string.Format("{0}_4a.pdf", settings.OutRoot);
+        PdfText.OverprintFrontBack(exp, new string[] {
+          Path.Combine(pdfRoot, "Strecke4a.pdf"),
+          Path.Combine(pdfRoot, "Rueck.4a.pdf")},
+          settings.FrontBackground, settings.RueckBackgroud);
+      }
+      {
+        string exp = string.Format("{0}_4b.pdf", settings.OutRoot);
+        PdfText.OverprintFrontBack(exp, new string[] {
+          Path.Combine(pdfRoot, "Strecke4b.pdf"),
+          Path.Combine(pdfRoot, "Rueck.4b.pdf")},
+          settings.FrontBackground, settings.RueckBackgroud);
+      }
+      {
+        string exp = string.Format("{0}_4c.pdf", settings.OutRoot);
+        PdfText.OverprintFrontBack(exp, new string[] {
+          Path.Combine(pdfRoot, "Strecke4c.pdf"),
+          Path.Combine(pdfRoot, "Rueck.4c.pdf")},
+          settings.FrontBackground, settings.RueckBackgroud);
+      }
+
+      return;
+
+      //List<int[]> pairs = new List<int[]> { new[] { 201, 210 }, new[] { 211, 220 }, new[] { 221, 230 } };
+      //foreach (var pair in pairs)
+      //{
+      //  List<string> files = new List<string>();
+      //  for (int n = pair[0]; n <= pair[1]; n++)
+      //  {
+      //    files.Add(Path.Combine(pdfRoot, string.Format("Kids.Front_1.pdf", n)));
+      //    files.Add(Path.Combine(pdfRoot, string.Format("Rueck.Kids-Staffel.{0}.1.pdf", n)));
+      //    files.Add(Path.Combine(pdfRoot, string.Format("Kids.Front_2.pdf", n)));
+      //    files.Add(Path.Combine(pdfRoot, string.Format("Rueck.Kids-Staffel.{0}.2.pdf", n)));
+      //    files.Add(Path.Combine(pdfRoot, string.Format("Kids.Front_3.pdf", n)));
+      //    files.Add(Path.Combine(pdfRoot, string.Format("Rueck.Kids-Staffel.{0}.3.pdf", n)));
+      //  }
+      //  string root = Path.GetDirectoryName(pdfRoot);
+      //  string exp = Path.Combine(pdfRoot, "Druck", string.Format("Kids_{0}_{1}.pdf", pair[0], pair[1]));
+      //  PdfText.OverprintFrontBack(exp, files,
+      //    settings.FrontBackground, settings.RueckBackgroud);
+      //}
+      //return;
+      //{
+      //  string root = Path.GetDirectoryName(pdfRoot);
+      //  string exp = string.Format("{0}\\Comb_Kids_2.pdf", root);
+      //  PdfText.OverprintFrontBack(exp, new string[] {
+      //    Path.Combine(root, "Kids.2.Front.pdf"),
+      //    Path.Combine(root, "Kids.2.Rueck.pdf")},
+      //    settings.FrontBackground, settings.RueckBackgroud);
+      //}
+      //{
+      //  string root = Path.GetDirectoryName(pdfRoot);
+      //  string exp = string.Format("{0}\\Comb_Kids_3.pdf", root);
+      //  PdfText.OverprintFrontBack(exp, new string[] {
+      //    Path.Combine(root, "Kids.3.Front.pdf"),
+      //    Path.Combine(root, "Kids.3.Rueck.pdf")},
+      //    settings.FrontBackground, settings.RueckBackgroud);
+      //}
+
+      //{
+      //  string root = Path.GetDirectoryName(pdfRoot);
+      //  string exp = string.Format("{0}\\Comb_Posten.pdf", root);
+      //  PdfText.Overprint(null, new string[] {
+      //    settings.FrontBackground,
+      //    Path.Combine(root, "PostenNetzFront.pdf")
+      //    }, exp);
+      //}
+
+      //{
+      //  string root = Path.GetDirectoryName(pdfRoot);
+      //  string exp = string.Format("{0}\\Comb_Hardwald.pdf", root);
+      //  PdfText.Overprint(null, new string[] { settings.FrontBackground }, exp);
+      //}
+    }
+
     private void CreatePdfs2015()
     {
       string dir = @"C:\daten\felix\kapreolo\karten\chomberg_bruetten\2015\Bahnen";
@@ -280,6 +385,61 @@ namespace OcadTest.OEvent
       }
       string pdfScript = Path.Combine(dir, "pdfScript.xml");
       Ocad.Scripting.Utils.CreatePdf(pdfScript, files);
+    }
+
+    private void CreatePdfs2019()
+    {
+      string dir = @"C:\daten\felix\kapreolo\karten\irchel\2019\courses";
+      List<string> files = new List<string>();
+      OCourse.ViewModels.OCourseVm courseVm = new OCourse.ViewModels.OCourseVm();
+      courseVm.LoadSettings(@"C:\daten\felix\kapreolo\karten\irchel\2019\irchel_5er.xml");
+      courseVm.CourseName = "5er";
+
+      System.Threading.Thread.Sleep(1000);
+      while (courseVm.Working)
+      { System.Threading.Thread.Sleep(1000); }
+
+      foreach (var file in Directory.GetFiles(dir))
+      {
+        string fileName = Path.GetFileName(file);
+        string frontKey = "Front.5er.";
+        if (
+          !fileName.StartsWith(frontKey) &&
+          !fileName.StartsWith("Rueck.5er."))
+        { continue; }
+
+        if (!fileName.EndsWith(".ocd"))
+        { continue; }
+
+        if (fileName.EndsWith(".4.ocd"))
+        { continue; }
+
+        AdaptBahn2019(file, courseVm);
+
+        if (fileName.StartsWith(frontKey))
+        {
+          int startNr = int.Parse(fileName.Substring(frontKey.Length).Split('.')[0]);
+          if (startNr > 10)
+          { continue; }
+        }
+
+        files.Add(file);
+      }
+
+      using (OCourse.Commands.CmdShapeExport cmd = new OCourse.Commands.CmdShapeExport(courseVm))
+      { cmd.Export(courseVm.PathesFile); }
+
+      string optScript = Path.Combine(dir, "optScript.xml");
+      Ocad.Scripting.Utils.Optimize(files, optScript, exe: @"C:\Program Files\OCAD\OCAD 2018 Mapping Solution\OCAD 2018 Mapping Solution_64bit.exe");
+
+      foreach (var file in files)
+      {
+        string pdf = Path.ChangeExtension(file, ".pdf");
+        if (File.Exists(pdf))
+        { File.Delete(pdf); }
+      }
+      string pdfScript = Path.Combine(dir, "pdfScript.xml");
+      Ocad.Scripting.Utils.CreatePdf(pdfScript, files, exe: @"C:\Program Files\OCAD\OCAD 2018 Mapping Solution\OCAD 2018 Mapping Solution_64bit.exe");
     }
 
     private void AdaptBahn2015(string fileName)
@@ -382,6 +542,118 @@ namespace OcadTest.OEvent
       }
     }
 
+    private bool AdaptBahn2019(string fileName, OCourse.ViewModels.OCourseVm course)
+    {
+      using (OcadWriter w = OcadWriter.AppendTo(fileName))
+      {
+        Setup setup = w.ReadSetup();
+        IList<ElementIndex> indices = w.GetIndices();
+
+        Dictionary<int, ElementIndex> delIndexes = new Dictionary<int, ElementIndex>();
+        List<GeoElement> replaceElems = new List<GeoElement>();
+        GeoElement climbElem = null;
+        List<string> ctrls = new List<string>();
+        Control start = (Control)course.Course.First.Value;
+        ctrls.Add(start.Name);
+        foreach (var e in indices)
+        {
+          if (e.Status == ElementIndex.StatusDeleted)
+          { continue; }
+
+          w.ReadElement(e, out GeoElement elem);
+          if (elem?.Symbol == 19002)
+          { ctrls.Add(elem.Text.Trim()); }
+
+          if (elem?.Text == "999 m" || elem?.Text == "432 m")
+          {
+            delIndexes[e.Index] = e;
+            climbElem = elem;
+            replaceElems.Add(elem);
+          }
+          if (elem?.Text.EndsWith("-147") == true
+            && ElemMoveTo(elem, new Point2D(2686411.0, 1266478.9)))
+          {
+            delIndexes[e.Index] = e;
+            elem.ObjectString = null;
+            elem.ObjectStringType = ObjectStringType.None;
+            replaceElems.Add(elem);
+          }
+          if (elem?.Text.EndsWith("-98") == true
+            && ElemMoveTo(elem, new Point2D(2686382.0, 1266960.0)))
+          {
+            delIndexes[e.Index] = e;
+            elem.ObjectString = null;
+            elem.ObjectStringType = ObjectStringType.None;
+            replaceElems.Add(elem);
+          }
+          if (elem?.Text.EndsWith("-166") == true
+            && ElemMoveTo(elem, new Point2D(2687142.8, 1266976.0)))
+          {
+            delIndexes[e.Index] = e;
+            elem.ObjectString = null;
+            elem.ObjectStringType = ObjectStringType.None;
+            replaceElems.Add(elem);
+          }
+
+          if (elem?.Text.EndsWith("-200") == true && (fileName.EndsWith(".1.ocd") || fileName.EndsWith(".2.ocd"))
+            && ElemMoveTo(elem, new Point2D(2686274.1, 1267212.3)))
+          {
+            delIndexes[e.Index] = e;
+            elem.ObjectString = null;
+            elem.ObjectStringType = ObjectStringType.None;
+            replaceElems.Add(elem);
+          }
+          if (elem?.Text.EndsWith("-200") == true && fileName.EndsWith(".5.ocd")
+            && ElemMoveTo(elem, new Point2D(2686383.4, 1267183.1)))
+          {
+            delIndexes[e.Index] = e;
+            elem.ObjectString = null;
+            elem.ObjectStringType = ObjectStringType.None;
+            replaceElems.Add(elem);
+          }
+        }
+        if (delIndexes.Count > 0)
+        {
+          if (climbElem != null)
+          {
+            Control end = (Control)course.Course.Last.Value;
+            ctrls.Add(end.Name);
+            double dh = 0;
+            for (int i = 1; i < ctrls.Count; i++)
+            {
+              dh += course.RouteCalculator.GetCost(ctrls[i - 1], ctrls[i]).Climb;
+            }
+            dh = 5 * Math.Round(dh / 5);
+            climbElem.Text = $"{dh} m";
+          }
+
+          w.DeleteElements((i) => { return delIndexes.ContainsKey(i.Index); });
+          foreach (var replaceElem in replaceElems)
+          { w.Append(replaceElem); }
+          return true;
+        }
+      }
+      return false;
+    }
+
+    private bool ElemMoveTo(GeoElement elem, IPoint toPoint)
+    {
+      IGeometry geom = elem.Geometry.GetGeometry();
+      IPoint tr = null;
+      foreach (var p in elem.Geometry.EnumPoints())
+      {
+        tr = PointOp.Sub(toPoint, p);
+        break;
+      }
+      if (PointOp.OrigDist2(tr) < 1)
+      { return false; }
+
+      Basics.Geom.Projection.Translate trans = new Basics.Geom.Projection.Translate(tr);
+      geom = geom.Project(trans);
+      elem.Geometry = GeoElement.Geom.Create(geom);
+      return true;
+    }
+
     private void FuenferJoinPdfs(FuenferSettings settings, int maxPages)
     {
       string pdfRoot = settings.PdfRoot;
@@ -427,7 +699,9 @@ namespace OcadTest.OEvent
         if (combs.Count >= maxPages)
         {
           string exp = string.Format("{0}_{1}_{2}.pdf", settings.OutRoot, startNr, lastNr);
-          PdfText.OverprintFrontBack(exp, combs, settings.FrontBackground, settings.RueckBackgroud);
+          PdfText.OverprintFrontBack(exp, combs,
+            settings.GetFrontBackground ?? ((x) => settings.FrontBackground),
+            settings.RueckBackgroud);
           combs.Clear();
           startNr = -1;
         }
@@ -437,13 +711,18 @@ namespace OcadTest.OEvent
         { startNr = lastNr; }
 
         FrontRueck parts = legs[key];
+        if (parts.Front == null)
+        { continue; }
+
         combs.Add(parts.Front);
         combs.Add(parts.Rueck);
       }
       if (combs.Count > 0)
       {
         string exp = string.Format("{0}_{1}_{2}.pdf", settings.OutRoot, startNr, lastNr);
-        PdfText.OverprintFrontBack(exp, combs, settings.FrontBackground, settings.RueckBackgroud);
+        PdfText.OverprintFrontBack(exp, combs,
+          settings.GetFrontBackground ?? ((x) => settings.FrontBackground),
+          settings.RueckBackgroud);
       }
     }
 

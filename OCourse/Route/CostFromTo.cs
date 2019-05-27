@@ -5,7 +5,7 @@ using Ocad;
 
 namespace OCourse.Route
 {
-  internal class CostFromTo : CostBase, ICost
+  public class CostFromTo : CostBase, ICost
   {
     public class GeometryComparer : IComparer<CostFromTo>, IEqualityComparer<CostFromTo>
     {

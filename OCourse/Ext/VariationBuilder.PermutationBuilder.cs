@@ -945,7 +945,7 @@ namespace OCourse.Ext
       protected override List<SimpleSection> GetSections()
       {
         List<SimpleSection> sections = _course.GetAllSections();
-        sections = MakeUniqueControls(sections);
+        sections = MakeUniqueControls(sections, whereDependent: false);
 
         return sections;
       }

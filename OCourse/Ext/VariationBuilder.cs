@@ -126,6 +126,15 @@ namespace OCourse.Ext
       VariationAdded?.Invoke(this, variation);
     }
 
+    public static void InsertDummies(SectionCollection course)
+    {
+      DummyControl.InsertDummies(course, course);
+    }
+    public static void RemoveDummies(SectionCollection course)
+    {
+      DummyControl.RemoveDummies(course);
+    }
+
     private class DummyControl : Control
     {
       public static void InsertDummies(SectionCollection course, SectionCollection reference)
@@ -155,7 +164,7 @@ namespace OCourse.Ext
             foreach (var branch in var.Branches)
             {
               RemoveDummies(branch);
-              if (branch.Count == 1 && branch.Last.Value is DummyControl)
+              while (branch.Last?.Value is DummyControl)
               {
                 branch.RemoveLast();
               }

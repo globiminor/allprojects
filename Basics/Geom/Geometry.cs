@@ -103,6 +103,7 @@ namespace Basics.Geom
       #endregion
     }
 
+
     private static IProjection _toXY;
 
     public virtual bool EqualGeometry(IGeometry other)

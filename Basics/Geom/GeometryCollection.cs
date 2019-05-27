@@ -90,6 +90,7 @@ namespace Basics.Geom
         return border;
       }
     }
+
     public IGeometry Split(IGeometry[] border)
     {
       throw new NotImplementedException("not implemented");

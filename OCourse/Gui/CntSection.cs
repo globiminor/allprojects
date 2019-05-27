@@ -485,7 +485,8 @@ namespace OCourse.Gui
       }
 
       SectionCollection list = new SectionCollection();
-      list.AddLast(course.Clone());
+      Course clone = course.Clone();
+      list.AddLast(clone);
       Control startWrapper = VariationBuilder.GetWrapperControl("++", list);
       list.AddFirst(startWrapper);
       Control endWrapper = VariationBuilder.GetWrapperControl("--", list);

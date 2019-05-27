@@ -426,7 +426,8 @@ namespace OMapScratch
               imgBtn.LongClick += (bs, be) => Utils.Try(() =>
               {
                 _imageList.Visibility = ViewStates.Invisible;
-                //              Configure image;
+                ImageConfigView configView = ImageConfigView.Create(_parentLayout, _mapView, editView: (GeoImageComb)imgBtn.GeoImage, imgViews: imgViews);
+                _parentLayout.AddView(configView);
               });
               imgLayout.AddView(imgBtn);
             }
@@ -441,21 +442,8 @@ namespace OMapScratch
               addBtn.Click += (bs, be) => Utils.Try(() =>
               {
                 _imageList.Visibility = ViewStates.Invisible;
-                float[] pnt = new float[] { 0, 0 };
-                _mapView.InversElemMatrix.MapPoints(pnt);
-                float[] mtr = new float[9];
-                _mapView.InversElemMatrix.GetValues(mtr);
-                double[] offset = MapVm.GetOffset();
-
-                ImageConfigView configView = new ImageConfigView(_parentLayout, null, imgViews, MapVm.Images,
-                  new MatrixPrj(new double[] { mtr[0], -mtr[1], mtr[3], -mtr[4], offset[0] + pnt[0], offset[1] - pnt[1] }));
-                {
-                  RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
-                  //lprams.TopMargin = 800;
-                  configView.LayoutParameters = lprams;
-                }
+                ImageConfigView configView = ImageConfigView.Create(_parentLayout, _mapView, editView: null, imgViews: imgViews);
                 _parentLayout.AddView(configView);
-                //         Create and     Configure image;
               });
               imgLayout.AddView(addBtn);
             }

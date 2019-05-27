@@ -17,7 +17,9 @@ namespace OCourse.Ext
       public FromControl(Control control)
       { Control = control; }
       public Control Control { get; }
-      Control IDisplayControl.Display { get { return Control; } }
+      Control IDisplayControl.Display => Control;
+
+      public override string ToString() => $"FromControl: {Control}";
     }
 
     public delegate IList<IDisplayControl> AddEventHandler(int leg, ISection section,
@@ -101,7 +103,7 @@ namespace OCourse.Ext
           Fork.Branch branch = (Fork.Branch)fork.Branches[iBranch];
           IDisplayControl fromControl = fromControls.Count > 1 ? fromControls[iBranch] : fromControls[0];
 
-          IList<IDisplayControl> forksTo = AppendSections(leg, branch, fromControls, sections, where, uniqueAllSections);
+          IList<IDisplayControl> forksTo = AppendSections(leg, branch, new[] { fromControl }, sections, where, uniqueAllSections);
           tos.AddRange(forksTo);
         }
         toControls = tos;

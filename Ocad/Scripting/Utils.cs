@@ -2,38 +2,40 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Security.AccessControl;
-using System.Text;
 
 namespace Ocad.Scripting
 {
   public class Utils
   {
-    public static void CreatePdf(string dir)
+    public string Exe { get; set; }
+
+    public static void CreatePdf(string dir, string exe = null)
     {
       string script = Path.Combine(dir, "CreatePdf.xml");
-      CreatePdf(script, Directory.GetFiles(dir, "*.ocd"));
+      CreatePdf(script, Directory.GetFiles(dir, "*.ocd"), exe);
     }
 
-    public static void CreatePdf(string script, IEnumerable<string> files)
+    public static void CreatePdf(string script, IEnumerable<string> files, string exe = null)
     {
-      string exe = CreatePdfScript(files, script);
-      RunScript(script, exe);
+      string defaultExe = CreatePdfScript(files, script);
+      new Utils { Exe = exe ?? defaultExe }.RunScript(script, defaultExe);
     }
 
-    public static void Optimize(IEnumerable<string> files, string script)
+    public static void Optimize(IEnumerable<string> files, string script, string exe = null)
     {
-      string exe = OptimizeScript(files, script);
-      RunScript(script, exe);
+      string defaultExe = OptimizeScript(files, script);
+      new Utils { Exe = exe ?? defaultExe }.RunScript(script, defaultExe);
     }
 
-    private static void RunScript(string script, string exe, bool setAccess = true)
+    private void RunScript(string script, string exe, bool setAccess = true)
     {
       if (exe == null)
       {
         return;
       }
+
+      exe = Exe ?? exe;
 
       if (setAccess)
       { SetAccessControl(Environment.CurrentDirectory); }

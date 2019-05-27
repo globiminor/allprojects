@@ -74,7 +74,7 @@ namespace Basics.Geom
       return p;
     }
 
-    protected override IBox GetExtent() => this;
+    protected sealed override IBox GetExtent() => this;
 
     protected override IGeometry ProjectCore(IProjection projection) => Project(projection);
     public Point Project(IProjection projection)

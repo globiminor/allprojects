@@ -26,6 +26,9 @@ namespace OMapScratch
     {
       _views.Add(geoImage);
     }
+
+    public IReadOnlyList<GeoImageView> Views => _views;
+
     public double[] GetWorldMatrix()
     {
       _worldMatrix = _worldMatrix ?? _baseImage.DefaultWorldMatrix;
@@ -203,10 +206,10 @@ namespace OMapScratch
     }
     public bool ColorRotationEnabled => Gray <= 0;
 
-    public void Save()
+    public GeoImageComb Save()
     {
       if (_container == null || _combinations == null)
-      { return; }
+      { return null; }
 
       GeoImageComb comb = new GeoImageComb(_baseImage);
       GeoImageView baseImg = new GeoImageView(_baseImage);
@@ -226,6 +229,7 @@ namespace OMapScratch
         comb.Add(part);
       }
       _container.Replace(_editView, comb);
+      return comb;
     }
   }
   public class GeoImageViews
