@@ -88,9 +88,13 @@ namespace Ocad
         double dx = point.X - _setup._prjTrans.X;
         double dy = point.Y - _setup._prjTrans.Y;
 
-        return new Point2D(
-          (dx * _setup._cos - dy * _setup._sin) / _setup._factor,
-          (dx * _setup._sin + dy * _setup._cos) / _setup._factor);
+        double xPrj = (dx * _setup._cos - dy * _setup._sin) / _setup._factor;
+        double yPrj = (dx * _setup._sin + dy * _setup._cos) / _setup._factor;
+
+        if (point is Coord.CodePoint cp)
+        { return new Coord.CodePoint(xPrj, yPrj) { Flags = cp.Flags }; };
+
+        return new Point2D(xPrj, yPrj);
       }
     }
 

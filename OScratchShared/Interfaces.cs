@@ -75,7 +75,7 @@ namespace OMapScratch
 
     void Translate(float dx, float dy);
     void Scale(float fx, float fy);
-    void Rotate_(float rad);
+    void Rotate(float rad);
 
     void DrawPath(Curve path, IProjection toLocal, T p);
     void DrawText(string text, float x0, float y0, T p);

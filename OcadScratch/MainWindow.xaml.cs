@@ -49,6 +49,9 @@ namespace OcadScratch
     public MainWindow()
     {
       InitializeComponent();
+
+      DataContext = new ViewModels.MapVm();
+
       mniSave.SetBinding(MenuItem.IsEnabledProperty, new Binding(nameof(DataContext.CanSave)));
       mniSaveAs.SetBinding(MenuItem.IsEnabledProperty, new Binding(nameof(DataContext.CanSaveAs)));
 

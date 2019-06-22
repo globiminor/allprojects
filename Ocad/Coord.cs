@@ -316,7 +316,11 @@ namespace Ocad
           yield return coord;
         }
 
-        coord = Coord.Create(seg.End, Coord.Flags.none);
+        Flags remove = Flags.firstBezierPoint | Flags.secondBezierPoint | Flags.firstHolePoint;
+        Flags c = ((seg.End as CodePoint)?.Flags ?? Flags.none) | remove;
+        Flags code = c ^ remove;
+
+        coord = Coord.Create(seg.End, c);
         yield return coord;
       }
 

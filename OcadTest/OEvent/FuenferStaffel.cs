@@ -419,8 +419,8 @@ namespace OcadTest.OEvent
         if (fileName.StartsWith(frontKey))
         {
           int startNr = int.Parse(fileName.Substring(frontKey.Length).Split('.')[0]);
-          if (startNr > 10)
-          { continue; }
+          //if (startNr > 10)
+          //{ continue; }
         }
 
         files.Add(file);
@@ -586,6 +586,14 @@ namespace OcadTest.OEvent
             elem.ObjectStringType = ObjectStringType.None;
             replaceElems.Add(elem);
           }
+          if (elem?.Text.EndsWith("-101") == true
+            && ElemMoveTo(elem, new Point2D(2686229.6, 1266651.4)))
+          {
+            delIndexes[e.Index] = e;
+            elem.ObjectString = null;
+            elem.ObjectStringType = ObjectStringType.None;
+            replaceElems.Add(elem);
+          }
           if (elem?.Text.EndsWith("-166") == true
             && ElemMoveTo(elem, new Point2D(2687142.8, 1266976.0)))
           {
@@ -605,6 +613,18 @@ namespace OcadTest.OEvent
           }
           if (elem?.Text.EndsWith("-200") == true && fileName.EndsWith(".5.ocd")
             && ElemMoveTo(elem, new Point2D(2686383.4, 1267183.1)))
+          {
+            delIndexes[e.Index] = e;
+            elem.ObjectString = null;
+            elem.ObjectStringType = ObjectStringType.None;
+            replaceElems.Add(elem);
+          }
+          if (fileName.EndsWith(".5.ocd") && ElemReplace(elem,
+            new GeoElement.Line(Polyline.Create(new[] { new Point2D(2686388.2, 1267108.9), new Point2D(2686401.2, 1267256.5) })),
+            new GeoElement.Line(Polyline.Create(new[] { new Point2D(2686388.2, 1267108.9),
+              new Coord.CodePoint(2686394.4, 1267178.8) { Flags = Coord.Flags.noLine},
+              new Point2D(2686398.7, 1267228.1),
+              new Point2D(2686401.2, 1267256.5) }))))
           {
             delIndexes[e.Index] = e;
             elem.ObjectString = null;
@@ -636,7 +656,7 @@ namespace OcadTest.OEvent
       return false;
     }
 
-    private bool ElemMoveTo(GeoElement elem, IPoint toPoint)
+    private bool ElemMoveTo(GeoElement elem, IPoint toPoint, double tolerance = 1)
     {
       IGeometry geom = elem.Geometry.GetGeometry();
       IPoint tr = null;
@@ -645,12 +665,33 @@ namespace OcadTest.OEvent
         tr = PointOp.Sub(toPoint, p);
         break;
       }
-      if (PointOp.OrigDist2(tr) < 1)
+      if (PointOp.OrigDist2(tr) < tolerance)
       { return false; }
 
       Basics.Geom.Projection.Translate trans = new Basics.Geom.Projection.Translate(tr);
       geom = geom.Project(trans);
       elem.Geometry = GeoElement.Geom.Create(geom);
+      return true;
+    }
+
+    private bool ElemReplace(GeoElement elem, GeoElement.Geom search, GeoElement.Geom replace, double tolerance = 1)
+    {
+      if (elem?.Geometry == null)
+      { return false; }
+
+      IEnumerator<IPoint> searchPts = search.EnumPoints().GetEnumerator();
+      foreach (var p in elem.Geometry.EnumPoints())
+      {
+        if (!searchPts.MoveNext())
+        { return false; }
+        IPoint s = searchPts.Current;
+        if (PointOp.Sub(p, s).OrigDist2() >= tolerance)
+        { return false; }
+      }
+      if (searchPts.MoveNext())
+      { return false; }
+
+      elem.Geometry = replace;
       return true;
     }
 

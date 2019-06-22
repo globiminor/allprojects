@@ -345,7 +345,7 @@ namespace OMapScratch
 
         float azi = ((point as DirectedPnt)?.Azimuth ?? 0) + (matrix?.Rotate ?? 0);
         if (azi != 0)
-        { canvas.Rotate_(azi); }
+        { canvas.Rotate(azi); }
 
         ScalePrj prj = new ScalePrj(pntScale);
         foreach (var curve in sym.Curves)
@@ -377,7 +377,7 @@ namespace OMapScratch
           canvas.Scale(f * symbolScale, f * symbolScale);
           float rot = matrix.Rotate;
           if (rot != 0)
-          { canvas.Rotate_(-rot); }
+          { canvas.Rotate(-rot); }
         }
         canvas.DrawText(text, 0, 0 + p.TextSize / 2.5f, p);
       }

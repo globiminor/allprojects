@@ -7,9 +7,9 @@
         xmlns:localVm="clr-namespace:OcadScratch.ViewModels"
         mc:Ignorable="d"
         Title="O-Scratch" Height="396" Width="698">
-    <Window.DataContext>
+    <!--<Window.DataContext>
         <localVm:MapVm />
-    </Window.DataContext>
+    </Window.DataContext>-->
     <DockPanel>
         <Menu x:Name="menu" DockPanel.Dock="Top">
             <MenuItem Header="_File">

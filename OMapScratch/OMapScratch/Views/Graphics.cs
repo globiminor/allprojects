@@ -33,7 +33,7 @@ namespace OMapScratch.Views
 
     public void Translate(float dx, float dy) => _canvas.Translate(dx, dy);
     public void Scale(float fx, float fy) => _canvas.Scale(fx, fy);
-    public void Rotate_(float rad)
+    public void Rotate(float rad)
       => _canvas.Rotate(rad * 180 / (float)System.Math.PI);
 
     public void DrawText(string text, float x0, float y0, GraphicsPaint p)

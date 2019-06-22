@@ -149,27 +149,23 @@ namespace OMapScratch
       ref Bitmap bmp, Paint paint)
     {
 
-      {
-        var t0 = targetPrj.Project(0, 0);
-        var t1 = targetPrj.Project(width, 0);
-        var t2 = targetPrj.Project(0, height);
-        var t3 = targetPrj.Project(width, height);
-      }
       Pnt targetMax = new Pnt(width, height);
       double[] m = targetPrj.Matrix;
-      double[] localMatrix = new double[] { m[0], m[1], m[2], m[3], 0, 0 };
+
+      double[] localMatrix = new double[] { m[0], -m[1], -m[2], m[3], 0, 0 };
       MatrixPrj localTargetPrj = new MatrixPrj(localMatrix);
       MatrixPrj invLocalTargetPrj = localTargetPrj.GetInverse();
 
       foreach (var part in Parts)
       {
         double[] p = part.WorldMatrix;
-        double[] localPartMatrix = new double[] { p[0], p[1], p[2], p[3], p[4] - m[4], p[5] - m[5] };
+        double[] localPartMatrix = new double[] { p[0], -p[1], -p[2], p[3], p[4] - m[4], p[5] - m[5] };
         MatrixPrj partPrj = new MatrixPrj(localPartMatrix);
         MatrixPrj invPartPrj = partPrj.GetInverse();
 
         Curve targetBoxInPart = MatrixPrj.GetLocalBox(invPartPrj, targetMax, localTargetPrj);
         IBox b = targetBoxInPart.Extent;
+
         int x0 = Math.Max(0, (int)b.Min.X);
         int y0 = Math.Max(0, (int)b.Min.Y);
         int x1 = Math.Min(part.Width, (int)b.Max.X);
@@ -179,35 +175,30 @@ namespace OMapScratch
         { continue; }
 
         bmp = bmp ?? Bitmap.CreateBitmap(width, height, Bitmap.Config.Argb8888);
-        double[] orig = invLocalTargetPrj.Project(partPrj.Project(0, 0));
+
+        double[] o00 = invLocalTargetPrj.Project(partPrj.Project(0, 0));
         double[] o10 = invLocalTargetPrj.Project(partPrj.Project(1, 0));
         double[] o01 = invLocalTargetPrj.Project(partPrj.Project(0, 1));
+
+        double[] partImg00 = invLocalTargetPrj.Project(partPrj.Project(x0, y0));
 
         using (Bitmap partImg = LoadImage(part.Path, x0, y0, x1, y1))
         using (Canvas canvas = new Canvas(bmp))
         using (Matrix partImageMatrix = new Matrix())
         {
           double f = (double)(x1 - x0) / partImg.Width;
-          float x00 = (float)(f * (o10[0] - orig[0]));
-          float x01 = (float)(f * (o10[1] - orig[1]));
-          float x10 = (float)(f * (o01[0] - orig[0]));
-          float x11 = (float)(f * (o01[1] - orig[1]));
+          float x00 = (float)(f * (o10[0] - o00[0]));
+          float x01 = (float)(f * (-(o10[1] - o00[1])));
+          float x10 = (float)(f * (-(o01[0] - o00[0])));
+          float x11 = (float)(f * (o01[1] - o00[1]));
 
           partImageMatrix.SetValues(new float[] {
-            x00, x10, 0,
-            x01, x11, 0,
+            x00, x01, (float)partImg00[0],
+            x10, x11, (float)partImg00[1],
             0, 0, 1 });
-          float[] pnt = new float[] { x0, y0 };
-          using (Matrix inv = new Matrix())
-          {
-            partImageMatrix.MapPoints(pnt);
-          }
 
-          partImageMatrix.SetValues(new float[] {
-            x00, x01, (float)orig[0] + pnt[0],
-            x10, x11, (float)orig[1] + pnt[1],
-            0, 0, 1 });
           canvas.DrawBitmap(partImg, partImageMatrix, paint);
+
         }
       }
       return bmp;
