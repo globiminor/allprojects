@@ -82,7 +82,7 @@ namespace OMapScratch
   {
     public Bitmap LoadImage(MatrixPrj worldPrj, int width, int height)
     {
-      MatrixPrj imagePrj = _baseImage.GetImagePrj(worldPrj, width, height, out int nx, out int ny);
+      MatrixPrj imagePrj = _baseImage.GetImagePrj(worldPrj, width, height, out int nx, out int ny, out IBox imagePartExtent);
 
       Bitmap bitmap = null;
 
@@ -92,7 +92,10 @@ namespace OMapScratch
         part.LoadImage(imagePrj, nx, ny, ref bitmap);
       }
       if (bitmap != null)
-      { _worldMatrix = imagePrj.Matrix; }
+      {
+        _currentWorldMatrix = imagePrj.Matrix;
+        _currentImagePartExtent = imagePartExtent;
+      }
       return bitmap;
     }
   }
@@ -100,13 +103,16 @@ namespace OMapScratch
   {
     public Bitmap LoadImage(MatrixPrj worldPrj, int width, int height)
     {
-      MatrixPrj imagePrj = BaseImage.GetImagePrj(worldPrj, width, height, out int nx, out int ny);
+      MatrixPrj imagePrj = BaseImage.GetImagePrj(worldPrj, width, height, out int nx, out int ny, out IBox imagePartExtent);
 
       Bitmap bitmap = null;
       LoadImage(imagePrj, nx, ny, ref bitmap);
 
       if (bitmap != null)
-      { _worldMatrix = imagePrj.Matrix; }
+      {
+        _currentWorldMatrix = imagePrj.Matrix;
+        _currentImagePartExtent = imagePartExtent;
+      }
       return bitmap;
     }
 

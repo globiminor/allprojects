@@ -200,6 +200,7 @@ namespace OMapScratch
 
     public int ImageCount { get { return _map?.Images?.Count ?? 0; } }
     public IReadOnlyList<GeoImageViews> Images => _map.Images ?? new List<GeoImageViews>();
+    public IGeoImage CurrentGeoImage => _map.CurrentGeoImage;
 
     public IEnumerable<Elem> Elems
     { get { return _map.Elems; } }

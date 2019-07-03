@@ -222,7 +222,11 @@ namespace OMapScratch.Views
       _maxExtent = null;
       if (checkUpdateImage)
       {
-        MapVm.CheckUpdateImage(InversElemMatrix, Width, Height);
+        bool updateNeeded = MapVm.CheckUpdateNeeded(InversElemMatrix, Width, Height);
+        if (updateNeeded)
+        {
+          MapVm.LoadLocalImage(MapVm.CurrentGeoImage, InversElemMatrix, Width, Height);
+        }
       }
     }
 

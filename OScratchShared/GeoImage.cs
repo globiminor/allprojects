@@ -8,13 +8,16 @@ namespace OMapScratch
   public partial interface IGeoImage
   {
     double[] GetWorldMatrix();
+    bool CheckUpdateImage(Func<MatrixPrj> getWorldMatrix, float width, float height);
   }
 
   public partial class GeoImageComb : IGeoImage
   {
     private readonly List<GeoImageView> _views;
     private readonly GeoImage _baseImage;
-    private double[] _worldMatrix;
+
+    private double[] _currentWorldMatrix;
+    private IBox _currentImagePartExtent;
 
     public GeoImageComb(GeoImage baseImage)
     {
@@ -27,21 +30,27 @@ namespace OMapScratch
       _views.Add(geoImage);
     }
 
+    public bool CheckUpdateImage(Func<MatrixPrj> getWorldPrj, float width, float height)
+    {
+      return _baseImage.LoadNeeded(getWorldPrj, width, height, _currentImagePartExtent);
+    }
+
     public IReadOnlyList<GeoImageView> Views => _views;
 
     public double[] GetWorldMatrix()
     {
-      _worldMatrix = _worldMatrix ?? _baseImage.DefaultWorldMatrix;
-      return _worldMatrix;
+      _currentWorldMatrix = _currentWorldMatrix ?? _baseImage.DefaultWorldMatrix;
+      return _currentWorldMatrix;
     }
   }
 
   public partial class GeoImageView : IGeoImage
   {
     public GeoImage BaseImage { get; }
-    private double[] _worldMatrix;
+    private double[] _currentWorldMatrix;
     private float _transparency;
     private float[] _colorTransform;
+    private IBox _currentImagePartExtent;
 
     public GeoImageView(GeoImage baseImage)
     {
@@ -50,8 +59,8 @@ namespace OMapScratch
 
     public double[] GetWorldMatrix()
     {
-      _worldMatrix = _worldMatrix ?? BaseImage.DefaultWorldMatrix;
-      return _worldMatrix;
+      _currentWorldMatrix = _currentWorldMatrix ?? BaseImage.DefaultWorldMatrix;
+      return _currentWorldMatrix;
     }
 
     public float Transparency
@@ -115,6 +124,13 @@ namespace OMapScratch
         _colorTransform = colorTransform.ToArray();
       }
     }
+
+    [Obsolete("implement correctly")]
+    public bool CheckUpdateImage(Func<MatrixPrj> getWorldPrj, float width, float height)
+    {
+      return BaseImage.LoadNeeded(getWorldPrj, width, height, _currentImagePartExtent);
+    }
+
   }
 
   public interface IGeoImagesContainer
@@ -361,8 +377,73 @@ namespace OMapScratch
       }
     }
 
+    public bool LoadNeeded(Func<MatrixPrj> getTargetPrj, float width, float height, IBox loadedExtent)
+    {
+      if (loadedExtent == null)
+      { return true; }
+
+      IBox imgExt = ImageExtent;
+      double x0 = Math.Floor(imgExt.Min.X);
+      double x1 = Math.Ceiling(imgExt.Max.X);
+      double y0 = Math.Floor(imgExt.Min.Y);
+      double y1 = Math.Ceiling(imgExt.Max.Y);
+
+      int nx = (int)(x1 - x0);
+      int ny = (int)(y1 - y0);
+
+      if (nx * ny < MaxDim * MaxDim)
+      { return false; } // All loaded
+
+      MatrixPrj targetPrj = getTargetPrj();
+      Pnt targetMax = new Pnt(width, height);
+
+      double[] m = targetPrj.Matrix;
+      double[] localMatrix = new double[] { m[0], -m[1], -m[2], m[3], 0, 0 };
+
+      double[] p = DefaultWorldMatrix;
+      double[] localPartMatrix = new double[] { p[0], -p[1], -p[2], p[3], p[4] - m[4], p[5] - m[5] };
+      MatrixPrj localTargetPrj = new MatrixPrj(localMatrix);
+
+      MatrixPrj partPrj = new MatrixPrj(localPartMatrix);
+      MatrixPrj invPartPrj = partPrj.GetInverse();
+
+      Curve targetBoxInPart = MatrixPrj.GetLocalBox(invPartPrj, targetMax, localTargetPrj);
+      IBox extent = targetBoxInPart.Extent;
+      double rX0 = Math.Max(x0, extent.Min.X);
+      double rY0 = Math.Max(y0, extent.Min.Y);
+      double rX1 = Math.Min(x1, extent.Max.X);
+      double rY1 = Math.Min(y1, extent.Max.Y);
+      if (rX0 < loadedExtent.Min.X || rY0 < loadedExtent.Min.Y
+        || rX1 > loadedExtent.Max.X || rY1 > loadedExtent.Max.Y)
+      {
+        return true;
+      }
+
+      // handle resampled images
+      {
+        IBox l = loadedExtent;
+        double dxLoaded = l.Max.X - l.Min.X;
+        double dyLoaded = l.Max.Y - l.Min.Y;
+
+        if (dxLoaded <= MaxDim && dyLoaded <= MaxDim)
+        {
+          return false;
+        }
+
+        IBox e = extent;
+        double dxNeeded = e.Max.X - e.Min.X;
+        double dyNeeded = e.Max.Y - e.Min.Y;
+        if (dxNeeded <= MaxDim && dyNeeded <= MaxDim)
+        {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
     [Obsolete("refactor")]
-    public MatrixPrj GetImagePrj(MatrixPrj worldPrj, int width, int height, out int nx, out int ny)
+    public MatrixPrj GetImagePrj(MatrixPrj worldPrj, int width, int height, out int nx, out int ny, out IBox imgPartExtent)
     {
       IBox imgExt = ImageExtent;
       int x0 = (int)Math.Floor(imgExt.Min.X);
@@ -381,11 +462,11 @@ namespace OMapScratch
         double[] orig = prj.Project(x0, y0);
         double[] imageMat = new double[] { m[0], m[1], m[2], m[3], orig[0], orig[1] };
         imagePrj = new MatrixPrj(imageMat);
+
+        imgPartExtent = imgExt;
       }
       else
       {
-
-        // TODO : adapt nx, ny
         double[] m = DefaultWorldMatrix;
         MatrixPrj prj = new MatrixPrj(m);
 
@@ -411,6 +492,8 @@ namespace OMapScratch
 
         nx = Math.Min(nx, MaxDim);
         ny = Math.Min(ny, MaxDim);
+
+        imgPartExtent = new Box(new Pnt(x0, y0), new Pnt(x0 + nx, y0 + ny));
       }
       return imagePrj;
     }

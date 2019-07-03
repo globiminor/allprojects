@@ -45,12 +45,6 @@ namespace OMapScratch
       ImageChanged?.Invoke(this, null);
     }
 
-    public void CheckUpdateImage(Matrix inversElemMatrix, int width, int height)
-    {
-      return;
-      LoadLocalImage(_map.CurrentGeoImage, inversElemMatrix, width, height);
-    }
-
     public System.Collections.Generic.IList<string> GetRecents()
     {
       XmlRecents recents = GetRecents(out string path, create: false);
@@ -133,19 +127,42 @@ namespace OMapScratch
       LoadLocalImage(geoImages.DefaultView, inversElemMatrix, width, height);
     }
 
+    private MatrixPrj GetWorldPrj(Matrix inversElemMatrix)
+    {
+      if (inversElemMatrix == null)
+      { return null; }
+
+      float[] m = new float[9];
+      inversElemMatrix.GetValues(m);
+      double[] o = GetOffset();
+      MatrixPrj worldPrj = new MatrixPrj(new double[] { m[0], m[1], -m[3], -m[4], o[0] + m[2], o[1] - m[5] });
+      return worldPrj;
+    }
+
+    public bool CheckUpdateNeeded(Matrix inversElemMatrix, int width, int height)
+    {
+      return CheckUpdateNeeded(_map.CurrentGeoImage, inversElemMatrix, width, height);
+    }
+    public bool CheckUpdateNeeded(IGeoImage geoImage, Matrix inversElemMatrix, int width, int height)
+    {
+      if (geoImage == null)
+      { return true; }
+      if (inversElemMatrix == null)
+      { return true; }
+
+      return CheckUpdateImage(geoImage, ()=> GetWorldPrj(inversElemMatrix), width, height);
+    }
+    public bool CheckUpdateImage(IGeoImage geoImg, System.Func<MatrixPrj> getWorldPrj, int width, int height)
+    {
+      return geoImg.CheckUpdateImage(getWorldPrj, width, height);
+    }
+
     public void LoadLocalImage(IGeoImage geoImg, Matrix inversElemMatrix, int width, int height)
     {
       if (geoImg == null)
       { return; }
 
-      MatrixPrj worldPrj = null;
-      if (inversElemMatrix != null)
-      {
-        float[] m = new float[9];
-        inversElemMatrix.GetValues(m);
-        double[] o = GetOffset();
-        worldPrj = new MatrixPrj(new double[] { m[0], m[1], -m[3], -m[4], o[0] + m[2], o[1] - m[5] });
-      }
+      MatrixPrj worldPrj = GetWorldPrj(inversElemMatrix);
       LoadImage(geoImg, worldPrj, width, height);
     }
 
