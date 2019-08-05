@@ -30,7 +30,6 @@
     private void InitializeComponent()
     {
       this.components = new System.ComponentModel.Container();
-      System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WdgLeastCostPath));
       this.dlgOpen = new System.Windows.Forms.OpenFileDialog();
       this.mnuMain = new System.Windows.Forms.MainMenu(this.components);
       this.mniSettings = new System.Windows.Forms.MenuItem();
@@ -75,7 +74,7 @@
       // btnOK
       // 
       this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-      this.btnOK.Location = new System.Drawing.Point(304, 628);
+      this.btnOK.Location = new System.Drawing.Point(306, 512);
       this.btnOK.Name = "btnOK";
       this.btnOK.Size = new System.Drawing.Size(56, 23);
       this.btnOK.TabIndex = 15;
@@ -85,7 +84,7 @@
       // btnClose
       // 
       this.btnClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-      this.btnClose.Location = new System.Drawing.Point(376, 628);
+      this.btnClose.Location = new System.Drawing.Point(378, 512);
       this.btnClose.Name = "btnClose";
       this.btnClose.Size = new System.Drawing.Size(56, 23);
       this.btnClose.TabIndex = 16;
@@ -94,25 +93,27 @@
       // 
       // cntConfig
       // 
-      this.cntConfig.Location = new System.Drawing.Point(14, -4);
+      this.cntConfig.ConfigVm = null;
+      this.cntConfig.Location = new System.Drawing.Point(14, -3);
       this.cntConfig.Name = "cntConfig";
       this.cntConfig.Size = new System.Drawing.Size(422, 98);
       this.cntConfig.TabIndex = 27;
       // 
       // cntOutput
       // 
-      this.cntOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                  | System.Windows.Forms.AnchorStyles.Left)
-                  | System.Windows.Forms.AnchorStyles.Right)));
-      this.cntOutput.Location = new System.Drawing.Point(14, 90);
+      this.cntOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.cntOutput.AutoScroll = true;
+      this.cntOutput.Location = new System.Drawing.Point(14, 92);
       this.cntOutput.Name = "cntOutput";
-      this.cntOutput.Size = new System.Drawing.Size(422, 570);
+      this.cntOutput.Size = new System.Drawing.Size(424, 401);
       this.cntOutput.TabIndex = 26;
       // 
       // WdgLeastCostPath
       // 
       this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
-      this.ClientSize = new System.Drawing.Size(448, 663);
+      this.ClientSize = new System.Drawing.Size(450, 547);
       this.Controls.Add(this.cntConfig);
       this.Controls.Add(this.btnClose);
       this.Controls.Add(this.btnOK);

@@ -14,7 +14,21 @@ namespace Grid.Lcp
     }
   }
 
+  public static class RestCostFieldUtils
+  {
+    public static bool SetMinRestCost(IRestCostField field, IField stop, double minCellCost)
+    {
+      if (field == null || stop == null)
+      { return false; }
 
+      double dx = stop.X - field.X;
+      double dy = stop.Y - field.Y;
+      double cellDist = System.Math.Sqrt(dx * dx + dy * dy);
+
+      field.MinRestCost = minCellCost * cellDist;
+      return true;
+    }
+  }
   public class RestCostField : IRestCostField
   {
     public RestCostField(IField field)

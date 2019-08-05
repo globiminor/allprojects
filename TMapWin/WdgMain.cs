@@ -1,13 +1,13 @@
+using Basics.Data;
+using Basics.Forms;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
-using Basics.Data;
 using TMap;
 using TMapWin.Browse;
-using Basics.Forms;
 
 namespace TMapWin
 {
@@ -338,12 +338,13 @@ namespace TMapWin
 
     private void RunPlugin(Attribute.TblICustomRow runPlugin)
     {
+      Basics.Logger.Info(() => $"running plugin {runPlugin.Name}");
       System.Reflection.Assembly assembly =
         System.Reflection.Assembly.LoadFile(runPlugin.Assembly);
 
       ICommand cmd;
       Type t = assembly.GetType(runPlugin.Type);
-      cmd = (ICommand)Activator.CreateInstance(t);
+      cmd = CreateInstance(t);
       cmd.Execute(this);
 
       if (cmd is ITool tool)
@@ -352,6 +353,42 @@ namespace TMapWin
         wdgMap.ToolEnd = PluginToolEnd;
         wdgMap.ToolMove = PluginToolMove;
       }
+    }
+
+    private ICommand CreateInstance(Type t)
+    {
+      try
+      {
+        AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+        ICommand cmd = (ICommand)Activator.CreateInstance(t);
+        return cmd;
+      }
+      finally
+      {
+        AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
+      }
+    }
+
+    private System.Reflection.Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+    {
+      string root = args.Name.Split(',')[0];
+
+      if (args.RequestingAssembly != null)
+      {
+        string reqLoc = args.RequestingAssembly.Location;
+        string reqDir = System.IO.Path.GetDirectoryName(reqLoc);
+        foreach (string ending in new[] { ".dll", ".exe" })
+        {
+          string name = System.IO.Path.Combine(reqDir, root + ending);
+          if (System.IO.File.Exists(name))
+          {
+            System.Reflection.Assembly resolved = System.Reflection.Assembly.LoadFile(name);
+            return resolved;
+          }
+        }
+        return null;
+      }
+      return null;
     }
 
     private ITool _currentTool;

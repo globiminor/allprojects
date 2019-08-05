@@ -42,6 +42,15 @@ namespace Grid.Lcp
     IReadOnlyList<Teleport> GetTeleports();
   }
 
+  public static class FieldOp
+  {
+    public static double GetDist2(IField x, IField y)
+    {
+      int dx = x.X - y.X;
+      int dy = x.Y - y.Y;
+      return dx * dx + dy * dy;
+    }
+  }
   public interface IField
   {
     int X { get; }
@@ -63,7 +72,7 @@ namespace Grid.Lcp
   }
   public interface ICostOptimizer
   {
-    void Init(IField startField);
+    void Init<T>(IField startField, SortedList<T, T> costList);
 
     IComparer<ICostField> GetCostComparer();
     bool AdaptCost(ICostField stepField);

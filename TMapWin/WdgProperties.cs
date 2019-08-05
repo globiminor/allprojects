@@ -1,204 +1,34 @@
+﻿using Basics.Data;
+using Basics.Forms;
 using System;
 using System.Data;
 using System.Windows.Forms;
-using TMap;
 using TData;
-using Basics.Data;
-using Basics.Forms;
+using TMap;
 
 namespace TMapWin
 {
-  /// <summary>
-  /// Summary description for WdgProperties.
-  /// </summary>
-  public class WdgProperties : Form
+  public partial class WdgProperties : Form
   {
     private MapData _data;
     private DataRow _rowLine;
     private ISymbolisationView _symbolisation;
     private SymbolTable _symbolTable;
     private WdgSymbol _wdgSymbol = null;
-    /// <summary>
-    /// designer controls
-    /// </summary>
-    private TabControl _tabDisplay;
-    private TabPage _tpgSymbol;
-    private DataGridView _grdSymbols;
-    private Button _btnUp;
-    private Button _btnDown;
-    private TabPage _tpgDisplay;
-    private CheckBox _chkVisible;
-    private TextBox _txtWhere;
-    private Label _lblWhere;
+
+    BindingSource _bindingSource;
     /// <summary>
     /// Required designer variable.
     /// </summary>
-    private System.ComponentModel.Container _components = null;
 
     public WdgProperties()
     {
-      //
-      // Required for Windows Form Designer support
-      //
       InitializeComponent();
+
+      _bindingSource = new BindingSource(components);
 
       Init();
     }
-
-    /// <summary>
-    /// Clean up any resources being used.
-    /// </summary>
-    protected override void Dispose(bool disposing)
-    {
-      if (disposing)
-      {
-        if (_components != null)
-        {
-          _components.Dispose();
-        }
-      }
-      base.Dispose(disposing);
-    }
-
-    #region Windows Form Designer generated code
-    /// <summary>
-    /// Required method for Designer support - do not modify
-    /// the contents of this method with the code editor.
-    /// </summary>
-    private void InitializeComponent()
-    {
-      System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WdgProperties));
-      this._tabDisplay = new System.Windows.Forms.TabControl();
-      this._tpgDisplay = new System.Windows.Forms.TabPage();
-      this._chkVisible = new System.Windows.Forms.CheckBox();
-      this._tpgSymbol = new System.Windows.Forms.TabPage();
-      this._btnDown = new System.Windows.Forms.Button();
-      this._btnUp = new System.Windows.Forms.Button();
-      this._grdSymbols = new System.Windows.Forms.DataGridView();
-      this._lblWhere = new System.Windows.Forms.Label();
-      this._txtWhere = new System.Windows.Forms.TextBox();
-      this._tabDisplay.SuspendLayout();
-      this._tpgDisplay.SuspendLayout();
-      this._tpgSymbol.SuspendLayout();
-      ((System.ComponentModel.ISupportInitialize)(this._grdSymbols)).BeginInit();
-      this.SuspendLayout();
-      // 
-      // tabDisplay
-      // 
-      this._tabDisplay.Controls.Add(this._tpgDisplay);
-      this._tabDisplay.Controls.Add(this._tpgSymbol);
-      this._tabDisplay.Dock = System.Windows.Forms.DockStyle.Fill;
-      this._tabDisplay.Location = new System.Drawing.Point(0, 0);
-      this._tabDisplay.Name = "tabDisplay";
-      this._tabDisplay.SelectedIndex = 0;
-      this._tabDisplay.Size = new System.Drawing.Size(336, 273);
-      this._tabDisplay.TabIndex = 0;
-      // 
-      // tpgDisplay
-      // 
-      this._tpgDisplay.Controls.Add(this._txtWhere);
-      this._tpgDisplay.Controls.Add(this._lblWhere);
-      this._tpgDisplay.Controls.Add(this._chkVisible);
-      this._tpgDisplay.Location = new System.Drawing.Point(4, 22);
-      this._tpgDisplay.Name = "tpgDisplay";
-      this._tpgDisplay.Padding = new System.Windows.Forms.Padding(3);
-      this._tpgDisplay.Size = new System.Drawing.Size(328, 247);
-      this._tpgDisplay.TabIndex = 1;
-      this._tpgDisplay.Text = "Display";
-      this._tpgDisplay.UseVisualStyleBackColor = true;
-      // 
-      // chkVisible
-      // 
-      this._chkVisible.AutoSize = true;
-      this._chkVisible.Location = new System.Drawing.Point(6, 6);
-      this._chkVisible.Name = "chkVisible";
-      this._chkVisible.Size = new System.Drawing.Size(56, 17);
-      this._chkVisible.TabIndex = 0;
-      this._chkVisible.Text = "Visible";
-      this._chkVisible.UseVisualStyleBackColor = true;
-      this._chkVisible.CheckedChanged += new System.EventHandler(this.ChkVisible_CheckedChanged);
-      // 
-      // tpgSymbol
-      // 
-      this._tpgSymbol.Controls.Add(this._btnDown);
-      this._tpgSymbol.Controls.Add(this._btnUp);
-      this._tpgSymbol.Controls.Add(this._grdSymbols);
-      this._tpgSymbol.Location = new System.Drawing.Point(4, 22);
-      this._tpgSymbol.Name = "tpgSymbol";
-      this._tpgSymbol.Size = new System.Drawing.Size(328, 247);
-      this._tpgSymbol.TabIndex = 0;
-      this._tpgSymbol.Text = "Symology";
-      this._tpgSymbol.UseVisualStyleBackColor = true;
-      // 
-      // btnDown
-      // 
-      this._btnDown.Image = ((System.Drawing.Image)(resources.GetObject("btnDown.Image")));
-      this._btnDown.Location = new System.Drawing.Point(296, 56);
-      this._btnDown.Name = "btnDown";
-      this._btnDown.Size = new System.Drawing.Size(24, 24);
-      this._btnDown.TabIndex = 4;
-      this._btnDown.Click += new System.EventHandler(this.BtnDown_Click);
-      // 
-      // btnUp
-      // 
-      this._btnUp.Image = ((System.Drawing.Image)(resources.GetObject("btnUp.Image")));
-      this._btnUp.Location = new System.Drawing.Point(296, 32);
-      this._btnUp.Name = "btnUp";
-      this._btnUp.Size = new System.Drawing.Size(24, 23);
-      this._btnUp.TabIndex = 3;
-      this._btnUp.Click += new System.EventHandler(this.BtnUp_Click);
-      // 
-      // grdSymbols
-      // 
-      this._grdSymbols.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-      this._grdSymbols.Location = new System.Drawing.Point(8, 8);
-      this._grdSymbols.Name = "grdSymbols";
-      this._grdSymbols.RowHeadersWidth = 16;
-      this._grdSymbols.Size = new System.Drawing.Size(280, 232);
-      this._grdSymbols.TabIndex = 2;
-      this._grdSymbols.DoubleClick += new System.EventHandler(this.GrdSymbols_DoubleClick);
-      this._grdSymbols.MouseUp += new System.Windows.Forms.MouseEventHandler(this.GrdSymbols_MouseUp);
-      // 
-      // lblWhere
-      // 
-      this._lblWhere.AutoSize = true;
-      this._lblWhere.Location = new System.Drawing.Point(6, 42);
-      this._lblWhere.Name = "lblWhere";
-      this._lblWhere.Size = new System.Drawing.Size(39, 13);
-      this._lblWhere.TabIndex = 1;
-      this._lblWhere.Text = "Where";
-      // 
-      // txtWhere
-      // 
-      this._txtWhere.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-      this._txtWhere.Location = new System.Drawing.Point(51, 39);
-      this._txtWhere.Name = "txtWhere";
-      this._txtWhere.Size = new System.Drawing.Size(271, 20);
-      this._txtWhere.TabIndex = 2;
-      this._txtWhere.TextChanged += new System.EventHandler(this.TxtWhere_TextChanged);
-      // 
-      // WdgProperties
-      // 
-      this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
-      this.ClientSize = new System.Drawing.Size(336, 273);
-      this.Controls.Add(this._tabDisplay);
-      this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
-      this.Name = "WdgProperties";
-      this.ShowInTaskbar = false;
-      this.Text = "Properties";
-      this.VisibleChanged += new System.EventHandler(this.WdgProperties_VisibleChanged);
-      this._tabDisplay.ResumeLayout(false);
-      this._tpgDisplay.ResumeLayout(false);
-      this._tpgDisplay.PerformLayout();
-      this._tpgSymbol.ResumeLayout(false);
-      ((System.ComponentModel.ISupportInitialize)(this._grdSymbols)).EndInit();
-      this.ResumeLayout(false);
-
-    }
-    #endregion
 
     private void Init()
     {
@@ -222,6 +52,17 @@ namespace TMapWin
 
     public void SetData(MapData data)
     {
+      if (_bindingSource.DataSource == null && data != null)
+      {
+        _bindingSource.DataSource = data;
+        txtTransparency.Bind(x => x.Text, _bindingSource, nameof(data.Transparency),
+            true, DataSourceUpdateMode.OnPropertyChanged);
+      }
+      else
+      {
+        _bindingSource.DataSource = data;
+      }
+
       if (_symbolTable != null)
       { _symbolTable.ColumnChanging -= Symbol_ColumnChanging; }
 

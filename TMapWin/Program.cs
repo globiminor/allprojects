@@ -9,6 +9,13 @@ namespace TMapWin
     [STAThread]
     static void Main()
     {
+      Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+      AppDomain.CurrentDomain.UnhandledException += (s, exp) =>
+      {
+        string msg = Basics.Utils.GetMsg(null);
+        MessageBox.Show(msg);
+      };
+
       Program.Run(new WdgMain());
     }
   }
@@ -26,6 +33,7 @@ namespace TMapWin
   {
     public static void Run(Form startForm)
     {
+      Basics.Logger.Info(() => "Hallo");
       Application.ThreadException -= Application_ThreadException;
       Application.ThreadException += Application_ThreadException;
       Application.Run(startForm);      

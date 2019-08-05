@@ -128,6 +128,91 @@ namespace OcadTest
       lcp.CalcCost(new Point2D(2685302, 1252930));
     }
 
+    [TestMethod]
+    public void TestMultiLayer()
+    {
+      string heightPath = @"C:\daten\felix\kapreolo\karten\opfikon\2013\opfikon.asc";
+      string veloPath = @"C:\daten\felix\kapreolo\karten\opfikon\2018\Opfikon_2018_velo2.tif";
+      DoubleGrid heightGrd = DataDoubleGrid.FromAsciiFile(heightPath, 0, 0.01, typeof(double));
+      DoubleGrid veloGrd = VelocityGrid.FromImage(veloPath);
+
+      TerrainVeloModel tvm = new TerrainVeloModel(heightGrd, veloGrd);
+      Point2D from = new Point2D(2685350, 1253178);
+      Point2D to = new Point2D(2685335, 1253179);
+
+      var tp = Teleport.Create(from, tvm, to, tvm, 15.04);
+      //var tpt = Teleport.Create(new Point2D(2685433.32, 1253130.28), tvm, to, tvm, 0.01);
+
+      var lcg = LeastCostGridStack.Create(new[] { tvm }, new[] { tp }, 0.5,
+        steps: Steps.Step16);
+
+
+      Point2D start = new Point2D(2685430.32,  1253127.28);
+      Point2D end = new Point2D(2685326.32, 1253178.16);
+
+      lcg.AddStart(start, tvm);
+      lcg.AddEnd(end, tvm);
+
+      lcg.CalcCost(stopFactor: 1.01);
+    }
+
+
+    [TestMethod]
+    public void TestMultiLayer1()
+    {
+      string heightPath = @"C:\daten\felix\kapreolo\karten\opfikon\2013\opfikon.asc";
+      string veloPath = @"C:\daten\felix\kapreolo\karten\opfikon\2018\Opfikon_2018_velo2.tif";
+      DoubleGrid heightGrd = DataDoubleGrid.FromAsciiFile(heightPath, 0, 0.01, typeof(double));
+      DoubleGrid veloGrd = VelocityGrid.FromImage(veloPath);
+
+      TerrainVeloModel tvm1 = new TerrainVeloModel(heightGrd, veloGrd);
+      TerrainVeloModel tvm2 = new TerrainVeloModel(heightGrd, veloGrd);
+      Point2D from = new Point2D(2685350, 1253178);
+      Point2D to = new Point2D(2685335, 1253179);
+
+      var tp = Teleport.Create(from, tvm1, to, tvm2, 15.04);
+      //var tpt = Teleport.Create(new Point2D(2685433.32, 1253130.28), tvm, to, tvm, 0.01);
+
+      var lcg = LeastCostGridStack.Create(new[] { tvm1, tvm2 }, new[] { tp }, 0.5,
+        steps: Steps.Step16);
+
+
+      Point2D start = new Point2D(2685430.32, 1253127.28);
+      Point2D end = new Point2D(2685326.32, 1253178.16);
+
+      lcg.AddStart(start, tvm1);
+      lcg.AddEnd(end, tvm2);
+
+      lcg.CalcCost(stopFactor: 1.01);
+    }
+
+    [TestMethod]
+    public void TestMultiLayer2()
+    {
+      string heightPath = @"C:\daten\felix\kapreolo\karten\opfikon\2013\opfikon.asc";
+      string veloPath = @"C:\daten\felix\kapreolo\karten\opfikon\2018\Opfikon_2018_velo2.tif";
+      DoubleGrid heightGrd = DataDoubleGrid.FromAsciiFile(heightPath, 0, 0.01, typeof(double));
+      DoubleGrid veloGrd = VelocityGrid.FromImage(veloPath);
+      TerrainVeloModel tvm = new TerrainVeloModel(heightGrd, veloGrd);
+
+      var tp1 = Teleport.Create(new Point2D(2685350, 1253178), tvm, new Point2D(2685335, 1253179), tvm, 15.04);
+      var tp2 = Teleport.Create(new Point2D(2684850, 1253178), tvm, new Point2D(2684835, 1253179), tvm, 15.04);
+      //var tpt = Teleport.Create(new Point2D(2685433.32, 1253130.28), tvm, to, tvm, 0.01);
+
+      var lcg = LeastCostGridStack.Create(new[] { tvm }, new[] { tp1, tp2 }, 0.5,
+        steps: Steps.Step16);
+
+
+      Point2D start = new Point2D(2685430.32, 1253127.28);
+      Point2D end = new Point2D(2685326.32, 1253178.16);
+
+      lcg.AddStart(start, tvm);
+      lcg.AddEnd(end, tvm);
+
+      lcg.CalcCost(stopFactor: 1.01);
+    }
+
+
     private class SymbolGrid : BaseGrid<List<int>>
     {
       private Array _value;

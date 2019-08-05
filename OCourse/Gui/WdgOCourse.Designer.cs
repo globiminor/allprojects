@@ -532,7 +532,7 @@
       this.dgvPermut.Size = new System.Drawing.Size(445, 52);
       this.dgvPermut.TabIndex = 0;
       this.ttp.SetToolTip(this.dgvPermut, "Select combinations to be shown in map");
-      this.dgvPermut.SelectionChanged += new System.EventHandler(this.DgvVars_SelectionChanged);
+      this.dgvPermut.SelectionChanged += new System.EventHandler(this.DgvPermut_SelectionChanged);
       // 
       // btnCreateScripts
       // 

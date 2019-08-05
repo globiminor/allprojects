@@ -1,7 +1,7 @@
-using System;
-using TData;
 using Grid;
+using System;
 using System.Drawing;
+using TData;
 
 namespace TMap
 {
@@ -67,14 +67,24 @@ namespace TMap
     public Color? Color(double x, double y)
     {
       IGrid grd = _data.Raster;
+      if (grd == null)
+      { return null; }
       if (grd.Extent.GetNearest(x, y, out int ix, out int iy) == false)
       { return null; }
 
+      Color clr;
       if (grd.Type == typeof(Color))
       {
-        return (Color)grd[ix, iy];
+        clr = (Color)grd[ix, iy];
       }
-      return _symbol.Color(Convert.ToDouble(grd[ix,iy]));
+      else
+      {
+        Color? sc = _symbol.Color(Convert.ToDouble(grd[ix, iy]));
+        if (sc == null)
+        { return null; }
+        clr = sc.Value;
+      }
+      return clr;
     }
 
     public TGrid Data

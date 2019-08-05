@@ -7,6 +7,9 @@ namespace LeastCostPathUI
 {
   public partial class WdgLeastCostPath : Form
   {
+    private delegate void InitHandler(WdgLeastCostPath wdg);
+    private static event InitHandler InitWdg;
+
     private ConfigVm _lcpConfigVm;
 
     public WdgLeastCostPath()
@@ -21,14 +24,33 @@ namespace LeastCostPathUI
       //
       _lcpConfigVm = new ConfigVm();
       cntConfig.ConfigVm = _lcpConfigVm;
+
+      Load += (s, a) => { InitWdg?.Invoke(this); };
     }
 
     [STAThread]
     public static void Main(string[] arg)
     {
-      Application.ThreadException -= Application_ThreadException;
-      Application.ThreadException += Application_ThreadException;
+      Init();
       Application.Run(new WdgLeastCostPath());
+    }
+
+    private static bool _init;
+    public static void Init()
+    {
+      if (_init == false)
+      {
+        Application.EnableVisualStyles();
+        Application.ThreadException -= Application_ThreadException;
+        Application.ThreadException += Application_ThreadException;
+
+        AppDomain.CurrentDomain.UnhandledException += (s,exp)=> 
+        {
+          string msg = Basics.Utils.GetMsg(null);
+          MessageBox.Show(msg);
+        };
+      }
+      _init = true;
     }
 
     private static void Application_ThreadException(object sender,
@@ -47,6 +69,7 @@ namespace LeastCostPathUI
       Close();
     }
 
+    public ConfigVm Vm => _lcpConfigVm;
     private void BtnOK_Click(object sender, EventArgs e)
     {
       IDoubleGrid grdHeight = _lcpConfigVm.HeightGrid;

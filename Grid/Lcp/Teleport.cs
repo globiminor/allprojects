@@ -4,6 +4,12 @@ namespace Grid.Lcp
 {
   public class Teleport
   {
+    public static Teleport<T> Create<T>(IPoint from, IDirCostModel<T> fromCostModel,
+      IPoint to, IDirCostModel<T> toCostModel, double cost)
+    {
+      return new Teleport<T>(from, fromCostModel, to, toCostModel, cost);
+    }
+
     public Teleport(IPoint from, IDirCostModel fromCostModel,
       IPoint to, IDirCostModel toCostModel, double cost)
     {

@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Drawing;
-using System.IO;
 using System.Windows.Forms;
-using Basics;
 using System.Collections.Generic;
 using Grid.Lcp;
-using GuiUtils;
 using Basics.Forms;
 using System.ComponentModel;
 using LeastCostPathUI.Properties;

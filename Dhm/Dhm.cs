@@ -44,7 +44,10 @@ namespace Dhm
         Init();
       }
       _wdg.TMapContext = context;
-      _wdg.Show();
+      if (context is IWin32Window parent)
+      { _wdg.Show(parent); }
+      else
+      { _wdg.Show(); }
     }
 
     #endregion

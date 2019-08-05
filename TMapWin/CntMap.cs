@@ -1,3 +1,4 @@
+using Basics.Geom;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -5,7 +6,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Windows.Forms;
-using Basics.Geom;
 using TMap;
 
 namespace TMapWin
@@ -289,6 +289,11 @@ namespace TMapWin
 
     public void DrawArea(Area area, ISymbolPart symbolPart)
     {
+      if (area == null && symbolPart == null)
+      {
+        Graphics.Clear(Color.Transparent);
+        return;
+      }
       if (_symbolBrushes.TryGetValue(symbolPart, out Brush brush) == false)
       {
         BeginDraw(symbolPart);
@@ -314,55 +319,80 @@ namespace TMapWin
       BitmapData bmpData = bmp.LockBits(new Rectangle(0, 0, Width, Height),
         ImageLockMode.ReadWrite, bmp.PixelFormat);
 
-      // Write to the temporary buffer that is provided by LockBits.
-      // Copy the pixels from the source image in this loop.
-      // Because you want an index, convert RGB to the appropriate
-      // palette index here.
-      IntPtr pPixel = bmpData.Scan0;
-
-      unsafe
+      try
       {
-        // Get the pointer to the image bits.
-        // This is the unsafe operation.
-        int* pBits;
-        if (bmpData.Stride > 0)
-        {
-          pBits = (int*)pPixel.ToPointer();
-        }
-        else
-        {
-          // If the Stide is negative, Scan0 points to the last
-          // scanline in the buffer. To normalize the loop, obtain
-          // a pointer to the front of the buffer that is located
-          // (Height-1) scanlines previous.
-          pBits = (int*)pPixel.ToPointer() + bmpData.Stride * (Height - 1);
-        }
-        uint stride = (uint)Math.Abs(bmpData.Stride) / 4;
+        // Write to the temporary buffer that is provided by LockBits.
+        // Copy the pixels from the source image in this loop.
+        // Because you want an index, convert RGB to the appropriate
+        // palette index here.
+        IntPtr pPixel = bmpData.Scan0;
 
-        for (int row = 0; row < Height; row++)
+        unsafe
         {
-          int* pos0 = pBits + row * stride;
-          for (int col = 0; col < Width; col++)
+          // Get the pointer to the image bits.
+          // This is the unsafe operation.
+          int* pBits;
+          if (bmpData.Stride > 0)
           {
-            // The destination pixel.
-            // The pointer to the color index byte of the
-            // destination; this real pointer causes this
-            // code to be considered unsafe.
-            int* pPix = pos0 + col;
+            pBits = (int*)pPixel.ToPointer();
+          }
+          else
+          {
+            // If the Stide is negative, Scan0 points to the last
+            // scanline in the buffer. To normalize the loop, obtain
+            // a pointer to the front of the buffer that is located
+            // (Height-1) scanlines previous.
+            pBits = (int*)pPixel.ToPointer() + bmpData.Stride * (Height - 1);
+          }
+          uint stride = (uint)Math.Abs(bmpData.Stride) / 4;
 
-            Point2D pos = InvProject(col, row);
-            Color? c = grid.Color(pos.X, pos.Y);
-            if (c != null)
+          for (int row = 0; row < Height; row++)
+          {
+            int* pos0 = pBits + row * stride;
+            for (int col = 0; col < Width; col++)
             {
-              *pPix = ((Color)c).ToArgb();
+              // The destination pixel.
+              // The pointer to the color index byte of the
+              // destination; this real pointer causes this
+              // code to be considered unsafe.
+              int* pPix = pos0 + col;
+
+              Point2D pos = InvProject(col, row);
+              Color? c = grid.Color(pos.X, pos.Y);
+              if (c != null)
+              {
+                *pPix = ((Color)c).ToArgb();
+              }
             }
           }
-        }
-      } // end unsafe
+        } // end unsafe
+      }
+      finally
+      {
+        // To commit the changes, unlock the portion of the bitmap.
+        bmp.UnlockBits(bmpData);
+      }
+      if (grid.Transparency == 0)
+      {
+        Graphics.DrawImageUnscaled(bmp, 0, 0);
+      }
+      else
+      {
+        //create a color matrix object  
+        ColorMatrix matrix = new ColorMatrix();
 
-      // To commit the changes, unlock the portion of the bitmap.
-      bmp.UnlockBits(bmpData);
-      Graphics.DrawImageUnscaled(bmp, 0, 0);
+        //set the opacity  
+        matrix.Matrix33 = 1 - (float)grid.Transparency;
+
+        //create image attributes  
+        ImageAttributes attributes = new ImageAttributes();
+
+        //set the color(opacity) of the image  
+        attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+
+        //now draw the image  
+        Graphics.DrawImage(bmp, new Rectangle(0, 0, bmp.Width, bmp.Height), 0, 0, bmp.Width, bmp.Height, GraphicsUnit.Pixel, attributes);
+      }
     }
 
     public IProjection Projection
@@ -578,7 +608,7 @@ namespace TMapWin
       try
       {
         Point2D p0 = InvProject(e.X, e.Y);
-        Console.WriteLine("{0:N0} {1:N0}", p0.X, p0.Y);
+        Basics.Logger.Verbose(() => $"{p0.X:N0} {p0.Y:N0}", "mySwitch");
         _pnlMap.Focus();
         ToolMove?.Invoke(this, new ToolArgs(p0, (int)e.Button,
           new Point2D(_pointDown.X, _pointDown.Y),

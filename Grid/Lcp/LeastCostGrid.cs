@@ -184,6 +184,8 @@ namespace Grid.Lcp
       public IGrid<double> CostGrid => _costGrid;
       public IGrid<int> DirGrid => _dirGrid;
 
+      public ICostOptimizer CostOptimizer => _costOptimizer;
+
       private Field GetField(IPoint point)
       {
         return _parent.GetField(point);
@@ -209,7 +211,7 @@ namespace Grid.Lcp
 
         ICostField startCostField = _parent.InitField(startField);
         startCostField.SetCost(null, cost, idDir: -2);
-        _costOptimizer?.Init(startField);
+        _costOptimizer?.Init(startCostField, _costList);
 
         _costList.Add(startCostField, startCostField);
         _fieldList.Add(startCostField, startCostField);
@@ -354,7 +356,17 @@ namespace Grid.Lcp
     }
   }
 
-  public class LeastCostGridStack<T> : LeastCostGridBase
+  public class LeastCostGridStack : LeastCostGridBase
+  {
+    public static LeastCostGridStack<T> Create<T>(IList<IDirCostModel<T>> dirCostModels, IList<Teleport<T>> teleports, double dx,
+      IBox userBox = null, Steps steps = null)
+      where T : class
+    {
+      return new LeastCostGridStack<T>(dirCostModels, teleports, dx, userBox, steps);
+    }
+  }
+
+  public class LeastCostGridStack<T> : LeastCostGridStack
     where T : class
   {
     private readonly IList<IDirCostModel<T>> _dirCostModels;
@@ -410,17 +422,19 @@ namespace Grid.Lcp
 
     public object CalcCost(bool invers = false, double stopFactor = 1)
     {
-      ICostOptimizer calcAdapter = null;
-      if (_ends.Count != 0)
-      {
-        //        calcAdapter = new StopHandler(); // TODO
-      }
-
       foreach (var pt in _starts)
       {
         IDirCostModel<T> costModel = pt.CostModel;
-        Layer stack = GetLayer(costModel, invers, calcAdapter);
+        Layer stack = GetLayer(costModel, invers, stopFactor);
         stack.Calc.AddStart(pt.Point);
+      }
+      if (_ends != null)
+      {
+        foreach (var pt in _ends)
+        {
+          IDirCostModel<T> costModel = pt.CostModel;
+          Layer stack = GetLayer(costModel, invers, stopFactor);
+        }
       }
 
       int i = 0;
@@ -432,6 +446,7 @@ namespace Grid.Lcp
         ICostField minCostField = null;
         Layer minLayer = null;
 
+        bool endsCompleted = true;
         foreach (var layer in LayerDict.Values)
         {
           ICostField costField = layer.Calc.InitNextProcessField(remove: false);
@@ -440,6 +455,14 @@ namespace Grid.Lcp
             minCostField = costField;
             minLayer = layer;
           }
+          if (endsCompleted && !((layer.Calc.CostOptimizer as StopHandler)?.IsEndsCompleted() ?? false))
+          {
+            endsCompleted = false;
+          }
+        }
+        if (endsCompleted)
+        {
+          continue;
         }
 
         if (minCostField != null)
@@ -453,48 +476,101 @@ namespace Grid.Lcp
           {
             foreach (var teleport in teleports)
             {
-              Layer layer = GetLayer(teleport.ToCostModel, invers, calcAdapter);
+              Layer layer = GetLayer(teleport.ToCostModel, invers, stopFactor);
               layer.Calc.AddStart(teleport.To, processField.Cost + teleport.Cost);
             }
           }
         }
       }
 
+      bool export = false;
+      if (export)
+      {
+        int it = 0;
+        foreach (var layer in LayerDict.Values)
+        {
+          IGrid<double> costGrid = layer.Calc.CostGrid;
+          IGrid<double> reduced = BaseGrid.TryReduce(costGrid);
+          ImageGrid.GridToImage(DoubleGrid.ToIntGrid(reduced), $"C:\\temp\\test_{it}.tif");
+          it++;
+        }
+      }
       return null;
       // Export to image:
-      //      IGrid<double> reduced = BaseGrid.TryReduce(costGrid);
-      //      ImageGrid.GridToTif(DoubleGrid.ToIntGrid(reduced), "C:\\temp\\test2.tif");
     }
 
-    private Layer GetLayer(IDirCostModel<T> costModel, bool invers, ICostOptimizer calcAdapter)
+    private Layer GetLayer(IDirCostModel<T> costModel, bool invers, double stopFactor)
     {
       if (!LayerDict.TryGetValue(costModel, out Layer layer))
       {
         LeastCostGrid<T> lcg = new LeastCostGrid<T>(costModel, _dx, _userBox, _steps);
-        Calc calc = new Calc(lcg, invers, calcAdapter);
-        Dictionary<IField, IList<Teleport<T>>> layerPorts = new Dictionary<IField, IList<Teleport<T>>>();
+        StopHandler stopHandler = null;
+        if (_ends != null)
+        {
+          Dictionary<IField, int> stopDict = new Dictionary<IField, int>();
+          List<IField> stops = new List<IField>();
+          foreach (var telePoint in _ends)
+          {
+            if (telePoint.CostModel != costModel)
+            { continue; }
+            Field stopField = lcg.GetField(telePoint.Point);
+            stops.Add(stopField);
+            stopDict.Add(stopField, 0);
+          }
+          foreach (var telePort in _teleports)
+          {
+            IPoint port;
+            if (!invers && telePort.FromCostModel == costModel)
+            { port = telePort.From; }
+            else if (invers && telePort.ToCostModel == costModel)
+            { port = telePort.To; }
+            else
+            { continue; }
+            Field portField = lcg.GetField(port);
+            stops.Add(portField);
+            stopDict.Add(portField, 1);
+          }
+
+          stopHandler = new StopHandler(stops, costModel.MinUnitCost * _dx)
+          {
+            StopFactor = stopFactor,
+            StopComparer = (x, y) => 
+            {
+              int ix = stopDict[x];
+              int iy = stopDict[y];
+              return ix.CompareTo(iy);
+            },
+            HandleUncompleted = (fields) =>
+            {
+              foreach (var field in fields)
+              {
+                if (stopDict[field] == 0)
+                { return false; }
+              }
+              return true;
+            }
+          };
+        }
+
+        Calc calc = new Calc(lcg, invers, stopHandler);
+        Dictionary<IField, IList<Teleport<T>>> layerPorts = new Dictionary<IField, IList<Teleport<T>>>(new FieldComparer());
 
         foreach (var teleport in _teleports)
         {
-          Field port = null;
+          Field port;
           if (!invers && teleport.FromCostModel == costModel)
-          {
-            port = lcg.GetField(teleport.From);
-          }
-          if (invers && teleport.ToCostModel == costModel)
-          {
-            port = lcg.GetField(teleport.To);
-          }
+          { port = lcg.GetField(teleport.From); }
+          else if (invers && teleport.ToCostModel == costModel)
+          { port = lcg.GetField(teleport.To); }
+          else
+          { continue; }
 
-          if (port != null)
+          if (!layerPorts.TryGetValue(port, out IList<Teleport<T>> teleports))
           {
-            if (!layerPorts.TryGetValue(port, out IList<Teleport<T>> teleports))
-            {
-              teleports = new List<Teleport<T>>();
-              layerPorts.Add(port, teleports);
-            }
-            teleports.Add(teleport);
+            teleports = new List<Teleport<T>>();
+            layerPorts.Add(port, teleports);
           }
+          teleports.Add(teleport);
         }
 
         layer = new Layer { Lcg = lcg, Calc = calc, Teleports = layerPorts };

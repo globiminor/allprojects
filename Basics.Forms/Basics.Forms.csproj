@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BindUtils.cs" />
     <Compile Include="CntCustomFilter.cs">
       <SubType>UserControl</SubType>
     </Compile>

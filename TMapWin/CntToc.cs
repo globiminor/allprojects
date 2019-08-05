@@ -188,7 +188,7 @@ namespace TMapWin
     {
       try
       {
-        if (_dragNode != null && _dragBefore != null)
+        if (_dragNode != null && _dragBefore?.Parent?.Nodes != null)
         {
           _dragNode.Remove();
           _dragBefore.Parent.Nodes.Insert(_dragBefore.Index, _dragNode);

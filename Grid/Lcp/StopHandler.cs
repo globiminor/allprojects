@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Grid.Lcp
 {
@@ -14,7 +14,7 @@ namespace Grid.Lcp
     private readonly Dictionary<IField, StopInfo> _stopDict;
     private readonly double _minCellCost;
 
-    private IField _startField;
+    private Dictionary<IField, List<StopInfo>> _startFields;
     private StopInfo _maxFullCostField;
 
     public StopHandler(IList<IField> stops, double minCellCost)
@@ -26,14 +26,28 @@ namespace Grid.Lcp
       {
         _stopDict[stop] = new StopInfo { Stop = stop, Cost = -1 };
       }
+      _startFields = new Dictionary<IField, List<StopInfo>>();
     }
 
     public double StopFactor { get; set; } = 1;
+    public System.Func<IField, IField, int> StopComparer { get; set; }
+    public System.Func<IEnumerable<IField>, bool> HandleUncompleted { get; set; }
 
-    public void Init(IField startField)
+    public void Init<T>(IField startField, SortedList<T, T> costList)
     {
-      _startField = startField;
-      _maxFullCostField = FindMaxField(_startField);
+      _startFields.Add(startField, GetSortedStops(startField));
+
+      StopInfo maxFullCostField = GetMaxFullCostField();
+      if (maxFullCostField != _maxFullCostField)
+      {
+        _maxFullCostField = maxFullCostField;
+        RefreshMinCosts(_maxFullCostField.Stop, costList);
+      }
+    }
+
+    public bool IsEndsCompleted()
+    {
+      return HandleUncompleted?.Invoke(_stopDict.Values.Where(x => x.Handled == false).Select(x => x.Stop)) ?? false;
     }
 
     bool ICostOptimizer.Stop<T>(ICostField processField, SortedList<T, T> costList)
@@ -62,7 +76,7 @@ namespace Grid.Lcp
       if (_stopDict.Count == 0)
       { return true; }
 
-      _maxFullCostField = FindMaxField(_startField);
+      _maxFullCostField = GetMaxFullCostField();
       RefreshMinCosts(_maxFullCostField.Stop, costList);
       return false;
     }
@@ -72,28 +86,44 @@ namespace Grid.Lcp
       return SetMinRestCost(field as IRestCostField, _maxFullCostField.Stop);
     }
 
-    private StopInfo FindMaxField(IField startField)
+    private StopInfo GetMaxFullCostField()
     {
+      StopInfo maxFullCostField = null;
       double maxDist = 0;
-      StopInfo maxField = null;
-      foreach (var pair in _stopDict)
+      foreach (var pair in _startFields)
       {
-        StopInfo stopInfo = pair.Value;
-        if (stopInfo.Handled)
-        { continue; }
-
-        IField stop = stopInfo.Stop;
-        int dx = stop.X - startField.X;
-        int dy = stop.Y - startField.Y;
-        double dist = dx * dx + dy * dy;
-        if (dist > maxDist)
+        List<StopInfo> sortedStops = pair.Value;
+        foreach (StopInfo stop in sortedStops)
         {
-          maxDist = dist;
-          maxField = stopInfo;
+          if (stop.Handled)
+          { continue; }
+
+          double dist = FieldOp.GetDist2(stop.Stop, pair.Key);
+          if (dist > maxDist)
+          {
+            maxDist = dist;
+            maxFullCostField = stop;
+          }
+          break;
         }
       }
+      return maxFullCostField;
+    }
+    private List<StopInfo> GetSortedStops(IField startField)
+    {
+      List<StopInfo> stops = new List<StopInfo>(_stopDict.Values);
+      stops.Sort((x, y) =>
+      {
+        int d = StopComparer?.Invoke(x.Stop, y.Stop) ?? 0;
+        if (d != 0)
+        { return d; }
 
-      return maxField;
+        double distX = FieldOp.GetDist2(x.Stop, startField);
+        double distY = FieldOp.GetDist2(y.Stop, startField);
+
+        return -distX.CompareTo(distY);
+      });
+      return stops;
     }
 
     private void RefreshMinCosts<T>(IField maxField, SortedList<T, T> costList)
@@ -114,15 +144,7 @@ namespace Grid.Lcp
 
     private bool SetMinRestCost(IRestCostField field, IField stop)
     {
-      if (field == null || stop == null)
-      { return false; }
-
-      double dx = stop.X - field.X;
-      double dy = stop.Y - field.Y;
-      double cellDist = Math.Sqrt(dx * dx + dy * dy);
-
-      field.MinRestCost = _minCellCost * cellDist;
-      return true;
+      return RestCostFieldUtils.SetMinRestCost(field, stop, _minCellCost);
     }
 
     public IComparer<ICostField> GetCostComparer()

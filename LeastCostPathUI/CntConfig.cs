@@ -4,8 +4,8 @@ using System.IO;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using Grid.Lcp;
-using GuiUtils;
 using LeastCostPathUI.Properties;
+using Basics.Forms;
 
 namespace LeastCostPathUI
 {

@@ -554,7 +554,8 @@ namespace Grid
 
         BinarGrid.GetHeader(s, out int nx, out int ny, out BinarGrid.EGridType eType, out short iLength,
           out double x0, out double y0, out double dx, out double z0, out double dz);
-        if (nx > 0 && ny > 0 && iLength > 0)
+        if (nx > 0 && ny > 0 && iLength > 0 && 
+          (eType == BinarGrid.EGridType.eDouble || eType == BinarGrid.EGridType.eInt))
         { return FileType.Binary; }
       }
       return FileType.Unknown;

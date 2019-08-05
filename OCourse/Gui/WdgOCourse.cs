@@ -1,7 +1,6 @@
 ﻿using Basics.Forms;
 using Basics.Geom;
 using Basics.Views;
-using GuiUtils;
 using LeastCostPathUI;
 using Ocad;
 using OCourse.Commands;
@@ -20,7 +19,6 @@ namespace OCourse.Gui
   public partial class WdgOCourse : Form
   {
     private delegate void InitHandler(WdgOCourse wdg);
-
     private static event InitHandler Init;
 
     List<ICost> _selectedRoute;
@@ -479,7 +477,7 @@ namespace OCourse.Gui
       {
         selected = dgvInfo.CurrentRow.DataBoundItem;
       }
-      _vm.SetSelectionedComb(selected);
+      Vm.SetSelectionedComb(selected);
 
       btnRefreshSection.Enabled = false;
       if ((_vm.Info?.Count ?? 0) >= dgvInfo.RowCount)
@@ -494,13 +492,13 @@ namespace OCourse.Gui
           }
         }
       }
+      Vm.DrawCourse();
     }
 
-    private void DgvVars_SelectionChanged(object sender, EventArgs e)
+    private void DgvPermut_SelectionChanged(object sender, EventArgs e)
     {
       if (_suspend)
       { return; }
-      Vm.DrawCourse();
       ShowPart(dgvPermut.CurrentCell);
     }
 

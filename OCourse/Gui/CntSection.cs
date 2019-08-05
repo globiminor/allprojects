@@ -1,11 +1,10 @@
-﻿using GuiUtils;
+﻿using Basics.Forms;
 using Ocad;
 using OCourse.Ext;
 using OCourse.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Windows.Forms;
 using Control = Ocad.Control;
 

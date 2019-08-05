@@ -52,9 +52,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\GuiUtils.cs">
-      <Link>GuiUtils.cs</Link>
-    </Compile>
     <Compile Include="AnalyzeImg.cs" />
     <Compile Include="BackgroundWorker.cs" />
     <Compile Include="CntConfig.cs">
@@ -86,6 +83,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Images.resx</DependentUpon>
     </Compile>
+    <Compile Include="LeastCostPathCmd.cs" />
     <Compile Include="LeastCostPathIO.cs" />
     <Compile Include="Properties\Msg.de.Designer.cs">
       <DependentUpon>Msg.de.resx</DependentUpon>
@@ -232,6 +230,14 @@
     <ProjectReference Include="..\Shape\Shape.csproj">
       <Project>{ec0a5266-c017-41eb-bd7b-917eb912b8a9}</Project>
       <Name>Shape</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TData\TData.csproj">
+      <Project>{e2dffc41-8244-40c6-9da6-6d695ca7466e}</Project>
+      <Name>TData</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TMap\TMap.csproj">
+      <Project>{0AFADAAB-0036-47A0-B8A2-D41CCD77A4E0}</Project>
+      <Name>TMap</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

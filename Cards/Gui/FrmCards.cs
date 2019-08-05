@@ -1,10 +1,9 @@
 ﻿using System.Windows.Forms;
 using Cards.Vm;
-using GuiUtils;
-using Basics;
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
+using Basics.Forms;
 
 namespace Cards.Gui
 {

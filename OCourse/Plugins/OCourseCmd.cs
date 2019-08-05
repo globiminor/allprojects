@@ -1,23 +1,29 @@
 
+using Basics.Forms;
+using Basics.Geom;
+using Grid.Lcp;
+using Ocad;
+using OCourse.Gui;
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
-using Basics.Geom;
-using Ocad;
-using OCourse.Gui;
 using TMap;
-using Grid.Lcp;
-using Control = Ocad.Control;
-using Basics.Forms;
-using System.Linq;
 
-namespace OCourse
+namespace OCourse.Plugins
 {
   public class OCourseCmd : ICommand
   {
     private WdgOCourse _wdg;
 
+    public OCourseCmd()
+    {
+      // "AssemblyResolve" is active only here
+      // --> load all potentially needed libraries here
+      _wdg = new WdgOCourse();
+      Common.Init();
+    }
     #region ICommand Members
+
 
     public void Execute(IContext context)
     {
@@ -27,7 +33,10 @@ namespace OCourse
         Common.Init();
       }
       _wdg.TMapContext = context;
-      _wdg.Show();
+      if (context is IWin32Window parent)
+      { _wdg.Show(parent); }
+      else
+      { _wdg.Show(); }
     }
 
     #endregion
@@ -57,10 +66,44 @@ namespace OCourse.Gui
 
         //drawable.BeginDraw();
         drawable.BeginDraw(symbol);
-        Draw(drawable, symbol, _wdg.Vm.Course);
+        drawable.DrawArea(null, null);
+        Draw(drawable, symbol, _wdg.Vm.SelectedCost);
         drawable.EndDraw(symbol);
         //drawable.EndDraw();
         //drawable.Flush();
+      }
+      private void Draw(IDrawable drawable, SymbolPart symbol, Route.CostBase cost)
+      {
+        if (cost is Route.CostSectionlist sections)
+        {
+          Draw(drawable, symbol, sections);
+        }
+        else if (cost is Route.CostFromTo fromTo)
+        {
+          Draw(drawable, symbol, fromTo);
+        }
+      }
+
+      private void Draw(IDrawable drawable, SymbolPart symbol, Route.CostFromTo fromTo)
+      {
+        Polyline l = Polyline.Create(new[] { fromTo.Start, fromTo.End });
+        drawable.DrawLine(l.Project(drawable.Projection), symbol);
+
+        if (fromTo.Route != null)
+        {
+          SymbolPartLine routeSymbol = new SymbolPartLine(null) { LineColor = System.Drawing.Color.Blue };
+          drawable.DrawLine(fromTo.Route.Project(drawable.Projection), routeSymbol);
+        }
+      }
+
+      private void Draw(IDrawable drawable, SymbolPart symbol, Route.CostSectionlist sections)
+      {
+        SectionCollection course = new SectionCollection();
+        foreach (var ctr in sections.Sections.Controls)
+        {
+          course.AddLast(ctr);
+        }
+        Draw(drawable, symbol, course);
       }
       private void Draw(IDrawable drawable, SymbolPart symbol,
         SectionCollection sections)
@@ -72,8 +115,8 @@ namespace OCourse.Gui
           if (section is Variation)
           {
             #region Variation
-            IList<Control> preControls = _wdg.Vm.Course.PreviousControls(section);
-            IList<Control> nextControls = _wdg.Vm.Course.NextControls(section);
+            IList<Ocad.Control> preControls = _wdg.Vm.Course.PreviousControls(section);
+            IList<Ocad.Control> nextControls = _wdg.Vm.Course.NextControls(section);
 
             DataGridView dgv = _wdg.dgvPermut;
             List<int> legs = new List<int>();
@@ -103,25 +146,22 @@ namespace OCourse.Gui
                 { continue; }
               }
 
-              if (preControls != null && preControls.Count == 1 &&
-                branch.First != null && branch.First.Value is Control)
               {
-                Polyline p = new Polyline();
-                AddPoint(p, preControls[0], true);
-                AddPoint(p, (Control)branch.First.Value, false);
-
-                drawable.DrawLine(p.Project(drawable.Projection), symbol);
+                if (preControls != null && preControls.Count == 1 &&
+                  branch.First != null && branch.First.Value is Ocad.Control to)
+                {
+                  Polyline p = GetPolyline((Ocad.Control)branch.First.Value, to);
+                  drawable.DrawLine(p.Project(drawable.Projection), symbol);
+                }
+                Draw(drawable, symbol, branch);
               }
-              Draw(drawable, symbol, branch);
-
-              if (nextControls != null && nextControls.Count == 1 &&
-                branch.Last != null && branch.Last.Value is Control)
               {
-                Polyline p = new Polyline();
-                AddPoint(p, (Control)branch.Last.Value, true);
-                AddPoint(p, nextControls[0], false);
-
-                drawable.DrawLine(p.Project(drawable.Projection), symbol);
+                if (nextControls != null && nextControls.Count == 1 &&
+                  branch.Last != null && branch.Last.Value is Ocad.Control to)
+                {
+                  Polyline p = GetPolyline(nextControls[0], to);
+                  drawable.DrawLine(p.Project(drawable.Projection), symbol);
+                }
               }
             }
             #endregion Variation
@@ -150,8 +190,8 @@ namespace OCourse.Gui
               }
             }
 
-            IList<Control> preControls = _wdg.Vm.Course.PreviousControls(section);
-            IList<Control> nextControls = _wdg.Vm.Course.NextControls(section);
+            IList<Ocad.Control> preControls = _wdg.Vm.Course.PreviousControls(section);
+            IList<Ocad.Control> nextControls = _wdg.Vm.Course.NextControls(section);
             int i0 = 0;
             int i1 = 0;
             Fork sFork = (Fork)section;
@@ -164,23 +204,18 @@ namespace OCourse.Gui
               }
               Fork.Branch branch = (Fork.Branch)sFork.Branches[iFork];
               Polyline p;
-              Control c1 = preControls[0];
+              Ocad.Control c1 = preControls[0];
               string comb = "";
               foreach (var cntr in branch.GetCombination(comb))
               {
-                Control c0 = c1;
+                Ocad.Control c0 = c1;
                 c1 = cntr;
-                p = new Polyline();
-                AddPoint(p, c1, true);
-                AddPoint(p, c0, false);
+                p = GetPolyline(c0, c1);
 
                 drawable.DrawLine(p.Project(drawable.Projection), symbol);
               }
 
-              p = new Polyline();
-              AddPoint(p, c1, false);
-              AddPoint(p, nextControls[i1], true);
-
+              p = GetPolyline(c1, nextControls[i1]);
               drawable.DrawLine(p.Project(drawable.Projection), symbol);
 
               if (preControls.Count > 1 && i0 >= 0)
@@ -190,16 +225,14 @@ namespace OCourse.Gui
             }
             #endregion
           }
-          else if (section is Control)
+          else if (section is Ocad.Control to)
           {
             if (node.Previous != null)
             {
               ISection prev = node.Previous.Value;
-              if (prev is Control)
+              if (prev is Ocad.Control from)
               {
-                Polyline p = new Polyline();
-                AddPoint(p, (Control)section, true);
-                AddPoint(p, (Control)prev, false);
+                Polyline p = GetPolyline(from, to);
 
                 drawable.DrawLine(p.Project(drawable.Projection), symbol);
               }
@@ -208,7 +241,14 @@ namespace OCourse.Gui
         }
       }
 
-      private IPoint AddPoint(Polyline line, Control c, bool start)
+      private Polyline GetPolyline(Ocad.Control from, Ocad.Control to)
+      {
+        Polyline p = new Polyline();
+        AddPoint(p, from, false);
+        AddPoint(p, to, true);
+        return p;
+      }
+      private IPoint AddPoint(Polyline line, Ocad.Control c, bool start)
       {
         if (c == null)
         { return null; }

@@ -119,6 +119,9 @@
     <Compile Include="WdgProperties.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="WdgProperties.Designer.cs">
+      <DependentUpon>WdgProperties.cs</DependentUpon>
+    </Compile>
     <Compile Include="WdgSymbol.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -185,7 +188,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="WdgProperties.resx">
       <DependentUpon>WdgProperties.cs</DependentUpon>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="WdgSymbol.resx">
       <DependentUpon>WdgSymbol.cs</DependentUpon>

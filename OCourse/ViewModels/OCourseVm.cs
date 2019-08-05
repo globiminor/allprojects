@@ -450,6 +450,7 @@ namespace OCourse.ViewModels
       }
     }
 
+    public CostBase SelectedCost { get; set; }
     public SectionList SelectedCombination
     {
       get { return _selectedComb; }
@@ -479,6 +480,8 @@ namespace OCourse.ViewModels
 
     public bool SetSelectionedComb(object selection)
     {
+      SelectedCost = selection as CostBase;
+
       if (!(selection is CostSectionlist vRow))
       { return false; }
 

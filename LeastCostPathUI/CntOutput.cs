@@ -13,6 +13,8 @@ namespace LeastCostPathUI
 {
   public partial class CntOutput : UserControl
   {
+    public event StatusEventHandler StatusChanged;
+
     private LeastCostGrid<TvmCell> _costPath;
     private bool _cancelled;
     private bool _disposed;
@@ -239,7 +241,7 @@ namespace LeastCostPathUI
 
         double limit = 0.9 * min;
         double replace = 2 * min;
-        DoubleGrid sum = DoubleGrid.Filter(_sum, (ix,iy) =>
+        DoubleGrid sum = DoubleGrid.Filter(_sum, (ix, iy) =>
         {
           double v = _sum[ix, iy];
           return v < limit ? replace : v;
@@ -327,12 +329,13 @@ namespace LeastCostPathUI
       pnlExtent.Enabled = !chkAuto.Checked;
     }
 
-    void CostPath_Status(object sender, StatusEventArgs args)
+    private bool _executingCostPathStatus;
+    private void CostPath_Status(object sender, StatusEventArgs args)
     {
       if (InvokeRequired)
       {
         EventDlg<StatusEventArgs> dlg = CostPath_Status;
-        Invoke(dlg, sender, args);
+        BeginInvoke(dlg, sender, args);
         return;
       }
       if (_cancelled)
@@ -340,24 +343,35 @@ namespace LeastCostPathUI
         args.Cancel = true;
         return;
       }
-      if (args.CurrentStep % 1000 == 0)
+      if (_executingCostPathStatus)
+      { return; }
+      try
       {
-        if (TopLevelControl.Visible == false)
+        _executingCostPathStatus = true;
+        StatusChanged?.Invoke(sender, args);
+        if (args.CurrentStep % 1000 == 0)
         {
-          _cancelled = true;
-        }
-        else
-        {
-          if (args.TotalStep > 0)
+          if (TopLevelControl.Visible == false)
           {
-            string max = chkAuto.Checked ? "(max)" : string.Empty;
-            lblProgress.Text = $"Step {args.CurrentStep:N0} of {max}{args.TotalStep:N0}";
+            _cancelled = true;
           }
           else
           {
-            lblProgress.Text = string.Format("...");
+            if (args.TotalStep > 0)
+            {
+              string max = chkAuto.Checked ? "(max)" : string.Empty;
+              lblProgress.Text = $"Step {args.CurrentStep:N0} of {max}{args.TotalStep:N0}";
+            }
+            else
+            {
+              lblProgress.Text = string.Format("...");
+            }
           }
         }
+      }
+      finally
+      {
+        _executingCostPathStatus = false;
       }
       if (_cancelled)
       {

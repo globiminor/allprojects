@@ -976,6 +976,7 @@ namespace Basics.Data
         {
           geom0 = geom0.Project(new ToXY());
         }
+        return true;
         bool intersects = GeometryOperator.Intersects(geom0, geom1);
         return intersects;
       }

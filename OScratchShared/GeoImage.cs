@@ -455,46 +455,73 @@ namespace OMapScratch
       ny = y1 - y0;
 
       MatrixPrj imagePrj;
-      if (nx * ny < MaxDim * MaxDim)
+      int maxDim2 = MaxDim * MaxDim;
+      double[] m = DefaultWorldMatrix;
+      double[] orig;
+      double[] imageMat;
+      MatrixPrj prj = new MatrixPrj(m);
+
+      if (nx * ny <= maxDim2)
       {
-        double[] m = DefaultWorldMatrix;
-        MatrixPrj prj = new MatrixPrj(m);
-        double[] orig = prj.Project(x0, y0);
-        double[] imageMat = new double[] { m[0], m[1], m[2], m[3], orig[0], orig[1] };
+        orig = prj.Project(x0, y0);
+        imageMat = new double[] { m[0], m[1], m[2], m[3], orig[0], orig[1] };
         imagePrj = new MatrixPrj(imageMat);
 
         imgPartExtent = imgExt;
+        return imagePrj;
       }
-      else
+
+      int resample = 1;
+
+      if (worldPrj != null)
       {
-        double[] m = DefaultWorldMatrix;
-        MatrixPrj prj = new MatrixPrj(m);
+        double[] ul = worldPrj.Project(0, 0);
+        double[] center = worldPrj.Project(width / 2, height / 2);
 
-        if (worldPrj != null)
+        var invPrj = prj.GetInverse();
+        double[] imageCenter = invPrj.Project(center);
+        double[] imageUl = invPrj.Project(ul);
+        double dx_2 = imageUl[0] - imageCenter[0];
+        double dy_2 = imageUl[1] - imageCenter[1];
+        double dd_2 = (dx_2 * dx_2 + dy_2 * dy_2);
+        while (dd_2 > maxDim2 / 4 && nx * ny > maxDim2)
         {
-          double[] center = worldPrj.Project(width / 2, height / 2);
-          double[] imageCenter = prj.GetInverse().Project(center);
+          nx = (nx + 1) / 2;
+          ny = (ny + 1) / 2;
+          dd_2 = dd_2 / 4;
+          resample *= 2;
+        }
+        if (nx * ny <= maxDim2)
+        {
+          orig = prj.Project(x0, y0);
+          imageMat = new double[] { m[0] * resample, m[1] * resample, m[2] * resample, m[3] * resample, orig[0], orig[1] };
+          imagePrj = new MatrixPrj(imageMat);
 
-          if (imageCenter[0] + MaxDim / 2 > x1)
-          { x0 = Math.Max(x0, x1 - MaxDim); }
-          else
-          { x0 = Math.Max(x0, (int)imageCenter[0] - MaxDim / 2); }
-
-          if (imageCenter[1] + MaxDim / 2 > y1)
-          { y0 = Math.Max(y0, y1 - MaxDim); }
-          else
-          { y0 = Math.Max(y0, (int)imageCenter[1] - MaxDim / 2); }
+          imgPartExtent = imgExt;
+          return imagePrj;
         }
 
-        double[] orig = prj.Project(x0, y0);
-        double[] imageMat = new double[] { m[0], m[1], m[2], m[3], orig[0], orig[1] };
-        imagePrj = new MatrixPrj(imageMat);
 
-        nx = Math.Min(nx, MaxDim);
-        ny = Math.Min(ny, MaxDim);
+        if (imageCenter[0] + MaxDim * resample / 2 > x1)
+        { x0 = Math.Max(x0, x1 - MaxDim * resample); }
+        else
+        { x0 = Math.Max(x0, (int)imageCenter[0] - MaxDim * resample / 2); }
 
-        imgPartExtent = new Box(new Pnt(x0, y0), new Pnt(x0 + nx, y0 + ny));
+        if (imageCenter[1] + MaxDim * resample / 2 > y1)
+        { y0 = Math.Max(y0, y1 - MaxDim * resample); }
+        else
+        { y0 = Math.Max(y0, (int)imageCenter[1] - MaxDim * resample / 2); }
       }
+
+      orig = prj.Project(x0, y0);
+      imageMat = new double[] { m[0] * resample, m[1] * resample, m[2] * resample, m[3] * resample, orig[0], orig[1] };
+      imagePrj = new MatrixPrj(imageMat);
+
+      nx = Math.Min(nx, MaxDim);
+      ny = Math.Min(ny, MaxDim);
+
+      imgPartExtent = new Box(new Pnt(x0, y0), new Pnt(x0 + nx, y0 + ny));
+
       return imagePrj;
     }
 

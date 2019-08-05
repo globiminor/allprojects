@@ -98,7 +98,14 @@
     <Compile Include="Gui\WdgTrack.Designer.cs">
       <DependentUpon>WdgTrack.cs</DependentUpon>
     </Compile>
-    <Compile Include="OCourseCmd.cs" />
+    <Compile Include="Gui\WdgVeloModel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Gui\WdgVeloModel.Designer.cs">
+      <DependentUpon>WdgVeloModel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Plugins\OCourseCmd.cs" />
+    <Compile Include="Plugins\VeloModelCmd.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Route\CostMean.cs" />
     <Compile Include="Route\Cost.cs" />
@@ -110,6 +117,7 @@
     <Compile Include="ViewModels\OCourseSettings.cs" />
     <Compile Include="ViewModels\OCourseVm.cs" />
     <Compile Include="ViewModels\PermutationVm.cs" />
+    <Compile Include="ViewModels\VeloModelVm.cs" />
     <EmbeddedResource Include="Gui\CntSection.resx">
       <DependentUpon>CntSection.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -133,6 +141,9 @@
     <EmbeddedResource Include="Gui\WdgTrack.resx">
       <DependentUpon>WdgTrack.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Gui\WdgVeloModel.resx">
+      <DependentUpon>WdgVeloModel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -237,6 +248,7 @@
     <Content Include="Help\VmSelect.png" />
     <None Include="Help\OCourseHelp.html" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
