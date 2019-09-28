@@ -19,6 +19,7 @@ namespace Asvz
   /// </summary>
   public class WdgStart : Form
   {
+#pragma warning disable IDE0069 // Verwerfbare Felder verwerfen
     private Button _btnGetClipboard;
     private Label _lblFormat;
     private Button _toSymbol;
@@ -59,6 +60,7 @@ namespace Asvz
     private Button _btnGpx;
     private ToolTip _ttp;
     private CheckBox _chkStartZiel;
+#pragma warning restore IDE0069 // Verwerfbare Felder verwerfen
 
     /// <summary>
     /// Required designer variable.
@@ -675,28 +677,29 @@ namespace Asvz
         }
 
         // read clipboard
-        OcadReader reader = OcadReader.Open((Stream)pData, ocadVersion: 9);
-        reader.ReadElement(out MapElement elem);
-        int size = 0;
-        while (elem != null)
+        using (OcadReader reader = OcadReader.Open((Stream)pData, ocadVersion: 9))
         {
-          size += elem.PointCount() * 8 + 40;
-          pInList.Add(elem);
-          reader.ReadElement(out elem);
+          reader.ReadElement(out MapElement elem);
+          int size = 0;
+          while (elem != null)
+          {
+            size += elem.PointCount() * 8 + 40;
+            pInList.Add(elem);
+            reader.ReadElement(out elem);
+          }
+          MemoryStream memStream = new MemoryStream(size);
+          OcadWriter pWriter = OcadWriter.AppendTo(memStream, 9);
+
+          foreach (var pElem in pInList)
+          {
+            pWriter.Write((Ocad.Symbol.SymbolGraphics)pElem);
+          }
+          for (int i = 0; i < 40; i++) // add some more data
+          { memStream.WriteByte(0); }
+
+          data = new DataObject("OCAD9 Symbol Graphics", memStream);
+          Clipboard.SetDataObject(data);
         }
-
-        MemoryStream memStream = new MemoryStream(size);
-        OcadWriter pWriter = OcadWriter.AppendTo(memStream, 9);
-
-        foreach (var pElem in pInList)
-        {
-          pWriter.Write((Ocad.Symbol.SymbolGraphics)pElem);
-        }
-        for (int i = 0; i < 40; i++) // add some more data
-        { memStream.WriteByte(0); }
-
-        data = new DataObject("OCAD9 Symbol Graphics", memStream);
-        Clipboard.SetDataObject(data);
 
         _lblFormat.Text = "Anpassen erfolgreich";
       }
@@ -722,19 +725,20 @@ namespace Asvz
         }
 
         // read clipboard
-        OcadReader pReader = OcadReader.Open((Stream)pData, 9);
-        pReader.ReadElement(out GeoElement elem);
-        while (elem != null)
+        using (OcadReader pReader = OcadReader.Open((Stream)pData, 9))
         {
-          if (elem.Geometry is GeoElement.Area == false)
+          pReader.ReadElement(out GeoElement elem);
+          while (elem != null)
           {
-            _lblFormat.Text = "Kein Flächenelement";
-            return;
+            if (elem.Geometry is GeoElement.Area == false)
+            {
+              _lblFormat.Text = "Kein Flächenelement";
+              return;
+            }
+            inList.Add(elem);
+            pReader.ReadElement(out elem);
           }
-          inList.Add(elem);
-          pReader.ReadElement(out elem);
         }
-
         // groesste Geometry finden
         int nElem = inList.Count;
         if (nElem < 2)

@@ -87,7 +87,7 @@ namespace Basics.Window.Browse
         {
           if (!Read(path, s))
           {
-            obj = default(T);
+            obj = default;
             return false;
           }
 
@@ -411,7 +411,6 @@ namespace Basics.Window.Browse
 
     private static IEnumerable<INTERNET_CACHE_ENTRY_INFO> GetUrlEntriesInHistory()
     {
-      List<string> filesList = new List<string>();
       IntPtr buffer = IntPtr.Zero;
 
       IntPtr hEnum = FindFirstUrlCacheEntry(null, buffer, out uint structSize);

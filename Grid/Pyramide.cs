@@ -8,25 +8,10 @@ namespace Grid
     public class Block
     {
       private Block[] _children;
-      private double _hMin;
-      private double _hMax;
-      private double _dh;
 
-      public double HMin
-      {
-        get { return _hMin; }
-        set { _hMin = value; }
-      }
-      public double HMax
-      {
-        get { return _hMax; }
-        set { _hMax = value; }
-      }
-      public double Dh
-      {
-        get { return _dh; }
-        set { _dh = value; }
-      }
+      public double HMin { get; set; }
+      public double HMax { get; set; }
+      public double Dh { get; set; }
 
       public Block[] Child
       {
@@ -78,15 +63,9 @@ namespace Grid
 
       return p;
     }
-    public IDoubleGrid Grid
-    {
-      get { return _grid; }
-    }
+    public IDoubleGrid Grid => _grid;
 
-    public Block ParentBlock
-    {
-      get { return _parentBlock; }
-    }
+    public Block ParentBlock => _parentBlock;
 
     public int NMax
     {
@@ -197,6 +176,3 @@ namespace Grid
 
   }
 }
-
-
-

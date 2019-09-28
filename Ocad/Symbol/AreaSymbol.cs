@@ -2,20 +2,8 @@ namespace Ocad.Symbol
 {
   public class AreaSymbol : BaseSymbol
   {
-    private int _borderSym;
-    private short _fillColor;
-    private EHatchMode _hatchMode;
-    private short _hatchColor;
-    private short _hatchLineWidth;
-    private short _hatchLineDist;
-    private short _hatchAngle1;
-    private short _hatchAngle2;
-    private bool _fillOn;
-    private bool _borderOn;
-    private short _structWidth;
-
     public AreaSymbol(int symbol)
-      : base(symbol)
+      : base(symbol, SymbolType.Area)
     { }
 
     public enum EHatchMode
@@ -26,80 +14,43 @@ namespace Ocad.Symbol
     public enum EStructDraw
     { Clip = 0, FullWithin = 1, CenterWithin = 2, PartlyWithin = 3 }
 
-    public int BorderSym
-    {
-      get { return _borderSym; }
-      set { _borderSym = value; }
-    }
+    public int BorderSym { get; set; }
 
-    public short FillColor
-    {
-      get { return _fillColor; }
-      set { _fillColor = value; }
-    }
+    public short FillColor { get; set; }
 
-    public EHatchMode HatchMode
-    {
-      get { return _hatchMode; }
-      set { _hatchMode = value; }
-    }
-
-    public short HatchColor
-    {
-      get { return _hatchColor; }
-      set { _hatchColor = value; }
-    }
-
-    public short HatchLineWidth
-    {
-      get { return _hatchLineWidth; }
-      set { _hatchLineWidth = value; }
-    }
-
-    public short HatchLineDist
-    {
-      get { return _hatchLineDist; }
-      set { _hatchLineDist = value; }
-    }
-
-    public short HatchAngle1
-    {
-      get { return _hatchAngle1; }
-      set { _hatchAngle1 = value; }
-    }
-
-    public short HatchAngle2
-    {
-      get { return _hatchAngle2; }
-      set { _hatchAngle2 = value; }
-    }
-
-    public bool FillOn
-    {
-      get { return _fillOn; }
-      set { _fillOn = value; }
-    }
-
-    public bool BorderOn
-    {
-      get { return _borderOn; }
-      set { _borderOn = value; }
-    }
+    public EHatchMode HatchMode { get; set; }
+    public short HatchColor { get; set; }
+    public short HatchLineWidth { get; set; }
+    public short HatchLineDist { get; set; }
+    public short HatchAngle1 { get; set; }
+    public short HatchAngle2 { get; set; }
+    public bool FillOn { get; set; }
+    public bool BorderOn { get; set; }
 
     public EStructMode StructMode { get; set; }
     public EStructDraw StructDraw { get; set; }
-
-    public short StructWidth
-    {
-      get { return _structWidth; }
-      set { _structWidth = value; }
-    }
-
+    public short StructWidth { get; set; }
     public short StructHeight { get; set; }
-
     public short StructAngle { get; set; }
     public byte StructIrregularVarX { get; set; }
     public byte StructIrregularVarY { get; set; }
     public short StructIrregularMinDist { get; set; }
+
+    protected override int GetMainColorBase()
+    {
+      if (FillOn)
+      { return FillColor; }
+      if (HatchMode > 0)
+      { return HatchColor; }
+      if (StructMode > 0)
+      {
+        if (Graphics.Count > 0)
+        { return Graphics[0].Color; }
+      }
+      if (BorderOn)
+      { return -1; }
+
+      return -1;
+    }
   }
 }

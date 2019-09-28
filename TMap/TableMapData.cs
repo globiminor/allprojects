@@ -13,7 +13,7 @@ namespace TMap
       if (System.IO.Path.GetExtension(dataPath) == ".ocd" &&
           Ocad.OcadReader.Exists(dataPath))
       {
-        Basics.Data.DbBaseConnection conn = new Ocad.Data.OcadConnection(dataPath);
+        Ocad.Data.OcadConnection conn = new Ocad.Data.OcadConnection(dataPath) { SortByColors = true };
         string table = Ocad.Data.OcadConnection.TableElements;
         TData.TTable tTable = new TData.TTable(table, conn);
         mapData = FromOcad(dataPath, tTable);
@@ -70,8 +70,7 @@ namespace TMap
       {
         while (reader.Read() && !drawable.BreakDraw)
         {
-          Symbol symbol;
-          symbol = sym.GetSymbol(reader, out System.Data.DataRow data);
+          Symbol symbol = sym.GetSymbol(reader, out System.Data.DataRow data);
           if (symbol == null)
           {
             continue;
@@ -80,8 +79,9 @@ namespace TMap
           Basics.Geom.IGeometry geom = (Basics.Geom.IGeometry)data[sym.GeometryColumn.ColumnName];
           foreach (var part in symbol)
           {
-            drawable.BeginDraw(part);
-            part.Draw(geom, data, drawable);
+            part.SetProperties(data);
+            drawable.BeginDraw(part, data);
+            part.Draw(geom, drawable);
             drawable.EndDraw(part);
           }
         }
@@ -139,7 +139,7 @@ namespace TMap
             symInfo.Symbol = sym;
 
             data._symbolisation.SymbolList.Table.Rows.Add(
-              string.Format("Symbol = {0}", ocadSymbol.Number), symInfo.Position, sym);
+              $"{Ocad.Data.OcadConnection.FieldSymbol} = {ocadSymbol.Number}", symInfo.Position, sym);
           }
         }
         data._symbolisation.SymbolList.Table.AcceptChanges();
@@ -157,14 +157,21 @@ namespace TMap
         sym = new Symbol(0);
         foreach (var graphic in ocadPoint.Graphics)
         {
-          SymbolPartPoint part = new SymbolPartPoint(null);
+          SymbolPartPoint part = new SymbolPartPoint();
           part.Scale = true;
           part.LineWidth = graphic.LineWidth * FileParam.OCAD_UNIT * setup.Scale;
           if (colors.TryGetValue(graphic.Color, out ColorInfo color))
-          { part.LineColor = GetColor(color.Color); }
+          { part.Color = GetColor(color.Color); }
           if (graphic.MapGeometry is GeoElement.Line l) part.SymbolLine = l.BaseGeometry.Project(setup.Map2Prj);
-          else if (graphic.MapGeometry is GeoElement.Area a) part.SymbolLine = a.BaseGeometry.Border[0].Project(setup.Map2Prj);
+          else if (graphic.MapGeometry is GeoElement.Area a)
+          {
+            part.SymbolLine = a.BaseGeometry.Border[0].Project(setup.Map2Prj);
+            part.Fill = true;
+            part.Stroke = false;
+            part.Color = part.Color;
+          }
           else throw new System.NotImplementedException();
+          part.RotateExpression = Ocad.Data.OcadConnection.FieldAngle;
 
           part.DrawLevel = 0;
           sym.Add(part);
@@ -173,30 +180,30 @@ namespace TMap
       else if (ocadSymbol is Ocad.Symbol.LineSymbol ocadLine)
       {
         sym = new Symbol(1);
-        SymbolPartLine part = new SymbolPartLine(null);
+        SymbolPartLine part = new SymbolPartLine();
         part.Scale = true;
-        part.LineWidth = ocadLine.LineWidth * Ocad.FileParam.OCAD_UNIT * setup.Scale;
+        part.LineWidth = ocadLine.LineWidth * FileParam.OCAD_UNIT * setup.Scale;
         if (!colors.TryGetValue(ocadLine.LineColor, out ColorInfo oc))
         {
           oc = new ColorInfo();
           oc.Color = new Color(0, 0, 0, 128);
         }
-        part.LineColor = GetColor(oc.Color);
-        part.DrawLevel = 3;
+        part.Color = GetColor(oc.Color);
+        part.DrawLevel = 0; // 3;
         sym.Add(part);
       }
       else if (ocadSymbol is Ocad.Symbol.AreaSymbol ocadArea)
       {
         sym = new Symbol(2);
-        SymbolPartArea part = new SymbolPartArea(null);
+        SymbolPartArea part = new SymbolPartArea();
         //part.FillColor = GetColor(colors[ocadArea.FillColor].Color);
         if (!colors.TryGetValue(ocadArea.FillColor, out ColorInfo oc))
         {
           oc = new ColorInfo();
           oc.Color = new Color(0, 0, 0, 128);
         }
-        part.LineColor = GetColor(oc.Color);
-        part.DrawLevel = 5;
+        part.Color = GetColor(oc.Color);
+        part.DrawLevel = 0; // 5;
         sym.Add(part);
       }
       return sym;

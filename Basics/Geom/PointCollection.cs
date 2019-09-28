@@ -11,16 +11,16 @@ namespace Basics.Geom
     public new IPoint this[int index]
     {
       get
-      { 
+      {
         if (index < 0)
         { index = Count + index; }
-        return base[index]; 
+        return base[index];
       }
       set
-      { 
+      {
         if (index < 0)
         { index = Count + index; }
-        base[index] = value; 
+        base[index] = value;
       }
     }
 
@@ -39,7 +39,7 @@ namespace Basics.Geom
       {
         int iDim = 0;
         foreach (var p in this)
-        { iDim = Math.Max(iDim,p.Dimension); }
+        { iDim = Math.Max(iDim, p.Dimension); }
         return iDim;
       }
     }
@@ -91,23 +91,8 @@ namespace Basics.Geom
       return clone;
     }
 
-    public IGeometry Split(IGeometry[] border)
-    {
-      throw new NotImplementedException();
-    }
-
-    #region IMultipartGeometry Members
-
-    public bool IsContinuous
-    {
-      get
-      { return false; }
-    }
-    public bool HasSubparts
-    {
-      get
-      { return true;	}
-    }
+    bool IMultipartGeometry.IsContinuous => false;
+    bool IMultipartGeometry.HasSubparts => true;
 
     public IEnumerable<IPoint> Subparts()
     {
@@ -120,7 +105,5 @@ namespace Basics.Geom
     }
     IEnumerable<IGeometry> IMultipartGeometry.Subparts()
     { return Subparts_(); }
-
-    #endregion
   }
 }

@@ -62,10 +62,10 @@ namespace OCourse.Gui
 
       public override void Draw(IDrawable drawable)
       {
-        SymbolPartLine symbol = new SymbolPartLine(null) { LineColor = System.Drawing.Color.Red };
+        SymbolPartLine symbol = new SymbolPartLine() { Color = System.Drawing.Color.Red };
 
         //drawable.BeginDraw();
-        drawable.BeginDraw(symbol);
+        drawable.BeginDraw(symbol, null);
         drawable.DrawArea(null, null);
         Draw(drawable, symbol, _wdg.Vm.SelectedCost);
         drawable.EndDraw(symbol);
@@ -91,7 +91,7 @@ namespace OCourse.Gui
 
         if (fromTo.Route != null)
         {
-          SymbolPartLine routeSymbol = new SymbolPartLine(null) { LineColor = System.Drawing.Color.Blue };
+          SymbolPartLine routeSymbol = new SymbolPartLine { Color = System.Drawing.Color.Blue };
           drawable.DrawLine(fromTo.Route.Project(drawable.Projection), routeSymbol);
         }
       }
@@ -250,7 +250,7 @@ namespace OCourse.Gui
       }
       private IPoint AddPoint(Polyline line, Ocad.Control c, bool start)
       {
-        if (c == null)
+        if (c?.Element?.Geometry == null)
         { return null; }
 
         IPoint p = Utils.GetBorderPoint(c.Element.Geometry, atEnd: !start);
@@ -267,6 +267,9 @@ namespace OCourse.Gui
     {
       Init -= InitTMap;
       Init += InitTMap;
+
+      LcpDetailShowing -= LcpDetailShowingTMap;
+      LcpDetailShowing += LcpDetailShowingTMap;
       return 1;
     }
 
@@ -279,6 +282,22 @@ namespace OCourse.Gui
       wdg.Vm.ShowProgress += wdg.ShowInTMap;
       wdg.Vm.DrawingCourse += wdg.DrawCourseInTMap;
     }
+
+    private static void LcpDetailShowingTMap(LeastCostPathUI.WdgOutput wdg)
+    {
+      if (!(wdg.Owner is WdgOCourse owner))
+      { return; }
+      IContext context = owner._context;
+      if (context == null)
+      { return; }
+
+      GridMapData grid = null;
+      wdg.CntOutput.StatusChanged += (s, args) => 
+      {
+        LeastCostPathUI.LeastCostPathCmd.ShowInTMap(context, s as LeastCostGrid, ref grid, args);
+      };
+    }
+
 
     public IContext TMapContext
     {

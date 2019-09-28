@@ -11,6 +11,8 @@ namespace Ocad.Symbol
     Area = 3,
     Text = 4,
     LineText = 5,
-    Rectangle = 6
+    Rectangle = 6,
+
+    unknown = 0
   }
 }

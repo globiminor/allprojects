@@ -6,7 +6,7 @@ namespace Ocad.Symbol
   {
     public PointSymbol(int symbolNumber)
       :
-        base(symbolNumber)
+        base(symbolNumber, SymbolType.Point)
     { }
 
     public GeometryCollection GetSymbolGeometry(Setup setup)
@@ -19,6 +19,13 @@ namespace Ocad.Symbol
       }
       return lst;
     }
-
+    protected override int GetMainColorBase()
+    {
+      foreach (var graphics in Graphics)
+      {
+        return graphics.Color;
+      }
+      return -1;
+    }
   }
 }

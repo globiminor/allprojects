@@ -25,7 +25,7 @@ namespace TData
     {
       _tableName = tableName;
       _connection = new TTableConnection(this, connection);
-      Path = System.IO.Path.Combine(connection.ConnectionString, tableName);
+      Path = System.IO.Path.Combine(connection.ConnectionString ?? "[]", tableName);
     }
     public string Where
     {
@@ -422,9 +422,9 @@ namespace TData
 
     public static TTable FromData(object data)
     {
-      if (data is Mesh)
+      if (data is Mesh mesh)
       {
-        return new TTable("Mesh", new SimpleConnection<Mesh.MeshLine>(new MeshSimpleData((Mesh)data)));
+        return new TTable("Mesh", new SimpleConnection<Mesh.MeshLine>(new MeshSimpleData(mesh)));
       }
       return null;
     }

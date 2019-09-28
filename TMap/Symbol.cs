@@ -1,6 +1,6 @@
+using Basics.Geom;
 using System;
 using System.Collections.Generic;
-using Basics.Geom;
 using System.Data;
 
 namespace TMap
@@ -22,19 +22,19 @@ namespace TMap
       Add(part);
     }
 
-    public static Symbol Create(DataRow templateRow, int topology)
+    public static Symbol Create(int topology, bool withSymbolPart)
     {
       Symbol sym = new Symbol(topology);
 
-      if (templateRow == null)
+      if (!withSymbolPart)
       { return sym; }
 
       if (sym._topology == 0)
-      { sym.Add(new SymbolPartPoint(templateRow)); }
+      { sym.Add(new SymbolPartPoint()); }
       else if (sym._topology == 1)
-      { sym.Add(new SymbolPartLine(templateRow)); }
+      { sym.Add(new SymbolPartLine()); }
       else if (sym._topology == 2)
-      { sym.Add(new SymbolPartArea(templateRow)); }
+      { sym.Add(new SymbolPartArea()); }
       else
       { throw new Exception(string.Format("Unhandled topology {0}", sym._topology)); }
 
@@ -44,9 +44,9 @@ namespace TMap
     {
       get { return _topology; }
     }
-    public static Symbol DefaultPoint(DataRow templateRow)
+    public static Symbol DefaultPoint()
     {
-      Symbol sym = Create(templateRow, 0);
+      Symbol sym = Create(0, withSymbolPart: true);
       Polyline l = SquareLine();
 
       SymbolPartPoint part = (SymbolPartPoint)sym[0];
@@ -78,7 +78,7 @@ namespace TMap
       else if (_topology == 1)
       {
         double d = (drawable.Extent.Max.X - drawable.Extent.Min.X) / 2.0;
-        geom = Polyline.Create(new [] 
+        geom = Polyline.Create(new[]
           { new Point2D(-d + 4,0),
             new Point2D(-d + 20,0),
             new Point2D( d - 20,0),
@@ -88,7 +88,7 @@ namespace TMap
       {
         double d = (drawable.Extent.Max.X - drawable.Extent.Min.X) / 2.0;
         double h = (drawable.Extent.Max.Y - drawable.Extent.Min.Y) / 2.0;
-        geom = new Area(Polyline.Create(new [] 
+        geom = new Area(Polyline.Create(new[]
           { new Point2D(-d + 4,-5),
             new Point2D( d - 4, -5),
             new Point2D( d - 4, 5),
@@ -108,8 +108,9 @@ namespace TMap
     {
       foreach (var pPart in this)
       {
-        drawable.BeginDraw(pPart);
-        pPart.Draw(geometry, properties, drawable);
+        pPart.SetProperties(properties);
+        drawable.BeginDraw(pPart, properties);
+        pPart.Draw(geometry, drawable);
         drawable.EndDraw(pPart);
       }
     }

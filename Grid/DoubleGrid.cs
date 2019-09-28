@@ -104,7 +104,7 @@ namespace Grid
       return new DoubleOpGrid(dArray, grd);
     }
 
-    public static DoubleGrid Filter(DoubleGrid grid, Func<int,int, double> func)
+    public static DoubleGrid Filter(DoubleGrid grid, Func<int, int, double> func)
     {
       return new DoubleOpGrid(grid, func);
     }
@@ -356,8 +356,8 @@ namespace Grid
 
       double h = h0 + dhy * dy;
 
-      dhy = dhy / grid.Extent.Dy;
-      dhx = dhx / grid.Extent.Dx;
+      dhy /= grid.Extent.Dy;
+      dhx /= grid.Extent.Dx;
 
       Point3D p = new Point3D(dhx, dhy, h);
 
@@ -444,53 +444,42 @@ namespace Grid
     { return CalcDh(this, i0, j0, n); }
     public static double CalcDh(IDoubleGrid grid, int i0, int j0, int n)
     {
-      double h0, h1, h2;
-      double a0, b0, c0, d0;
-      double a1, b1, c1, d1;
-      double dhMax;
-      int i1, j1;
-      i1 = i0 + n;
-      j1 = j0 + n;
-      dhMax = 0;
+      int i1 = i0 + n;
+      int j1 = j0 + n;
+      double dhMax = 0;
 
       // first triangle, must correspond to triangles in drawCell
-      h0 = grid[i0, j0];
-      h1 = grid[i1, j0];
-      h2 = grid[i0, j1];
-      a0 = -(h1 - h0); // eliminated common factor n !!!
-      b0 = -(h2 - h0);
-      c0 = n;
-      d0 = -(a0 * i0 + b0 * j0 + c0 * h0);
+      double h0 = grid[i0, j0];
+      double h1 = grid[i1, j0];
+      double h2 = grid[i0, j1];
+      double a0 = -(h1 - h0); // eliminated common factor n !!!
+      double b0 = -(h2 - h0);
+      double c0 = n;
+      double d0 = -(a0 * i0 + b0 * j0 + c0 * h0);
 
       // second triangle, must correspond to triangles in drawCell
       h0 = grid[i1, j1];
-      a1 = (h2 - h0); // eliminated common factor n !!!
-      b1 = (h1 - h0);
-      c1 = n;
-      d1 = -(a1 * i1 + b1 * j1 + c1 * h0);
+      double a1 = (h2 - h0); // eliminated common factor n !!!
+      double b1 = (h1 - h0);
+      double c1 = n;
+      double d1 = -(a1 * i1 + b1 * j1 + c1 * h0);
 
       for (int i = i0; i <= i1; i++)
       {
         for (int j = j0; j <= j1; j++)
         {
-          double dhTemp;
-          double h;
-          h = grid[i, j];
+          double h = grid[i, j];
           if (double.IsNaN(h) || h < 0)
           {
             return double.NaN;
           }
-          if (i - i0 + j - j0 <= n)
+          double dh = (i - i0 + j - j0 <= n)
+            ? Math.Abs(h + (a0 * i + b0 * j + d0) / c0)
+            : Math.Abs(h + (a1 * i + b1 * j + d1) / c1);
+
+          if (dh > dhMax)
           {
-            dhTemp = Math.Abs(h + (a0 * i + b0 * j + d0) / c0);
-          }
-          else
-          {
-            dhTemp = Math.Abs(h + (a1 * i + b1 * j + d1) / c1);
-          }
-          if (dhTemp > dhMax)
-          {
-            dhMax = dhTemp;
+            dhMax = dh;
           }
         }
       }
@@ -554,7 +543,7 @@ namespace Grid
 
         BinarGrid.GetHeader(s, out int nx, out int ny, out BinarGrid.EGridType eType, out short iLength,
           out double x0, out double y0, out double dx, out double z0, out double dz);
-        if (nx > 0 && ny > 0 && iLength > 0 && 
+        if (nx > 0 && ny > 0 && iLength > 0 &&
           (eType == BinarGrid.EGridType.eDouble || eType == BinarGrid.EGridType.eInt))
         { return FileType.Binary; }
       }
@@ -641,8 +630,6 @@ namespace Grid
 
     public static DataDoubleGrid FromBinaryFile(FileStream file)
     {
-      BinaryReader pReader;
-      Type type;
 
       BinarGrid.GetHeader(file, out int nx, out int ny, out BinarGrid.EGridType eType, out short iLength,
         out double x0, out double y0, out double dx, out double z0, out double dz);
@@ -652,6 +639,7 @@ namespace Grid
       }
 
       // get type
+      Type type;
       if (iLength == 1)
       {
         type = typeof(byte);
@@ -676,17 +664,19 @@ namespace Grid
 
       DataDoubleGrid grd = new DataDoubleGrid(nx, ny, type, x0, y0, dx, z0, dz);
 
-      pReader = new BinaryReader(file);
-      for (int iy = 0; iy < ny; iy++)
+      using (BinaryReader pReader = new BinaryReader(file))
       {
-        for (int ix = 0; ix < nx; ix++)
+        for (int iy = 0; iy < ny; iy++)
         {
-          if (type == typeof(byte)) grd._bValue[ix, iy] = pReader.ReadByte();
-          else if (type == typeof(short)) grd._sValue[ix, iy] = pReader.ReadInt16();
-          else if (type == typeof(int)) grd._iValue[ix, iy] = pReader.ReadInt32();
-          else if (type == typeof(float)) grd._fValue[ix, iy] = pReader.ReadSingle();
-          else if (type == typeof(double)) grd._dValue[ix, iy] = pReader.ReadDouble();
-          else throw new Exception("Unhandled Type " + type);
+          for (int ix = 0; ix < nx; ix++)
+          {
+            if (type == typeof(byte)) grd._bValue[ix, iy] = pReader.ReadByte();
+            else if (type == typeof(short)) grd._sValue[ix, iy] = pReader.ReadInt16();
+            else if (type == typeof(int)) grd._iValue[ix, iy] = pReader.ReadInt32();
+            else if (type == typeof(float)) grd._fValue[ix, iy] = pReader.ReadSingle();
+            else if (type == typeof(double)) grd._dValue[ix, iy] = pReader.ReadDouble();
+            else throw new Exception("Unhandled Type " + type);
+          }
         }
       }
       return grd;

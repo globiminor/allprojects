@@ -16,6 +16,11 @@ namespace Ocad
     {
       _io = io;
     }
+    public bool SortByColors
+    {
+      get { return _io.SortByColors; }
+      set { _io.SortByColors = value; }
+    }
 
     internal OcadIo Io => _io;
     internal Stream BaseStream => _io.BaseStream;

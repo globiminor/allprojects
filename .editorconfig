@@ -1,3 +1,4 @@
 [*.{cs,vb}]
 dotnet_style_object_initializer = false:none
 dotnet_style_collection_initializer = false:none
+csharp_style_unused_value_assignment_preference = false:none

@@ -316,26 +316,26 @@ Continue?",
 
     private void DrawLine(ContourSorter.ProgressEventArgs args)
     {
-      TMap.SymbolPart lineSymbol = new TMap.SymbolPartLine(null);
+      TMap.SymbolPart lineSymbol = new TMap.SymbolPartLine();
       if (args.Progress == ContourSorter.Progress.FallDirAssigned)
       {
-        lineSymbol.LineColor = Color.FromArgb(255, 0, 0);
+        lineSymbol.Color = Color.FromArgb(255, 0, 0);
       }
       else if (args.Progress == ContourSorter.Progress.HillAssigned)
       {
-        lineSymbol.LineColor = Color.FromArgb(255, 96, 96);
+        lineSymbol.Color = Color.FromArgb(255, 96, 96);
       }
       else if (args.Progress == ContourSorter.Progress.ParallelAssigned)
       {
-        lineSymbol.LineColor = Color.FromArgb(0, 0, 255);
+        lineSymbol.Color = Color.FromArgb(0, 0, 255);
       }
       else if (args.Progress == ContourSorter.Progress.HeightAssigned)
       {
-        lineSymbol.LineColor = Color.FromArgb(0, 255, 0);
+        lineSymbol.Color = Color.FromArgb(0, 255, 0);
       }
       else if (args.Progress == ContourSorter.Progress.Error)
       {
-        lineSymbol.LineColor = Color.FromArgb(255, 0, 255);
+        lineSymbol.Color = Color.FromArgb(255, 0, 255);
       }
       else
       {
@@ -375,26 +375,26 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
       }
 
 
-      TMap.SymbolPart lineSymbol = new TMap.SymbolPartLine(null);
+      TMap.SymbolPart lineSymbol = new TMap.SymbolPartLine();
       if (args.Progress == ContourSorter.Progress.FallDirAssigned)
       {
-        lineSymbol.LineColor = Color.FromArgb(255, 0, 0);
+        lineSymbol.Color = Color.FromArgb(255, 0, 0);
       }
       else if (args.Progress == ContourSorter.Progress.HillAssigned)
       {
-        lineSymbol.LineColor = Color.FromArgb(255, 96, 96);
+        lineSymbol.Color = Color.FromArgb(255, 96, 96);
       }
       else if (args.Progress == ContourSorter.Progress.ParallelAssigned)
       {
-        lineSymbol.LineColor = Color.FromArgb(0, 0, 255);
+        lineSymbol.Color = Color.FromArgb(0, 0, 255);
       }
       else if (args.Progress == ContourSorter.Progress.HeightAssigned)
       {
-        lineSymbol.LineColor = Color.FromArgb(0, 255, 0);
+        lineSymbol.Color = Color.FromArgb(0, 255, 0);
       }
       else if (args.Progress == ContourSorter.Progress.Error)
       {
-        lineSymbol.LineColor = Color.FromArgb(255, 0, 255);
+        lineSymbol.Color = Color.FromArgb(255, 0, 255);
       }
       else
       {
@@ -424,9 +424,9 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
       draw.BeginDraw();
       if (drawTris)
       {
-        TMap.SymbolPart areaSymbol = new TMap.SymbolPartArea(null)
+        TMap.SymbolPart areaSymbol = new TMap.SymbolPartArea()
         {
-          LineColor = Color.FromArgb(192, 192, 192)
+          Color = Color.FromArgb(192, 192, 192)
         };
 
         foreach (var tri in Calc.Mesh.Tris(draw.Extent))
@@ -445,10 +445,10 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
 
       if (drawLines)
       {
-        TMap.SymbolPart lineSymbol = new TMap.SymbolPartLine(null)
-        { LineColor = Color.FromArgb(128, 128, 128) };
-        TMap.SymbolPart tagSymbol = new TMap.SymbolPartLine(null)
-        { LineColor = Color.FromArgb(255, 128, 128) };
+        TMap.SymbolPart lineSymbol = new TMap.SymbolPartLine()
+        { Color = Color.FromArgb(128, 128, 128) };
+        TMap.SymbolPart tagSymbol = new TMap.SymbolPartLine()
+        { Color = Color.FromArgb(255, 128, 128) };
 
         foreach (var line in Calc.Mesh.Lines(draw.Extent))
         {
@@ -688,19 +688,18 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
       {
         // TData.TTable tbl = new TData.TTable("Contours", new ContourConnection(_calc.Contours));
         TData.TTable tbl = new TData.TTable("Contours", new SimpleConnection<Contour>(new ContourSimpleData(Calc.Contours)));
-        DataRow templateRow = tbl.FullSchema.NewRow();
         _mapContours = new TMap.TableMapData("Contours", tbl);
         _mapContours.Symbolisation.SymbolList.Table.Clear();
         {
-          TMap.SymbolPartLine main = new TMap.SymbolPartLine(templateRow)
-          { LineColor = Color.Red };
-          TMap.SymbolPartLinePoint dir = new TMap.SymbolPartLinePoint(TMap.SymbolPartLinePoint.LinePointType.DashPoint, templateRow)
+          TMap.SymbolPartLine main = new TMap.SymbolPartLine()
+          { Color = Color.Red };
+          TMap.SymbolPartLinePoint dir = new TMap.SymbolPartLinePoint(TMap.SymbolPartLinePoint.LinePointType.DashPoint)
           {
-            LineColor = Color.Red,
-            Point = new TMap.SymbolPartPoint(templateRow)
+            Color = Color.Red,
+            Point = new TMap.SymbolPartPoint()
           };
           dir.Point.DirectPoints = true;
-          dir.Point.LineColor = Color.Red;
+          dir.Point.Color = Color.Red;
           dir.Point.Scale = true;
           dir.Point.SymbolLine = Polyline.Create(new[] { new Point2D(0, 0), new Point2D(0, -2) });
 
@@ -708,15 +707,15 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
           _mapContours.Symbolisation.Add(sym, "Orientation = 1");
         }
         {
-          TMap.SymbolPartLine main = new TMap.SymbolPartLine(templateRow)
-          { LineColor = Color.Blue };
-          TMap.SymbolPartLinePoint dir = new TMap.SymbolPartLinePoint(TMap.SymbolPartLinePoint.LinePointType.DashPoint, templateRow)
+          TMap.SymbolPartLine main = new TMap.SymbolPartLine()
+          { Color = Color.Blue };
+          TMap.SymbolPartLinePoint dir = new TMap.SymbolPartLinePoint(TMap.SymbolPartLinePoint.LinePointType.DashPoint)
           {
-            LineColor = Color.Blue,
-            Point = new TMap.SymbolPartPoint(templateRow)
+            Color = Color.Blue,
+            Point = new TMap.SymbolPartPoint()
             {
               DirectPoints = true,
-              LineColor = Color.Blue,
+              Color = Color.Blue,
               Scale = true,
               SymbolLine = Polyline.Create(new[] { new Point2D(0, 0), new Point2D(0, 2) })
             }
@@ -726,8 +725,8 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
           _mapContours.Symbolisation.Add(sym, "Orientation = 2");
         }
         {
-          TMap.SymbolPartLine main = new TMap.SymbolPartLine(templateRow)
-          { LineColor = Color.Violet };
+          TMap.SymbolPartLine main = new TMap.SymbolPartLine()
+          { Color = Color.Violet };
           _mapContours.Symbolisation.Add(new TMap.Symbol(main), "true");
         }
         _mapGrp.Subparts.Add(_mapContours);

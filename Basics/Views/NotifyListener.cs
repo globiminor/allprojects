@@ -85,7 +85,7 @@ namespace Basics.Views
 
         _bgw.DoWork += Bgw_DoWork;
         _bgw.RunWorkerCompleted += Bgw_RunWorkerCompleted;
-        _bgw.ProgressChanged += _bgw_ProgressChanged;
+        _bgw.ProgressChanged += Bgw_ProgressChanged;
 
         _bgw.RunWorkerAsync();
       }
@@ -96,7 +96,7 @@ namespace Basics.Views
         _bgw?.ReportProgress(10);
       }
 
-      private void _bgw_ProgressChanged(object sender, ProgressChangedEventArgs e)
+      private void Bgw_ProgressChanged(object sender, ProgressChangedEventArgs e)
       {
         _parent.Progress = _progress;
       }
@@ -149,7 +149,7 @@ namespace Basics.Views
         SetChanging(this, property);
       }
 
-      private static object _changeLock = new object();
+      private static readonly object _changeLock = new object();
       private void SetChanging(ChangingHandler change, string property)
       {
         lock (_changeLock)

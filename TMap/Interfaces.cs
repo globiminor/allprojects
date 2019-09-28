@@ -10,7 +10,7 @@ namespace TMap
   {
     void BeginDraw();
     void BeginDraw(MapData data);
-    void BeginDraw(ISymbolPart symbolPart);
+    void BeginDraw(ISymbolPart symbolPart, System.Data.DataRow dataRow);
     bool BreakDraw { get; set; }
     IProjection Projection { get; }
     void DrawLine(Polyline line, ISymbolPart symbolPart);

@@ -1,5 +1,5 @@
-using System.Data;
 using Basics.Geom;
+using System.Data;
 
 namespace TMap
 {
@@ -48,13 +48,8 @@ namespace TMap
     //private DataColumn _colScale;
     //private DataColumn _colRotate;
     private _Projection _projection;
-    private string _scaleExpression;
-    private string _lineWidthExpression;
-    private string _rotateExpression;
 
-
-    public SymbolPartPoint(DataRow templateRow)
-      : base(templateRow)
+    public SymbolPartPoint()
     {
       DrawLevel = 0;
     }
@@ -70,26 +65,38 @@ namespace TMap
       get { return 0; }
     }
 
-    private bool _scale;
-    public bool Scale
-    {
-      get { return _scale; }
-      set { _scale = value; }
-    }
+    public bool Scale { get; set; }
 
-#pragma warning disable CS0672 // Member 'SymbolPartPoint.Draw(IGeometry, DataRow, IDrawable)' overrides obsolete member 'SymbolPart.Draw(IGeometry, DataRow, IDrawable)'. Add the Obsolete attribute to 'SymbolPartPoint.Draw(IGeometry, DataRow, IDrawable)'.
-    public override void Draw(IGeometry geometry, DataRow properties, IDrawable drawable)
-#pragma warning restore CS0672 // Member 'SymbolPartPoint.Draw(IGeometry, DataRow, IDrawable)' overrides obsolete member 'SymbolPart.Draw(IGeometry, DataRow, IDrawable)'. Add the Obsolete attribute to 'SymbolPartPoint.Draw(IGeometry, DataRow, IDrawable)'.
+    public override string GetDrawExpressions()
+    {
+      return $"{ColorExpression} {RotateExpression} {ScaleExpression}";
+    }
+    public override void Draw(IGeometry geometry, IDrawable drawable)
     {
       IPoint p = geometry as IPoint;
       if (drawable.Extent == null || IsPointVisible(p, drawable))
       {
         double dScale = 1;
+        if (!string.IsNullOrWhiteSpace(_scaleExpression))
+        {
+          GetColumn(Properties, ref _scaleCol, "__scale__", _scaleExpression, typeof(double));
+          object oScale = Properties[_scaleCol];
+          if (oScale != System.DBNull.Value)
+          { dScale = System.Convert.ToDouble(oScale); }
+
+        }
+
         //if (_templateRow[_colScale] != System.DBNull.Value)
         //{ dScale = (double) _templateRow[_colScale]; }
+
         double dRotate = 0;
-        //if (_templateRow[_colRotate] != System.DBNull.Value)
-        //{ dRotate = (double) _templateRow[_colRotate]; }
+        if (!string.IsNullOrWhiteSpace(_rotateExpression))
+        {
+          GetColumn(Properties, ref _rotateCol, "__rotate__", _rotateExpression, typeof(double));
+          object oRotate = Properties[_rotateCol];
+          if (oRotate != System.DBNull.Value)
+          { dRotate = System.Convert.ToDouble(oRotate); }
+        }
 
         Draw(p, drawable, dScale, dRotate);
       }
@@ -101,7 +108,11 @@ namespace TMap
       _projection = new _Projection();
       _projection.Rotate(rotate);
       _projection.Scale(scale);
-      drawable.DrawLine(PointLine(p, drawable), this);
+      Polyline l = PointLine(p, drawable);
+      if (Fill)
+      { drawable.DrawArea(new Area(l), this); }
+      if (Stroke)
+      { drawable.DrawLine(l, this); }
     }
 
 
@@ -132,38 +143,38 @@ namespace TMap
       set { _line = value; }
     }
 
-    public string LineWidthExpression
-    {
-      get { return _lineWidthExpression; }
-      set { _lineWidthExpression = value; }
-    }
-
-    public string ScaleExpression
-    {
-      get { return _scaleExpression; }
-      set { _scaleExpression = value; }
-    }
-    //public DataColumn ScaleExprCol
-    //{
-    //  get { return _colScale; }
-    //}
-
+    private string _rotateExpression { get; set; }
     public string RotateExpression
     {
-      get { return _rotateExpression; }
-      set { _rotateExpression = value; }
+      get => _rotateExpression;
+      set
+      {
+        _rotateExpression = value;
+        _rotateCol = null;
+      }
     }
-    //public DataColumn RotateExprCol
-    //{
-    //  get { return _colRotate; }
-    //}
+    private DataColumn _rotateCol;
 
+    private string _scaleExpression { get; set; }
+    public string ScaleExpression
+    {
+      get => _scaleExpression;
+      set
+      {
+        _scaleExpression = value;
+        _scaleCol = null;
+      }
+    }
+    private DataColumn _scaleCol;
+
+    public bool Fill { get; set; }
+    public bool Stroke { get; set; } = true;
 
     public Polyline PointLine(IPoint point, IDrawable drawable)
     {
       Polyline line = _line.Clone();
       Polyline drawLine;
-      if (_scale)
+      if (Scale)
       {
         line = line.Project(_projection);
 

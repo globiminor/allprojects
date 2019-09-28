@@ -213,13 +213,13 @@ namespace Dhm
         if (!(row.DataBoundItem is Contour c))
         { continue; }
 
-        SymbolPart lineSymbol = new SymbolPartLine(null);
+        SymbolPart lineSymbol = new SymbolPartLine();
         Color clr;
         if (row.Selected)
         { clr = Color.FromArgb(0, 0, 255); }
         else
         { clr = Color.FromArgb(255, 0, 0); }
-        lineSymbol.LineColor = clr;
+        lineSymbol.Color = clr;
         draw.DrawLine(c.Polyline.Project(draw.Projection),
                       lineSymbol);
       }
@@ -238,9 +238,9 @@ namespace Dhm
         IGeometry geom = c.Geometry;
         if (geom is IPoint p)
         {
-          SymbolPartPoint pointSymbol = new SymbolPartPoint(null);
+          SymbolPartPoint pointSymbol = new SymbolPartPoint();
           pointSymbol.SymbolLine = Symbol.SquareLine();
-          pointSymbol.LineColor = clr;
+          pointSymbol.Color = clr;
           draw.DrawLine(pointSymbol.PointLine(p, draw), pointSymbol);
         }
       }

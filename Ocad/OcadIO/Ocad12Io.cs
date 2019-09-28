@@ -131,7 +131,9 @@ namespace Ocad
       symbol.StructIrregularMinDist = Reader.ReadInt16();
       Reader.ReadInt16(); // reserved
 
-      Reader.ReadInt16();
+      int symDataSize = Reader.ReadInt16();
+      if (symDataSize > 0)
+      { symbol.Graphics.AddRange(Ocad9Io.ReadSymbolGraphics(this, symDataSize)); }
     }
 
     public override void WriteElementHeader(Element element)

@@ -285,5 +285,59 @@ namespace Grid
       }
     }
 
+    public static void GridToImage(Bitmap bitmap, Func<int, int, int> getArgb)
+    {
+      int width = bitmap.Width;
+      int height = bitmap.Height;
+      BitmapData data = bitmap.LockBits(new Rectangle(0, 0, width, height),
+        ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+
+      // Write to the temporary buffer that is provided by LockBits.
+      // Copy the pixels from the source image in this loop.
+      // Because you want an index, convert RGB to the appropriate
+      // palette index here.
+      IntPtr pixels = data.Scan0;
+
+      unsafe
+      {
+        // Get the pointer to the image bits.
+        // This is the unsafe operation.
+        int* ints;
+        if (data.Stride > 0)
+        {
+          ints = (int*)pixels.ToPointer();
+        }
+        else
+        {
+          // If the Stride is negative, Scan0 points to the last
+          // scanline in the buffer. To normalize the loop, obtain
+          // a pointer to the front of the buffer that is located
+          // (Height-1) scanlines previous.
+          ints = (int*)pixels.ToPointer() + data.Stride / 4 * (bitmap.Height - 1);
+        }
+        uint stride = (uint)Math.Abs(data.Stride) / 4;
+
+        for (int row = 0; row < height; row++)
+        {
+          for (int col = 0; col < width; col++)
+          {
+            int argb = getArgb(col, row);
+
+            // The destination pixel.
+            // The pointer to the color index byte of the
+            // destination; this real pointer causes this
+            // code to be considered unsafe.
+            {
+              int* p8bppPixel = ints + row * stride + col;
+              *p8bppPixel = argb;
+            }
+          }
+        }
+      } /* end unsafe */
+
+      // To commit the changes, unlock the portion of the bitmap.
+      bitmap.UnlockBits(data);
+    }
+
   }
 }

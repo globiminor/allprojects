@@ -1,8 +1,8 @@
+using Basics.Geom;
+using Grid;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using Grid;
-using Basics.Geom;
 
 namespace TMap
 {
@@ -17,11 +17,13 @@ namespace TMap
       IDoubleGrid grd = new DataDoubleGrid(1, 1, typeof(double), 0, 0, 1);
       _data = GridMapData.FromData(grd);
     }
+    void ISymbolPart.SetProperties(DataRow properties) { }
 
     public GridSymbolisation Symbolisation
     {
       get { return _sym; }
     }
+    string ISymbolPart.GetDrawExpressions() => null;
 
     public object EditProperties
     {
@@ -46,19 +48,11 @@ namespace TMap
       return 0;
     }
 
-    public DataRow TemplateRow
-    {
-      get { return null; }
-    }
-
-    public void Draw(IGeometry geometry, DataRow row, IDrawable drawable)
+    public void Draw(IGeometry geometry, IDrawable drawable)
     {
       drawable.DrawRaster(_data);
     }
 
-    public Color LineColor
-    {
-      get { return Color.Gray; }
-    }
+    Color ISymbolPart.Color => Color.Gray;
   }
 }

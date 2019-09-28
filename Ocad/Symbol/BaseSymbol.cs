@@ -3,106 +3,43 @@ namespace Ocad.Symbol
   public abstract class BaseSymbol
   {
     private int _iSymNum;
-    private bool _bRotatable;
-    private bool _bFavorites;
-    private bool _bSelected;
-    private SymbolStatus _eStatus;
-    private SymbolTool _eTool;
-    private SymbolCourseSetting _eCourse;
+    private readonly SymbolGraphicsCollection _graphics;
+
     // private SymbolCourseType _eCourseType;
     // private SymbolColumn _eAllowedColumnes;
-    private int _iGroup;
-    private string _sDescription;
-    private byte[] _icon;
-    private SymbolGraphicsCollection _graphics;
 
-    protected BaseSymbol(int symbolNumber)
+    protected BaseSymbol(int symbolNumber, SymbolType symbolType)
     {
       _iSymNum = symbolNumber;
       _graphics = new SymbolGraphicsCollection();
+
+      Type = symbolType;
     }
 
-    public int Number
-    {
-      get
-      { return _iSymNum; }
-    }
+    public int Number => _iSymNum;
 
-    public bool Rotatable
-    {
-      get
-      { return _bRotatable; }
-      set
-      { _bRotatable = value; }
-    }
-    public bool IsFavorit
-    {
-      get
-      { return _bFavorites; }
-      set
-      { _bFavorites = value; }
-    }
-    public bool Selected
-    {
-      get
-      { return _bSelected; }
-      set
-      { _bSelected = value; }
-    }
-    public SymbolStatus Status
-    {
-      get
-      { return _eStatus; }
-      set
-      { _eStatus = value; }
-    }
-    public SymbolTool PreferredTool
-    {
-      get
-      { return _eTool; }
-      set
-      { _eTool = value; }
-    }
-    public SymbolCourseSetting CourseSettingMode
-    {
-      get
-      { return _eCourse; }
-      set
-      { _eCourse = value; }
-    }
-    public string Description
-    {
-      get
-      { return _sDescription; }
-      set
-      { _sDescription = value; }
-    }
-    public byte[] Icon
-    {
-      get
-      { return _icon; }
-      set
-      { _icon = value; }
-    }
-    public int Group
-    {
-      get
-      { return _iGroup; }
-      set
-      { _iGroup = value; }
-    }
-    public SymbolGraphicsCollection Graphics
-    {
-      get
-      { return _graphics; }
-    }
+    public SymbolType Type { get; }
+    public bool Rotatable { get; set; }
+    public bool IsFavorit { get; set; }
+    public bool Selected { get; set; }
+    public SymbolStatus Status { get; set; }
+    public SymbolTool PreferredTool { get; set; }
+    public SymbolCourseSetting CourseSettingMode { get; set; }
+    public string Description { get; set; }
+    public byte[] Icon { get; set; }
+    public int Group { get; set; }
+    public SymbolGraphicsCollection Graphics => _graphics;
+
+    public int GetMainColor() => GetMainColorBase();
+    protected abstract int GetMainColorBase();
   }
 
   public class AnySymbol : BaseSymbol
   {
     public AnySymbol(int symbolNumber)
       :
-        base(symbolNumber)
+        base(symbolNumber, SymbolType.unknown)
     { }
+    protected override int GetMainColorBase() => -1;
   }
 }

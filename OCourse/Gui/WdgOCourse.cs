@@ -18,8 +18,8 @@ namespace OCourse.Gui
 {
   public partial class WdgOCourse : Form
   {
-    private delegate void InitHandler(WdgOCourse wdg);
-    private static event InitHandler Init;
+    private static event Action<WdgOCourse> Init;
+    private static event Action<WdgOutput> LcpDetailShowing;
 
     List<ICost> _selectedRoute;
     private bool _suspend;
@@ -585,6 +585,9 @@ namespace OCourse.Gui
       wdg.SetEnd(end);
       wdg.SetNames(cStart.Name, cEnd.Name);
       wdg.SetMainPath(Path.GetDirectoryName(dlgOpen.FileName));
+
+      wdg.Owner = this;
+      LcpDetailShowing?.Invoke(wdg);
 
       wdg.ShowDialog(this);
     }

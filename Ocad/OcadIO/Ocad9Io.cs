@@ -225,8 +225,8 @@ namespace Ocad
       { ReadPointSymbol(io, pt); }
       else if (symbol is Symbol.LineSymbol li)
       { ReadLineSymbol(io, li); }
-      else if (symbol is Symbol.AreaSymbol)
-      { ReadAreaSymbol(io, symbol as Symbol.AreaSymbol); }
+      else if (symbol is Symbol.AreaSymbol areaSym)
+      { io.ReadAreaSymbol(areaSym); }
       else if (symbol is Symbol.TextSymbol)
       { ReadTextSymbol(io, symbol as Symbol.TextSymbol); }
     }
@@ -327,23 +327,44 @@ namespace Ocad
       symbol.MinSym = io.Reader.ReadInt16();
       symbol.NPrimSym = io.Reader.ReadInt16();
       symbol.PrimSymDist = io.Reader.ReadInt16();
-      symbol.FillColorOn = io.Reader.ReadChar();
-      symbol.Flags = io.Reader.ReadChar();
+      symbol.FillColorOn = io.Reader.ReadInt16(); // <--
+      symbol.Flags = io.Reader.ReadInt16(); // <--
       symbol.FillColor = io.Reader.ReadInt16();
       symbol.LeftColor = io.Reader.ReadInt16();
       symbol.RightColor = io.Reader.ReadInt16();
       symbol.FillWidth = io.Reader.ReadInt16();
       symbol.LeftWidth = io.Reader.ReadInt16();
       symbol.RightWidth = io.Reader.ReadInt16();
-      symbol.Gap = io.Reader.ReadInt16();
-      io.Reader.ReadInt16();
-      io.Reader.ReadInt16();
-      io.Reader.ReadInt16();
-      symbol.Last = io.Reader.ReadInt16();
-      io.Reader.ReadInt16();
+      symbol.LRDash = io.Reader.ReadInt16();
+      symbol.LRGap = io.Reader.ReadInt16();
+      io.Reader.ReadInt16(); // < --symbol.BorderBackColor; reserved
+      io.Reader.ReadInt16(); // reserved
+      io.Reader.ReadInt16(); // reserved
+      symbol.DecreaseMode = (Symbol.LineSymbol.EDecreaseMode)io.Reader.ReadInt16();
+      symbol.DecreaseLast = io.Reader.ReadInt16();
+      symbol.DisableDecreaseDistance = io.Reader.ReadByte();
+      symbol.DisableDecreaseWidth = io.Reader.ReadByte();
       symbol.FrameColor = io.Reader.ReadInt16();
       symbol.FrameWidth = io.Reader.ReadInt16();
       symbol.FrameStyle = (Symbol.LineSymbol.ELineStyle)io.Reader.ReadInt16();
+
+      int primSize = io.Reader.ReadInt16();
+      int secSize = io.Reader.ReadInt16();
+      int cornerSize = io.Reader.ReadInt16();
+      int startSize = io.Reader.ReadInt16();
+      int endSize = io.Reader.ReadInt16();
+      symbol.SymbolFlags = (Symbol.LineSymbol.ESymbolFlags)io.Reader.ReadByte();
+      io.Reader.ReadByte();
+      if (primSize > 0)
+      { symbol.PrimSymbol = ReadSymbolGraphics(io, primSize); }
+      if (secSize > 0)
+      { symbol.SecSymbol = ReadSymbolGraphics(io, secSize); }
+      if (cornerSize > 0)
+      { symbol.CornerSymbol = ReadSymbolGraphics(io, cornerSize); }
+      if (startSize > 0)
+      { symbol.StartSymbol = ReadSymbolGraphics(io, startSize); }
+      if (endSize > 0)
+      { symbol.EndSymbol = ReadSymbolGraphics(io, endSize); }
     }
 
     public override void ReadAreaSymbol(Symbol.AreaSymbol symbol) => ReadAreaSymbol(this, symbol);
@@ -425,6 +446,19 @@ namespace Ocad
       { throw new ArgumentException("unhandled mode " + eFrameMode); }
     }
 
+    internal static Symbol.SymbolGraphicsCollection ReadSymbolGraphics(OcadIo io, int size)
+    {
+      Symbol.SymbolGraphicsCollection graphics = null;
+      int iData = size;
+      while (iData > 0)
+      {
+        graphics = graphics ?? new Symbol.SymbolGraphicsCollection();
+        Symbol.SymbolGraphics pElem = ReadSymbolGraphics(io, out int iNData);
+        graphics.Add(pElem);
+        iData -= iNData;
+      }
+      return graphics;
+    }
     private static Symbol.SymbolGraphics ReadSymbolGraphics(OcadIo io, out int nData)
     {
       Symbol.SymbolGraphics elem = new Symbol.SymbolGraphics

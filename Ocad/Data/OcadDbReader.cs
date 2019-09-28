@@ -19,7 +19,10 @@ namespace Ocad.Data
       : base(command, behavior)
     {
       _command = command;
+      SortByColors = command.SortByColors ?? command.Connection.SortByColors;
     }
+
+    public bool SortByColors { get; set; }
 
     protected override void Dispose(bool disposing)
     {
@@ -44,7 +47,9 @@ namespace Ocad.Data
         { extent = intersect.Extent; }
       }
 
-      _enum = OcadInfo.CreateReader().EnumGeoElements(extent, null).GetEnumerator();
+      OcadReader r = OcadInfo.CreateReader();
+      r.Io.SortByColors = SortByColors;
+      _enum = r.EnumGeoElements(extent, null).GetEnumerator();
       _nRows = 0;
       return _enum;
     }

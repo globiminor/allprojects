@@ -1,9 +1,10 @@
+using Basics.Data;
+using Basics.Geom;
 using System;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Drawing.Design;
-using Basics.Geom;
 
 namespace TMap
 {
@@ -12,21 +13,22 @@ namespace TMap
     int Topology { get; }
     int DrawLevel { get; }
     double Size();
-    DataRow TemplateRow { get; }
-    void Draw(IGeometry geometry, DataRow row, IDrawable drawable);
+    string GetDrawExpressions();
+    void Draw(IGeometry geometry, IDrawable drawable);
 
-    Color LineColor { get; }
+    Color Color { get; }
 
-    object EditProperties { get;}
+    object EditProperties { get; }
+    void SetProperties(DataRow properties);
   }
 
   public interface ILineWidthPart
   {
-    double LineWidth { get;}
+    double LineWidth { get; }
   }
   public interface IScaleablePart
   {
-    bool Scale { get;}
+    bool Scale { get; }
   }
 
   public enum SymbolType { Point, Line, Area };
@@ -37,13 +39,13 @@ namespace TMap
   public abstract class SymbolPart : ISymbolPart
   {
     private Random _random = new Random();
-    // member variables
-    protected DataTable _templateTable;
-    protected DataRow _templateRow;
     private double[] _dash;
 
-    [Browsable(false)]
-    public DataRow TemplateRow => _templateRow;
+    protected DataRow Properties { get; private set; }
+    public void SetProperties(DataRow properties)
+    {
+      Properties = properties;
+    }
 
     public object EditProperties
     {
@@ -56,24 +58,52 @@ namespace TMap
 
     public bool DirectPoints { get; set; }
 
-    protected SymbolPart(DataRow templateRow)
+    protected SymbolPart()
     {
-      if (templateRow != null)
-      {
-        _templateTable = Basics.Data.Utils.GetTemplateTable(templateRow.Table);
-        _templateRow = _templateTable.NewRow();
-        _templateTable.Rows.Add(_templateRow);
-      }
-      LineColor = Color.FromArgb(
+      Color = Color.FromArgb(
         _random.Next(128) + 64,
         _random.Next(128) + 64,
         _random.Next(128) + 64);
     }
 
-    protected DataColumn AddColumn(string proposedName, string value)
+    protected T? GetValue<T>(DataColumn column, Func<object,T> convert)
+      where T : struct
     {
-      DataColumn col = _templateTable.Columns.Add(proposedName, typeof(double), value);
-      return col;
+      if (column == null)
+      { return null; }
+
+      object oValue = Properties[column];
+      if (oValue == DBNull.Value)
+      { return null; }
+
+      T value = convert(oValue);
+      return value;
+    }
+
+    protected DataColumn GetColumn(DataRow properties, ref DataColumn expressionColumn, string proposedName, string expression, Type dataType)
+    {
+      if (string.IsNullOrWhiteSpace(expression))
+      { return null; }
+
+      if (expressionColumn?.Table == properties?.Table)
+      { return expressionColumn; }
+      if (properties?.Table == null)
+      { return null; }
+
+      foreach (var col in properties.Table.Columns.Enum())
+      {
+        if (col.Expression == expression && col.DataType == dataType)
+        {
+          expressionColumn = col;
+          return col;
+        }
+      }
+      int i = 0;
+      while (properties.Table.Columns.IndexOf($"{proposedName}{i}") >= 0)
+      { i++; }
+
+      expressionColumn = properties.Table.Columns.Add(proposedName, dataType, expression);
+      return expressionColumn;
     }
 
     protected bool IsPointVisible(IPoint p, IDrawable drawable)
@@ -84,8 +114,8 @@ namespace TMap
     }
 
     public abstract int Topology { get; }
-    [Obsolete("refactor IGeometry")]
-    public abstract void Draw(IGeometry geometry, DataRow properties, IDrawable drawable);
+    public abstract void Draw(IGeometry geometry, IDrawable drawable);
+    public abstract string GetDrawExpressions();
 
     public int DrawLevel { get; set; }
 
@@ -129,9 +159,36 @@ namespace TMap
       return iNDash + 1;
     }
 
-    public Color LineColor { get; set; }
+    private string _colorExpression;
+    private DataColumn _colorColumn;
+    public string ColorExpression
+    {
+      get { return _colorExpression; }
+      set
+      {
+        _colorExpression = value;
+        _color = null;
+        _colorColumn = null;
+      }
+    }
+    private DataColumn LineColorColumn
+    {
+      get { return GetColumn(Properties, ref _colorColumn, "__Color__", ColorExpression, typeof(int)); }
+    }
 
-    public Color FillColor { get; } = Color.Black;
+    private Color? _color;
+    public Color Color
+    {
+      get
+      {
+        return _color ?? GetValue(LineColorColumn, (argb) => Color.FromArgb(Convert.ToInt32(argb))) ?? Color.Red;
+      }
+      set
+      {
+        _color = value;
+        _colorExpression = null;
+      }
+    }
 
     [Browsable(false)]
     public object Tag { get; set; }

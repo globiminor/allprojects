@@ -30,6 +30,8 @@ namespace Ocad.Data
       }
     }
 
+    public bool? SortByColors { get; set; }
+
     public new OcadTransaction Transaction
     {
       get { return (OcadTransaction)DbTransaction; }

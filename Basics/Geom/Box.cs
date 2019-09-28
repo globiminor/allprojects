@@ -69,7 +69,7 @@ namespace Basics.Geom
     /// set this box to the bounding box of this and box
     /// </summary>
     /// <param name="box"></param>
-    public void Include(IBox box, IEnumerable<int> dimensions = null)
+    public Box Include(IBox box, IEnumerable<int> dimensions = null)
     {
       dimensions = dimensions ?? GeometryOperator.GetDimensions(this, box);
       foreach (int i in dimensions)
@@ -79,6 +79,7 @@ namespace Basics.Geom
         if (box.Max[i] > _max[i])
         { _max[i] = box.Max[i]; }
       }
+      return this;
     }
 
     /// <summary>

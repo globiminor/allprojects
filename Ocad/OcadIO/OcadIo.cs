@@ -20,6 +20,7 @@ namespace Ocad
     internal FileParam FileParam { get; private set; }
     internal SymbolData SymbolData { get; private set; }
     internal Setup Setup { get; private set; }
+    internal bool SortByColors { get; set; }
 
 
     public IEnumerable<GeoElement> EnumGeoElements(IBox extentIntersect, IList<ElementIndex> indexList)
@@ -37,20 +38,67 @@ namespace Ocad
     }
     private IEnumerable<T> EnumElements<T>(IBox extent, IList<ElementIndex> indexList) where T : Element, new()
     {
+      IEnumerable<ElementIndex> idxs = EnumElementIdxs(extent, indexList);
+      if (SortByColors)
+      { idxs = GetColorSorted(idxs); }
+
+      foreach (var index in idxs)
+      {
+        ReadElement(index, out T element);
+        if (element == null)
+        { continue; }
+
+        yield return element;
+      }
+    }
+
+    private List<ElementIndex> GetColorSorted(IEnumerable<ElementIndex> indices)
+    {
+      List<ElementIndex> sort = new List<ElementIndex>(indices);
+
+      int pos = 0;
+      Dictionary<int, ColorInfo> colors = new Dictionary<int, ColorInfo>();
+      foreach (var color in ReadColorInfos())
+      {
+        color.Position = pos;
+        colors.Add(color.Nummer, color);
+        pos++;
+      }
+      Dictionary<int, int> symColors = new Dictionary<int, int>();
+      foreach (var sym in ReadSymbols())
+      {
+        int color = sym.GetMainColor();
+        symColors.Add(sym.Number, color);
+      }
+
+      sort.Sort((x, y) => 
+      {
+        if (!symColors.TryGetValue(x.Symbol, out int xCi))
+        { return 1; }
+        if (!symColors.TryGetValue(y.Symbol, out int yCi))
+        { return -1; }
+
+        if (!colors.TryGetValue(xCi, out ColorInfo xClr))
+        { return 1; }
+        if (!colors.TryGetValue(yCi, out ColorInfo yClr))
+        { return 1; }
+
+        return -xClr.Position.CompareTo(yClr.Position);
+      });
+
+      return sort;
+    }
+    private IEnumerable<ElementIndex> EnumElementIdxs(IBox extent, IList<ElementIndex> indexList)
+    {
       foreach (var index in indexList)
       {
         if (index.Status == ElementIndex.StatusDeleted)
         { continue; }
         if (extent == null || BoxOp.Intersects(extent, index.MapBox))
-        {
-          ReadElement(index, out T element);
-          if (element == null)
-          { continue; }
-
-          yield return element;
-        }
+        { yield return index; }
       }
     }
+
 
     public static OcadIo GetIo(Stream stream, int ocdVersion = 0, Encoding encoding = null)
     {

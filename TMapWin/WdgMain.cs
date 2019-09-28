@@ -68,8 +68,8 @@ namespace TMapWin
       {
         if (!_breakDraw) _map.BeginDraw(mapData);
       }
-      public void BeginDraw(ISymbolPart symbolPart)
-      { _map.BeginDraw(symbolPart); }
+      public void BeginDraw(ISymbolPart symbolPart, DataRow properties)
+      { _map.BeginDraw(symbolPart, properties); }
       public Basics.Geom.IProjection Projection
       { get { return _map.Projection; } }
       public void DrawLine(Basics.Geom.Polyline line, ISymbolPart symbolPart)

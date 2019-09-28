@@ -2,194 +2,78 @@ namespace Ocad.Symbol
 {
   public class LineSymbol : BaseSymbol
   {
-    private short _lineColor;
-    private short _lineWidth;
-    private ELineStyle _lineStyle;
-    private short _distFromStart;
-    private short _distToEnd;
-    private short _mainLength;
-    private short _mainGap;
-    private short _endLength;
-    private short _endGap;
-    private short _secondGap;
-    private short _nPrimSym;
-    private short _primSymDist;
-    private short _minSym;
-    private char _fillColorOn;
-    private char _flags;
-    private short _leftColor;
-    private short _fillColor;
-    private short _rightColor;
-    private short _fillWidth;
-    private short _leftWidth;
-    private short _rightWidth;
-    private short _gap;
-    private short _frameColor;
-    private short _last;
-    private short _frameWidth;
-    private ELineStyle _frameStyle;
-
     public enum ELineStyle
     { Bevel = 0, Round = 1, Miter = 4 }
+    public enum EDecreaseMode
+    { None = 0, ToEnd = 1, ToStart = 2, Both = 3 }
+    public enum ESymbolFlags
+    { End = 1, Start = 2, Corner = 4, Second = 8 }
 
     public LineSymbol(int symbolNumber)
-      : base(symbolNumber)
+      : base(symbolNumber, SymbolType.Line)
     { }
 
-    public short LineColor
+    protected override int GetMainColorBase()
     {
-      get { return _lineColor; }
-      set { _lineColor = value; }
+      if (LineWidth > 0)
+      { return LineColor; }
+      if (LeftWidth > 0)
+      { return LeftColor; }
+      if (RightWidth > 0)
+      { return RightColor; }
+      if (FillColorOn > 0 && FillWidth > 0)
+      { return FillColor; }
+
+      if (NPrimSym > 0 && PrimSymbol?.Count > 0)
+      { return PrimSymbol[0].Color; }
+      if ((SymbolFlags & ESymbolFlags.Second) == ESymbolFlags.Second && SecSymbol?.Count > 0)
+      { return SecSymbol[0].Color; }
+      if ((SymbolFlags & ESymbolFlags.Corner) == ESymbolFlags.Corner && CornerSymbol?.Count > 0)
+      { return CornerSymbol[0].Color; }
+      if ((SymbolFlags & ESymbolFlags.Start) == ESymbolFlags.Start && StartSymbol?.Count > 0)
+      { return StartSymbol[0].Color; }
+      if ((SymbolFlags & ESymbolFlags.End) == ESymbolFlags.End && EndSymbol?.Count > 0)
+      { return EndSymbol[0].Color; }
+
+      return -1;
     }
 
-    public short LineWidth
-    {
-      get { return _lineWidth; }
-      set { _lineWidth = value; }
-    }
+    public short LineColor { get; set; }
+    public short LineWidth { get; set; }
+    public ELineStyle LineStyle { get; set; }
+    public short DistFromStart { get; set; }
+    public short DistToEnd { get; set; }
+    public short MainLength { get; set; }
+    public short MainGap { get; set; }
+    public short EndLength { get; set; }
+    public short EndGap { get; set; }
+    public short SecondGap { get; set; }
+    public short NPrimSym { get; set; }
+    public short PrimSymDist { get; set; }
+    public short MinSym { get; set; }
+    public short FillColorOn { get; set; }
+    public short Flags { get; set; }
+    public short LeftColor { get; set; }
+    public short FillColor { get; set; }
+    public short RightColor { get; set; }
+    public short FillWidth { get; set; }
+    public short LeftWidth { get; set; }
+    public short RightWidth { get; set; }
+    public short LRDash { get; set; }
+    public short LRGap { get; set; }
+    public short FrameColor { get; set; }
+    public EDecreaseMode DecreaseMode { get; set; }
+    public short DecreaseLast { get; set; }
+    public byte DisableDecreaseDistance {get; set; }
+    public byte DisableDecreaseWidth { get; set; }
+    public short FrameWidth { get; set; }
+    public ELineStyle FrameStyle { get; set; }
 
-    public ELineStyle LineStyle
-    {
-      get { return _lineStyle; }
-      set { _lineStyle = value; }
-    }
-
-    public short DistFromStart
-    {
-      get { return _distFromStart; }
-      set { _distFromStart = value; }
-    }
-
-    public short DistToEnd
-    {
-      get { return _distToEnd; }
-      set { _distToEnd = value; }
-    }
-
-    public short MainLength
-    {
-      get { return _mainLength; }
-      set { _mainLength = value; }
-    }
-
-    public short MainGap
-    {
-      get { return _mainGap; }
-      set { _mainGap = value; }
-    }
-
-    public short EndLength
-    {
-      get { return _endLength; }
-      set { _endLength = value; }
-    }
-
-    public short EndGap
-    {
-      get { return _endGap; }
-      set { _endGap = value; }
-    }
-
-    public short SecondGap
-    {
-      get { return _secondGap; }
-      set { _secondGap = value; }
-    }
-
-    public short NPrimSym
-    {
-      get { return _nPrimSym; }
-      set { _nPrimSym = value; }
-    }
-
-    public short PrimSymDist
-    {
-      get { return _primSymDist; }
-      set { _primSymDist = value; }
-    }
-
-    public short MinSym
-    {
-      get { return _minSym; }
-      set { _minSym = value; }
-    }
-
-    public char FillColorOn
-    {
-      get { return _fillColorOn; }
-      set { _fillColorOn = value; }
-    }
-
-    public char Flags
-    {
-      get { return _flags; }
-      set { _flags = value; }
-    }
-
-    public short LeftColor
-    {
-      get { return _leftColor; }
-      set { _leftColor = value; }
-    }
-
-    public short FillColor
-    {
-      get { return _fillColor; }
-      set { _fillColor = value; }
-    }
-
-    public short RightColor
-    {
-      get { return _rightColor; }
-      set { _rightColor = value; }
-    }
-
-    public short FillWidth
-    {
-      get { return _fillWidth; }
-      set { _fillWidth = value; }
-    }
-
-    public short LeftWidth
-    {
-      get { return _leftWidth; }
-      set { _leftWidth = value; }
-    }
-
-    public short RightWidth
-    {
-      get { return _rightWidth; }
-      set { _rightWidth = value; }
-    }
-
-    public short Gap
-    {
-      get { return _gap; }
-      set { _gap = value; }
-    }
-
-    public short FrameColor
-    {
-      get { return _frameColor; }
-      set { _frameColor = value; }
-    }
-
-    public short Last
-    {
-      get { return _last; }
-      set { _last = value; }
-    }
-
-    public short FrameWidth
-    {
-      get { return _frameWidth; }
-      set { _frameWidth = value; }
-    }
-
-    public ELineStyle FrameStyle
-    {
-      get { return _frameStyle; }
-      set { _frameStyle = value; }
-    }
+    public ESymbolFlags SymbolFlags { get; set; }
+    public SymbolGraphicsCollection PrimSymbol { get; set; }
+    public SymbolGraphicsCollection SecSymbol { get; set; }
+    public SymbolGraphicsCollection CornerSymbol { get; set; }
+    public SymbolGraphicsCollection StartSymbol { get; set; }
+    public SymbolGraphicsCollection EndSymbol { get; set; }
   }
 }

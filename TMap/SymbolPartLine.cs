@@ -1,16 +1,15 @@
-using System.ComponentModel;
-using System.Drawing;
 using Basics.Geom;
+using System.ComponentModel;
 using System.Data;
+using System.Drawing;
 
 namespace TMap
 {
   public class SymbolPartLine : SymbolPart, ILineWidthPart, IScaleablePart
   {
-    private double _lineWidth;
+    private double? _lineWidth;
 
-    public SymbolPartLine(DataRow templateRow)
-      : base(templateRow)
+    public SymbolPartLine()
     {
       DrawLevel = 1;
     }
@@ -38,6 +37,7 @@ namespace TMap
       set { _rect = value; }
     }
 
+    public override string GetDrawExpressions() => $"{ColorExpression} {LineWidthExpression}";
     private double _angle = 0;
     private bool _scale;
 
@@ -49,9 +49,7 @@ namespace TMap
       set { _angle = value; }
     }
 
-#pragma warning disable CS0672 // Member 'SymbolPartLine.Draw(IGeometry, DataRow, IDrawable)' overrides obsolete member 'SymbolPart.Draw(IGeometry, DataRow, IDrawable)'. Add the Obsolete attribute to 'SymbolPartLine.Draw(IGeometry, DataRow, IDrawable)'.
-    public override void Draw(IGeometry geometry, DataRow properties, IDrawable drawable)
-#pragma warning restore CS0672 // Member 'SymbolPartLine.Draw(IGeometry, DataRow, IDrawable)' overrides obsolete member 'SymbolPart.Draw(IGeometry, DataRow, IDrawable)'. Add the Obsolete attribute to 'SymbolPartLine.Draw(IGeometry, DataRow, IDrawable)'.
+    public override void Draw(IGeometry geometry, IDrawable drawable)
     {
       if (geometry is Curve)
       {
@@ -250,13 +248,37 @@ namespace TMap
 
     public override double Size()
     {
-      return _lineWidth;
+      return LineWidth;
+    }
+
+    private string _lineWidthExpression;
+    private DataColumn _lineWidthColumn;
+    public string LineWidthExpression
+    {
+      get { return _lineWidthExpression; }
+      set
+      {
+        _lineWidthExpression = value;
+        _lineWidth = null;
+        _lineWidthColumn = null;
+      }
+    }
+    private DataColumn LineWidthColumn
+    {
+      get { return GetColumn(Properties, ref _lineWidthColumn, "__LineWidth__", LineWidthExpression, typeof(double)); }
     }
 
     public double LineWidth
     {
-      get { return _lineWidth; }
-      set { _lineWidth = value; }
+      get
+      {
+        return _lineWidth ?? GetValue(LineWidthColumn, (d) => System.Convert.ToDouble(d)) ?? 0;
+      }
+      set
+      {
+        _lineWidth = value;
+        _lineWidthExpression = null;
+      }
     }
 
     public bool Scale

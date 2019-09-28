@@ -143,19 +143,18 @@ namespace TMap
     public VectorSymbolisation(DataColumn geomColumn)
     {
       _geomColumn = geomColumn;
-      DataRow templateRow = _geomColumn.Table.NewRow();
 
       _symTable = new SymbolTable();
 
       string sCol = geomColumn.ColumnName + " is ";
       _symRow = _symTable.AddRow(sCol + "Point");
-      _symRow.Symbol = Symbol.DefaultPoint(templateRow);
+      _symRow.Symbol = Symbol.DefaultPoint();
 
       _symRow = _symTable.AddRow(sCol + "Polyline");
-      _symRow.Symbol = Symbol.Create(templateRow, 1);
+      _symRow.Symbol = Symbol.Create(1, withSymbolPart: true);
 
       _symRow = _symTable.AddRow(sCol + "Area");
-      _symRow.Symbol = Symbol.Create(templateRow, 2);
+      _symRow.Symbol = Symbol.Create(2, withSymbolPart: true);
 
       _symbolView = new DataView(_symTable);
       _symbolView.Sort = SymbolTable.PositionColumn.Name;
@@ -200,7 +199,13 @@ namespace TMap
           {
             SymbolTable.Row row = (SymbolTable.Row)vRow.Row;
             string condition = row.Condition;
-            fullQuery.AppendFormat(" {0}", condition);
+            fullQuery.Append($" {condition}");
+            foreach (var part in row.Symbol)
+            {
+              string drawFields = part.GetDrawExpressions();
+              if (!string.IsNullOrWhiteSpace(drawFields))
+              { fullQuery.Append($" {drawFields}"); }
+            }
           }
 
           if (fullQuery.Length == 0) return null;

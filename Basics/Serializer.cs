@@ -10,10 +10,6 @@ namespace Basics
     public static void Serialize<T>(T obj, TextWriter writer,
       bool? indent = null, bool? omitXmlDeclaration = null)
     {
-      XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
-      ns.Add(string.Empty, string.Empty);
-      XmlSerializer ser = new XmlSerializer(typeof(T));
-
       XmlWriterSettings settings = new XmlWriterSettings
       { Indent = true };
       if (indent.HasValue)
@@ -23,6 +19,9 @@ namespace Basics
 
       using (XmlWriter xw = XmlWriter.Create(writer, settings))
       {
+        XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+        ns.Add(string.Empty, string.Empty);
+        XmlSerializer ser = new XmlSerializer(typeof(T));
         ser.Serialize(xw, obj, ns);
       }
     }
@@ -48,5 +47,6 @@ namespace Basics
       object o = ser.Deserialize(reader);
       obj = (T)o;
     }
+
   }
 }

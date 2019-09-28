@@ -66,6 +66,8 @@ namespace Ocad.Data
       _pool = pool;
     }
 
+    public bool SortByColors { get; set; }
+
     public override void Close()
     { }
     public override void Open()

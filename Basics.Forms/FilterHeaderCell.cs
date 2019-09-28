@@ -30,11 +30,10 @@ namespace Basics.Forms
 
     private object _filterClearValue;
 
-    public static FilterHeaderCell CreateCore(DataGridViewColumn column)
+    public static void CreateCore(DataGridViewColumn column)
     {
       FilterHeaderCell cell = new FilterHeaderCell(column.HeaderCell);
       column.HeaderCell = cell;
-      return cell;
     }
     /// <summary>
     /// Initializes a new instance of the DataGridViewColumnHeaderCell 
@@ -1146,18 +1145,18 @@ namespace Basics.Forms
           BorderStyle = BorderStyle.FixedSingle,
           TabStop = false
         };
-        _textBox.LostFocus += _textBox_LostFocus;
-        _textBox.PreviewKeyDown += _textBox_PreviewKeyDown;
-        _textBox.TextChanged += _textBox_TextChanged;
-        _textBox.KeyDown += _textBox_KeyDown;
+        _textBox.LostFocus += TextBox_LostFocus;
+        _textBox.PreviewKeyDown += TextBox_PreviewKeyDown;
+        _textBox.TextChanged += TextBox_TextChanged;
+        _textBox.KeyDown += TextBox_KeyDown;
         Controls.Add(_textBox);
 
         _calendar = new MonthCalendar();
-        _calendar.LostFocus += _calendar_LostFocus;
-        _calendar.DateChanged += _calendar_DateSelected;
-        _calendar.DateSelected += _calendar_DateSelected;
-        _calendar.PreviewKeyDown += _calender_PreviewKeyDown;
-        _calendar.KeyDown += _textBox_KeyDown;
+        _calendar.LostFocus += Calendar_LostFocus;
+        _calendar.DateChanged += Calendar_DateSelected;
+        _calendar.DateSelected += Calendar_DateSelected;
+        _calendar.PreviewKeyDown += Calender_PreviewKeyDown;
+        _calendar.KeyDown += TextBox_KeyDown;
         MouseDown += FilterDateBox_MouseDown;
         VisibleChanged += FilterDateBox_VisibleChanged;
         Resize += FilterDateBox_Resize;
@@ -1184,7 +1183,7 @@ namespace Basics.Forms
         }
       }
 
-      void _calender_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+      void Calender_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
       {
         switch (e.KeyCode)
         {
@@ -1198,7 +1197,7 @@ namespace Basics.Forms
         }
       }
 
-      void _textBox_KeyDown(object sender, KeyEventArgs e)
+      void TextBox_KeyDown(object sender, KeyEventArgs e)
       {
         switch (e.KeyCode)
         {
@@ -1212,7 +1211,7 @@ namespace Basics.Forms
         }
       }
 
-      void _textBox_TextChanged(object sender, EventArgs e)
+      void TextBox_TextChanged(object sender, EventArgs e)
       {
         GetFilterText(_textBox.Text, out string filter, out string filterOp);
         if (filterOp == "\\")
@@ -1226,12 +1225,12 @@ namespace Basics.Forms
         }
       }
 
-      void _textBox_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+      void TextBox_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
       {
         e.IsInputKey = true;
       }
 
-      private void _calendar_DateSelected(object sender, DateRangeEventArgs e)
+      private void Calendar_DateSelected(object sender, DateRangeEventArgs e)
       {
         GetFilterText(_textBox.Text, out string filter, out string filterOp);
         if (filterOp != "\\")
@@ -1249,7 +1248,7 @@ namespace Basics.Forms
       {
         get { return Focused || _textBox.Focused || _calendar.Focused; }
       }
-      void _calendar_LostFocus(object sender, EventArgs e)
+      void Calendar_LostFocus(object sender, EventArgs e)
       {
         OnLostFocus(e);
       }
@@ -1257,7 +1256,7 @@ namespace Basics.Forms
       {
       }
 
-      void _textBox_LostFocus(object sender, EventArgs e)
+      void TextBox_LostFocus(object sender, EventArgs e)
       {
         OnLostFocus(e);
       }

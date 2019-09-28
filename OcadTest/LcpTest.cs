@@ -1,10 +1,12 @@
 using Basics.Geom;
 using Grid;
 using Grid.Lcp;
+using Grid.View;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Ocad;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace OcadTest
 {
@@ -129,6 +131,66 @@ namespace OcadTest
     }
 
     [TestMethod]
+    public void TestGridView()
+    {
+      string heightPath = @"C:\daten\felix\kapreolo\karten\irchel\2019\irchel.asc";
+      DoubleGrid heightGrd = DataDoubleGrid.FromAsciiFile(heightPath, 0, 0.01, typeof(double));
+      Pyramide pyr = Pyramide.Create(heightGrd);
+
+      ImageGrid img = ImageGrid.FromFile(@"C:\daten\felix\kapreolo\karten\irchel\2019\irchel.tif");
+      GridExtent e = img.Extent;
+      double dx = (heightGrd.Extent.X0 - e.X0) / e.Dx;
+      double dy = (heightGrd.Extent.Y0 - e.Y0) / e.Dy;
+      double f = heightGrd.Extent.Dx / img.Extent.Dx;
+      IntGrid colorGrid = new IntGrid(e.Nx, e.Ny, typeof(int), e.X0, e.Y0, e.Dx);
+      for (int ix = 0; ix < e.Nx; ix++)
+      {
+        double tx = e.X0 + ix * e.Dx;
+        for (int iy = 0; iy < e.Ny; iy++)
+        {
+          double ty = e.Y0 + iy * e.Dy;
+          heightGrd.Extent.GetBilinear(tx, ty, out int hix, out int hiy, out double hdx, out double hdy);
+          Point3D vv = heightGrd.Vertical(tx, ty);
+          double vl = Math.Sqrt(vv.X * vv.X + vv.Y * vv.Y + 1);
+          double fc = 0.7 + 0.3 * (vv.X / vl * 0.707 + vv.Y / vl * 0.707);
+          if (double.IsNaN(fc))
+            fc = 1;
+          //double fc = 1;
+          System.Drawing.Color c = img[ix, iy];
+          c = System.Drawing.Color.FromArgb(c.A, (int)(fc * c.R), (int)(fc * c.G), (int)(fc * c.B));
+          int argb = c.ToArgb();
+          colorGrid[ix, iy] = argb;
+        }
+      }
+      int noImg = System.Drawing.Color.Gray.ToArgb();
+      GridView view = new GridView(pyr, (x, y) =>
+      {
+        int i = (int)(f * x + dx);
+        if (i < 0 || i >= e.Nx) return noImg;
+        int j = (int)(f * y + dy);
+        if (j < 0 || j >= e.Ny) return noImg;
+
+        return colorGrid[i, j];
+      });
+      Scene scene = new Scene();
+      scene.Resize(600, 400);
+      scene.Fill(System.Drawing.Color.SkyBlue.ToArgb());
+
+      Point3D center = new Point3D(2686327.5, 1267638.7, 800);
+      double azimuthDeg = 90;
+      double slopeDeg = -30;
+      ViewSystem vs = ViewSystem.GetViewSystem(azimuthDeg, slopeDeg);
+      double focus = 0.1;
+
+      Stopwatch w = new Stopwatch();
+      w.Start();
+      view.Draw(center, vs, focus, scene);
+      w.Stop();
+      Debug.WriteLine($"{w.ElapsedMilliseconds / 1000.0}");
+      scene.Bitmap.Save(@"C:\temp\img.png");
+    }
+
+    [TestMethod]
     public void TestMultiLayer()
     {
       string heightPath = @"C:\daten\felix\kapreolo\karten\opfikon\2013\opfikon.asc";
@@ -147,7 +209,7 @@ namespace OcadTest
         steps: Steps.Step16);
 
 
-      Point2D start = new Point2D(2685430.32,  1253127.28);
+      Point2D start = new Point2D(2685430.32, 1253127.28);
       Point2D end = new Point2D(2685326.32, 1253178.16);
 
       lcg.AddStart(start, tvm);
@@ -215,7 +277,7 @@ namespace OcadTest
 
     private class SymbolGrid : BaseGrid<List<int>>
     {
-      private Array _value;
+      private readonly Array _value;
 
       public SymbolGrid(GridExtent extent)
         : base(extent)

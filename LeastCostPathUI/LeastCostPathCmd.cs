@@ -31,6 +31,70 @@ namespace LeastCostPathUI
       else
       { _wdg.Show(); }
     }
+
+    public static void ShowInTMap(IContext context, LeastCostGrid lcp, ref GridMapData gridData, StatusEventArgs args)
+    {
+      if (context == null)
+      { return; }
+      if (lcp == null)
+      { return; }
+
+      if (!(args.CurrentStep % 4096 == 0))
+      { return; }
+
+      if (gridData == null)
+      {
+        gridData = GridMapData.FromData(args.DirGrid);
+        LookupSymbolisation sym = new LookupSymbolisation();
+
+        sym.Colors.Clear();
+
+        sym.Colors.Add(null);
+        for (int iCol = 0; iCol < lcp.Steps.Count; iCol++)
+        {
+          double angle = lcp.Steps.GetStep(iCol).Angle;
+
+          int r = ColorVal(angle, 0);
+          int g = ColorVal(angle, Math.PI * 2.0 / 3.0);
+          int b = ColorVal(angle, -Math.PI * 2.0 / 3.0);
+          double max = Math.Max(r, Math.Max(g, b));
+          r = (int)(255 * r / max);
+          g = (int)(255 * g / max);
+          b = (int)(255 * b / max);
+          sym.Colors.Add(System.Drawing.Color.FromArgb(r, g, b));
+        }
+        sym.Colors.Add(null);
+
+        gridData.Symbolisation = sym;
+      }
+      else
+      {
+        if (gridData.Data.BaseData != args.DirGrid)
+        {
+          gridData.Data.BaseData = args.DirGrid;
+        }
+      }
+
+      context.Maps[0].Draw(null);
+      context.Maps[0].Draw(gridData);
+
+      context.Maps[0].Flush();
+    }
+
+    private static int ColorVal(double angle, double zero)
+    {
+      angle = angle - zero;
+      if (angle > Math.PI)
+      { angle -= Math.PI * 2; }
+      if (angle < -Math.PI)
+      { angle += Math.PI * 2; }
+      double c = (1.0 - Math.Abs(angle) / (2.0 * Math.PI / 3.0));
+      if (c < 0)
+      { c = 0; }
+      c = (1 - (1 - c) * (1 - c));
+      return (int)(255 * c);
+    }
+
   }
 }
 
@@ -66,63 +130,8 @@ namespace LeastCostPathUI
 
     private void ShowInTMap(object sender, StatusEventArgs args)
     {
-      if (_context == null)
-      { return; }
-
-      if (!(args.CurrentStep % 4096 == 0))
-      { return; }
-
-      if (_thisGridData == null)
-      {
-        _thisGridData = GridMapData.FromData(args.DirGrid);
-        LookupSymbolisation sym = new LookupSymbolisation();
-
-        LeastCostGrid path = sender as LeastCostGrid;
-        sym.Colors.Clear();
-
-        sym.Colors.Add(null);
-        for (int iCol = 0; iCol < path.Steps.Count; iCol++)
-        {
-          double angle = path.Steps.GetStep(iCol).Angle;
-
-          int r = ColorVal(angle, 0);
-          int g = ColorVal(angle, Math.PI * 2.0 / 3.0);
-          int b = ColorVal(angle, -Math.PI * 2.0 / 3.0);
-          double max = Math.Max(r, Math.Max(g, b));
-          r = (int)(255 * r / max);
-          g = (int)(255 * g / max);
-          b = (int)(255 * b / max);
-          sym.Colors.Add(System.Drawing.Color.FromArgb(r, g, b));
-        }
-        sym.Colors.Add(null);
-
-        _thisGridData.Symbolisation = sym;
-      }
-      else
-      {
-        if (_thisGridData.Data.BaseData != args.DirGrid)
-        {
-          _thisGridData.Data.BaseData = args.DirGrid;
-        }
-      }
-      _context.Maps[0].Draw(_thisGridData);
-      _context.Maps[0].Flush();
+      LeastCostPathCmd.ShowInTMap(_context, sender as LeastCostGrid, ref _thisGridData, args);
     }
-
-    private static int ColorVal(double angle, double zero)
-    {
-      angle = angle - zero;
-      if (angle > Math.PI)
-      { angle -= Math.PI * 2; }
-      if (angle < -Math.PI)
-      { angle += Math.PI * 2; }
-      double c = (1.0 - Math.Abs(angle) / (2.0 * Math.PI / 3.0));
-      if (c < 0)
-      { c = 0; }
-      c = (1 - (1 - c) * (1 - c));
-      return (int)(255 * c);
-    }
-
   }
 }
 

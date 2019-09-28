@@ -103,6 +103,8 @@ namespace Ocad
     private string _name;
     private string _sepPercentage;
 
+    public int Position { get; set; }
+
     public ColorInfo()
     {
       _color = new Color();

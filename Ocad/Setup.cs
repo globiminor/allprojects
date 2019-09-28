@@ -39,7 +39,9 @@ namespace Ocad
     unformattedText = 4,
     formattedText = 5,
     lineText = 6,
-    rectangle = 7
+    rectangle = 7,
+
+    undefined = 0
   }
 
   public enum ObjectStringType

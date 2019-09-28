@@ -88,7 +88,7 @@ namespace OcadScratch.ViewModels
       {
         if (_symbolIds == null)
         {
-          _symbolIds = new List<string>(Map.GetSymbols().Select(x => x.Id));
+          _symbolIds = Map?.GetSymbols().Select(x => x.Id).ToList();
         }
         return _symbolIds;
       }

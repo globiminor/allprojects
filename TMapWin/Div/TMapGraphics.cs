@@ -1,8 +1,8 @@
+using Basics.Geom;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using Basics.Geom;
 using TMap;
 using Point = Basics.Geom.Point;
 
@@ -42,7 +42,7 @@ namespace TMapWin.Div
     public ToolHandler SelectionEnd;
 
     private bool _breakDraw;
-    public bool BreakDraw 
+    public bool BreakDraw
     {
       get { return _breakDraw; }
       set { _breakDraw = value; }
@@ -72,18 +72,22 @@ namespace TMapWin.Div
     public void BeginDraw(MapData data)
     {
     }
-    public void BeginDraw(ISymbolPart symbolPart)
+    public void BeginDraw(ISymbolPart symbolPart, System.Data.DataRow properties)
     {
-      if (_symbolPens.ContainsKey(symbolPart) == false)
+      symbolPart.SetProperties(properties);
+      if (_symbolPens.TryGetValue(symbolPart, out Pen p) == false)
       {
-        Pen p = new Pen(symbolPart.LineColor);
+        p = new Pen(symbolPart.Color);
         _symbolPens.Add(symbolPart, p);
       }
-      if (_symbolBrushes.ContainsKey(symbolPart) == false)
+      else { p.Color = symbolPart.Color; }
+
+      if (_symbolBrushes.TryGetValue(symbolPart, out Brush b) == false)
       {
-        Brush p = new SolidBrush(symbolPart.LineColor);
-        _symbolBrushes.Add(symbolPart, p);
+        b = new SolidBrush(symbolPart.Color);
+        _symbolBrushes.Add(symbolPart, b);
       }
+      else if (b is SolidBrush sb) { sb.Color = symbolPart.Color; }
     }
 
     public void Draw(MapData data)
@@ -99,7 +103,7 @@ namespace TMapWin.Div
     {
       if (_symbolPens.ContainsKey(symbolPart) == false)
       {
-        Pen p = new Pen(symbolPart.LineColor);
+        Pen p = new Pen(symbolPart.Color);
         _symbolPens.Add(symbolPart, p);
       }
 
@@ -134,10 +138,12 @@ namespace TMapWin.Div
       foreach (var polyline in area.Border)
       {
         GraphicsPath part = GetPath(polyline);
-        path.AddPath(part, false);
+        if (part != null)
+        { path.AddPath(part, false); }
       }
 
-      graphics.FillPath(brush, path);
+      if (path.PointCount > 0)
+      { graphics.FillPath(brush, path); }
     }
 
     private static PointF GetPoint(IPoint p)
@@ -160,7 +166,18 @@ namespace TMapWin.Div
         {
           path.AddBezier(GetPoint(b.Start), GetPoint(b.P1), GetPoint(b.P2), GetPoint(b.End));
         }
+        else if (seg is Arc a)
+        {
+          if (a.Radius > 0)
+          {
+            float r = (float)a.Radius;
+            RectangleF box = new RectangleF((float)a.Center.X - r, (float)a.Center.Y - r, 2 * r, 2 * r);
+            path.AddArc(box, (float)(180 * a.DirStart / Math.PI), (float)(180 * a.Angle / Math.PI));
+          }
+        }
       }
+      if (path.PointCount == 0)
+      { return null; }
       return path;
     }
 

@@ -122,8 +122,9 @@ namespace OcadTest
     {
       double resolution = 1;
       //string dir = @"C:\daten\felix\kapreolo\karten\blauen\2018\lidar";
-      string dir = @"C:\daten\felix\kapreolo\karten\irchel\2019\lidar";
+      //string dir = @"C:\daten\felix\kapreolo\karten\irchel\2019\lidar";
       //string dir = @"C:\daten\felix\kapreolo\karten\hardwald\2017\lidar";
+      string dir = @"C:\daten\felix\kapreolo\scool\boppelsen_maiacher\lidar";
 
       Dictionary<string, string> tiles = new Dictionary<string, string>();
       foreach (var path in Directory.EnumerateFiles(dir))
@@ -178,7 +179,8 @@ namespace OcadTest
     public void TestLasMulti()
     {
       double resolution = 0.5;
-      string dir = @"C:\daten\felix\kapreolo\karten\irchel\2019\lidar";
+      string dir = @"C:\daten\felix\kapreolo\scool\boppelsen_maiacher\lidar";
+      //string dir = @"C:\daten\felix\kapreolo\karten\irchel\2019\lidar";
       //      string dir = @"C:\daten\felix\kapreolo\karten\hardwald\2017\lidar";
 
       Dictionary<string, string> tiles = new Dictionary<string, string>();
@@ -216,20 +218,20 @@ namespace OcadTest
       Func<int, int, Func<int, int, List<Point>>, double> grdFct,
        byte[] r, byte[] g, byte[] b)
     {
-      string tifPath = Path.Combine(dir, $"{resName}.tif");
+      string pngPath = Path.Combine(dir, $"{resName}.png");
 
-      if (File.Exists(tifPath))
+      if (File.Exists(pngPath))
       { return; }
 
-      if (File.Exists(Path.Combine(dir, $"{key}.tif")))
+      if (File.Exists(Path.Combine(dir, $"{key}.png")))
       {
-        File.Move(Path.Combine(dir, $"{key}.tif"), tifPath);
-        File.Move(Path.Combine(dir, $"{key}.tfw"), Path.Combine(dir, $"{resName}.tfw"));
+        File.Move(Path.Combine(dir, $"{key}.png"), pngPath);
+        File.Move(Path.Combine(dir, $"{key}.pgw"), Path.Combine(dir, $"{resName}.pgw"));
         return;
       }
 
       DoubleGrid grd = GetGrid(dir, key, resolution, grdFct);
-      ImageGrid.GridToImage(grd.ToIntGrid(), tifPath, r, g, b);
+      ImageGrid.GridToImage(grd.ToIntGrid(), pngPath, r, g, b, System.Drawing.Imaging.ImageFormat.Png);
     }
 
     private DoubleGrid GetGrid(string dir, string key, double resolution,
@@ -290,34 +292,6 @@ namespace OcadTest
       }
     }
 
-    private IEnumerable<LasUtils.ILasPoint> GetTextLasPoints(string lazPath)
-    {
-      if (!File.Exists(Path.ChangeExtension(lazPath, ".txt")))
-      {
-        if (!File.Exists(lazPath))
-        {
-          if (File.Exists(Path.ChangeExtension(lazPath, ".html")))
-          { File.Move(Path.ChangeExtension(lazPath, ".html"), lazPath); }
-        }
-        if (!File.Exists(lazPath))
-        { return null; }
-
-        Process p = new Process
-        {
-          StartInfo = new ProcessStartInfo
-          {
-            FileName = @"C:\daten\felix\src\temp\LAStools\bin\las2txt.exe",
-            Arguments = $"-i {lazPath} -parse xyzi"
-          }
-        };
-        p.Start();
-        p.WaitForExit();
-      }
-
-      string lasTxtPath = Path.ChangeExtension(lazPath, ".txt");
-      return LasTextReader.GetPoints(lasTxtPath);
-    }
-
     private class LasPoint : LasUtils.ILasPoint
     {
       public double X { get; set; }
@@ -348,6 +322,28 @@ namespace OcadTest
             Z = double.Parse(parts[2]),
             Intensity = int.Parse(parts[3])
           };
+        }
+      }
+    }
+
+    [TestMethod]
+    public void DownloadLaz()
+    {
+      // Boppelsen maiacher
+      List<string> keys = new List<string> { "26725_12580", "26725_12575" };
+      string root = @"C:\daten\felix\kapreolo\scool\boppelsen_maiacher\lidar";
+
+      foreach (string key in keys)
+      {
+        string path = Path.Combine(root, $"{key}.laz");
+        if (!File.Exists(path))
+        {
+          //          continue;
+          using (System.Net.WebClient wc = new System.Net.WebClient())
+          {
+            string url = $"http://maps.zh.ch/download/hoehen/2014/lidar/{key}.laz";
+            wc.DownloadFile(url, path);
+          }
         }
       }
     }
@@ -575,8 +571,8 @@ namespace OcadTest
       System.Console.WriteLine(nPairs);
     }
 
-    private BoxTree<CurveInfo> _curves_;
-    private BoxTree<CurveInfo> _curves => _curves_ ?? (_curves_ = ReadShape());
+    private BoxTree<CurveInfo> _curves;
+    private BoxTree<CurveInfo> Curves => _curves ?? (_curves = ReadShape());
     private BoxTree<CurveInfo> ReadShape()
     {
       BoxTree<CurveInfo> curves = new BoxTree<CurveInfo>(2, 4, true);
@@ -619,12 +615,12 @@ namespace OcadTest
       Point2D search = new Point2D(0.1, 0.1);
       int nSearch = 0;
       int nNeighbor = 0;
-      foreach (var entry in _curves.Search(null))
+      foreach (var entry in Curves.Search(null))
       {
         nSearch++;
         Box box = new Box(entry.Box.Min - search, entry.Box.Max + search);
         int n0 = nNeighbor;
-        foreach (var neighbor in _curves.Search(box))
+        foreach (var neighbor in Curves.Search(box))
         { nNeighbor++; }
         entry.Value.TreeCount = nNeighbor - n0;
       }
@@ -640,7 +636,7 @@ namespace OcadTest
       w.Start();
       int nSearch = 0;
       int nNeighbor = 0;
-      foreach (var entry in _curves.EnumerateNeighborhoods(_curves, 0.1))
+      foreach (var entry in Curves.EnumerateNeighborhoods(Curves, 0.1))
       {
         nSearch++;
         int n0 = nNeighbor;
@@ -659,7 +655,7 @@ namespace OcadTest
       double d = 0.1;
       Point2D search = new Point2D(d, d);
 
-      foreach (var entry in _curves.EnumerateNeighborhoods(_curves, d))
+      foreach (var entry in Curves.EnumerateNeighborhoods(Curves, d))
       {
         int n0 = 0;
         foreach (var neighbor in entry.Neighbours)
@@ -667,7 +663,7 @@ namespace OcadTest
 
         int n1 = 0;
         Box box = new Box(entry.Entry.Box.Min - search, entry.Entry.Box.Max + search);
-        foreach (var neighbor in _curves.Search(box))
+        foreach (var neighbor in Curves.Search(box))
         { n1++; }
 
         if (n0 != n1)
@@ -693,39 +689,45 @@ namespace OcadTest
     [TestMethod]
     public void CanReadElements()
     {
-      OcadConnection conn = new OcadConnection(@"D:\daten\felix\kapreolo\karten\ruemlangerwald\2011\velo.ocd");
-      OcadAdapter ada = conn.CreateAdapter();
-      ada.SelectCommand.CommandText = "SELECT * FROM Elements";
-      DataTable tbl = new DataTable();
-      tbl.Columns.Add("Symbol", typeof(int));
-      ada.Fill(tbl);
-      Assert.AreEqual(5, tbl.Columns.Count);
-      Assert.IsTrue(tbl.Rows.Count > 0);
+      using (OcadConnection conn = new OcadConnection(@"D:\daten\felix\kapreolo\karten\ruemlangerwald\2011\velo.ocd"))
+      {
+        OcadAdapter ada = conn.CreateAdapter();
+        ada.SelectCommand.CommandText = "SELECT * FROM Elements";
+        DataTable tbl = new DataTable();
+        tbl.Columns.Add("Symbol", typeof(int));
+        ada.Fill(tbl);
+        Assert.AreEqual(5, tbl.Columns.Count);
+        Assert.IsTrue(tbl.Rows.Count > 0);
+      }
     }
 
     [TestMethod]
     public void CanReadElementsAngle()
     {
-      OcadConnection conn = new OcadConnection(@"D:\daten\felix\kapreolo\karten\ruemlangerwald\2011\velo.ocd");
-      OcadAdapter ada = conn.CreateAdapter();
-      ada.SelectCommand.CommandText = "SELECT Angle FROM elements";
-      DataTable tbl = new DataTable();
-      ada.Fill(tbl);
-      Assert.AreEqual(1, tbl.Columns.Count);
-      Assert.IsTrue(tbl.Rows.Count > 0);
+      using (OcadConnection conn = new OcadConnection(@"D:\daten\felix\kapreolo\karten\ruemlangerwald\2011\velo.ocd"))
+      {
+        OcadAdapter ada = conn.CreateAdapter();
+        ada.SelectCommand.CommandText = "SELECT Angle FROM elements";
+        DataTable tbl = new DataTable();
+        ada.Fill(tbl);
+        Assert.AreEqual(1, tbl.Columns.Count);
+        Assert.IsTrue(tbl.Rows.Count > 0);
+      }
     }
 
     [TestMethod]
     public void CanReadSymbols()
     {
-      OcadConnection conn = new OcadConnection(@"D:\daten\felix\kapreolo\karten\ruemlangerwald\2011\velo.ocd");
-      OcadAdapter ada = conn.CreateAdapter();
-      ada.SelectCommand.CommandText = "SELECT * FROM Symbols";
-      DataTable tbl = new DataTable();
-      tbl.Columns.Add("Symbol", typeof(int));
-      ada.Fill(tbl);
-      Assert.AreEqual(5, tbl.Columns.Count);
-      Assert.IsTrue(tbl.Rows.Count > 0);
+      using (OcadConnection conn = new OcadConnection(@"D:\daten\felix\kapreolo\karten\ruemlangerwald\2011\velo.ocd"))
+      {
+        OcadAdapter ada = conn.CreateAdapter();
+        ada.SelectCommand.CommandText = "SELECT * FROM Symbols";
+        DataTable tbl = new DataTable();
+        tbl.Columns.Add("Symbol", typeof(int));
+        ada.Fill(tbl);
+        Assert.AreEqual(5, tbl.Columns.Count);
+        Assert.IsTrue(tbl.Rows.Count > 0);
+      }
     }
   }
 }

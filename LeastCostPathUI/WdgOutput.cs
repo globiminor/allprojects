@@ -29,6 +29,8 @@ namespace LeastCostPathUI
       _step = step;
     }
 
+    public CntOutput CntOutput => cntOutput;
+
     public void SetExtent(IBox box)
     {
       cntOutput.SetExtent(box);

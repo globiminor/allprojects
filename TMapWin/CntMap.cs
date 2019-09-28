@@ -233,29 +233,34 @@ namespace TMapWin
     {
     }
 
-    public void BeginDraw(ISymbolPart symbolPart)
+    public void BeginDraw(ISymbolPart symbolPart, System.Data.DataRow properties)
     {
-      if (_symbolPens.ContainsKey(symbolPart) == false)
+      if (!_symbolPens.TryGetValue(symbolPart, out Pen pen))
       {
-        Pen pen = new Pen(symbolPart.LineColor);
-        if (symbolPart is ILineWidthPart lineWidth)
-        {
-          double width = lineWidth.LineWidth;
-          if (symbolPart is IScaleablePart scalable && scalable.Scale)
-          {
-            Polyline wLine = Polyline.Create(new[] { new Point2D(0, 0), new Point2D(0, width) });
-            wLine = wLine.Project(_prj);
-            width = wLine.Length();
-          }
-          pen.Width = (float)width;
-        }
+        pen = new Pen(symbolPart.Color);
         _symbolPens.Add(symbolPart, pen);
       }
-      if (_symbolBrushes.ContainsKey(symbolPart) == false)
+      pen.Color = symbolPart.Color;
+      if (symbolPart is ILineWidthPart lineWidth)
       {
-        Brush brush = new SolidBrush(symbolPart.LineColor);
-        _symbolBrushes.Add(symbolPart, brush);
+        double width = lineWidth.LineWidth;
+        if (symbolPart is IScaleablePart scalable && scalable.Scale)
+        {
+          Polyline wLine = Polyline.Create(new[] { new Point2D(0, 0), new Point2D(0, width) });
+          wLine = wLine.Project(_prj);
+          width = wLine.Length();
+        }
+        pen.Width = (float)width;
       }
+
+      if (!_symbolBrushes.TryGetValue(symbolPart, out Brush b))
+      {
+        b = new SolidBrush(symbolPart.Color);
+        _symbolBrushes.Add(symbolPart, b);
+      }
+      if (b is SolidBrush sb)
+      { sb.Color = symbolPart.Color; }
+
       SetDrawLevel(symbolPart.DrawLevel);
     }
 
@@ -281,7 +286,7 @@ namespace TMapWin
     {
       if (_symbolPens.TryGetValue(symbolPart, out Pen pen) == false)
       {
-        BeginDraw(symbolPart);
+        BeginDraw(symbolPart, null);
         pen = _symbolPens[symbolPart];
       }
       Div.TMapGraphics.DrawLine(Graphics, line, pen);
@@ -296,7 +301,7 @@ namespace TMapWin
       }
       if (_symbolBrushes.TryGetValue(symbolPart, out Brush brush) == false)
       {
-        BeginDraw(symbolPart);
+        BeginDraw(symbolPart, null);
         brush = _symbolBrushes[symbolPart];
       }
       Div.TMapGraphics.DrawArea(Graphics, area, brush);
@@ -305,6 +310,13 @@ namespace TMapWin
 
     public void Draw(MapData data)
     {
+      if (data == null && _dataImages?.Count > _drawLevel)
+      {
+        using (Graphics g = Graphics.FromImage(_dataImages[_drawLevel]))
+        { g.Clear(Color.Transparent); }
+        return;
+      }
+
       try
       {
         data.Draw(this);
@@ -314,7 +326,10 @@ namespace TMapWin
     }
     public void DrawRaster(GridMapData grid)
     {
-      Bitmap bmp = _backImage;
+      if (!(_dataImages?.Count > _drawLevel))
+      { return; }
+
+      Bitmap bmp = _dataImages[_drawLevel];
 
       BitmapData bmpData = bmp.LockBits(new Rectangle(0, 0, Width, Height),
         ImageLockMode.ReadWrite, bmp.PixelFormat);

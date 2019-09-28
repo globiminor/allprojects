@@ -198,11 +198,11 @@ namespace TMapWin
       Symbol sym;
       Type t = ((TableMapData)_data).Data.DefaultGeometryColumn.DataType;
       if (typeof(Basics.Geom.IPoint).IsAssignableFrom(t))
-      { sym = Symbol.DefaultPoint(_rowLine); }
+      { sym = Symbol.DefaultPoint(); }
       else if (t == typeof(Basics.Geom.Polyline))
-      { sym = Symbol.Create(_rowLine, 1); }
+      { sym = Symbol.Create(1, withSymbolPart: true); }
       else if (t == typeof(Basics.Geom.Area))
-      { sym = Symbol.Create(_rowLine, 2); }
+      { sym = Symbol.Create(2, withSymbolPart: true); }
       else
       {
         DataTable tbl = new DataTable();
@@ -218,7 +218,7 @@ namespace TMapWin
         { return null; }
         int topology = (int)wdg.SelectedRow["Topology"];
 
-        sym = Symbol.Create(_rowLine, topology);
+        sym = Symbol.Create(topology, withSymbolPart: true);
       }
       return sym;
     }
