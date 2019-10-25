@@ -133,6 +133,18 @@ namespace OcadTest
     [TestMethod]
     public void TestGridView()
     {
+      Scene scene = new Scene();
+      scene.Resize(600, 400);
+      scene.Fill(System.Drawing.Color.SkyBlue.ToArgb());
+
+      Point3D center = new Point3D(2686327.5, 1267638.7, 800);
+      double azimuthDeg = 90;
+      double slopeDeg = -30;
+      double focus = 0.1;
+      int footx = scene.Nx / 2;
+      int footy = scene.Ny / 2;
+      ViewSystem vs = ViewSystem.GetViewSystem(azimuthDeg, slopeDeg, focus, footx, footy);
+
       string heightPath = @"C:\daten\felix\kapreolo\karten\irchel\2019\irchel.asc";
       DoubleGrid heightGrd = DataDoubleGrid.FromAsciiFile(heightPath, 0, 0.01, typeof(double));
       Pyramide pyr = Pyramide.Create(heightGrd);
@@ -172,22 +184,50 @@ namespace OcadTest
 
         return colorGrid[i, j];
       });
-      Scene scene = new Scene();
-      scene.Resize(600, 400);
-      scene.Fill(System.Drawing.Color.SkyBlue.ToArgb());
 
-      Point3D center = new Point3D(2686327.5, 1267638.7, 800);
-      double azimuthDeg = 90;
-      double slopeDeg = -30;
-      ViewSystem vs = ViewSystem.GetViewSystem(azimuthDeg, slopeDeg);
-      double focus = 0.1;
-
+      {
+        double xp = 2686800;
+        double yp = 1268000;
+        double zp = heightGrd.Value(xp, yp);
+        {
+          int red = System.Drawing.Color.Red.ToArgb();
+          scene.DrawTri(vs,
+            new Point3D(xp, yp + 00, zp + 35) - center,
+            new Point3D(xp, yp + 00, zp - 15) - center,
+            new Point3D(xp, yp + 50, zp - 15) - center, (x, y) => red);
+        }
+        {
+          int white = System.Drawing.Color.White.ToArgb();
+          scene.DrawTri(vs,
+            new Point3D(xp, yp + 00, zp + 35) - center,
+            new Point3D(xp, yp + 50, zp + 35) - center,
+            new Point3D(xp, yp + 50, zp - 15) - center, (x, y) => white);
+        }
+      }
       Stopwatch w = new Stopwatch();
       w.Start();
-      view.Draw(center, vs, focus, scene);
+      view.Draw(center, vs, scene);
       w.Stop();
       Debug.WriteLine($"{w.ElapsedMilliseconds / 1000.0}");
       scene.Bitmap.Save(@"C:\temp\img.png");
+    }
+
+    [TestMethod]
+    public void TestXmlVelo()
+    {
+      string heightPath = @"C:\daten\felix\kapreolo\karten\irchel\2019\irchel.asc";
+      string veloPath = @"C:\daten\felix\kapreolo\karten\irchel\2019\irchel_velo.xml";
+      DoubleGrid heightGrd = DataDoubleGrid.FromAsciiFile(heightPath, 0, 0.01, typeof(double));
+
+      double stepWidth = 1.0;
+      IGrid<double> veloGrd = OCourse.ViewModels.SymbolVeloModel.FromXml(veloPath, stepWidth);
+      TerrainVeloModel tvm = new TerrainVeloModel(heightGrd, veloGrd);
+      var lcg = new LeastCostGrid(tvm, stepWidth, steps: Steps.Step16);
+
+      Point2D start = new Point2D(2687999.4, 1266999.7);
+      Point2D end = new Point2D(2686507.3, 1268274.2);
+
+      lcg.CalcCost(start, end);
     }
 
     [TestMethod]

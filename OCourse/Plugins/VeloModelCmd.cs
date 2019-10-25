@@ -90,8 +90,8 @@ namespace OCourse.ViewModels
     private TableMapData _mapData;
     internal TableMapData GetMapData()
     {
-      if (TMapContext == null)
-      { return null; }
+      //if (TMapContext == null)
+      //{ return null; }
 
       if (_mapData == null)
       {

@@ -289,7 +289,7 @@ namespace TMapWin
         BeginDraw(symbolPart, null);
         pen = _symbolPens[symbolPart];
       }
-      Div.TMapGraphics.DrawLine(Graphics, line, pen);
+      Basics.Forms.DrawUtils.DrawLine(Graphics, line, pen);
     }
 
     public void DrawArea(Area area, ISymbolPart symbolPart)
@@ -304,7 +304,7 @@ namespace TMapWin
         BeginDraw(symbolPart, null);
         brush = _symbolBrushes[symbolPart];
       }
-      Div.TMapGraphics.DrawArea(Graphics, area, brush);
+      Basics.Forms.DrawUtils.DrawArea(Graphics, area, brush);
     }
 
 

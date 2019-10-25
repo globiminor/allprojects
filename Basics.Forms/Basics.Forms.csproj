@@ -50,6 +50,7 @@
       <DependentUpon>CntCustomFilter.cs</DependentUpon>
     </Compile>
     <Compile Include="DataGridViewUtils.cs" />
+    <Compile Include="DrawUtils.cs" />
     <Compile Include="FilterHeaderCell.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -4,9 +4,6 @@ using System.Drawing.Imaging;
 
 namespace Grid
 {
-  /// <summary>
-  /// Summary description for VelocityGrid.
-  /// </summary>
   public class VelocityGrid : DoubleGrid, ILockable
   {
     private ImageGrid _img;
@@ -23,6 +20,7 @@ namespace Grid
       ImageGrid img = ImageGrid.FromFile(name);
       return new VelocityGrid(img);
     }
+
     protected VelocityGrid(ImageGrid img)
       : base(img.Extent)
     {
@@ -77,7 +75,8 @@ namespace Grid
     {
       _img.UnlockBits();
     }
-    public double MinVelo { get; set; } = 0.0001;
+    public const double DefaultMinVelo = 0.0001;
+    public double MinVelo { get; set; } = DefaultMinVelo;
     public override double this[int ix, int iy]
     {
       get

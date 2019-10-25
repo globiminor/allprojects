@@ -444,6 +444,18 @@ namespace Grid
     { this[ix, iy] = (T)value; }
   }
 
+  public class SimpleGrid<T> : BaseGrid<T>
+  {
+    private readonly T[,] _value;
+    public SimpleGrid(GridExtent extent)
+      : base(extent)
+    {
+      _value = new T[extent.Nx, extent.Ny];
+    }
+    public override T this[int ix, int iy]
+    { get => _value[ix, iy]; set => _value[ix, iy] = value; }
+  }
+
   public abstract class TiledGrid<T> : BaseGrid<T>, IPartialFilledGrid<T>
   {
     private readonly Dictionary<Lcp.Field, IGrid<T>> _grids;
@@ -469,13 +481,21 @@ namespace Grid
       }
     }
 
+    public bool DoInitOnRead { get; set; }
     public override T this[int ix, int iy]
     {
       get
       {
         Lcp.Field key = new Lcp.Field { X = ix / _tileSize, Y = iy / _tileSize };
         if (!_grids.TryGetValue(key, out IGrid<T> tile))
-        { return default(T); }
+        {
+          if (!DoInitOnRead)
+            return default;
+
+          GridExtent e = Extent;
+          tile = CreateTile(TileSize, TileSize, e.X0 + key.X * TileSize * e.Dx, e.Y0 + key.Y * TileSize * e.Dy);
+          _grids.Add(key, tile);
+        }
 
         return tile[ix - key.X * _tileSize, iy - key.Y * _tileSize];
       }
