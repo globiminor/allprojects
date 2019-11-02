@@ -12,6 +12,9 @@ namespace Basics.Geom
 
     private void UpdateExtent(IBox extent)
     {
+      if (extent == null)
+      { return; }
+
       if (_extent == null)
       {
         Point min = Point.Create(extent.Min);

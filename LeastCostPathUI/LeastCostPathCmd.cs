@@ -105,7 +105,7 @@ namespace LeastCostPathUI
     private GridMapData _thisGridData;
     private IContext _context;
 
-    private static int _initTMap = InitTMapStatic();
+    private static readonly int _initTMap = InitTMapStatic();
     private static int InitTMapStatic()
     {
       InitWdg -= InitTMap;

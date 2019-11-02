@@ -20,8 +20,14 @@ namespace Ocad
     internal FileParam FileParam { get; private set; }
     internal SymbolData SymbolData { get; private set; }
     internal Setup Setup { get; private set; }
-    internal bool SortByColors { get; set; }
 
+    public IEnumerable<ElementIndex> EnumIndexesFromGeo(IBox extentIntersect, IList<ElementIndex> indexList)
+    {
+      indexList = indexList ?? GetIndices();
+      IBox extent = BoxOp.ProjectRaw(extentIntersect, Setup.Prj2Map)?.Extent;
+
+      return EnumElementIdxs(extent, indexList);
+    }
 
     public IEnumerable<GeoElement> EnumGeoElements(IBox extentIntersect, IList<ElementIndex> indexList)
     {
@@ -36,13 +42,10 @@ namespace Ocad
 
       return EnumElements<MapElement>(extent, indexList);
     }
+
     private IEnumerable<T> EnumElements<T>(IBox extent, IList<ElementIndex> indexList) where T : Element, new()
     {
-      IEnumerable<ElementIndex> idxs = EnumElementIdxs(extent, indexList);
-      if (SortByColors)
-      { idxs = GetColorSorted(idxs); }
-
-      foreach (var index in idxs)
+      foreach (var index in EnumElementIdxs(extent, indexList))
       {
         ReadElement(index, out T element);
         if (element == null)
@@ -52,41 +55,49 @@ namespace Ocad
       }
     }
 
-    private List<ElementIndex> GetColorSorted(IEnumerable<ElementIndex> indices)
+    private IComparer<ElementIndex> _colorComparer;
+    public IComparer<ElementIndex> ColorComparer => _colorComparer ?? (_colorComparer = new MyColorComparer(this));
+
+    private class MyColorComparer : IComparer<ElementIndex>
     {
-      List<ElementIndex> sort = new List<ElementIndex>(indices);
+      private readonly Dictionary<int, ColorInfo> _colors;
+      private readonly Dictionary<int, int> _symColors;
 
-      int pos = 0;
-      Dictionary<int, ColorInfo> colors = new Dictionary<int, ColorInfo>();
-      foreach (var color in ReadColorInfos())
+      public MyColorComparer(OcadIo parent)
       {
-        color.Position = pos;
-        colors.Add(color.Nummer, color);
-        pos++;
-      }
-      Dictionary<int, int> symColors = new Dictionary<int, int>();
-      foreach (var sym in ReadSymbols())
-      {
-        int color = sym.GetMainColor();
-        symColors.Add(sym.Number, color);
+        int pos = 0;
+        Dictionary<int, ColorInfo> colors = new Dictionary<int, ColorInfo>();
+        foreach (var color in parent.ReadColorInfos())
+        {
+          color.Position = pos;
+          colors.Add(color.Nummer, color);
+          pos++;
+        }
+        Dictionary<int, int> symColors = new Dictionary<int, int>();
+        foreach (var sym in parent.ReadSymbols())
+        {
+          int color = sym.GetMainColor();
+          symColors.Add(sym.Number, color);
+        }
+
+        _colors = colors;
+        _symColors = symColors;
       }
 
-      sort.Sort((x, y) => 
+      public int Compare(ElementIndex x, ElementIndex y)
       {
-        if (!symColors.TryGetValue(x.Symbol, out int xCi))
+        if (!_symColors.TryGetValue(x.Symbol, out int xCi))
         { return 1; }
-        if (!symColors.TryGetValue(y.Symbol, out int yCi))
+        if (!_symColors.TryGetValue(y.Symbol, out int yCi))
         { return -1; }
 
-        if (!colors.TryGetValue(xCi, out ColorInfo xClr))
+        if (!_colors.TryGetValue(xCi, out ColorInfo xClr))
         { return 1; }
-        if (!colors.TryGetValue(yCi, out ColorInfo yClr))
+        if (!_colors.TryGetValue(yCi, out ColorInfo yClr))
         { return 1; }
 
         return -xClr.Position.CompareTo(yClr.Position);
-      });
-
-      return sort;
+      }
     }
     private IEnumerable<ElementIndex> EnumElementIdxs(IBox extent, IList<ElementIndex> indexList)
     {
@@ -104,7 +115,9 @@ namespace Ocad
     {
       encoding = encoding ?? Encoding.UTF7;
 
+      // if endian reader is disposed, stream closes !! -> do not use using(), do not dispose
       EndianReader reader = new EndianReader(stream, encoding);
+
       int iVersion = ocdVersion;
       OcadIo ocadIo;
       if (iVersion == 0)
@@ -119,8 +132,8 @@ namespace Ocad
       {
         ocadIo = GetIo(stream, iVersion);
       }
-
       return ocadIo;
+
     }
 
     private static OcadIo GetIo(Stream stream, int version)
@@ -176,10 +189,10 @@ namespace Ocad
       return _reader.ReadInt32();
     }
 
-    public IList<ElementIndex> GetIndices()
+    public List<ElementIndex> GetIndices()
     {
       ElementIndex idx;
-      IList<ElementIndex> idxList = new List<ElementIndex>();
+      List<ElementIndex> idxList = new List<ElementIndex>();
       int iIndex = 0;
       while ((idx = ReadIndex(iIndex)) != null)
       {
@@ -269,7 +282,7 @@ namespace Ocad
         while (endChar != '\t' && endChar != 0 && endChar != '\n' && i + 1 < max &&
           _reader.BaseStream.Position < _reader.BaseStream.Length)
         {
-          sName = sName + endChar;
+          sName += endChar;
           endChar = (char)_reader.ReadByte();
           i++;
         }

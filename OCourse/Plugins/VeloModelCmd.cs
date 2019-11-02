@@ -148,14 +148,50 @@ namespace OCourse.ViewModels
       {
         _vm = vm;
       }
+      private int Compare(Dictionary<int, SymbolVm> symbols, IComparer<Ocad.ElementIndex> defaultComparer, Ocad.ElementIndex x, Ocad.ElementIndex y)
+      {
+        if (x.Symbol == y.Symbol)
+        { return 0; }
+
+        bool xExists = symbols.TryGetValue(x.Symbol, out SymbolVm xSym);
+        bool yExists = symbols.TryGetValue(y.Symbol, out SymbolVm ySym);
+        int d = xExists.CompareTo(yExists);
+        if (d != 0) return d;
+        if (!xExists) return 0;
+
+        int xPrio = xSym.Priority ?? 0;
+        int yPrio = ySym.Priority ?? 0;
+        d = xPrio.CompareTo(yPrio);
+        if (d != 0)
+        { return d; }
+
+        d = defaultComparer.Compare(x, y);
+        return d;
+      }
+
+      private string _mapName;
+      private DateTime _lastWriteTime;
+      private BoxTree<Ocad.ElementIndex> _idxs;
+      private IComparer<Ocad.ElementIndex> _cmp;
       public IEnumerator<VelocityRecord> GetEnumerator(IBox geom)
       {
+        if (_mapName != _vm.MapName)
+        {
+          _mapName = _vm.MapName;
+          _lastWriteTime = DateTime.MinValue;
+        }
+        DateTime lastWriteTime = new System.IO.FileInfo(_vm.MapName).LastWriteTime;
+        if (lastWriteTime > _lastWriteTime)
+        {
+          _lastWriteTime = lastWriteTime;
+          _idxs = null;
+          _cmp = null;
+        }
         Dictionary<int, SymbolVm> symbols = _vm.Symbols.ToDictionary(x => x.Id);
         using (Ocad.OcadReader r = Ocad.OcadReader.Open(_vm.MapName))
         {
-          r.SortByColors = true;
-
-          r.GetIndices();
+          _idxs = _idxs ?? BoxTree.Create(r.GetIndices(), (e) => BoxOp.Clone(e.MapBox));
+          _cmp = _cmp ?? r.ColorComparer;
 
           Box b = new Box(geom);
           yield return new VelocityRecord
@@ -164,7 +200,11 @@ namespace OCourse.ViewModels
             Velocity = _vm.DefaultVelocity
           };
 
-          foreach (var elem in r.EnumGeoElements(geom))
+          IBox mapExtent = BoxOp.ProjectRaw(geom, r.Setup.Prj2Map)?.Extent;
+          IEnumerable<BoxTree<Ocad.ElementIndex>.TileEntry> search = _idxs.Search(mapExtent);
+          List<Ocad.ElementIndex> selIndexes = search.Select(x => x.Value).ToList();
+          selIndexes.Sort((x, y) => Compare(symbols, _cmp, x, y));
+          foreach (var elem in r.EnumGeoElements(selIndexes))
           {
             if (!symbols.TryGetValue(elem.Symbol, out SymbolVm sym))
             { continue; }

@@ -30,7 +30,7 @@ namespace Ocad.Data
       }
     }
 
-    public bool? SortByColors { get; set; }
+    public Func<OcadReader, Comparison<ElementIndex>> SorterProvider { get; set; }
 
     public new OcadTransaction Transaction
     {

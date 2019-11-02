@@ -183,8 +183,12 @@ namespace Basics.Geom
     {
       throw new NotImplementedException();
     }
+    
+    [Obsolete("use BoxOp.EqualGeometry")]
     public override bool Equals(object obj)
     {
+      return BoxOp.EqualGeometry(this, obj as IBox);
+
       if (!(obj is Box cmpr))
       { return false; }
       return PointOp.EqualGeometry(Min, cmpr.Min) && PointOp.EqualGeometry(Max, cmpr.Max);
@@ -306,6 +310,16 @@ namespace Basics.Geom
       return Relation.Intersect;
     }
 
+    public static bool EqualGeometry(IBox x, IBox y, ICollection<int> dimensions = null)
+    {
+      if (x == y)
+      { return true; }
+      if (x == null)
+      { return false; }
+
+      return PointOp.EqualGeometry(x.Min, y.Min, dimensions) && PointOp.EqualGeometry(x.Max, y.Max, dimensions);
+    }
+
     public static bool Intersects(IBox box, IBox other)
     {
       Relation relation = GetRelation(box, other);
@@ -350,41 +364,41 @@ namespace Basics.Geom
 
     public static BoxCollection GetBorder(IBox box)
     {
-        int nDiff = 0;
-        BoxCollection border = new BoxCollection();
+      int nDiff = 0;
+      BoxCollection border = new BoxCollection();
+      for (int i = 0; i < box.Dimension; i++)
+      {
+        if (box.Min[i] != box.Max[i])
+        { nDiff++; }
+      }
+      if (nDiff >= box.Topology)
+      {
+        System.Diagnostics.Debug.Assert(nDiff == box.Topology, "Error in software design assumption");
         for (int i = 0; i < box.Dimension; i++)
         {
           if (box.Min[i] != box.Max[i])
-          { nDiff++; }
-        }
-        if (nDiff >= box.Topology)
-        {
-          System.Diagnostics.Debug.Assert(nDiff == box.Topology, "Error in software design assumption");
-          for (int i = 0; i < box.Dimension; i++)
           {
-            if (box.Min[i] != box.Max[i])
-            {
-              Point p0 = Point.Create(box.Min);
-              Point p1 = Point.Create(box.Max);
-              p1[i] = p0[i];
-              Point p2 = Point.Create(box.Min);
-              Point p3 = Point.Create(box.Max);
-              p2[i] = p3[i];
-              Box b0 = new Box(p0, p1) { Topology = box.Topology - 1 };
-              Box b1 = new Box(p2, p3) { Topology = box.Topology - 1 };
+            Point p0 = Point.Create(box.Min);
+            Point p1 = Point.Create(box.Max);
+            p1[i] = p0[i];
+            Point p2 = Point.Create(box.Min);
+            Point p3 = Point.Create(box.Max);
+            p2[i] = p3[i];
+            Box b0 = new Box(p0, p1) { Topology = box.Topology - 1 };
+            Box b1 = new Box(p2, p3) { Topology = box.Topology - 1 };
 
-              border.Add(b0);
-              border.Add(b1);
-            }
+            border.Add(b0);
+            border.Add(b1);
           }
         }
-        else
-        {
-          Box b = Clone(box);
-          b.Topology = box.Topology - 1;
-          border.Add(b);
-        }
-        return border;
+      }
+      else
+      {
+        Box b = Clone(box);
+        b.Topology = box.Topology - 1;
+        border.Add(b);
+      }
+      return border;
     }
 
   }

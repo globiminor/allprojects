@@ -65,8 +65,7 @@ namespace Ocad.Data
       pool.Connections.Add(this);
       _pool = pool;
     }
-
-    public bool SortByColors { get; set; }
+    public Func<OcadReader, Comparison<ElementIndex>> SorterProvider { get; set; }
 
     public override void Close()
     { }

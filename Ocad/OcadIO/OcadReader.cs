@@ -16,11 +16,7 @@ namespace Ocad
     {
       _io = io;
     }
-    public bool SortByColors
-    {
-      get { return _io.SortByColors; }
-      set { _io.SortByColors = value; }
-    }
+    public IComparer<ElementIndex> ColorComparer => _io.ColorComparer;
 
     internal OcadIo Io => _io;
     internal Stream BaseStream => _io.BaseStream;
@@ -54,7 +50,7 @@ namespace Ocad
         Path.GetFileNameWithoutExtension(name) + ".ocd");
     }
 
-    public IList<ElementIndex> GetIndices()
+    public List<ElementIndex> GetIndices()
     {
       return _io.GetIndices();
     }
@@ -151,6 +147,11 @@ namespace Ocad
       { return false; }
 
       return true;
+    }
+
+    public IEnumerable<ElementIndex> EnumIndexesFromGeo(IBox extentIntersect = null, IList<ElementIndex> indexList = null)
+    {
+      return _io.EnumIndexesFromGeo(extentIntersect, indexList);
     }
 
     public IEnumerable<GeoElement> EnumGeoElements(IBox extentIntersect = null, IList<ElementIndex> indexList = null)

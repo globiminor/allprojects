@@ -227,18 +227,20 @@ namespace LeastCostPathUI
     private static Assembly CreateAssembly(string code)
     {
       CompilerResults results;
-      CodeDomProvider codeProvider = CodeDomProvider.CreateProvider("CSharp");
-      //string Output = "Out.exe";
+      using (CodeDomProvider codeProvider = CodeDomProvider.CreateProvider("CSharp"))
+      {
+        //string Output = "Out.exe";
 
-      CompilerParameters parameters = new CompilerParameters();
-      // TODO:
-      parameters.ReferencedAssemblies.Add(Assembly.GetExecutingAssembly().Location);
-      parameters.ReferencedAssemblies.Add(typeof(ITvmCalc).Assembly.Location);
-      parameters.GenerateInMemory = true;
-      //Make sure we generate an EXE, not a DLL
-      //parameters.GenerateExecutable = true;
-      //parameters.OutputAssembly = Output;
-      results = codeProvider.CompileAssemblyFromSource(parameters, code);
+        CompilerParameters parameters = new CompilerParameters();
+        // TODO:
+        parameters.ReferencedAssemblies.Add(Assembly.GetExecutingAssembly().Location);
+        parameters.ReferencedAssemblies.Add(typeof(ITvmCalc).Assembly.Location);
+        parameters.GenerateInMemory = true;
+        //Make sure we generate an EXE, not a DLL
+        //parameters.GenerateExecutable = true;
+        //parameters.OutputAssembly = Output;
+        results = codeProvider.CompileAssemblyFromSource(parameters, code);
+      }
 
       if (results.Errors.Count > 0)
       {

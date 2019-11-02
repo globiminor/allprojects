@@ -60,8 +60,8 @@ namespace Grid.Lcp
     public static Steps Step4 => new Steps((int[,])_step4.Clone());
 
     private readonly int _count;
-    private List<Step> _steps;
-    private List<Step> _distSteps;
+    private readonly List<Step> _steps;
+    private readonly List<Step> _distSteps;
     private readonly List<int>[] _cancelIndexes;
 
     public Step GetStep(int i)

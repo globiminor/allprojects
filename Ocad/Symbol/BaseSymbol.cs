@@ -23,6 +23,7 @@ namespace Ocad.Symbol
     public bool IsFavorit { get; set; }
     public bool Selected { get; set; }
     public SymbolStatus Status { get; set; }
+    public bool StatusSelected { get; set; }
     public SymbolTool PreferredTool { get; set; }
     public SymbolCourseSetting CourseSettingMode { get; set; }
     public string Description { get; set; }

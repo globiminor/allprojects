@@ -725,6 +725,9 @@ namespace Basics.Data
           else if (func.IsImplemented)
           {
             int s = func.Start;
+
+            func.UpdateParamString(validateWhere);
+
             validateWhere[s] = ':';
             validateWhere[s + 1] = 'f';
             validateWhere[s + 2] = (char)(iFunction + 'A');
@@ -957,28 +960,39 @@ namespace Basics.Data
 
     protected class Function
     {
-      private delegate object FunctionHandler(IList<object> values);
-      private static Dictionary<string, FunctionHandler> _functionHandlers;
+      private static Dictionary<string, Func<IList<object>, object>> _functionHandlers;
 
       static Function()
       {
-        _functionHandlers = new Dictionary<string, FunctionHandler>
-        { { "ST_Intersects", ST_Intersects } };
+        _functionHandlers = new Dictionary<string, Func<IList<object>, object>> {
+          { "ST_Envelope" , ST_Envelope },
+          { "ST_Intersects", ST_Intersects }
+        };
+      }
+      private static IBox ST_Envelope(IList<object> values)
+      {
+        IGeometry geom = (IGeometry)values[0];
+        if (geom is IBox box)
+        { return box; }
+        return geom.Extent;
       }
 
-      private static object ST_Intersects(IList<object> values)
+      private static bool[] ST_Intersects(IList<object> values)
       {
         IGeometry geom0 = (IGeometry)values[0];
         IGeometry geom1 = (IGeometry)values[1];
+
+        if (geom0 is IBox box0 && geom1 is IBox box1)
+        { return new[] { BoxOp.Intersects(box0, box1) }; }
+
         if (!BoxOp.Intersects(geom0.Extent, geom1.Extent))
-        { return false; }
+        { return new[] { false }; }
         if (geom1 is IBox)
         {
           geom0 = geom0.Project(new ToXY());
         }
-        return true;
         bool intersects = GeometryOperator.Intersects(geom0, geom1);
-        return intersects;
+        return new[] { intersects };
       }
 
       private readonly string _name;
@@ -1047,9 +1061,27 @@ namespace Basics.Data
         get { return _functionHandlers.ContainsKey(_name); }
       }
 
+      internal void UpdateParamString(StringBuilder newString)
+      {
+        int l = _paramString.Length;
+        string newParamString = newString.ToString(End - l + 1, l);
+        _paramString = newParamString;
+      }
       public Type ResultType
       {
-        get { return typeof(bool); }
+        get
+        {
+          if (_functionHandlers.TryGetValue(_name, out Func<IList<object>, object> fct))
+          {
+            Type t = fct.Method.ReturnType;
+            if (t.BaseType == typeof(System.Array))
+            {
+              return t.GetElementType();
+            }
+            return t;
+          }
+          return typeof(bool);
+        }
       }
 
       public object Execute(DataRow row)
@@ -1060,6 +1092,8 @@ namespace Basics.Data
           values.Add(row[parameter]);
         }
         object value = _functionHandlers[_name](values);
+        if (value is System.Array array)
+        { return array.GetValue(0); }
         return value;
       }
 

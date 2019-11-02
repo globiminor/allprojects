@@ -236,7 +236,15 @@ namespace TData
 
         if (query.Relation == Relation.Intersect)
         {
-          stmt.AppendFormat(" ST_Intersects({0}, :p1)", query.Column.ColumnName);
+          stmt.AppendFormat($" ST_Intersects({query.Column.ColumnName}, :p1)");
+          DbBaseParameter param = cmd.CreateParameter();
+          param.ParameterName = "p1";
+          param.Value = query.Geometry;
+          paramList.Add(param);
+        }
+        else if (query.Relation == Relation.ExtentIntersect)
+        {
+          stmt.AppendFormat($" ST_Intersects( ST_Envelope({query.Column.ColumnName}), :p1)");
           DbBaseParameter param = cmd.CreateParameter();
           param.ParameterName = "p1";
           param.Value = query.Geometry;

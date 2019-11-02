@@ -141,6 +141,32 @@ namespace OCourse.Gui
       {
         DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn
         {
+          DataPropertyName = nameof(s.Teleport),
+          HeaderText = "Teleport Velocity",
+          Width = 50
+        };
+        col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+        col.DefaultCellStyle.Format = "N2";
+        FilterHeaderCell.CreateCore(col);
+
+        grdSymbols.Columns.Add(col);
+      }
+      {
+        DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn
+        {
+          DataPropertyName = nameof(s.Priority),
+          HeaderText = "Priority",
+          Width = 30
+        };
+        col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+        col.DefaultCellStyle.Format = "N0";
+        FilterHeaderCell.CreateCore(col);
+
+        grdSymbols.Columns.Add(col);
+      }
+      {
+        DataGridViewTextBoxColumn col = new DataGridViewTextBoxColumn
+        {
           DataPropertyName = nameof(s.NObjects),
           HeaderText = "# Objects",
           Width = 50,

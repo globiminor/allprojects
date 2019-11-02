@@ -179,7 +179,10 @@ namespace Ocad
       }
       else
       { // unknown geometry type
-        return null;
+        if (coords.Count == 1)
+        { return new GeoElement.Point(coords[0].GetPoint()); }
+        Polyline line = GetPolyline(coords);
+        return new GeoElement.Line(line);
       }
     }
 

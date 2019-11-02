@@ -1,14 +1,10 @@
 ﻿using Basics;
-using Basics.Geom;
 using Basics.Views;
-using Grid;
-using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
-using TMap;
 
 namespace OCourse.ViewModels
 {
@@ -47,7 +43,11 @@ namespace OCourse.ViewModels
     [XmlAttribute]
     public string Velocity { get; set; }
     [XmlAttribute]
+    public string Prio { get; set; }
+    [XmlAttribute]
     public string Size { get; set; }
+    [XmlAttribute]
+    public string Teleport { get; set; }
 
     public VeloModelVm.SymbolVm ToSymbol()
     {
@@ -55,17 +55,28 @@ namespace OCourse.ViewModels
       {
         Id = Id,
         Description = Description,
-        Velocity = Parse(Velocity),
-        Size = Parse(Size)
+        Velocity = ParseDouble(Velocity),
+        Size = ParseDouble(Size),
+        Priority = ParseInt(Prio),
+
+        Teleport = ParseDouble(Teleport)
       };
       return sym;
     }
-    private double? Parse(string value)
+    private double? ParseDouble(string value)
     {
       if (string.IsNullOrWhiteSpace(value))
       { return null; }
       if (double.TryParse(value, out double d))
       { return d; }
+      return null;
+    }
+    private int? ParseInt(string value)
+    {
+      if (string.IsNullOrWhiteSpace(value))
+      { return null; }
+      if (int.TryParse(value, out int i))
+      { return i; }
       return null;
     }
     public static SymbolDto CreateFrom(VeloModelVm.SymbolVm vm)
@@ -75,6 +86,7 @@ namespace OCourse.ViewModels
         Id = vm.Id,
         Description = vm.Description,
         Velocity = vm.Velocity?.ToString("0.00"),
+        Prio = vm.Priority?.ToString("0"),
         Size = vm.Size?.ToString("0.00")
       };
       return dto;
@@ -84,19 +96,42 @@ namespace OCourse.ViewModels
   {
     public class SymbolVm : NotifyListener
     {
-      private double? _velocity;
       public int Id { get; internal set; }
       public string Code => $"{Id / 1000.0:N3}";
       public string Description { get; internal set; }
       public int NObjects { get; set; }
       public Ocad.Symbol.SymbolStatus Status { get; set; }
       public Ocad.Symbol.SymbolType Type { get; set; }
+
+      private double? _velocity;
       public double? Velocity
       {
         get { return _velocity; }
         set
         {
           _velocity = value;
+          Changed();
+        }
+      }
+
+      private double? _teleport;
+      public double? Teleport
+      {
+        get { return _teleport; }
+        set
+        {
+          _teleport = value;
+          Changed();
+        }
+      }
+
+      private int? _prio;
+      public int? Priority
+      {
+        get { return _prio; }
+        set
+        {
+          _prio = value;
           Changed();
         }
       }
@@ -237,14 +272,17 @@ namespace OCourse.ViewModels
     {
       Dictionary<int, SymbolVm> origDict = _symbols.ToDictionary(x => x.Id);
       Dictionary<int, SymbolVm> symDict = new Dictionary<int, SymbolVm>(origDict);
-      GetDefinedSymbols(mapName, symDict);
+      GetDefinedSymbols(mapName, symDict, out double scale);
       UpdateStatistics(mapName, symDict);
 
       foreach (var symbol in symDict.Values)
       {
         if (origDict.ContainsKey(symbol.Id))
         { continue; }
-        symbol.Velocity = GetDefaultVelocity(symbol);
+        if (scale <= 5000)
+        { InitIoSprintDefault(symbol); }
+        else
+        { InitIosDefault(symbol); }
       }
       List<SymbolVm> symbols = new List<SymbolVm>(symDict.Values);
       symbols.Sort((x, y) => x.Id.CompareTo(y.Id));
@@ -256,11 +294,12 @@ namespace OCourse.ViewModels
       }
     }
 
-    private void GetDefinedSymbols(string mapName, Dictionary<int, SymbolVm> symDict, bool ignoreMissing = false)
+    private void GetDefinedSymbols(string mapName, Dictionary<int, SymbolVm> symDict, out double scale, bool ignoreMissing = false)
     {
       using (Ocad.OcadReader r = Ocad.OcadReader.Open(mapName))
       {
         Ocad.Setup setup = r.ReadSetup();
+        scale = setup.Scale;
         foreach (var symbol in r.ReadSymbols())
         {
           if (!symDict.TryGetValue(symbol.Number, out SymbolVm sym))
@@ -297,275 +336,134 @@ namespace OCourse.ViewModels
       }
     }
 
-    private double? GetDefaultVelocity(SymbolVm symId)
+    private void InitIoSprintDefault(SymbolVm symbol)
     {
-      int code = symId.Id / 1000;
-      if (code == 101) { return null; }
-      if (code == 102) { return null; }
-      if (code == 103) { return null; }
-      if (code == 104) { return 0.5; }
-      if (code == 105) { return 0.7; }
-      if (code == 106) { return 0.8; }
-      if (code == 107) { return 0.8; }
-      if (code == 108) { return null; }
-      if (code == 109) { return 0.8; }
-      if (code == 110) { return 0.8; }
-      if (code == 111) { return 0.8; }
-      if (code == 112) { return 0.7; }
-      if (code == 113) { return 0.8; }
-      if (code == 114) { return 0.8; }
-      if (code == 115) { return 0.8; }
-      if (code == 201) { return 0; }
-      if (code == 202) { return 0; }
-      if (code == 203) { return 0.6; }
-      if (code == 204) { return 0.3; }
-      if (code == 205) { return 0.3; }
-      if (code == 206) { return 0.1; }
-      if (code == 207) { return 0.5; }
-      if (code == 208) { return 0.7; }
-      if (code == 209) { return 0.4; }
-      if (code == 210) { return 0.7; }
-      if (code == 211) { return 0.4; }
-      if (code == 212) { return 0.15; }
-      if (code == 213) { return 0.8; }
-      if (code == 214) { return 0.95; }
-      if (code == 215) { return 0.9; }
-      if (code == 301) { return 0; }
-      if (code == 302) { return 0.6; }
-      if (code == 303) { return 0.8; }
-      if (code == 304) { return 0.5; }
-      if (code == 305) { return 0.7; }
-      if (code == 306) { return 0.8; }
-      if (code == 307) { return 0; }
-      if (code == 308) { return 0.8; }
-      if (code == 309) { return 0.8; }
-      if (code == 310) { return 0.85; }
-      if (code == 311) { return 0.8; }
-      if (code == 312) { return 0.8; }
-      if (code == 313) { return 0.8; }
-      if (code == 401) { return 0.9; }
-      if (code == 402) { return 0.9; }
-      if (code == 403) { return 0.8; }
-      if (code == 404) { return 0.8; }
-      if (code == 405) { return 0.9; }
-      if (code == 406) { return 0.7; }
-      if (code == 407) { return 0.7; }
-      if (code == 408) { return 0.4; }
-      if (code == 409) { return 0.4; }
-      if (code == 410) { return 0.2; }
-      if (code == 411) { return 0; }
-      if (code == 412) { return 0; }
-      if (code == 413) { return 0.9; }
-      if (code == 414) { return 0; }
-      if (code == 415) { return null; }
-      if (code == 416) { return null; }
-      if (code == 417) { return 0.8; }
-      if (code == 418) { return 0.5; }
-      if (code == 419) { return 0.8; }
-      if (code == 501) { return 1.0; }
-      if (code == 502) { return 1.0; }
-      if (code == 503) { return 1.0; }
-      if (code == 504) { return 1.0; }
-      if (code == 505) { return 1.0; }
-      if (code == 506) { return 0.95; }
-      if (code == 507) { return 0.95; }
-      if (code == 508) { return null; }
-      if (code == 509) { return 0; }
-      if (code == 510) { return null; }
-      if (code == 511) { return null; }
-      if (code == 512) { return 0; }
-      if (code == 513) { return 0.5; }
-      if (code == 514) { return 0.7; }
-      if (code == 515) { return 0; }
-      if (code == 516) { return 0.5; }
-      if (code == 517) { return 0.8; }
-      if (code == 518) { return 0; }
-      if (code == 519) { return null; }
-      if (code == 520) { return 0; }
-      if (code == 521) { return 0; }
-      if (code == 522) { return 1.0; }
-      if (code == 523) { return 0.5; }
-      if (code == 524) { return 0.5; }
-      if (code == 525) { return 0.8; }
-      if (code == 526) { return 0.8; }
-      if (code == 527) { return 0.8; }
-      if (code == 528) { return 0.8; }
-      if (code == 529) { return 0; }
-      if (code == 530) { return 0.8; }
-      if (code == 531) { return 0.8; }
-      if (code == 601) { return null; }
-      if (code == 602) { return null; }
-      if (code == 603) { return null; }
-      if (code == 701) { return null; }
-      if (code == 702) { return null; }
-      if (code == 703) { return null; }
-      if (code == 704) { return null; }
-      if (code == 705) { return null; }
-      if (code == 706) { return null; }
-      if (code == 707) { return null; }
-      if (code == 708) { return 0; }
-      if (code == 709) { return 0; }
-      if (code == 710) { return null; }
-      if (code == 711) { return 0; }
-      if (code == 712) { return null; }
-      if (code == 713) { return null; }
-      if (code == 900) { return null; }
-      if (code == 901) { return null; }
-      if (code == 902) { return null; }
-
-      return null;
+      InitCommonDefault(symbol);
+      int code = symbol.Id / 1000;
+      if (code == 410) { symbol.Velocity = 0.0; }
     }
-  }
-
-  public class SymbolVeloModel : Grid.IGrid<double>
-  {
-    public static SymbolVeloModel FromXml(string veloModelXmlPath, double stepSize)
+    private void InitIosDefault(SymbolVm symbol)
     {
-      VeloModelVm vm = new VeloModelVm();
-      vm.LoadSettings(veloModelXmlPath);
-      return new SymbolVeloModel(vm, stepSize);
-
+      InitCommonDefault(symbol);
     }
-
-    private readonly VeloModelVm _vm;
-    private readonly TMap.MapData _mapData;
-    private readonly TiledByteGrid _grid;
-    public SymbolVeloModel(VeloModelVm veloModelVm, double stepSize)
+    private void InitCommonDefault(SymbolVm symbol)
     {
-      _vm = veloModelVm;
-      _mapData = _vm.GetMapData();
+      int code = symbol.Id / 1000;
+      if (code == 101) { symbol.Velocity = null; }
+      if (code == 102) { symbol.Velocity = null; }
+      if (code == 103) { symbol.Velocity = null; }
+      if (code == 104) { symbol.Velocity = 0.5; symbol.Priority = -1; }
+      if (code == 105) { symbol.Velocity = 0.7; symbol.Priority = -1; }
+      if (code == 106) { symbol.Velocity = 0.8; symbol.Priority = -1; }
+      if (code == 107) { symbol.Velocity = 0.8; symbol.Priority = -1; }
+      if (code == 108) { symbol.Velocity = null; }
+      if (code == 109) { symbol.Velocity = 0.8; symbol.Priority = -1; }
+      if (code == 110) { symbol.Velocity = 0.8; symbol.Priority = -1; }
+      if (code == 111) { symbol.Velocity = 0.8; symbol.Priority = -1; }
+      if (code == 112) { symbol.Velocity = 0.7; symbol.Priority = -1; }
+      if (code == 113) { symbol.Velocity = 0.8; symbol.Priority = -1; }
+      if (code == 114) { symbol.Velocity = 0.8; symbol.Priority = -1; }
+      if (code == 115) { symbol.Velocity = 0.8; symbol.Priority = -1; }
+      if (code == 201) { symbol.Velocity = 0; }
+      if (code == 202) { symbol.Velocity = 0.5; }
+      if (code == 203) { symbol.Velocity = 0.6; symbol.Priority = -1; }
+      if (code == 204) { symbol.Velocity = 0.3; }
+      if (code == 205) { symbol.Velocity = 0.3; }
+      if (code == 206) { symbol.Velocity = 0.1; }
+      if (code == 207) { symbol.Velocity = 0.5; symbol.Priority = -1; }
+      if (code == 208) { symbol.Velocity = 0.7; symbol.Priority = -1; }
+      if (code == 209) { symbol.Velocity = 0.4; }
+      if (code == 210) { symbol.Velocity = 0.7; }
+      if (code == 211) { symbol.Velocity = 0.4; }
+      if (code == 212) { symbol.Velocity = 0.15; }
+      if (code == 213) { symbol.Velocity = 0.8; }
+      if (code == 214) { symbol.Velocity = 0.95; }
+      if (code == 215) { symbol.Velocity = 0.9; symbol.Priority = -1; }
+      if (code == 301) { symbol.Velocity = 0; }
+      if (code == 302) { symbol.Velocity = 0.6; }
+      if (code == 303) { symbol.Velocity = 0.8; symbol.Priority = -1; }
+      if (code == 304) { symbol.Velocity = 0.5; symbol.Priority = -1; }
+      if (code == 305) { symbol.Velocity = 0.7; symbol.Priority = -1; }
+      if (code == 306) { symbol.Velocity = 0.8; symbol.Priority = -1; }
+      if (code == 307) { symbol.Velocity = 0; }
+      if (code == 308) { symbol.Velocity = 0.8; symbol.Priority = -1; }
+      if (code == 309) { symbol.Velocity = 0.8; symbol.Priority = -1; }
+      if (code == 310) { symbol.Velocity = 0.85; symbol.Priority = -1; }
+      if (code == 311) { symbol.Velocity = 0.8; symbol.Priority = -1; }
+      if (code == 312) { symbol.Velocity = 0.8; symbol.Priority = -1; }
+      if (code == 313) { symbol.Velocity = 0.8; symbol.Priority = -1; }
+      if (code == 401) { symbol.Velocity = 0.9; symbol.Priority = -1; }
+      if (code == 402) { symbol.Velocity = 0.9; symbol.Priority = -1; }
+      if (code == 403) { symbol.Velocity = 0.8; symbol.Priority = -1; }
+      if (code == 404) { symbol.Velocity = 0.8; symbol.Priority = -1; }
+      if (code == 405) { symbol.Velocity = 0.9; }
+      if (code == 406) { symbol.Velocity = 0.7; }
+      if (code == 407) { symbol.Velocity = 0.7; }
+      if (code == 408) { symbol.Velocity = 0.4; }
+      if (code == 409) { symbol.Velocity = 0.4; }
+      if (code == 410) { symbol.Velocity = 0.2; }
+      if (code == 411) { symbol.Velocity = 0; }
+      if (code == 412) { symbol.Velocity = 0; }
+      if (code == 413) { symbol.Velocity = 0.9; }
+      if (code == 414) { symbol.Velocity = 0; }
+      if (code == 415) { symbol.Velocity = null; }
+      if (code == 416) { symbol.Velocity = null; }
+      if (code == 417) { symbol.Velocity = 0.8; }
+      if (code == 418) { symbol.Velocity = 0.5; }
+      if (code == 419) { symbol.Velocity = 0.8; }
+      if (code == 501) { symbol.Velocity = 1.0; }
+      if (code == 502) { symbol.Velocity = 1.0; }
+      if (code == 503) { symbol.Velocity = 1.0; }
+      if (code == 504) { symbol.Velocity = 1.0; }
+      if (code == 505) { symbol.Velocity = 1.0; }
+      if (code == 506) { symbol.Velocity = 0.95; }
+      if (code == 507) { symbol.Velocity = 0.95; }
+      if (code == 508) { symbol.Velocity = null; }
+      if (code == 509) { symbol.Velocity = 0; }
+      if (code == 510) { symbol.Velocity = null; }
+      if (code == 511) { symbol.Velocity = null; }
+      if (code == 512) { symbol.Velocity = 0; }
+      if (code == 513) { symbol.Velocity = 0.5; }
+      if (code == 514) { symbol.Velocity = 0.7; }
+      if (code == 515) { symbol.Velocity = 0; }
+      if (code == 516) { symbol.Velocity = 0.5; }
+      if (code == 517) { symbol.Velocity = 0.8; }
+      if (code == 518) { symbol.Velocity = 0; }
+      if (code == 519) { symbol.Velocity = null; }
+      if (code == 520) { symbol.Velocity = 0; }
+      if (code == 521) { symbol.Velocity = 0; }
+      if (code == 522) { symbol.Velocity = 1.0; }
+      if (code == 523) { symbol.Velocity = 0.5; }
+      if (code == 524) { symbol.Velocity = 0.5; symbol.Priority = -1; }
+      if (code == 525) { symbol.Velocity = 0.8; symbol.Priority = -1; }
+      if (code == 526) { symbol.Velocity = 0.8; symbol.Priority = -1; }
+      if (code == 527) { symbol.Velocity = 0.8; symbol.Priority = -1; }
+      if (code == 528) { symbol.Velocity = 0.8; }
+      if (code == 529) { symbol.Velocity = 0; }
+      if (code == 530) { symbol.Velocity = 0.8; symbol.Priority = -1; }
+      if (code == 531) { symbol.Velocity = 0.8; symbol.Priority = -1; }
+      if (code == 601) { symbol.Velocity = null; }
+      if (code == 602) { symbol.Velocity = null; }
+      if (code == 603) { symbol.Velocity = null; }
+      if (code == 701) { symbol.Velocity = null; }
+      if (code == 702) { symbol.Velocity = null; }
+      if (code == 703) { symbol.Velocity = null; }
+      if (code == 704) { symbol.Velocity = null; }
+      if (code == 705) { symbol.Velocity = null; }
+      if (code == 706) { symbol.Velocity = null; }
+      if (code == 707) { symbol.Velocity = null; }
+      if (code == 708) { symbol.Velocity = 0; }
+      if (code == 709) { symbol.Velocity = 0; }
+      if (code == 710) { symbol.Velocity = null; }
+      if (code == 711) { symbol.Velocity = 0; }
+      if (code == 712) { symbol.Velocity = null; }
+      if (code == 713) { symbol.Velocity = null; }
+      if (code == 714) { symbol.Velocity = null; }
+      if (code == 900) { symbol.Velocity = null; }
+      if (code == 901) { symbol.Velocity = null; }
+      if (code == 902) { symbol.Velocity = null; }
 
-      Basics.Geom.IBox allExtent = _mapData.Extent;
-      int nx = (int)((allExtent.Max.X - allExtent.Min.X) / stepSize);
-      int ny = (int)((allExtent.Max.Y - allExtent.Min.Y) / stepSize);
-      _grid = new TiledByteGrid(nx, ny, allExtent.Min.X, allExtent.Max.Y, stepSize, this)
-      { DoInitOnRead = true };
-    }
-
-    GridExtent IGrid.Extent => _grid.Extent;
-    Type IGrid.Type => typeof(double);
-
-    public double MinVelo { get; set; } = VelocityGrid.DefaultMinVelo;
-    object IGrid.this[int ix, int iy] { get => GetValue(ix, iy); set { } }
-    double IGrid<double>.this[int ix, int iy] { get => GetValue(ix, iy); set { } }
-
-    public double GetValue(int ix, int iy)
-    {
-      byte b = _grid[ix, iy];
-      if (b == 0) return MinVelo;
-      return b / 255.0;
-    }
-
-
-    public double Value(double x, double y)
-    {
-      _grid.Extent.GetNearest(new Basics.Geom.Point2D(x, y), out int ix, out int iy);
-      return GetValue(ix, iy);
-    }
-
-    private class TiledByteGrid : TiledGrid<byte>
-    {
-      private readonly SymbolVeloModel _parent;
-      public TiledByteGrid(int nx, int ny, double x0, double y0, double dx, SymbolVeloModel parent)
-        : base(new GridExtent(nx, ny, x0, y0, dx))
-      {
-        _parent = parent;
-      }
-
-      protected override IGrid<byte> CreateTile(int nx, int ny, double x0, double y0)
-      {
-        GridExtent tileExt = new GridExtent(nx, ny, x0, y0, Extent.Dx);
-
-        SimpleGrid<byte> tile;
-        using (Drawable drawable = new Drawable(tileExt))
-        {
-          _parent._mapData.Draw(drawable);
-          tile = drawable.GetTile();
-        }
-        //ImageGrid.GridToImage("C:\\temp\\temp.tif", nx, ny, (x, y) => tile[x, y]);
-
-        return tile;
-      }
-    }
-
-    private class _Projection : IProjection
-    {
-      private readonly GridExtent _ext;
-      public _Projection(GridExtent ext)
-      {
-        _ext = ext;
-      }
-
-      public IPoint Project(IPoint point)
-      {
-        return new Point2D((point.X - _ext.X0) / _ext.Dx,
-                           (_ext.Y0 - point.Y) / _ext.Dx);
-      }
-    }
-
-    private class Drawable : IDrawable, IDisposable
-    {
-      private readonly GridExtent _extent;
-      private readonly IProjection _prj;
-      private readonly System.Drawing.Bitmap _bmp;
-      private readonly System.Drawing.Graphics _grp;
-      private readonly System.Drawing.SolidBrush _brush;
-      private readonly System.Drawing.Pen _pen;
-
-      public Drawable(GridExtent extent)
-      {
-        _extent = extent;
-        _prj = new _Projection(extent);
-
-        _bmp = new System.Drawing.Bitmap(extent.Nx, extent.Ny);
-        _grp = System.Drawing.Graphics.FromImage(_bmp);
-        _brush = new System.Drawing.SolidBrush(System.Drawing.Color.White);
-        _pen = new System.Drawing.Pen(System.Drawing.Color.White);
-      }
-
-      public SimpleGrid<byte> GetTile()
-      {
-        _grp.Flush();
-        SimpleGrid<byte> tile = new SimpleGrid<byte>(_extent);
-        ImageGrid.ImageToGrid(_bmp, (x, y, argb) => tile[x, y] = (byte)argb);
-        //_bmp.Save("C:\\temp\\tempBmp.png");
-
-        return tile;
-      }
-
-      public void Dispose()
-      {
-        _pen.Dispose();
-        _brush.Dispose();
-        _grp.Dispose();
-        _bmp.Dispose();
-      }
-      public bool BreakDraw { get; set; }
-      public IProjection Projection => _prj;
-      public Box Extent => _extent.Extent;
-      void IDrawable.BeginDraw() { }
-      void IDrawable.BeginDraw(MapData data) { }
-      void IDrawable.BeginDraw(ISymbolPart symbolPart, DataRow dataRow) { }
-      void IDrawable.Draw(MapData data) { }
-
-      public void DrawArea(Area area, ISymbolPart symbolPart)
-      {
-        _brush.Color = symbolPart.Color;
-        Basics.Forms.DrawUtils.DrawArea(_grp, area, _brush);
-      }
-      public void DrawLine(Polyline line, ISymbolPart symbolPart)
-      {
-        _pen.Color = symbolPart.Color;
-        _pen.Width = (float)((symbolPart as SymbolPartLine)?.LineWidth ?? 1);
-
-        Basics.Forms.DrawUtils.DrawLine(_grp, line, _pen);
-      }
-      void IDrawable.DrawRaster(GridMapData raster) { }
-      void IDrawable.EndDraw(ISymbolPart symbolPart) { }
-      void IDrawable.EndDraw(MapData data) { }
-      void IDrawable.EndDraw() { }
-      void IDrawable.Flush() { }
-      void IDrawable.SetExtent(IBox proposedExtent) { }
+      if (code == 800) { symbol.Velocity = null; symbol.Teleport = 1; }
     }
   }
 }

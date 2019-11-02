@@ -13,7 +13,7 @@ namespace TMap
       if (System.IO.Path.GetExtension(dataPath) == ".ocd" &&
           Ocad.OcadReader.Exists(dataPath))
       {
-        Ocad.Data.OcadConnection conn = new Ocad.Data.OcadConnection(dataPath) { SortByColors = true };
+        Ocad.Data.OcadConnection conn = new Ocad.Data.OcadConnection(dataPath) { SorterProvider = (r) => r.ColorComparer.Compare };
         string table = Ocad.Data.OcadConnection.TableElements;
         TData.TTable tTable = new TData.TTable(table, conn);
         mapData = FromOcad(dataPath, tTable);
@@ -63,7 +63,7 @@ namespace TMap
       string fields = sym.NeededFields;
 
       TData.GeometryQuery query = new TData.GeometryQuery(sym.GeometryColumn,
-                                              drawable.Extent, Basics.Geom.Relation.Intersect);
+                                              drawable.Extent, Basics.Geom.Relation.ExtentIntersect);
 
       using (new TData.OpenConnection(_data.Connection))
       using (System.Data.Common.DbDataReader reader = _data.GetSelectCmd(query, fields).ExecuteReader())

@@ -19,10 +19,10 @@ namespace Ocad.Data
       : base(command, behavior)
     {
       _command = command;
-      SortByColors = command.SortByColors ?? command.Connection.SortByColors;
+      SorterProvider = command.SorterProvider ?? command.Connection.SorterProvider;
     }
 
-    public bool SortByColors { get; set; }
+    public Func<OcadReader, Comparison<ElementIndex>> SorterProvider { get; set; }
 
     protected override void Dispose(bool disposing)
     {
@@ -48,8 +48,11 @@ namespace Ocad.Data
       }
 
       OcadReader r = OcadInfo.CreateReader();
-      r.Io.SortByColors = SortByColors;
-      _enum = r.EnumGeoElements(extent, null).GetEnumerator();
+      List<ElementIndex> idxs = new List<ElementIndex>(r.EnumIndexesFromGeo(extent, null));
+      Comparison<ElementIndex> cmp = SorterProvider?.Invoke(r);
+      if (cmp != null)
+      { idxs.Sort(cmp); }
+      _enum = r.EnumGeoElements(idxs).GetEnumerator();
       _nRows = 0;
       return _enum;
     }

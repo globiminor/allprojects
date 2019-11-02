@@ -10,7 +10,7 @@ namespace LeastCostPathUI
     private delegate void InitHandler(WdgLeastCostPath wdg);
     private static event InitHandler InitWdg;
 
-    private ConfigVm _lcpConfigVm;
+    private readonly ConfigVm _lcpConfigVm;
 
     public WdgLeastCostPath()
     {

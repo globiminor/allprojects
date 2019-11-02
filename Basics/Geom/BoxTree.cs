@@ -22,11 +22,8 @@ namespace Basics.Geom
     private const int _maximumAllowedTileLevels = 30;
     private int _maxDenominator = 1 << _maximumAllowedTileLevels;
 
-    private const int _defaultMaxElementCountPerTile = 64; // TODO revise
-    private const bool _defaultDynamic = true;
-
-    internal BoxTree(int dimension, BoxTile mainTile)
-      : this(dimension, _defaultMaxElementCountPerTile, _defaultDynamic, mainTile) { }
+    protected const int DefaultMaxElementCountPerTile = 64; // TODO revise
+    protected const bool DefaultDynamic = true;
 
     internal BoxTree(int dimension, int nElem, bool dynamic, BoxTile mainTile)
     {
@@ -36,6 +33,42 @@ namespace Basics.Geom
       _dynamic = dynamic;
     }
 
+    private class MyBoxComparer : IEqualityComparer<IBox>
+    {
+      public bool Equals(IBox x, IBox y)
+      {
+        bool a = (x == y);
+        return a;
+      }
+
+      public int GetHashCode(IBox box)
+      {
+        return box.GetHashCode();
+      }
+    }
+    public static BoxTree<T> Create<T>(IEnumerable<T> elems, Func<T, IBox> getBox, int nElem = DefaultMaxElementCountPerTile, bool dynamic = DefaultDynamic)
+    {
+      Dictionary<IBox,T> adds = new Dictionary<IBox, T>(new MyBoxComparer());
+      Box allBox = null;
+      foreach (var elem in elems)
+      {
+        IBox box = getBox(elem);
+        adds.Add(box, elem);
+        if (allBox == null)
+        { allBox = BoxOp.Clone(box); }
+        else
+        { allBox.Include(box); }
+      }
+      int dim = allBox.Dimension;
+
+      BoxTree<T> bt = new BoxTree<T>(dim, nElem, dynamic);
+      bt.Init(dim, allBox, nElem, nElem / 2);
+      foreach (var pair in adds)
+      {
+        bt.Add(pair.Key, pair.Value);
+      }
+      return bt;
+    }
     public void Init(int dimension, Box box, int maxElemPerTile, int nElemJoin)
     {
       _dimension = dimension;
@@ -915,10 +948,7 @@ namespace Basics.Geom
 
   public partial class BoxTree<T> : BoxTree
   {
-    public BoxTree(int dimension)
-      : base(dimension, new BoxTile()) { }
-
-    public BoxTree(int dimension, int nElem, bool dynamic)
+    public BoxTree(int dimension, int nElem = DefaultMaxElementCountPerTile , bool dynamic = DefaultDynamic)
       : base(dimension, nElem, dynamic, new BoxTile()) { }
 
     internal new BoxTile MainTile

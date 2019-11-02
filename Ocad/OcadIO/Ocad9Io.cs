@@ -264,7 +264,9 @@ namespace Ocad
       { symbol.IsFavorit = true; }
 
       symbol.Selected = io.Reader.ReadByte() > 0;
-      symbol.Status = (Symbol.SymbolStatus)io.Reader.ReadByte();
+      byte status = io.Reader.ReadByte();
+      symbol.Status = (Symbol.SymbolStatus)(status % 16);
+      symbol.StatusSelected = (status & 16) == 16;
       symbol.PreferredTool = (Symbol.SymbolTool)io.Reader.ReadByte();
       symbol.CourseSettingMode = (Symbol.SymbolCourseSetting)io.Reader.ReadByte();
 
