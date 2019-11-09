@@ -67,24 +67,19 @@ namespace Grid
       }
     }
 
-    public override Color this[int ix, int iy]
+    public override Color GetCell(int ix, int iy)
     {
-      get
+      if (_data == null || _pixelFormat != PixelFormat.Format8bppIndexed)
+      { return _bitmap.GetPixel(ix, iy); }
+      else
       {
-        if (_data == null || _pixelFormat != PixelFormat.Format8bppIndexed)
-        { return _bitmap.GetPixel(ix, iy); }
-        else
+        unsafe
         {
-          unsafe
-          {
-            byte* b = (byte*)_data.Scan0;
-            byte bxy = b[iy * _data.Stride + ix];
-            return _palette[bxy];
-          }
+          byte* b = (byte*)_data.Scan0;
+          byte bxy = b[iy * _data.Stride + ix];
+          return _palette[bxy];
         }
       }
-      set
-      { }
     }
     public void Close()
     {
@@ -95,7 +90,7 @@ namespace Grid
       }
     }
 
-    public static void WriteWorldFile(BaseGrid grd, string path)
+    public static void WriteWorldFile(IGrid grd, string path)
     {
       using (TextWriter worldWriter = new StreamWriter(path))
       using (new InvariantCulture())
@@ -108,7 +103,7 @@ namespace Grid
         worldWriter.WriteLine(grd.Extent.Y0);
       }
     }
-    public static void GridToImage(IntGrid grd, string name, byte[] r = null, byte[] g = null, byte[] b = null, ImageFormat format = null)
+    public static void GridToImage(IGrid<int> grd, string name, byte[] r = null, byte[] g = null, byte[] b = null, ImageFormat format = null)
     {
       WriteWorldFile(grd, GetWorldPath(name));
 

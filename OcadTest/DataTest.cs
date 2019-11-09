@@ -231,7 +231,7 @@ namespace OcadTest
       }
 
       DoubleGrid grd = GetGrid(dir, key, resolution, grdFct);
-      ImageGrid.GridToImage(grd.ToIntGrid(), pngPath, r, g, b, System.Drawing.Imaging.ImageFormat.Png);
+      ImageGrid.GridToImage(grd.ToInt(), pngPath, r, g, b, System.Drawing.Imaging.ImageFormat.Png);
     }
 
     private DoubleGrid GetGrid(string dir, string key, double resolution,
@@ -397,11 +397,11 @@ namespace OcadTest
           (int)(ext.Nx / (size / ext.Dx)), (int)(ext.Ny / (size / ext.Dx)),
           typeof(double), ext.X0, ext.Y0, size);
 
-        DoubleGrid grdRes = grdResample + grdHeight;
+        IGrid<double> grdRes = grdResample.Add(grdHeight);
         grdRes.SaveASCII($"{root}{key}__.asc", "N2");
       }
 
-      DoubleGrid grdSum = new DataDoubleGrid((int)((x1 - x0) / size), (int)((y0 - y1) / size),
+      IGrid<double> grdSum = new DataDoubleGrid((int)((x1 - x0) / size), (int)((y0 - y1) / size),
           typeof(double), x0, y0, size);
       foreach (string key in keys)
       {
@@ -410,7 +410,7 @@ namespace OcadTest
           continue;
 
         DoubleGrid grdHeight = DataDoubleGrid.FromAsciiFile(path, 0, 0.01, typeof(double));
-        grdSum = DoubleGrid.Max(grdSum, grdHeight);
+        grdSum = GridOp.Max(grdSum, grdHeight);
       }
       grdSum.SaveASCII($"{root}irchel.asc", "N2");
     }

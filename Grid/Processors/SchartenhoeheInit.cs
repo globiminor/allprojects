@@ -10,9 +10,9 @@ namespace Grid.Processors
 {
   public class SchartenhoeheInit : ContainerProcessor
   {
-    private readonly IDoubleGrid _grid;
+    private readonly IGrid<double> _grid;
 
-    public SchartenhoeheInit(IDoubleGrid grid)
+    public SchartenhoeheInit(IGrid<double> grid)
     {
       _grid = grid;
     }

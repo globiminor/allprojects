@@ -17,13 +17,13 @@ namespace OCourse.Route
     public event VariationBuilder.VariationEventHandler VariationAdded;
 
     private readonly string _veloPath;
-    private readonly IDoubleGrid _heightGrid;
+    private readonly IGrid<double> _heightGrid;
     private readonly Steps _steps;
     private readonly ITvmCalc _tvmCalc;
 
     private readonly Dictionary<CostFromTo, CostFromTo> _calcList;
 
-    public RouteCalculator(IDoubleGrid heightGrid, string veloPath, Steps steps, ITvmCalc tvmCalc)
+    public RouteCalculator(IGrid<double> heightGrid, string veloPath, Steps steps, ITvmCalc tvmCalc)
     {
       _veloPath = veloPath;
       _heightGrid = heightGrid;
@@ -34,7 +34,7 @@ namespace OCourse.Route
     }
 
     public string VeloPath => _veloPath;
-    public IDoubleGrid HeightGrid => _heightGrid;
+    public IGrid<double> HeightGrid => _heightGrid;
     public Steps Steps => _steps;
     public ITvmCalc TvmCalc => _tvmCalc;
 

@@ -106,12 +106,6 @@ namespace Grid
     }
   }
 
-  public interface IGrid
-  {
-    GridExtent Extent { get; }
-    Type Type { get; }
-    object this[int ix, int iy] { get; set; }
-  }
   public interface IGridStoreType
   {
     Type StoreType { get; }
@@ -121,18 +115,26 @@ namespace Grid
     IGrid Extract(IBox extent);
   }
 
+  public interface IGrid
+  {
+    GridExtent Extent { get; }
+    Type Type { get; }
+    object this[int ix, int iy] { get; }
+  }
   public interface IGrid<T> : IGrid
   {
-    T Value(double x, double y);
+    new T this[int ix, int iy] { get; }
+  }
+  public interface IGridW<T> : IGrid<T>
+  {
     new T this[int ix, int iy] { get; set; }
   }
+
 
   public interface IPartialFilledGrid<T> : IGrid<T>
   {
     IGrid<T> GetGridWithData();
   }
-
-
   public class OffsetGrid<T> : OffsetGrid, IGrid<T>
   {
     public OffsetGrid(IGrid<T> master, int ox, int oy, int nx, int ny)
@@ -152,14 +154,6 @@ namespace Grid
         }
         return t;
       }
-      set { base[ix, iy] = value; }
-    }
-
-    public T Value(double x, double y)
-    {
-      Extent.GetNearest(x, y, out int ix, out int iy);
-      IGrid<T> t = this;
-      return t[ix, iy];
     }
   }
   public class OffsetGrid : IGrid
@@ -195,12 +189,12 @@ namespace Grid
         { return _master.Extent.NN; }
         return _master[tx, ty];
       }
-      set
-      {
-        int tx = ix + _ox;
-        int ty = iy + _oy;
-        _master[tx, ty] = value;
-      }
+      //set
+      //{
+      //  int tx = ix + _ox;
+      //  int ty = iy + _oy;
+      //  _master[tx, ty] = value;
+      //}
     }
   }
 
@@ -232,22 +226,18 @@ namespace Grid
       _extent = extent;
       _type = type;
     }
-    public object Value(double x, double y)
+    [Obsolete]
+    public object Value_(double x, double y)
     {
       _extent.GetNearest(x, y, out int ix, out int iy);
       return this[ix, iy]; // this[ix, iy];
     }
 
-    public T Offset<T>(int ix, int iy) where T : BaseGrid
-    { return null; }
     public object this[int ix, int iy]
     {
       get { return GetThis(ix, iy); }
-      set { SetThis(ix, iy, value); }
     }
     protected abstract object GetThis(int ix, int iy);
-    protected abstract void SetThis(int ix, int iy, object value);
-
     public Type Type => _type;
 
     public GridExtent Extent => _extent;
@@ -433,18 +423,12 @@ namespace Grid
     public BaseGrid(GridExtent extent)
       : base(extent, typeof(T))
     { }
-    public new virtual T Value(double x, double y)
-    {
-      return (T)base.Value(x, y);
-    }
-    public new abstract T this[int ix, int iy] { get; set; }
-    protected sealed override object GetThis(int ix, int iy)
-    { return this[ix, iy]; }
-    protected sealed override void SetThis(int ix, int iy, object value)
-    { this[ix, iy] = (T)value; }
+    public new T this[int ix, int iy] => GetCell(ix, iy);
+    public abstract T GetCell(int ix, int iy);
+    protected sealed override object GetThis(int ix, int iy) => GetCell(ix, iy);
   }
 
-  public class SimpleGrid<T> : BaseGrid<T>
+  public class SimpleGrid<T> : BaseGrid<T>, IGridW<T>
   {
     private readonly T[,] _value;
     public SimpleGrid(GridExtent extent)
@@ -452,19 +436,22 @@ namespace Grid
     {
       _value = new T[extent.Nx, extent.Ny];
     }
-    public override T this[int ix, int iy]
-    { get => _value[ix, iy]; set => _value[ix, iy] = value; }
+    public new T this[int ix, int iy]
+    { get => base[ix, iy]; set { _value[ix, iy] = value; } }
+
+    public sealed override T GetCell(int ix, int iy) => _value[ix, iy];
   }
 
-  public abstract class TiledGrid<T> : BaseGrid<T>, IPartialFilledGrid<T>
+  public abstract class TiledGrid<T, TG> : BaseGrid<T>, IPartialFilledGrid<T>
+    where TG : class, IGrid<T>
   {
-    private readonly Dictionary<Lcp.Field, IGrid<T>> _grids;
+    private readonly Dictionary<Lcp.Field, TG> _grids;
     private int _tileSize;
     protected TiledGrid(GridExtent extent, int tileSize = 128)
       : base(extent)
     {
       _tileSize = tileSize;
-      _grids = new Dictionary<Lcp.Field, IGrid<T>>(new Lcp.FieldComparer());
+      _grids = new Dictionary<Lcp.Field, TG>(new Lcp.FieldComparer());
     }
 
     public int TileSize
@@ -481,36 +468,31 @@ namespace Grid
       }
     }
 
-    public bool DoInitOnRead { get; set; }
-    public override T this[int ix, int iy]
+    public sealed override T GetCell(int ix, int iy)
     {
-      get
-      {
-        Lcp.Field key = new Lcp.Field { X = ix / _tileSize, Y = iy / _tileSize };
-        if (!_grids.TryGetValue(key, out IGrid<T> tile))
-        {
-          if (!DoInitOnRead)
-            return default;
+      Lcp.Field key = new Lcp.Field { X = ix / _tileSize, Y = iy / _tileSize };
+      TG tile = GetTile(key);
 
-          GridExtent e = Extent;
-          tile = CreateTile(TileSize, TileSize, e.X0 + key.X * TileSize * e.Dx, e.Y0 + key.Y * TileSize * e.Dy);
-          _grids.Add(key, tile);
-        }
+      if (tile == null)
+      { return default; }
 
-        return tile[ix - key.X * _tileSize, iy - key.Y * _tileSize];
-      }
-      set
-      {
-        Lcp.Field key = new Lcp.Field { X = ix / _tileSize, Y = iy / _tileSize };
-        if (!_grids.TryGetValue(key, out IGrid<T> tile))
-        {
-          GridExtent e = Extent;
-          tile = CreateTile(TileSize, TileSize, e.X0 + key.X * TileSize * e.Dx, e.Y0 + key.Y * TileSize * e.Dy);
-          _grids.Add(key, tile);
-        }
-        tile[ix - key.X * _tileSize, iy - key.Y * _tileSize] = value;
-      }
+      return tile[ix - key.X * _tileSize, iy - key.Y * _tileSize];
     }
+
+    protected TG GetTile(Lcp.Field key, bool force = false)
+    {
+      if (!_grids.TryGetValue(key, out TG tile))
+      {
+        if (!DoInitOnRead && !force)
+          return null;
+
+        GridExtent e = Extent;
+        tile = CreateTile(TileSize, TileSize, e.X0 + key.X * TileSize * e.Dx, e.Y0 + key.Y * TileSize * e.Dy);
+        _grids.Add(key, tile);
+      }
+      return tile;
+    }
+    public bool DoInitOnRead { get; set; }
 
     IGrid<T> IPartialFilledGrid<T>.GetGridWithData()
     { return GetGridWithData(); }
@@ -535,6 +517,28 @@ namespace Grid
       return new OffsetGrid<T>(this, xMin * TileSize, yMin * TileSize, (1 + xMax - xMin) * TileSize, (1 + yMax - yMin) * TileSize);
     }
 
-    protected abstract IGrid<T> CreateTile(int nx, int ny, double x0, double y0);
+    protected abstract TG CreateTile(int nx, int ny, double x0, double y0);
+  }
+
+  public abstract class TiledGrid<T> : TiledGrid<T, IGrid<T>>
+  {
+    protected TiledGrid(GridExtent extent, int tileSize = 128)
+      : base(extent, tileSize) { }
+  }
+  public abstract class TiledGridW<T> : TiledGrid<T, IGridW<T>>, IGridW<T>
+  {
+    protected TiledGridW(GridExtent extent, int tileSize = 128)
+      : base(extent, tileSize) { }
+
+    public new T this[int ix, int iy]
+    {
+      get => base[ix, iy];
+      set
+      {
+        Lcp.Field key = new Lcp.Field { X = ix / TileSize, Y = iy / TileSize };
+        IGridW<T> tile = GetTile(key, force: true);
+        tile[ix - key.X * TileSize, iy - key.Y * TileSize] = value;
+      }
+    }
   }
 }

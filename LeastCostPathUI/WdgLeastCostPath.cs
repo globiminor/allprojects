@@ -72,7 +72,7 @@ namespace LeastCostPathUI
     public ConfigVm Vm => _lcpConfigVm;
     private void BtnOK_Click(object sender, EventArgs e)
     {
-      IDoubleGrid grdHeight = _lcpConfigVm.HeightGrid;
+      IGrid<double> grdHeight = _lcpConfigVm.HeightGrid;
       string grdVelo = _lcpConfigVm.VeloPath;
       double resol = _lcpConfigVm.Resolution;
       Steps step = _lcpConfigVm.StepsMode;

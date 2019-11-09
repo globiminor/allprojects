@@ -10,9 +10,9 @@ namespace Dhm
   internal class DisplayGrid
   {
     public string Name { get; }
-    public IDoubleGrid Grid { get; }
+    public IGrid<double> Grid { get; }
 
-    public DisplayGrid(IDoubleGrid grid, string name)
+    public DisplayGrid(IGrid<double> grid, string name)
     {
       Name = name;
       Grid = grid;
@@ -21,15 +21,23 @@ namespace Dhm
   public class SetGridHeight : ITool
   {
     private IContext _context;
-    private IDoubleGrid _grid;
+    private IGridW<double> _grid;
     private List<DisplayGrid> _grids;
     private double _width;
     WdgSetGridHeight _wdg;
     public void Execute(IContext context)
     {
       _context = context;
-      _grids = GetGrids();
-      _grid = _grids[0].Grid;
+      _grid = null;
+      _grids = new List<DisplayGrid>();
+      foreach (var dspGrid in GetGrids())
+      {
+        if (dspGrid.Grid is IGridW<double> grid)
+        { 
+          _grids.Add(dspGrid);
+          _grid = _grid ?? grid;
+        }
+      }
       _width = 5;
 
       if (_wdg == null || _wdg.IsDisposed)
@@ -47,7 +55,7 @@ namespace Dhm
     {
       get { return _grids; }
     }
-    public IDoubleGrid Grid
+    public IGridW<double> Grid
     {
       get { return _grid; }
       set { _grid = value; }
@@ -67,7 +75,7 @@ namespace Dhm
       {
         if (!(part is GridMapData gridMapData))
         { continue; }
-        if (!(gridMapData.Data.BaseData is IDoubleGrid grd))
+        if (!(gridMapData.Data.BaseData is IGrid<double> grd))
         { continue; }
         grids.Add(new DisplayGrid(grd, gridMapData.Name));
       }

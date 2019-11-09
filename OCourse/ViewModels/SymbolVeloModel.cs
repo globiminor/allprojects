@@ -2,6 +2,7 @@
 using Basics.Geom;
 using Grid;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using TMap;
 
@@ -17,9 +18,17 @@ namespace OCourse.ViewModels
 
     }
 
+    public static SymbolVeloModel<T> FromXml<T>(string veloModelXmlPath, double stepSize)
+    {
+      VeloModelVm vm = new VeloModelVm();
+      vm.LoadSettings(veloModelXmlPath);
+      return new SymbolVeloModel<T>(vm, stepSize);
+    }
+
     private readonly VeloModelVm _vm;
     private readonly MapData _mapData;
     private readonly TiledByteGrid _grid;
+    private readonly double _maxSymbolSize;
     public SymbolVeloModel(VeloModelVm veloModelVm, double stepSize)
     {
       _vm = veloModelVm;
@@ -30,26 +39,29 @@ namespace OCourse.ViewModels
       int ny = (int)((allExtent.Max.Y - allExtent.Min.Y) / stepSize);
       _grid = new TiledByteGrid(nx, ny, allExtent.Min.X, allExtent.Max.Y, stepSize, this)
       { DoInitOnRead = true, TileSize = 256 };
+
+      double maxSymbolSize = 0;
+      foreach (var sym in _vm.Symbols)
+      {
+        if (sym.Velocity == null || sym.Size == null)
+        { continue; }
+        maxSymbolSize = Math.Max(maxSymbolSize, sym.Size.Value);
+      }
+      _maxSymbolSize = maxSymbolSize;
     }
 
     GridExtent IGrid.Extent => _grid.Extent;
     Type IGrid.Type => typeof(double);
 
     public double MinVelo { get; set; } = VelocityGrid.DefaultMinVelo;
-    object IGrid.this[int ix, int iy] { get => GetValue(ix, iy); set { } }
-    double IGrid<double>.this[int ix, int iy] { get => GetValue(ix, iy); set { } }
+    object IGrid.this[int ix, int iy] => GetValue(ix, iy); 
+    double IGrid<double>.this[int ix, int iy] => GetValue(ix, iy);
 
     public double GetValue(int ix, int iy)
     {
       byte b = _grid[ix, iy];
       if (b == 0) return MinVelo;
       return b / 255.0;
-    }
-
-    public double Value(double x, double y)
-    {
-      _grid.Extent.GetNearest(new Point2D(x, y), out int ix, out int iy);
-      return GetValue(ix, iy);
     }
 
     private class TiledByteGrid : TiledGrid<byte>
@@ -65,15 +77,12 @@ namespace OCourse.ViewModels
       {
         GridExtent tileExt = new GridExtent(nx, ny, x0, y0, Extent.Dx);
 
-        SimpleGrid<byte> tile;
-        using (Drawable drawable = new Drawable(tileExt))
+        using (Drawable drawable = new Drawable(tileExt, _parent._maxSymbolSize))
         {
           _parent._mapData.Draw(drawable);
-          tile = drawable.GetTile();
+          SimpleGrid<byte> tile = drawable.GetTile();
+          return tile;
         }
-        //ImageGrid.GridToImage("C:\\temp\\temp.tif", nx, ny, (x, y) => tile[x, y]);
-
-        return tile;
       }
     }
 
@@ -94,16 +103,19 @@ namespace OCourse.ViewModels
 
     private class Drawable : IDrawable, IDisposable
     {
-      private readonly GridExtent _extent;
+      private readonly GridExtent _gridExtent;
+      private readonly Box _geoExtent;
       private readonly IProjection _prj;
       private readonly System.Drawing.Bitmap _bmp;
       private readonly System.Drawing.Graphics _grp;
       private readonly System.Drawing.SolidBrush _brush;
       private readonly System.Drawing.Pen _pen;
 
-      public Drawable(GridExtent extent)
+      public Drawable(GridExtent extent, double expand)
       {
-        _extent = extent;
+        _gridExtent = extent;
+        Point2D ex = new Point2D(expand, expand);
+        _geoExtent = new Box(extent.Extent.Min - ex, extent.Extent.Max + ex);
         _prj = new MyProjection(extent);
 
         _bmp = new System.Drawing.Bitmap(extent.Nx, extent.Ny);
@@ -115,7 +127,7 @@ namespace OCourse.ViewModels
       public SimpleGrid<byte> GetTile()
       {
         _grp.Flush();
-        SimpleGrid<byte> tile = new SimpleGrid<byte>(_extent);
+        SimpleGrid<byte> tile = new SimpleGrid<byte>(_gridExtent);
         ImageGrid.ImageToGrid(_bmp, (x, y, argb) => tile[x, y] = (byte)argb);
         //_bmp.Save("C:\\temp\\tempBmp.png");
 
@@ -131,7 +143,7 @@ namespace OCourse.ViewModels
       }
       public bool BreakDraw { get; set; }
       public IProjection Projection => _prj;
-      public Box Extent => _extent.Extent;
+      public Box Extent => _geoExtent;
       void IDrawable.BeginDraw() { }
       void IDrawable.BeginDraw(MapData data) { }
       void IDrawable.BeginDraw(ISymbolPart symbolPart, DataRow dataRow) { }
@@ -156,5 +168,18 @@ namespace OCourse.ViewModels
       void IDrawable.Flush() { }
       void IDrawable.SetExtent(IBox proposedExtent) { }
     }
+  }
+
+  public class SymbolVeloModel<T> : SymbolVeloModel
+  {
+    public SymbolVeloModel(VeloModelVm veloModelVm, double stepSize)
+      : base(veloModelVm, stepSize)
+    {
+      Layers = new List<Grid.Lcp.IDirCostModel<T>>();
+      Teleports = new List<Grid.Lcp.Teleport<T>>();
+    }
+
+    public List<Grid.Lcp.IDirCostModel<T>> Layers { get; }
+    public List<Grid.Lcp.Teleport<T>> Teleports { get; }
   }
 }

@@ -1266,6 +1266,13 @@ namespace Basics.Geom
           }
           return null;
         }
+
+        bool anyPartWithIn = x.IsWithin(GetFirstPoint(y));
+        if (anyPartWithIn && track != null)
+        {
+          track.OnRelationFound(track, null);
+          if (track.Cancel) return new ParamGeometryRelation[] { null };
+        }
         IGeometry border = x.Border;
         List<ParamGeometryRelation> rels = new List<ParamGeometryRelation>(CreateRelations(border, y, track, false));
 
@@ -1281,25 +1288,32 @@ namespace Basics.Geom
       }
     }
 
-    public static IGeometry GetFirstPoint(IGeometry y)
+    public static IPoint GetFirstPoint(IGeometry y)
     {
-      IGeometry p = y;
-      while (!(p is IPoint) && p != null)
+      if (y is IBox b) 
+        return b.Min;
+
+      IGeometry g = y;
+
+      while (g != null)
       {
-        if (p is IMultipartGeometry m && m.HasSubparts)
+        if (g is IPoint p)
+          return p;
+
+        if (g is IMultipartGeometry m && m.HasSubparts)
         {
           foreach (var part in m.Subparts())
           {
-            p = part;
+            g = part;
             break;
           }
         }
         else
         {
-          p = p.Border;
+          g = g.Border;
         }
       }
-      return p;
+      return null;
     }
 
     public static bool IsMultipart(IGeometry geom)

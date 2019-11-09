@@ -137,6 +137,7 @@ namespace OCourse.ViewModels
     private class VelocityRecord
     {
       public IGeometry Geometry { get; set; }
+      public int Symbol { get; set; }
       public double? Velocity { get; set; }
       public double? Size { get; set; }
     }
@@ -210,8 +211,10 @@ namespace OCourse.ViewModels
             { continue; }
 
             double? velo = sym?.Velocity;
+            if (velo == null)
+            { continue; }
             double? size = sym?.Size;
-            yield return new VelocityRecord { Geometry = elem.Geometry.GetGeometry(), Velocity = velo, Size = size };
+            yield return new VelocityRecord { Geometry = elem.Geometry.GetGeometry(), Symbol = elem.Symbol, Velocity = velo, Size = size };
           }
         }
       }
@@ -239,6 +242,7 @@ namespace OCourse.ViewModels
         SchemaColumnsTable schema = new SchemaColumnsTable();
 
         schema.AddSchemaColumn(FieldGeometry, typeof(IGeometry));
+        schema.AddSchemaColumn(FieldSymbol, typeof(int));
         schema.AddSchemaColumn(FieldVelocity, typeof(double));
         schema.AddSchemaColumn(FieldSize, typeof(double));
 
@@ -248,6 +252,7 @@ namespace OCourse.ViewModels
       }
 
       public const string FieldGeometry = "Geometry";
+      public const string FieldSymbol = "Symbol";
       public const string FieldVelocity = "Velocity";
       public const string FieldSize = "Size";
       public const string FieldColor = "Color";
@@ -255,6 +260,7 @@ namespace OCourse.ViewModels
       public object GetValue(VelocityRecord element, string fieldName)
       {
         if (FieldGeometry.Equals(fieldName, StringComparison.InvariantCultureIgnoreCase)) return element.Geometry;
+        if (FieldSymbol.Equals(fieldName, StringComparison.InvariantCultureIgnoreCase)) return (object)element.Symbol ?? DBNull.Value;
         if (FieldVelocity.Equals(fieldName, StringComparison.InvariantCultureIgnoreCase)) return (object)element.Velocity ?? DBNull.Value;
         if (FieldSize.Equals(fieldName, StringComparison.InvariantCultureIgnoreCase))
           return element.Size ?? ((!(element.Geometry is IPoint)) ? DBNull.Value : (object)_vm.DefaultPntSize);

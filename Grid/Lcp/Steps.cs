@@ -135,7 +135,7 @@ namespace Grid.Lcp
           List<StepField> stepFields = new List<StepField>();
           foreach (var step in _steps)
           {
-            Dictionary<int,double> fieldWeights = GetFieldWeights(step);
+            Dictionary<int, double> fieldWeights = GetFieldWeights(step);
             stepFields.Add(new StepField
             { FieldIndices = new List<int>(fieldWeights.Keys), Ws = new List<double>(fieldWeights.Values) });
           }
@@ -163,7 +163,7 @@ namespace Grid.Lcp
     private Dictionary<int, double> GetFieldWeights(Step step)
     {
       double l = step.Distance;
-      Dictionary<int, double> weights = new Dictionary<int, double> { 
+      Dictionary<int, double> weights = new Dictionary<int, double> {
         { -1, 1 } // start field
       };
       for (int iStep = 0; iStep < Count; iStep++)
@@ -182,14 +182,17 @@ namespace Grid.Lcp
       return weights;
     }
 
-    public DoubleGrid this[IGrid<int> grd]
+    public IGrid<double> this[IGrid<int> grd]
     {
       get
       {
         double[] angles = new double[_count];
         foreach (var step in _steps)
         { angles[step.Index] = step.Angle; }
-        return DoubleGrid.Create(angles, grd);
+
+        return new GridConvert<int, double>(grd, (g, ix, iy)
+           => angles[g[ix, iy]]
+          );
       }
     }
 

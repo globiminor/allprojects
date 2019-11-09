@@ -43,7 +43,7 @@ namespace Grid
       }
     }
 
-    private IDoubleGrid _grid;
+    private IGrid<double> _grid;
     private Block _parentBlock;
 
     private int _nMax;
@@ -51,7 +51,7 @@ namespace Grid
     private Pyramide()
     { }
 
-    public static Pyramide Create(IDoubleGrid grid)
+    public static Pyramide Create(IGrid<double> grid)
     {
       Pyramide p = new Pyramide
       {
@@ -63,7 +63,7 @@ namespace Grid
 
       return p;
     }
-    public IDoubleGrid Grid => _grid;
+    public IGrid<double> Grid => _grid;
 
     public Block ParentBlock => _parentBlock;
 
@@ -169,10 +169,53 @@ namespace Grid
           }
         }
       }
-      parentBlock.Dh = DoubleGrid.CalcDh(_grid, i0, j0, n);
+      parentBlock.Dh = CalcDh(_grid, i0, j0, n);
     }
 
+    private static double CalcDh(IGrid<double> grid, int i0, int j0, int n)
+    {
+      int i1 = i0 + n;
+      int j1 = j0 + n;
+      double dhMax = 0;
 
+      // first triangle, must correspond to triangles in drawCell
+      double h0 = grid[i0, j0];
+      double h1 = grid[i1, j0];
+      double h2 = grid[i0, j1];
+      double a0 = -(h1 - h0); // eliminated common factor n !!!
+      double b0 = -(h2 - h0);
+      double c0 = n;
+      double d0 = -(a0 * i0 + b0 * j0 + c0 * h0);
+
+      // second triangle, must correspond to triangles in drawCell
+      h0 = grid[i1, j1];
+      double a1 = (h2 - h0); // eliminated common factor n !!!
+      double b1 = (h1 - h0);
+      double c1 = n;
+      double d1 = -(a1 * i1 + b1 * j1 + c1 * h0);
+
+      for (int i = i0; i <= i1; i++)
+      {
+        for (int j = j0; j <= j1; j++)
+        {
+          double h = grid[i, j];
+          if (double.IsNaN(h) || h < 0)
+          {
+            return double.NaN;
+          }
+          double dh = (i - i0 + j - j0 <= n)
+            ? Math.Abs(h + (a0 * i + b0 * j + d0) / c0)
+            : Math.Abs(h + (a1 * i + b1 * j + d1) / c1);
+
+          if (dh > dhMax)
+          {
+            dhMax = dh;
+          }
+        }
+      }
+
+      return dhMax;
+    }
 
   }
 }

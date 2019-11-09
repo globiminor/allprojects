@@ -578,10 +578,10 @@ namespace Basics.Geom
 
     private static void CheckAddPart(IGeometry x, IGeometry y, List<ParamGeometryRelation> assembled)
     {
-      IGeometry p = GeometryOperator.GetFirstPoint(y);
+      IPoint p = GeometryOperator.GetFirstPoint(y);
       if (p != null)
       {
-        bool within = x.IsWithin((IPoint)p);
+        bool within = x.IsWithin(p);
         if (within)
         {
           ParamGeometryRelation rel = CreateWithin(x, y);
@@ -756,7 +756,7 @@ namespace Basics.Geom
       if (!startEnds.TryGetValue(line, out ParamGeometryRelation s))
       {
         s = CreateWithin(line, line);
-        s.Intersection = GeometryOperator.GetFirstPoint(line);
+        s.Intersection = Point.CastOrWrap(GeometryOperator.GetFirstPoint(line));
         startEnds.Add(line, s);
       }
       return s;
@@ -765,10 +765,10 @@ namespace Basics.Geom
     private static void GetLineParts(IGeometry x, IGeometry y, List<ParamGeometryRelation> sortY,
       List<ParamGeometryRelation> assembled)
     {
-      IGeometry p = GeometryOperator.GetFirstPoint(y);
+      IPoint p = GeometryOperator.GetFirstPoint(y);
       bool within;
       if (p != null)
-      { within = x.IsWithin((IPoint)p); }
+      { within = x.IsWithin(p); }
       else
       { return; }
 

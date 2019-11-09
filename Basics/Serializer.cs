@@ -47,6 +47,5 @@ namespace Basics
       object o = ser.Deserialize(reader);
       obj = (T)o;
     }
-
   }
 }

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Basics.Geom;
+using Grid;
 
 namespace Asvz
 {
@@ -26,12 +27,12 @@ namespace Asvz
         get { return _onDtm; }
       }
 
-      public Polyline Profil(Grid.IDoubleGrid dhm)
+      public Polyline Profil(IGrid<double> dhm)
       {
         Polyline profil;
         if (_onDtm)
         {
-          profil = Grid.DoubleGrid.Profil(dhm, _line);
+          profil = dhm.Profil(_line);
         }
         else
         {

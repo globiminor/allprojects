@@ -182,7 +182,10 @@ namespace TMap
         sym = new Symbol(1);
         SymbolPartLine part = new SymbolPartLine();
         part.Scale = true;
-        part.LineWidth = ocadLine.LineWidth * FileParam.OCAD_UNIT * setup.Scale;
+        short lw = ocadLine.LineWidth;
+        if (ocadLine.FillColorOn > 0)
+        { lw = System.Math.Max(lw, ocadLine.FillWidth); }
+        part.LineWidth = lw * FileParam.OCAD_UNIT * setup.Scale;
         if (!colors.TryGetValue(ocadLine.LineColor, out ColorInfo oc))
         {
           oc = new ColorInfo();

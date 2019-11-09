@@ -7,57 +7,12 @@ namespace Grid
   /// <summary>
   /// Integer Grid
   /// </summary>
-  public class IntGrid : BaseGrid<int>, IGridStoreType
+  public class IntGrid : BaseGrid<int>, IGridStoreType, IGridW<int>
   {
-    private Type _type;
+    private readonly Type _type;
     private Array _value;
 
-    private IGrid<int> _iGrid;
-    private int _operator;
-    private EOperator _eOperator;
-    private IGrid<double> _dGrid;
-
-
-    #region operators
-
-    internal IntGrid(IGrid<double> grd)
-      : base(grd.Extent)
-    {
-      _dGrid = grd;
-      _eOperator = EOperator.none;
-    }
-
-    private IntGrid(IGrid<int> grd, int val, EOperator op)
-      : base(grd.Extent)
-    {
-      _iGrid = grd;
-      _operator = val;
-      _eOperator = op;
-    }
     Type IGridStoreType.StoreType { get { return _type; } }
-
-    public static IntGrid operator -(IntGrid grd, int val)
-    { return Add(grd, -val); }
-    public static IntGrid Add(IGrid<int> grd, int val)
-    {
-      return new IntGrid(grd, val, EOperator.addVal);
-    }
-
-    public static IntGrid operator %(IntGrid grd, int mod)
-    { return Mod(grd, mod); }
-    public static IntGrid Mod(IGrid<int> grd, int mod)
-    {
-        return new IntGrid(grd, mod, EOperator.gridModVal);
-    }
-
-    public IntGrid Abs()
-    { return Abs(this); }
-    public static IntGrid Abs(IGrid<int> grid)
-    {
-      return new IntGrid(grid, 0, EOperator.abs);
-    }
-
-    #endregion
 
     #region constructors
 
@@ -170,20 +125,12 @@ namespace Grid
       pWriter.Close();
     }
 
-    public override int this[int ix, int iy]
+    public override int GetCell(int ix, int iy) => this[ix, iy];
+    public new int this[int ix, int iy]
     {
       get
       {
-        int value;
-        // operators
-        if (_eOperator == EOperator.gridModVal) value = _iGrid[ix, iy] % _operator;
-        else if (_eOperator == EOperator.addVal) value = _iGrid[ix, iy] + _operator;
-        else if (_eOperator == EOperator.abs) value = Math.Abs(_iGrid[ix, iy]);
-        // converters
-        else if (_eOperator == EOperator.none && _dGrid != null) value = (int)_dGrid[ix, iy];
-        // data
-        else
-        { value = Convert.ToInt32(_value.GetValue(ix, iy)); }
+        int value = Convert.ToInt32(_value.GetValue(ix, iy)); 
         return value;
       }
       set
@@ -193,11 +140,11 @@ namespace Grid
     }
   }
 
-  public class TiledIntGrid : TiledGrid<int>, IGridStoreType
+  public class TiledIntGrid : TiledGridW<int>, IGridStoreType
   {
     private readonly Type _storeType;
 
-    public TiledIntGrid(int nx, int ny, Type storeType, 
+    public TiledIntGrid(int nx, int ny, Type storeType,
       double x0, double y0, double dx)
       : base(new GridExtent(nx, ny, x0, y0, dx))
     {
@@ -205,7 +152,7 @@ namespace Grid
     }
     Type IGridStoreType.StoreType => _storeType;
 
-    protected override IGrid<int> CreateTile(int nx, int ny, double x0, double y0)
+    protected override IGridW<int> CreateTile(int nx, int ny, double x0, double y0)
     {
       IntGrid tile = new IntGrid(nx, ny, _storeType, x0, y0, Extent.Dx);
       return tile;

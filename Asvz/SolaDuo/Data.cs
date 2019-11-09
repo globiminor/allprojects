@@ -1,5 +1,6 @@
 using Basics.Geom;
 using Basics.Geom.Projection;
+using Grid;
 using Ocad;
 using System;
 using System.Collections.Generic;
@@ -209,14 +210,14 @@ namespace Asvz
 
     // Dhm
     private readonly string _dhmName;
-    private Grid.IDoubleGrid _dhm;
+    private IGrid<double> _dhm;
 
     protected Data(string dhmName)
     {
       _dhmName = dhmName;
     }
 
-    public Grid.IDoubleGrid Dhm
+    public IGrid<double> Dhm
     {
       get
       {

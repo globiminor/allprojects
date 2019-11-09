@@ -501,7 +501,7 @@ namespace Asvz.SolaDuo
 
       double nx = (extent.Max.X - extent.Min.X) / dx + 1;
       double ny = (extent.Max.Y - extent.Min.Y) / dx + 1;
-      Grid.IDoubleGrid total = new Grid.DataDoubleGrid((int)nx, (int)ny,
+      Grid.DataDoubleGrid total = new Grid.DataDoubleGrid((int)nx, (int)ny,
         typeof(double), extent.Min.X, extent.Min.Y + ny * dx, dx, 0, 1);
 
       int iNx = total.Extent.Nx;

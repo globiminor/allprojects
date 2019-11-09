@@ -62,7 +62,7 @@ namespace LeastCostPathUI
       txtRoute.Text = from + "_" + to + "r.tif";
     }
 
-    private IDoubleGrid _grdHeight;
+    private IGrid<double> _grdHeight;
     private string _grdVelo;
 
     private LeastCostData _fromResult;
@@ -73,7 +73,7 @@ namespace LeastCostPathUI
     private Point2D _to;
 
     public void Calc(IDirCostModel<TvmCell> provider,
-      IDoubleGrid grHeight, string grVelo, double resolution, Steps step, ThreadStart resetDlg)
+      IGrid<double> grHeight, string grVelo, double resolution, Steps step, ThreadStart resetDlg)
     {
       _cancelled = false;
 
@@ -144,7 +144,7 @@ namespace LeastCostPathUI
     {
       private readonly CntOutput _parent;
       private readonly LeastCostGrid<TvmCell> _costPath;
-      private readonly IDoubleGrid _grHeight;
+      private readonly IGrid<double> _grHeight;
       private readonly Point2D _from;
       private readonly Point2D _to;
       private readonly Steps _step;
@@ -154,12 +154,12 @@ namespace LeastCostPathUI
       private readonly bool _autoExtent;
       private readonly ThreadStart _resetDlg;
 
-      private DoubleGrid _sum;
-      private DoubleGrid _route;
+      private IGrid<double> _sum;
+      private IGrid<double> _route;
       private Basics.Views.BindingListView<RouteRecord> _routes;
 
       public CalcCostWorker(CntOutput parent, LeastCostGrid<TvmCell> costPath,
-        IDoubleGrid grHeight, Point2D from, Point2D to, Steps step, bool autoExtent,
+        IGrid<double> grHeight, Point2D from, Point2D to, Steps step, bool autoExtent,
         bool calcRoute, double lengthFact, double offset, ThreadStart resetDlg)
       {
         _parent = parent;
@@ -230,9 +230,9 @@ namespace LeastCostPathUI
 
         _parent.SetStepLabel(this, "SUM:");
         _parent.CostPath_Status(this, new StatusEventArgs(null, null, 0, 0, 0, 0));
-        _sum = DoubleGrid.Sum(_parent._fromResult.CostGrid, _parent._toResult.CostGrid);
+        _sum = _parent._fromResult.CostGrid.Add(_parent._toResult.CostGrid);
         double min = _parent._fromResult.CostGrid.Value(_to.X, _to.Y);
-        _route = _sum - min;
+        _route = _sum.Sub(min);
 
         if (_parent._cancelled)
         {
@@ -241,9 +241,9 @@ namespace LeastCostPathUI
 
         double limit = 0.9 * min;
         double replace = 2 * min;
-        DoubleGrid sum = DoubleGrid.Filter(_sum, (ix, iy) =>
+        IGrid<double> sum = new GridConvert<double, double>(_sum, (g, ix, iy) =>
         {
-          double v = _sum[ix, iy];
+          double v = g[ix, iy];
           return v < limit ? replace : v;
         });
 

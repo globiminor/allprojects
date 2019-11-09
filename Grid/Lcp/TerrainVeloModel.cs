@@ -5,12 +5,12 @@ namespace Grid.Lcp
 {
   public class TerrainVeloModel : IDirCostModel<TvmCell>, ITeleportProvider
   {
-    public IDoubleGrid HeightGrid { get; }
+    public IGrid<double> HeightGrid { get; }
     public IGrid<double> VelocityGrid { get; }
 
     private readonly List<Teleport> _teleports;
 
-    public TerrainVeloModel(IDoubleGrid heightGrid, IGrid<double> velocityGrid)
+    public TerrainVeloModel(IGrid<double> heightGrid, IGrid<double> velocityGrid)
     {
       HeightGrid = heightGrid;
       VelocityGrid = velocityGrid;
@@ -122,7 +122,7 @@ namespace Grid.Lcp
     public double Velocity { get; private set; }
     public double Slope2 { get; private set; }
 
-    public void Init(double tx, double ty, IDoubleGrid heightGrid, IGrid<double> velocityGrid)
+    public void Init(double tx, double ty, IGrid<double> heightGrid, IGrid<double> velocityGrid)
     {
       Height = heightGrid.Value(tx, ty, EGridInterpolation.bilinear);
       Velocity = velocityGrid.Value(tx, ty);

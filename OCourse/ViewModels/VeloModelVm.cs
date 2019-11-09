@@ -87,7 +87,8 @@ namespace OCourse.ViewModels
         Description = vm.Description,
         Velocity = vm.Velocity?.ToString("0.00"),
         Prio = vm.Priority?.ToString("0"),
-        Size = vm.Size?.ToString("0.00")
+        Size = vm.Size?.ToString("0.00"),
+        Teleport = vm.Teleport?.ToString("0.00")
       };
       return dto;
     }
@@ -156,7 +157,11 @@ namespace OCourse.ViewModels
         SymbolVm vm = new SymbolVm { Id = symbol.Number, Description = symbol.Description, Status = symbol.Status, Type = symbol.Type };
         if (symbol is Ocad.Symbol.LineSymbol l)
         {
-          vm.Size = l.LineWidth * Ocad.FileParam.OCAD_UNIT * setup.Scale;
+          short lw = l.LineWidth;
+          if (l.FillColorOn > 0)
+          { lw = System.Math.Max(lw, l.FillWidth); }
+
+          vm.Size = lw * Ocad.FileParam.OCAD_UNIT * setup.Scale;
         }
         return vm;
       }

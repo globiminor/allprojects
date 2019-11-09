@@ -21,6 +21,7 @@ namespace OcadTest
                                  "-h"
     });
     }
+
     [TestMethod]
     public void TestSymbolGrid()
     {
@@ -42,7 +43,7 @@ namespace OcadTest
         GridExtent ext = new GridExtent(
           (int)(all.Max.X - all.Min.X + 2), (int)(all.Max.Y - all.Min.Y + 2),
           all.Min.X - 1, all.Max.Y + 1, 1);
-        BaseGrid<List<int>> symGrid = new SymbolGrid(ext);
+        SymbolGrid symGrid = new SymbolGrid(ext);
 
         Dictionary<int, double> symWidths = new Dictionary<int, double>();
         foreach (var ocadSymbol in reader.ReadSymbols())
@@ -220,14 +221,44 @@ namespace OcadTest
       DoubleGrid heightGrd = DataDoubleGrid.FromAsciiFile(heightPath, 0, 0.01, typeof(double));
 
       double stepWidth = 1.0;
-      IGrid<double> veloGrd = OCourse.ViewModels.SymbolVeloModel.FromXml(veloPath, stepWidth);
+      OCourse.ViewModels.SymbolVeloModel symVeloModel = OCourse.ViewModels.SymbolVeloModel.FromXml(veloPath, stepWidth);
+      IGrid<double> veloGrd = symVeloModel;
       TerrainVeloModel tvm = new TerrainVeloModel(heightGrd, veloGrd);
-      var lcg = new LeastCostGrid(tvm, stepWidth, steps: Steps.Step16);
 
       Point2D start = new Point2D(2687999.4, 1266999.7);
       Point2D end = new Point2D(2686507.3, 1268274.2);
 
+      var lcg = new LeastCostGrid(tvm, stepWidth, steps: Steps.Step16);
       lcg.CalcCost(start, end);
+    }
+
+    [TestMethod]
+    public void TestXmlVeloStack()
+    {
+      string veloPath = @"C:\daten\felix\kapreolo\karten\dübendorf\duebendorf_velo.xml";
+      double stepWidth = 0.5;
+      OCourse.ViewModels.SymbolVeloModel<TvmCell> symVeloModel =
+        OCourse.ViewModels.SymbolVeloModel.FromXml<TvmCell>(veloPath, stepWidth);
+      IGrid<double> veloGrd = symVeloModel;
+
+      //string heightPath = @"C:\daten\felix\kapreolo\karten\irchel\2019\irchel.asc";
+      //DataDoubleGrid.FromAsciiFile(heightPath, 0, 0.01, typeof(double));
+      GridExtent e = veloGrd.Extent;
+      int r = 8;
+      IGrid<double> heightGrd = new TiledDoubleGrid(e.Nx / r, e.Ny / r, typeof(float), e.X0, e.Y0, e.Dx * r);
+
+      TerrainVeloModel tvm = new TerrainVeloModel(heightGrd, veloGrd);
+
+      Point2D start = new Point2D(2688500.36, 1249604.36);
+      Point2D end = new Point2D(2688530.24, 1249731.84);
+
+      symVeloModel.Layers.Add(tvm);
+      var lcs = LeastCostGridStack.Create(
+        symVeloModel.Layers,
+        symVeloModel.Teleports, stepWidth);
+      lcs.AddStart(start, tvm);
+      lcs.AddEnd(end, tvm);
+      lcs.CalcCost();
     }
 
     [TestMethod]
@@ -315,21 +346,11 @@ namespace OcadTest
     }
 
 
-    private class SymbolGrid : BaseGrid<List<int>>
+    private class SymbolGrid : SimpleGrid<List<int>>
     {
-      private readonly Array _value;
-
       public SymbolGrid(GridExtent extent)
         : base(extent)
-      {
-        _value = Array.CreateInstance(typeof(List<int>), extent.Nx, extent.Ny);
-      }
-
-      public override List<int> this[int ix, int iy]
-      {
-        get { return (List<int>)_value.GetValue(ix, iy); }
-        set { _value.SetValue(value, ix, iy); }
-      }
+      { }
     }
   }
 }

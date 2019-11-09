@@ -294,10 +294,10 @@ namespace LeastCostPathUI
       else if (lcp.stepType == 4) step = Steps.Step4;
       else throw new InvalidOperationException("Unhandled step type " + lcp.stepType);
 
-      IDoubleGrid heightGrid = null;
+      IGrid<double> heightGrid = null;
       if (!string.IsNullOrEmpty(lcp.sHeight))
       { heightGrid = DataDoubleGrid.FromAsciiFile(lcp.sHeight, 0, 0.01, typeof(double)); }
-      IDoubleGrid velocityGrid = VelocityGrid.FromImage(lcp.sVelo);
+      IGrid<double> velocityGrid = VelocityGrid.FromImage(lcp.sVelo);
 
 
       Box box = new Box(new Point2D(lcp.x0, lcp.y0), new Point2D(lcp.x1, lcp.y1));
@@ -346,12 +346,12 @@ namespace LeastCostPathUI
       }
       if (lcp.ssCostTif != null && startLcg?.CostGrid != null)
       {
-        ImageGrid.GridToImage(DoubleGrid.ToIntGrid(startLcg.CostGrid) % 256, lcp.ssCostTif, r, g, b);
+        ImageGrid.GridToImage(startLcg.CostGrid.ToInt().Mod(256), lcp.ssCostTif, r, g, b);
       }
       if (lcp.ssDirTif != null && startLcg?.DirGrid != null)
       {
         // make sure that the start point cell returns a valid value for the step angle array
-        ImageGrid.GridToImage(((step[IntGrid.Add(startLcg.DirGrid, -1).Abs() % step.Count] / Math.PI + 1.0) * 128).ToIntGrid(),
+        ImageGrid.GridToImage(step[startLcg.DirGrid.Add(-1).Abs().Mod(step.Count)].Div(Math.PI).Add(1.0).Mult(128).ToInt(),
                             lcp.ssDirTif, r, g, b);
       }
       if (lcp.seCostGrd != null)
@@ -370,34 +370,34 @@ namespace LeastCostPathUI
       }
       if (lcp.seCostTif != null && endLcg?.CostGrid != null)
       {
-        ImageGrid.GridToImage(DoubleGrid.ToIntGrid(endLcg.CostGrid) % 256, lcp.seCostTif, r, g, b);
+        ImageGrid.GridToImage(endLcg.CostGrid.ToInt().Mod(256), lcp.seCostTif, r, g, b);
       }
       if (lcp.seDirTif != null && endLcg?.DirGrid != null)
       {
         // make sure that the end point cell returns a valid value for the step angle array
-        ImageGrid.GridToImage(((step[IntGrid.Add(endLcg.DirGrid, -1).Abs() % step.Count] / Math.PI + 1.0) * 128).ToIntGrid(),
+        ImageGrid.GridToImage(step[endLcg.DirGrid.Add(-1).Abs().Mod(step.Count)].Div(Math.PI).Add(1.0).Mult(128).ToInt(),
                             lcp.seDirTif, r, g, b);
       }
 
       if (startLcg?.CostGrid == null || endLcg?.CostGrid == null)
       { return; }
-      DoubleGrid grdSum = null;
+      IGrid<double> grdSum = null;
       if (lcp.sCostGrd != null)
       {
-        if (grdSum == null) grdSum = GetSum(startLcg.CostGrid, endLcg.CostGrid, costPath.GetGridExtent());
-        grdSum.Save(lcp.sCostGrd);
+        grdSum = grdSum ?? GetSum(startLcg.CostGrid, endLcg.CostGrid, costPath.GetGridExtent());
+        DoubleGrid.Save(grdSum, lcp.sCostGrd);
       }
       if (lcp.sCostTif != null)
       {
-        if (grdSum == null) grdSum = GetSum(startLcg.CostGrid, endLcg.CostGrid, costPath.GetGridExtent());
-        ImageGrid.GridToImage((grdSum - grdSum.Min()).ToIntGrid() % 256, lcp.sCostTif, r, g, b);
+        grdSum = grdSum ?? GetSum(startLcg.CostGrid, endLcg.CostGrid, costPath.GetGridExtent());
+        ImageGrid.GridToImage(grdSum.Sub(grdSum.Min()).ToInt().Mod(256), lcp.sCostTif, r, g, b);
       }
       if (lcp.sRouteShp != null || lcp.sRouteTif != null)
       {
-        if (grdSum == null) grdSum = GetSum(startLcg.CostGrid, endLcg.CostGrid, costPath.GetGridExtent());
+        grdSum = grdSum ?? GetSum(startLcg.CostGrid, endLcg.CostGrid, costPath.GetGridExtent());
         double maxLengthFactor = lcp.maxLonger + 1;
         double minDiffFactor = lcp.minOffset;
-        List<RouteRecord> routes = LeastCostGrid.CalcBestRoutes(grdSum, startLcg, endLcg, 
+        List<RouteRecord> routes = LeastCostGrid.CalcBestRoutes(grdSum, startLcg, endLcg,
           maxLengthFactor, minDiffFactor, Route_Status);
         if (lcp.sRouteTif != null)
         {
@@ -411,11 +411,11 @@ namespace LeastCostPathUI
       }
     }
 
-    private static DoubleGrid GetSum(IGrid<double> startCostGrid, IGrid<double> endCostGrid, GridExtent extent)
+    private static IGrid<double> GetSum(IGrid<double> startCostGrid, IGrid<double> endCostGrid, GridExtent extent)
     {
       if (extent.EqualExtent(startCostGrid.Extent) && extent.EqualExtent(endCostGrid.Extent))
       {
-        return DoubleGrid.Sum(startCostGrid, endCostGrid);
+        return startCostGrid.Add(endCostGrid);
       }
       EGridInterpolation inter = EGridInterpolation.bilinear;
       DataDoubleGrid sum = new DataDoubleGrid(extent.Nx, extent.Ny, typeof(double), extent.X0, extent.Y0, extent.Dx);
@@ -424,7 +424,7 @@ namespace LeastCostPathUI
         for (int iy = 0; iy < extent.Ny; iy++)
         {
           Point2D p = extent.CellLL(ix, iy);
-          sum[ix, iy] = DoubleGrid.Value(startCostGrid, p.X, p.Y, inter) + DoubleGrid.Value(endCostGrid, p.X, p.Y, inter);
+          sum[ix, iy] = startCostGrid.Value(p.X, p.Y, inter) + endCostGrid.Value(p.X, p.Y, inter);
         }
       }
       return sum;
@@ -534,7 +534,7 @@ namespace LeastCostPathUI
       return value;
     }
 
-    internal static void CreateRouteShapes(IReadOnlyList<RouteRecord> routes, IDoubleGrid sum, IDoubleGrid heightGrd, string fileName)
+    internal static void CreateRouteShapes(IReadOnlyList<RouteRecord> routes, IGrid<double> sum, IGrid<double> heightGrd, string fileName)
     {
       System.Data.DataTable schema = new System.Data.DataTable();
       schema.Columns.Add("Shape", typeof(Polyline));

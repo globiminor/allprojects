@@ -48,6 +48,7 @@
     <Compile Include="DoubleGrid.cs" />
     <Compile Include="GridExtent.cs" />
     <Compile Include="GridMesh.cs" />
+    <Compile Include="GridOp.cs" />
     <Compile Include="ImageGrid.cs" />
     <Compile Include="IntGrid.cs" />
     <Compile Include="Lcp\BlockGrid.cs" />

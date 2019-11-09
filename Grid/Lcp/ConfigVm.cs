@@ -21,7 +21,7 @@ namespace Grid.Lcp
     private string _teleportPath;
     private double _resolution;
     private Steps _steps;
-    private IDoubleGrid _grdHeight;
+    private IGrid<double> _grdHeight;
 
     private BindingListView<ConfigVm> _modelLevels;
     public BindingListView<ConfigVm> ModelLevels => _modelLevels ?? (_modelLevels = new BindingListView<ConfigVm>());
@@ -150,7 +150,7 @@ namespace Grid.Lcp
     }
     public string CostTypeName { get { return _tvmCalc?.GetType().Name; } }
 
-    public IDoubleGrid HeightGrid
+    public IGrid<double> HeightGrid
     {
       get
       {

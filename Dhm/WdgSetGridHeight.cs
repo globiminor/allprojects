@@ -1,3 +1,4 @@
+using Grid;
 using System;
 using System.ComponentModel;
 using System.Windows.Forms;
@@ -41,7 +42,7 @@ namespace Dhm
 
       string file = dlg.FileName;
 
-      Grid.DoubleGrid.SaveASCII(_setGridHeight.Grid, file, "N2");
+      _setGridHeight.Grid.SaveASCII(file, "N2");
     }
 
     public void SetInfo(string info)

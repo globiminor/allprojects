@@ -46,13 +46,15 @@ namespace Grid.Lcp
     private Steps _steps;
     public LeastCostData(IGrid<double> costGrid, IGrid<int> dirGrid, Steps steps)
     {
-      CostGrid = costGrid;
-      DirGrid = dirGrid;
+      _costGrid = costGrid;
+      _dirGrid = dirGrid;
       _steps = steps;
     }
 
-    public IGrid<double> CostGrid { get; }
-    public IGrid<int> DirGrid { get; }
+    public IGrid<double> CostGrid => _costGrid;
+    private readonly IGrid<double> _costGrid;
+    public IGrid<int> DirGrid => _dirGrid;
+    private readonly IGrid<int> _dirGrid;
     public Steps Steps => _steps ?? (_steps = Steps.ReverseEngineer(DirGrid, CostGrid));
 
     public Polyline GetPath(IPoint end, Func<int, int, bool> stop = null)
@@ -115,31 +117,41 @@ namespace Grid.Lcp
       IGrid<double> cost = BaseGrid.TryReduce(CostGrid);
       IGrid<int> dir = BaseGrid.TryReduce(DirGrid);
 
-      LeastCostData reduced = new LeastCostData(cost, dir, Steps);
-      reduced.SetUndefinedCells(double.NaN);
+
+      CostDirGrid costDirGrid = new CostDirGrid(cost, dir, double.NaN);
+      LeastCostData reduced = new LeastCostData(costDirGrid, dir, Steps);
       return reduced;
     }
 
     /// <summary>
     /// Determines from dir if a cells cost is not defined (dir[ix,iy] == 0) and 
-    /// sets the value of the corresponding cell in cost to undefinedValue 
+    /// returns the value of the corresponding cell in cost as undefinedValue 
     /// </summary>
-    /// <param name="cost"></param>
-    /// <param name="dir"></param>
-    /// <param name="undefinedValue"></param>
-    private void SetUndefinedCells(double undefinedValue = double.NaN)
+    private class CostDirGrid : IGrid<double>
     {
-      CostGrid.Extent.NN = undefinedValue;
-      for (int ix = 0; ix < DirGrid.Extent.Nx; ix++)
+      private readonly IGrid<double> _fullCost;
+      private readonly IGrid<int> _dir;
+      private readonly double _undefinedValue;
+      public CostDirGrid(IGrid<double> fullCost, IGrid<int> dir, double undefinedValue = double.NaN)
       {
-        for (int iy = 0; iy < DirGrid.Extent.Ny; iy++)
+        _fullCost = fullCost;
+        _dir = dir;
+        _undefinedValue = undefinedValue;
+      }
+
+      object IGrid.this[int ix, int iy] => this[ix, iy];
+      public double this[int ix, int iy]
+      {
+        get
         {
-          if (DirGrid[ix, iy] == 0)
-          { CostGrid[ix, iy] = undefinedValue; }
+          if (_dir[ix, iy] == 0)
+          { return _undefinedValue; }
+          return _fullCost[ix, iy];
         }
       }
+      public GridExtent Extent => _fullCost.Extent;
+      public Type Type => typeof(double);
     }
-
   }
   public abstract class LeastCostGridBase
   {
@@ -159,8 +171,8 @@ namespace Grid.Lcp
       private readonly SortedList<ICostField, ICostField> _costList;
       private readonly Dictionary<IField, ICostField> _fieldList;
 
-      private readonly IGrid<double> _costGrid;
-      private readonly IGrid<int> _dirGrid;
+      private readonly IGridW<double> _costGrid;
+      private readonly IGridW<int> _dirGrid;
 
       private readonly int _nFields;
 
@@ -236,7 +248,7 @@ namespace Grid.Lcp
 
       public LeastCostData GetResult()
       {
-        return new LeastCostData(CostGrid, DirGrid, _parent.Steps);
+        return new LeastCostData(_costGrid, _dirGrid, _parent.Steps);
       }
 
       public bool Process(ICostField processField, ref int i)
@@ -446,7 +458,7 @@ namespace Grid.Lcp
         ICostField minCostField = null;
         Layer minLayer = null;
 
-        bool endsCompleted = true;
+        bool endsCompleted = (_ends?.Count > 0);
         foreach (var layer in LayerDict.Values)
         {
           ICostField costField = layer.Calc.InitNextProcessField(remove: false);
@@ -491,7 +503,7 @@ namespace Grid.Lcp
         {
           IGrid<double> costGrid = layer.Calc.CostGrid;
           IGrid<double> reduced = BaseGrid.TryReduce(costGrid);
-          ImageGrid.GridToImage(DoubleGrid.ToIntGrid(reduced), $"C:\\temp\\test_{it}.tif");
+          ImageGrid.GridToImage(reduced.ToInt(), $"C:\\temp\\test_{it}.tif");
           it++;
         }
       }
@@ -534,7 +546,7 @@ namespace Grid.Lcp
           stopHandler = new StopHandler(stops, costModel.MinUnitCost * _dx)
           {
             StopFactor = stopFactor,
-            StopComparer = (x, y) => 
+            StopComparer = (x, y) =>
             {
               int ix = stopDict[x];
               int iy = stopDict[y];
@@ -704,13 +716,13 @@ namespace Grid.Lcp
     private class PathStop
     {
       private readonly IGrid<int> _dirGrid;
-      private readonly IDoubleGrid _stopGrid;
+      private readonly IGrid<double> _stopGrid;
       private readonly Func<int, int, bool> _stop;
 
       private readonly int _dx;
       private readonly int _dy;
 
-      public PathStop(IGrid<int> dirGrid, IDoubleGrid stopGrid)
+      public PathStop(IGrid<int> dirGrid, IGrid<double> stopGrid)
       {
         _dirGrid = dirGrid;
         _stopGrid = stopGrid;
@@ -762,7 +774,7 @@ namespace Grid.Lcp
 
       double rClose = -1;
 
-      double sumMin = DoubleGrid.Min(sum);
+      double sumMin = sum.Min();
       double vMax = sumMin * maxLengthFactor;
       List<RouteInfo> cands = new List<RouteInfo>(e.Nx * 5);
       for (int iX = 1; iX < e.Nx - 1; iX++)
@@ -1096,16 +1108,12 @@ namespace Grid.Lcp
         BlockLine(nearLine, corridorWidth, _blockGrid);
       }
 
-      public override int this[int ix, int iy]
+      public sealed override int GetCell(int ix, int iy)
       {
-        get
-        {
-          if (_blockGrid[ix, iy] == 0)
-          { return 0; }
+        if (_blockGrid[ix, iy] == 0)
+        { return 0; }
 
-          return 1;
-        }
-        set { }
+        return 1;
       }
     }
 

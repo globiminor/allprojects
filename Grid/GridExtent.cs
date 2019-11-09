@@ -5,18 +5,6 @@ using System.IO;
 namespace Grid
 {
   public enum EGridInterpolation { nearest, bilinear };
-  internal enum EOperator
-  {
-    none,
-    abs,
-    addVal, addGrd,
-    subVal, subGrd,
-    multVal, multGrd,
-    quotVal, quotGrd,
-    gridModVal,
-    maxGrd,
-    typeDouble, bracket
-  };
 
   /// <summary>
   /// basic functions for grid calculations
