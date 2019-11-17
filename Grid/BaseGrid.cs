@@ -428,6 +428,15 @@ namespace Grid
     protected sealed override object GetThis(int ix, int iy) => GetCell(ix, iy);
   }
 
+  public class ConstGrid<T> : BaseGrid<T>
+  {
+    public ConstGrid(GridExtent extent, T value)
+      : base(extent)
+    { _value = value; }
+    public sealed override T GetCell(int ix, int iy) => _value;
+    private readonly T _value;
+  }
+
   public class SimpleGrid<T> : BaseGrid<T>, IGridW<T>
   {
     private readonly T[,] _value;

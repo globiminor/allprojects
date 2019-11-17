@@ -90,13 +90,9 @@ namespace OCourse.ViewModels
     private TableMapData _mapData;
     internal TableMapData GetMapData()
     {
-      //if (TMapContext == null)
-      //{ return null; }
-
       if (_mapData == null)
       {
         string name = System.IO.Path.GetFileNameWithoutExtension(MapName);
-        // Ocad.Data.OcadConnection conn = new Ocad.Data.OcadConnection(MapName) { SortByColors = true };
         SimpleConnection<VelocityRecord> conn = new SimpleConnection<VelocityRecord>(new VelocityData(this));
         string table = Ocad.Data.OcadConnection.TableElements;
         TData.TTable tTable = new TData.TTable(table, conn);
@@ -194,6 +190,7 @@ namespace OCourse.ViewModels
           _idxs = _idxs ?? BoxTree.Create(r.GetIndices(), (e) => BoxOp.Clone(e.MapBox));
           _cmp = _cmp ?? r.ColorComparer;
 
+          // Default velocity
           Box b = new Box(geom);
           yield return new VelocityRecord
           {
@@ -201,6 +198,7 @@ namespace OCourse.ViewModels
             Velocity = _vm.DefaultVelocity
           };
 
+          // velocity of elements
           IBox mapExtent = BoxOp.ProjectRaw(geom, r.Setup.Prj2Map)?.Extent;
           IEnumerable<BoxTree<Ocad.ElementIndex>.TileEntry> search = _idxs.Search(mapExtent);
           List<Ocad.ElementIndex> selIndexes = search.Select(x => x.Value).ToList();

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Basics.Geom;
+using System;
 using System.Collections.Generic;
 
 namespace Grid.Lcp
@@ -35,6 +36,18 @@ namespace Grid.Lcp
   {
     T InitCell(double centerX, double centerY, double cellSize);
     double GetCost(IList<T> costInfos, IList<double> w, double distance, bool inverse);
+  }
+
+  public interface ILeastCostData
+  {
+    double GetCost(double x, double y);
+    Polyline GetPath(IPoint end);
+  }
+
+  public interface ILcpModel
+  {
+    event StatusEventHandler Status;
+    ILeastCostData CalcCost(IPoint start, IPoint end);
   }
 
   public interface ITeleportProvider

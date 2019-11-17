@@ -1,5 +1,6 @@
 using Basics.Geom;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Grid
@@ -50,6 +51,17 @@ namespace Grid
       return (ix >= 0 && ix < _nx && iy >= 0 && iy < _ny);
     }
 
+    public void GridToWorld(LinkedList<Point> gridPath)
+    {
+      foreach (var point in gridPath)
+      {
+        int x = (int)point.X;
+        int y = (int)point.Y;
+        Point p = CellLL(x, y);
+        point.X = p.X;
+        point.Y = p.Y;
+      }
+    }
     public void GetBilinear(double x, double y,
       out int ix, out int iy, out double dx, out double dy)
     {

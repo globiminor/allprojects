@@ -244,16 +244,15 @@ namespace OcadTest
       //string heightPath = @"C:\daten\felix\kapreolo\karten\irchel\2019\irchel.asc";
       //DataDoubleGrid.FromAsciiFile(heightPath, 0, 0.01, typeof(double));
       GridExtent e = veloGrd.Extent;
-      int r = 8;
-      IGrid<double> heightGrd = new TiledDoubleGrid(e.Nx / r, e.Ny / r, typeof(float), e.X0, e.Y0, e.Dx * r);
+      IGrid<double> heightGrd = new ConstGrid<double>(e, 0.0);
 
       TerrainVeloModel tvm = new TerrainVeloModel(heightGrd, veloGrd);
+      symVeloModel.InitTeleports(tvm);
 
       Point2D start = new Point2D(2688500.36, 1249604.36);
       Point2D end = new Point2D(2688530.24, 1249731.84);
 
-      symVeloModel.Layers.Add(tvm);
-      var lcs = LeastCostGridStack.Create(
+      var lcs = LeastCostStack.Create(
         symVeloModel.Layers,
         symVeloModel.Teleports, stepWidth);
       lcs.AddStart(start, tvm);
@@ -276,7 +275,7 @@ namespace OcadTest
       var tp = Teleport.Create(from, tvm, to, tvm, 15.04);
       //var tpt = Teleport.Create(new Point2D(2685433.32, 1253130.28), tvm, to, tvm, 0.01);
 
-      var lcg = LeastCostGridStack.Create(new[] { tvm }, new[] { tp }, 0.5,
+      var lcg = LeastCostStack.Create(new[] { tvm }, new[] { tp }, 0.5,
         steps: Steps.Step16);
 
 
@@ -306,7 +305,7 @@ namespace OcadTest
       var tp = Teleport.Create(from, tvm1, to, tvm2, 15.04);
       //var tpt = Teleport.Create(new Point2D(2685433.32, 1253130.28), tvm, to, tvm, 0.01);
 
-      var lcg = LeastCostGridStack.Create(new[] { tvm1, tvm2 }, new[] { tp }, 0.5,
+      var lcg = LeastCostStack.Create(new[] { tvm1, tvm2 }, new[] { tp }, 0.5,
         steps: Steps.Step16);
 
 
@@ -332,7 +331,7 @@ namespace OcadTest
       var tp2 = Teleport.Create(new Point2D(2684850, 1253178), tvm, new Point2D(2684835, 1253179), tvm, 15.04);
       //var tpt = Teleport.Create(new Point2D(2685433.32, 1253130.28), tvm, to, tvm, 0.01);
 
-      var lcg = LeastCostGridStack.Create(new[] { tvm }, new[] { tp1, tp2 }, 0.5,
+      var lcg = LeastCostStack.Create(new[] { tvm }, new[] { tp1, tp2 }, 0.5,
         steps: Steps.Step16);
 
 

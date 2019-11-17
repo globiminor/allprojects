@@ -1,6 +1,7 @@
 ﻿
 using Basics.Geom;
 using Grid;
+using Grid.Lcp;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -25,6 +26,7 @@ namespace OCourse.ViewModels
       return new SymbolVeloModel<T>(vm, stepSize);
     }
 
+    protected VeloModelVm VeloModelVm => _vm;
     private readonly VeloModelVm _vm;
     private readonly MapData _mapData;
     private readonly TiledByteGrid _grid;
@@ -41,20 +43,26 @@ namespace OCourse.ViewModels
       { DoInitOnRead = true, TileSize = 256 };
 
       double maxSymbolSize = 0;
+      Dictionary<int, VeloModelVm.SymbolVm> teleportSyms = new Dictionary<int, VeloModelVm.SymbolVm>();
       foreach (var sym in _vm.Symbols)
       {
-        if (sym.Velocity == null || sym.Size == null)
-        { continue; }
-        maxSymbolSize = Math.Max(maxSymbolSize, sym.Size.Value);
+        if (sym.Velocity != null && sym.Size > maxSymbolSize)
+        { maxSymbolSize = sym.Size.Value; }
+
+        if (sym.Teleport.HasValue)
+        { teleportSyms[sym.Id] = sym; }
       }
       _maxSymbolSize = maxSymbolSize;
     }
 
-    GridExtent IGrid.Extent => _grid.Extent;
+
+    GridExtent IGrid.Extent => GridExtent;
+    public GridExtent GridExtent => _grid.Extent;
     Type IGrid.Type => typeof(double);
 
+
     public double MinVelo { get; set; } = VelocityGrid.DefaultMinVelo;
-    object IGrid.this[int ix, int iy] => GetValue(ix, iy); 
+    object IGrid.this[int ix, int iy] => GetValue(ix, iy);
     double IGrid<double>.this[int ix, int iy] => GetValue(ix, iy);
 
     public double GetValue(int ix, int iy)
@@ -175,11 +183,113 @@ namespace OCourse.ViewModels
     public SymbolVeloModel(VeloModelVm veloModelVm, double stepSize)
       : base(veloModelVm, stepSize)
     {
-      Layers = new List<Grid.Lcp.IDirCostModel<T>>();
-      Teleports = new List<Grid.Lcp.Teleport<T>>();
+      Layers = new List<IDirCostModel<T>>();
+      Teleports = new List<Teleport<IDirCostModel<T>>>();
+    }
+    public List<Grid.Lcp.IDirCostModel<T>> Layers { get; }
+    public List<Grid.Lcp.Teleport<IDirCostModel<T>>> Teleports { get; }
+
+    public void InitTeleports(IDirCostModel<T> defaultLayer)
+    {
+      Layers.Clear();
+      Teleports.Clear();
+
+      Dictionary<int, VeloModelVm.SymbolVm> teleportSyms = new Dictionary<int, VeloModelVm.SymbolVm>();
+      foreach (var sym in VeloModelVm.Symbols)
+      {
+        if (sym.Teleport.HasValue)
+        { teleportSyms[sym.Id] = sym; }
+      }
+
+      using (Ocad.OcadReader r = Ocad.OcadReader.Open(VeloModelVm.MapName))
+      {
+        List<Ocad.ElementIndex> teleportIdxs = new List<Ocad.ElementIndex>();
+        foreach (var idx in r.GetIndices())
+        {
+          if (teleportSyms.ContainsKey(idx.Symbol))
+          { teleportIdxs.Add(idx); }
+        }
+
+        List<Ocad.GeoElement> layerElems = new List<Ocad.GeoElement>();
+        List<Ocad.GeoElement> teleportElems = new List<Ocad.GeoElement>();
+        foreach (var teleportElem in r.EnumGeoElements(teleportIdxs))
+        {
+          if (teleportElem.Geometry is Ocad.GeoElement.Area)
+          { layerElems.Add(teleportElem); }
+          if (teleportElem.Geometry is Ocad.GeoElement.Line)
+          { teleportElems.Add(teleportElem); }
+        }
+
+        Layers.Add(defaultLayer);
+        foreach (var elem in layerElems)
+        {
+          VeloModelVm.SymbolVm sym = teleportSyms[elem.Symbol];
+          double cost = sym.Teleport.Value;
+
+          ConstVeloLayer layer = new ConstVeloLayer(((Ocad.GeoElement.Area)elem.Geometry).BaseGeometry, cost);
+          Layers.Add(layer);
+        }
+        foreach (var elem in teleportElems)
+        {
+          Ocad.GeoElement.Line line = (Ocad.GeoElement.Line)elem.Geometry;
+          IPoint s = line.BaseGeometry.GetPoint(0);
+          IDirCostModel<T> fromLayer = GetLayer(s) ?? defaultLayer;
+          IPoint e = line.BaseGeometry.GetPoint(-1);
+          IDirCostModel<T> toLayer = GetLayer(e) ?? defaultLayer;
+          double l = line.BaseGeometry.Length();
+
+          VeloModelVm.SymbolVm sym = teleportSyms[elem.Symbol];
+          double cost = l * sym.Teleport.Value;
+          Teleport<IDirCostModel<T>> tel0 = new Teleport<IDirCostModel<T>>(s, fromLayer, e, toLayer, cost);
+          Teleports.Add(tel0);
+          Teleport<IDirCostModel<T>> tel1 = new Teleport<IDirCostModel<T>>(e, toLayer, s, fromLayer, cost);
+          Teleports.Add(tel1);
+        }
+      }
+
+      Grid.Lcp.IDirCostModel<T> GetLayer(IPoint p)
+      {
+        foreach (var layer in Layers)
+        {
+          if (!(layer is ConstVeloLayer constLayer))
+          { continue; }
+          if (constLayer.Area.IsWithin(p))
+          { return constLayer; }
+        }
+
+        return null;
+      }
     }
 
-    public List<Grid.Lcp.IDirCostModel<T>> Layers { get; }
-    public List<Grid.Lcp.Teleport<T>> Teleports { get; }
+    private class ConstVeloLayer : Grid.Lcp.IDirCostModel<T>
+    {
+      private readonly IBox _extent;
+      private readonly double _cost;
+
+      public ConstVeloLayer(Area area, double cost)
+      {
+        Area = area;
+        _extent = area.Extent;
+        _cost = cost;
+      }
+      public Area Area { get; }
+      public IBox Extent => _extent;
+      public double MinUnitCost => _cost;
+
+      public double GetCost(IList<T> costInfos, IList<double> w, double distance, bool inverse)
+      {
+        return distance * _cost;
+      }
+
+      public double GetCost(IList<double> x, IList<double> y, IList<double> w, double cellSize, double distance, bool inverse)
+      {
+        return distance * _cost;
+      }
+
+      public T InitCell(double centerX, double centerY, double cellSize)
+      {
+        return default;
+      }
+    }
   }
 }

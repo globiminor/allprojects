@@ -124,7 +124,8 @@ namespace OcadTest
       //string dir = @"C:\daten\felix\kapreolo\karten\blauen\2018\lidar";
       //string dir = @"C:\daten\felix\kapreolo\karten\irchel\2019\lidar";
       //string dir = @"C:\daten\felix\kapreolo\karten\hardwald\2017\lidar";
-      string dir = @"C:\daten\felix\kapreolo\scool\boppelsen_maiacher\lidar";
+      // string dir = @"C:\daten\felix\kapreolo\scool\boppelsen_maiacher\lidar";
+      string dir = @"C:\daten\felix\kapreolo\scool\wallisellen_alpen\lidar";
 
       Dictionary<string, string> tiles = new Dictionary<string, string>();
       foreach (var path in Directory.EnumerateFiles(dir))
@@ -330,8 +331,12 @@ namespace OcadTest
     public void DownloadLaz()
     {
       // Boppelsen maiacher
-      List<string> keys = new List<string> { "26725_12580", "26725_12575" };
-      string root = @"C:\daten\felix\kapreolo\scool\boppelsen_maiacher\lidar";
+      //List<string> keys = new List<string> { "26725_12580", "26725_12575" };
+      //string root = @"C:\daten\felix\kapreolo\scool\boppelsen_maiacher\lidar";
+
+      // wallisellen alpen
+      List<string> keys = new List<string> { "26865_12525", "26865_12520" };
+      string root = @"C:\daten\felix\kapreolo\scool\wallisellen_alpen\lidar";
 
       foreach (string key in keys)
       {
@@ -349,19 +354,31 @@ namespace OcadTest
     }
 
     [TestMethod]
-    public void DhmIrchel()
+    public void CreateDhm()
     {
+      //// irchel
+      //string root = @"C:\daten\felix\kapreolo\karten\irchel\2019\";
+      //string result = "irchel";
+      //List<string> keys = new List<string> {
+      //  "26850_12660", "26850_12670", "26850_12680",
+      //  "26860_12660", "26860_12670", "26860_12680",
+      //  "26870_12660", "26870_12670", "26870_12680"
+      //};
+
+      // duebendorf
+      string root = @"C:\daten\felix\kapreolo\karten\dübendorf\";
+      string result = "duebendorf";
       List<string> keys = new List<string> {
-        "26850_12660", "26850_12670", "26850_12680",
-        "26860_12660", "26860_12670", "26860_12680",
-        "26870_12660", "26870_12670", "26870_12680"
+        "26880_12510", "26890_12510",
+        "26880_12500", "26890_12500",
       };
+
+      double size = 2;
       double x0 = double.MaxValue;
       double y0 = double.MinValue;
       double x1 = double.MinValue;
       double y1 = double.MaxValue;
-      double size = 2;
-      string root = @"C:\daten\felix\kapreolo\karten\irchel\2019\";
+
       foreach (string key in keys)
       {
         string path = $"{root}{key}.asc.zip";
@@ -412,7 +429,7 @@ namespace OcadTest
         DoubleGrid grdHeight = DataDoubleGrid.FromAsciiFile(path, 0, 0.01, typeof(double));
         grdSum = GridOp.Max(grdSum, grdHeight);
       }
-      grdSum.SaveASCII($"{root}irchel.asc", "N2");
+      grdSum.SaveASCII($"{root}{result}.asc", "N2");
     }
     [TestMethod]
     public void TestWriteBildObjekte()

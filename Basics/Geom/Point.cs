@@ -16,6 +16,8 @@ namespace Basics.Geom
     }
     public int Compare(IPoint x, IPoint y)
     {
+      if (x == y)
+      { return 0; }
       int nDim = x.Dimension;
       for (int iDim = 0; iDim < nDim; iDim++)
       {

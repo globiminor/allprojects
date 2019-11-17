@@ -24,11 +24,29 @@ namespace Grid
         {
           T t = grid[i, j];
           if (first)
-          { m = t; }
-          else if (t.CompareTo(m) < 0)
           {
             m = t;
+            first = false;
           }
+          else if (t.CompareTo(m) < 0)
+            m = t;
+        }
+      }
+      return m;
+    }
+
+    public static double Min(this IGrid<double> grid)
+    {
+      double m = double.MaxValue;
+      for (int j = 0; j < grid.Extent.Ny; j++)
+      {
+        for (int i = 0; i < grid.Extent.Nx; i++)
+        {
+          double t = grid[i, j];
+          if (double.IsNaN(t))
+          { continue; }
+          if (t < m)
+            m = t;
         }
       }
       return m;
@@ -45,11 +63,28 @@ namespace Grid
         {
           T t = grid[i, j];
           if (first)
-          { m = t; }
-          else if (t.CompareTo(m) > 0)
           {
             m = t;
+            first = false;
           }
+          else if (t.CompareTo(m) > 0)
+            m = t;
+        }
+      }
+      return m;
+    }
+    public static double Max(this IGrid<double> grid)
+    {
+      double m = double.MinValue;
+      for (int j = 0; j < grid.Extent.Ny; j++)
+      {
+        for (int i = 0; i < grid.Extent.Nx; i++)
+        {
+          double t = grid[i, j];
+          if (double.IsNaN(t))
+          { continue; }
+          if (t > m)
+            m = t;
         }
       }
       return m;
@@ -75,7 +110,7 @@ namespace Grid
     {
       return new GridConvert<double, double>(grid, (g, ix, iy) => g[ix, iy] + add);
     }
-    public static IGrid<double> Add(this IGrid<double> x, IGrid<double> y, GridExtent extent = null, 
+    public static IGrid<double> Add(this IGrid<double> x, IGrid<double> y, GridExtent extent = null,
       EGridInterpolation interpol = EGridInterpolation.nearest)
     {
       if (interpol == EGridInterpolation.nearest)
@@ -103,7 +138,12 @@ namespace Grid
 
     public static IGrid<double> Max(IGrid<double> x, IGrid<double> y, GridExtent extent = null)
     {
-      return new GridFunc<double, double, double>(x, y, (vx, vy) => Math.Max(vx, vy), extent);
+      return new GridFunc<double, double, double>(x, y, (vx, vy) => 
+      {
+        if (double.IsNaN(vx)) return vy;
+        if (double.IsNaN(vy)) return vx;
+        return Math.Max(vx, vy);
+      }, extent);
     }
 
 
@@ -362,7 +402,7 @@ namespace Grid
         return g[ix, iy];
 
       x = x ?? _extent.X0 + ix * _extent.Dx;
-      y = x ?? _extent.Y0 + iy * _extent.Dy;
+      y = y ?? _extent.Y0 + iy * _extent.Dy;
       T value = valueFunc == null
         ? g.Value(x.Value, y.Value)
         : valueFunc(g, x.Value, y.Value);

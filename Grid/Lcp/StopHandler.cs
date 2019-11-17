@@ -89,7 +89,7 @@ namespace Grid.Lcp
     private StopInfo GetMaxFullCostField()
     {
       StopInfo maxFullCostField = null;
-      double maxDist = 0;
+      double maxDist = -1;
       foreach (var pair in _startFields)
       {
         List<StopInfo> sortedStops = pair.Value;

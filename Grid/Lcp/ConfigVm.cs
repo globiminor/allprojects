@@ -10,6 +10,7 @@ namespace Grid.Lcp
 
     private const string _dhmExt = "*.asc";
     private const string _veloExt = "*.tif";
+    private const string _veloStack = "*.xml";
     private const double _resol = 4.0;
 
     private readonly List<Steps> _stepsModes =
@@ -103,7 +104,7 @@ namespace Grid.Lcp
       }
     }
     public string VeloFileFilter
-    { get { return $"{_veloExt} | {_veloExt}"; } }
+    { get { return $"{_veloExt} | {_veloExt} | <veloStack>.xml | {_veloStack}"; } }
 
     public string TeleportPath
     {
@@ -159,6 +160,10 @@ namespace Grid.Lcp
           if (File.Exists(HeightPath))
           {
             _grdHeight = DataDoubleGrid.FromAsciiFile(HeightPath, 0, 0.01, typeof(double));
+          }
+          else if (double.TryParse(HeightPath, out double constHeight))
+          {
+            _grdHeight = new ConstGrid<double>(new GridExtent(1000,1000, 0, 0, _resolution), constHeight);
           }
         }
         return _grdHeight;
