@@ -1,8 +1,10 @@
 using Android.Graphics;
 using Android.Runtime;
 using Android.Views;
+using Android.Views.InputMethods;
 using Android.Widget;
 using Basics.ViewModels;
+using OMapScratch;
 
 namespace Basics.Views
 {
@@ -101,6 +103,20 @@ namespace Basics.Views
       TextInfo.PostInvalidate();
     }
 
+    public static void StartEdit(EditText editText)
+    {
+      editText.RequestFocus();
+      InputMethodManager inputMethodManager = (InputMethodManager)Android.App.Application.Context.GetSystemService(MainActivity.InputMethodService);
+      inputMethodManager.ShowSoftInput(editText, ShowFlags.Forced);
+      inputMethodManager.ToggleSoftInput(ShowFlags.Forced, HideSoftInputFlags.ImplicitOnly);
+    }
+
+    public static void StopEdit(EditText editText)
+    {
+      InputMethodManager inputMethodManager = (InputMethodManager)Android.App.Application.Context.GetSystemService(MainActivity.InputMethodService);
+      inputMethodManager.HideSoftInputFromWindow(editText.WindowToken, 0);
+    }
+
     public static float GetMmPixel(View view)
     {
       return GetMmPixel(view.Resources);
@@ -160,7 +176,7 @@ namespace Basics.Views
 
     public static Binding<bool> BindToEnabled(this View view, BaseVm vm, string prop, BindingMode mode = BindingMode.TwoWay)
     {
-      Binding<bool> b = new Binding<bool>(vm, prop, (t) => view.Enabled = t, () =>  view.Enabled);
+      Binding<bool> b = new Binding<bool>(vm, prop, (t) => view.Enabled = t, () => view.Enabled);
       return b;
     }
 

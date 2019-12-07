@@ -91,4 +91,10 @@ namespace Grid.Lcp
     bool AdaptCost(ICostField stepField);
     bool Stop<T>(ICostField processField, SortedList<T, T> costList);
   }
+
+  public interface IMaxCostHandler
+  {
+    double MaxCost { get; }
+    IReadOnlyDictionary<IField, double> OverrideFields { get; }
+  }
 }

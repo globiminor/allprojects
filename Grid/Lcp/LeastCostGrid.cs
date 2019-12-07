@@ -56,6 +56,7 @@ namespace Grid.Lcp
       private readonly LeastCostGrid _parent;
       private readonly bool _invers;
       private readonly ICostOptimizer _costOptimizer;
+      private readonly IMaxCostHandler _maxCostHandler;
 
       private readonly SortedList<ICostField, ICostField> _costList;
       private readonly Dictionary<IField, ICostField> _fieldList;
@@ -65,11 +66,13 @@ namespace Grid.Lcp
 
       private readonly int _nFields;
 
-      public Calc(LeastCostGrid parent, bool invers = false, ICostOptimizer costOptimizer = null)
+      public Calc(LeastCostGrid parent, bool invers = false,
+        ICostOptimizer costOptimizer = null, IMaxCostHandler maxCostHandler = null)
       {
         _parent = parent;
         _invers = invers;
         _costOptimizer = costOptimizer;
+        _maxCostHandler = maxCostHandler;
 
         LeastCostGrid p = _parent;
         _costGrid = new TiledDoubleGrid(p.XMax, p.YMax, typeof(float), p.X0, p.Y0, p.Dx);
@@ -235,6 +238,17 @@ namespace Grid.Lcp
               cancelFields = _parent.Steps.GetCancelIndexes(distStep, cancelFields);
               cost = Math.Abs(cost);
             }
+            if (cost > _maxCostHandler?.MaxCost)
+            {
+              if (_maxCostHandler.OverrideFields.TryGetValue(startField, out double maxCost))
+              {
+                cost = Math.Min(cost, maxCost * distStep.Distance);
+              }
+              else if (_maxCostHandler.OverrideFields.TryGetValue(fields[iField], out maxCost))
+              {
+                cost = Math.Min(cost, maxCost * distStep.Distance);
+              }
+            }
             if (cancelFields != null && cancelFields[distStep.Index])
             { continue; }
           }
@@ -316,7 +330,7 @@ namespace Grid.Lcp
         stopList.Add(GetField(end));
       }
 
-      StopHandler stopHandler = new StopHandler(stopList, DirCostModel.MinUnitCost * Dx)
+      StopHandler stopHandler = new StopHandler(stopList, DirCostModel.MinUnitCost * Dx, 5 * Dx, (int)(0.7 / Dx))
       { StopFactor = stopFactor };
       LeastCostData result = CalcCost(start, invers, calcAdapter: stopHandler);
       return result;
@@ -848,7 +862,8 @@ namespace Grid.Lcp
     protected virtual void CalcEnded()
     { }
 
-    protected LeastCostData CalcCost(IPoint start, bool invers = false, ICostOptimizer calcAdapter = null)
+    protected LeastCostData CalcCost(IPoint start, bool invers = false,
+      ICostOptimizer calcAdapter = null)
     {
       try
       {

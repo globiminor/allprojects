@@ -18,6 +18,7 @@
     public IDrawable Geometry { get; set; }
     public Symbol Symbol { get; set; }
     public ColorRef Color { get; set; }
+    public string Text { get; set; }
   }
 
   public static class EventUtils

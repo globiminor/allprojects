@@ -28,9 +28,10 @@
     <h2>Quick start</h2>
     <p>1. In OCAD, make sure that your OCAD-Map is georeferenced ('Landeskoordinaten' and 'Koordinatensystem' set).</p>
     <p>2. In OCAD, export small raster images as jpg Files with world files(map, relief, orthophoto, ...). Small images means not more than 2'000 x 2'000 pixels, i.e 1 km x 1 km with a resolution of 0.5 m </p>
-    <p>3. Start the Windows-Application 'OcadScratch.exe', chose File->Init... and select your OCAD-File.<br />
-         In the images tab, add the exported jpg-images.<br />
-         Save the settings by File-&gt;Save as..: Create a file in a new folder: ...&lt;/yourfolder&gt;/&lt;yourconfigfile&gt;
+    <p>
+        3. Start the Windows-Application 'OcadScratch.exe', chose File->Init... and select your OCAD-File.<br />
+        In the images tab, add the exported jpg-images.<br />
+        Save the settings by File-&gt;Save as..: Create a file in a new folder: ...&lt;/yourfolder&gt;/&lt;yourconfigfile&gt;
     </p>
     <p>4. On your android device, <a href="#install">install</a> OMapScratch.OMapScratch-Signed.apk</p>
     <p>5. On your android device, create a folder called '_oscratch' in the top folder</p>
@@ -55,9 +56,9 @@
     &lt;constrcolor R=&quot;255&quot; G=&quot;0&quot; B=&quot;0&quot;/&gt;
   &lt;/data&gt;
   &lt;image name="LAS" path="B3_Hardwald 2017_DSM_LasIntensity.jpg" /&gt;
-  &lt;image name="Hangneigung" path="B3_Hardwald 2017_DTM_Hangneigung.jpg" /&gt;
-  &lt;image name="Relief 1" path="B3_Hardwald 2017_DTM_Reliefschummerung.jpg" /&gt;
-  &lt;image name="Relief 2" path="B4_Hardwald 2017_DTM_Reliefschummerung.jpg" /&gt;
+  &lt;image name="Hangneigung 1" path="B3_Hardwald 2017_DTM_Hangneigung.jpg" /&gt;
+  &lt;image name="Hangneigung 2" path="B4_Hardwald 2017_DTM_Hangneigung.jpg" /&gt;
+  &lt;image name="Relief" path=&quot;*Reliefschummerung.jpg" /&gt;
 &lt;/oscratch&gt;</pre>
     <p>where</p>
     <pre class="txt">
@@ -74,13 +75,12 @@
 &lt;data constrtextsize_mm&gt; (optional): text size in mm for texts displayed during constructions. (See figure below)
 &lt;data&gt;&lt;constrcolor&gt; (optional): color for construction elements. Remark: This color can be adapted in runtime. (See figure below)
 &lt;image name&gt;: Name displayed in O-scratch
-&lt;image path&gt;: file name of image file. Only jpg-Formats are supported. Use Files with pixel size of less than 5000 x 5000 pixels.
-              For each image file, the image-World file (.jgw) must exist, too.
-			 You may create these image and world file with OCAD -> Export.
-			 Remark: When working with large image files, split them to several parts 
-			         so that not the entire image must be copied to your android device 
-					 and that the loading of the image is more performant.
-			         Use some overlap for the files of the same theme, because only 1 image file per time is displayed in o-scratch 
+&lt;image path&gt;: file name of image file(s). Only png- and jpg-Formats are supported. Prefer files with pixel size of less than 5000 x 5000 pixels.
+	For each image file, the image-World file (.pgw, .jgw) must exist, too.
+	You may create these image and world files with OCAD -> Export.
+	Remark: When working with large image files, split them to several parts so that not the entire image must be copied to your android device
+		and that the loading of the image is more performant. 
+		Use placeholders (*) for files of the same theme. The files needed for display are automatically determined.
     </pre>
     <img src="Constr.png" style="width: 105px; height: 96px" />
     &nbsp;&nbsp
@@ -99,64 +99,111 @@
 	          If you do not want to save the previous project, close the app.
     </p>
     <p>2. Click a recent &lt;project&gt;.config or browse to &lt;project&gt.config and click it. The first of the images is displayed.</p>
-    <h3>Chose Image</h3>
+    <h3>Choose Image</h3>
     <p>This option is only available if more than 1 image is defined in the .config file</p>
-    <p>1. Click LOAD IMAGE. A list of all images is displayed (corresponding to images in &lt;project&gt;.config images). Remark: Use Images with a size of less than 5000 x 5000 pixel</p>
-    <p>2. Click on any image on the list. The corresponding image will be displayed according to the current spatial extent.</p>
-    <h3>Chose Edit-Tool</h3>
-    <p>1. Click on "Edit tool" (like
-        <img src="Point.png" style="width: 20px; height: 20px" />). A list of all available colors and symbols is displayed.</p>
+    <p>1. Click
+        <img src="Image.png" style="width: 23px; height: 20px" />. A list of all images is displayed (corresponding to images in &lt;project&gt;.config images). Remark: Use Images with a size of less than 5000 x 5000 pixel</p>
+    <img src="ImageSel.png" />
+    <p>2. Click on any image or image combination (number) on the list. The corresponding image or combination will be displayed according to the current spatial extent.</p>
+    <p>or Click + to create an image combination with the corresponding image as base image.</p>
+    <p>3. (if + clicked) Configure your image combination.  </p>
+    <pre class="txt">
+	Checkbox: Display corresponding Image.
+	O: Opacity. 
+	G: Gray scale image : define color as gray component for a gray scale image. 
+	C: Color conversion: &quot;rotate&quot; rgb-colors
+	Remark: G and C cannot be used together.
+
+	If you confirm your configuration with "OK", the configuration is used as background image and a new image combination is added to the images list.
+    </pre>
+    <img src="ImageConfig.png" />
+    <h3>Choose Edit-Tool</h3>
+    <p>
+        1. Click on "Edit tool" (like
+        <img src="Point.png" style="width: 20px; height: 20px" />). A list of all available colors and symbols is displayed.
+    </p>
     <img src="Symbols.png" style="width: 236px; height: 125px" />
     <p>2. (Optionally) choose color. The colors of all symbols in the list are adapted accordingly.</p>
     <p>3. Choose symbol (<img src="Point.png" style="width: 20px; height: 20px" />,<img src="Line.png" style="width: 20px; height: 20px" />,...) or "Arrow Tool"<img src="Arrow.png" style="width: 20px; height: 20px" />. The list is closed and the edit tool is set accordingly.</p>
 
     <h3>Navigate</h3>
     <p>Swipe over display to change the displayed area. See also <a href="#swipeFixExtent">Swipe/Fix extent</a> and <a href="#precisionDrawingMode">precision drawing mode</a>.</p>
-    <p>Use 2 fingers extending / narrowing to zoom in / zoom out. <br />
+    <p>
+        Use 2 fingers extending / narrowing to zoom in / zoom out.
+        <br />
         Use 2 fingers rotating to rotate the display
     </p>
-    <p>Use
+    <p>
+        Use
         <img src="ZoomIn.png" style="width: 20px; height: 20px" />
-        to zoom in.</p>
-    <p>Use
+        to zoom in.
+    </p>
+    <p>
+        Use
         <img src="ZoomOut.png" style="width: 20px; height: 20px" />
-        to zoom out.</p>
-    <p>Long click on 
+        to zoom out.
+    </p>
+    <p>
+        Long click on 
         <img src="DetailUr.png" style="width: 20px; height: 20px" />/
         <img src="DetailLl.png" style="width: 20px; height: 20px" />/
-        <img src="RotL90.png" style="width: 20px; height: 20px" /> /
-        <img src="RotNorth.png" style="width: 20px; height: 20px" /> /
-        <img src="RotCompass.png" style="width: 20px; height: 20px" /> 
+        <img src="RotL90.png" style="width: 20px; height: 20px" />
+        /
+        <img src="RotNorth.png" style="width: 20px; height: 20px" />
+        /
+        <img src="RotCompass.png" style="width: 20px; height: 20px" />
         expands to these tools. Clicking an expanded tool executes the tool and sets it as default.
     </p>
-    <p> <img src="DetailUr.png" style="width: 20px; height: 20px" />/
-        <img src="DetailLl.png" style="width: 20px; height: 20px" />: See <a href="#precisionDrawingMode">precision drawing mode</a> <br />
+    <p>
+        <img src="DetailUr.png" style="width: 20px; height: 20px" />/
+        <img src="DetailLl.png" style="width: 20px; height: 20px" />: See <a href="#precisionDrawingMode">precision drawing mode</a>
+        <br />
     </p>
-    <p> Use <img src="RotL90.png" style="width: 20px; height: 20px" /> to rotate the display by 90°. </p>
-    <p> Use <img src="RotNorth.png" style="width: 20px; height: 20px" /> to set the map rotation angle to 0°. </p>
-    <p> Use <img src="RotCompass.png" style="width: 20px; height: 20px" /> to rotate the map corresponding to magnetic north. </p>
+    <p>
+        Use
+        <img src="RotL90.png" style="width: 20px; height: 20px" />
+        to rotate the display by 90°.
+    </p>
+    <p>
+        Use
+        <img src="RotNorth.png" style="width: 20px; height: 20px" />
+        to set the map rotation angle to 0°.
+    </p>
+    <p>
+        Use
+        <img src="RotCompass.png" style="width: 20px; height: 20px" />
+        to rotate the map corresponding to magnetic north.
+    </p>
 
     <h3>Capture Point</h3>
-    <p>1. Choose Edit-Tool with a point symbol, i.e.
-        <img src="Point.png" style="width: 20px; height: 20px" /></p>
+    <p>
+        1. Choose Edit-Tool with a point symbol, i.e.
+        <img src="Point.png" style="width: 20px; height: 20px" />
+    </p>
     <p>2. Click on Map (repeatedly). The point symbol is displayed a the clicked point(s).</p>
     <p>See also <a href="#precisionDrawingMode">precision drawing mode</a>.</p>
 
     <h3>Capture Line</h3>
-    <p>1. Choose Edit-Tool with a line symbol, i.e.
-        <img src="Line.png" style="width: 20px; height: 20px" /></p>
+    <p>
+        1. Choose Edit-Tool with a line symbol, i.e.
+        <img src="Line.png" style="width: 20px; height: 20px" />
+    </p>
     <p>2. Click on Map to start the line. A small horizontal line is displayed at the clicked point.</p>
     <img src="LineStart.png" style="width: 58px; height: 58px" />
     <p>3. Click the next point(s) on the map. The captured line is displayed.</p>
     <img src="LineCont.png" style="width: 58px; height: 58px" />
-    <p>4. (double) click on the Edit-Tool-Button
+    <p>
+        4. (double) click on the Edit-Tool-Button
         <img src="Line.png" style="width: 20px; height: 20px" />
-        to finish the current line.</p>
+        to finish the current line.
+    </p>
     <p>See also <a href="#precisionDrawingMode">precision drawing mode</a>.</p>
 
     <h3>Special Actions</h3>
-    <p>1. Choose Edit-Tool "Arrow Tool"
-        <img src="Arrow.png" style="width: 20px; height: 20px" /></p>
+    <p>
+        1. Choose Edit-Tool "Arrow Tool"
+        <img src="Arrow.png" style="width: 20px; height: 20px" />
+    </p>
     <p>
         2. Click on Map. A context menu is displayed near the clicked point 
    and a small rectangle is displayed on the map at the position for which the context menu shall be applied.
@@ -185,8 +232,10 @@
         If the wgs84 transformation is defined in the config-file, the current position of the is derived from the device location and displayed on the map as a red circle.<br />
         If the wgs84 is not defined or incorrect, the location can be synchronised:
     </p>
-    <p>1. Chose Edit-Tool "Arrow Tool"
-        <img src="Arrow.png" style="width: 20px; height: 20px" /></p>
+    <p>
+        1. Chose Edit-Tool "Arrow Tool"
+        <img src="Arrow.png" style="width: 20px; height: 20px" />
+    </p>
     <p>2. Click the map at your current position</p>
     <p>
         3. Chose "Set location" in the context menu (submenu of "Constr" or "Elem"-&gt;"Constr...").
@@ -202,8 +251,10 @@
         If the declination is defined in the config-file, the current orientation of the map is derived from the device orientation.<br />
         If the declination is not defined or incorrect, the declination can be synchronised:
     </p>
-    <p>1. Chose Edit-Tool "Arrow Tool"
-        <img src="Arrow.png" style="width: 20px; height: 20px" />.</p>
+    <p>
+        1. Chose Edit-Tool "Arrow Tool"
+        <img src="Arrow.png" style="width: 20px; height: 20px" />.
+    </p>
     <p>2. Click the map at any point.</p>
     <p>3. Chose "Set orientation" in the context menu (submenu of "Constr" or "Elem"->"Constr...").</p>
     <p>4. Orientate your the device according to the environment.</p>
@@ -214,13 +265,17 @@
     </p>
 
     <h3>Location</h3>
-    <p>1. Click Location button
+    <p>
+        1. Click Location button
         <img src="Location.png" style="width: 20px; height: 20px" />
-        in the toolbar. The behavior is the same as on clicking on the map, but the click occurs at the current location (displayed by red circle).</p>
+        in the toolbar. The behavior is the same as on clicking on the map, but the click occurs at the current location (displayed by red circle).
+    </p>
 
     <h3>Undo</h3>
-    <p>1. Click Undo button
-        <img src="Undo.png" style="width: 20px; height: 20px" />. The last action (add symbol, add line point, ...) is undone.</p>
+    <p>
+        1. Click Undo button
+        <img src="Undo.png" style="width: 20px; height: 20px" />. The last action (add symbol, add line point, ...) is undone.
+    </p>
 
     <h3>Redo</h3>
     <p>

@@ -168,7 +168,8 @@ namespace OMapScratch
           {
             elemActions.Add(new ContextAction(elemPnt, new RotateElementAction(view, _map, elem, elemPnt)) { Name = "Rotate" });
           }
-          elemActions.Add(new ContextAction(elemPnt, new SetSymbolAction(view, _map, elem)) { Name = "Change Symbol" });
+          elemActions.Add(new ContextAction(elemPnt, new SetSymbolAction_(view, _map, elem)) { Name = "Change Symbol" });
+          elemActions.Add(new ContextAction(elemPnt, new EditTextAction(view, _map, elem)) { Name = "Add/Edit Text" });
 
           distActions.Add(new ActionDistance
           {

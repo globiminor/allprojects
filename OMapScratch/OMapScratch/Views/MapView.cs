@@ -152,6 +152,44 @@ namespace OMapScratch.Views
     {
       Utils.ShowText(text, success);
     }
+    void IMapView.EditText(string text, ITextAction setText)
+    {
+
+      Android.Widget.EditText editText = new EditText(this.Context);
+      editText.Text = text;
+      RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(Android.Views.ViewGroup.LayoutParams.MatchParent, Android.Views.ViewGroup.LayoutParams.MatchParent);
+      editText.LayoutParameters = lprams;
+      editText.InputType = Android.Text.InputTypes.ClassText;
+      editText.Visibility = Android.Views.ViewStates.Visible;
+      editText.SetBackgroundColor(new Color(255, 255, 255, 192));
+
+      editText.KeyPress += (object sender, Android.Views.View.KeyEventArgs e) => {
+        e.Handled = false;
+        if (e.Event.Action == Android.Views.KeyEventActions.Down && e.KeyCode == Android.Views.Keycode.Enter)
+        {
+          e.Handled = true;
+
+          Utils.StopEdit(editText);
+          setText.Action(editText.Text);
+
+          Android.Views.ViewGroup parent = editText.Parent as Android.Views.ViewGroup;
+          parent?.RemoveView(editText);
+          parent?.PostInvalidate();
+          PostInvalidate();
+        }
+      };
+
+      RelativeLayout parentLayout = this.Parent as RelativeLayout;
+      parentLayout.AddView(editText);
+
+      Utils.StartEdit(editText);
+
+      parentLayout.PostInvalidate();
+      PostInvalidate();
+
+
+      //Utils.ShowText(text, success);
+    }
 
     void IMapView.SetGetSymbolAction(ISymbolAction symbolAction)
     {

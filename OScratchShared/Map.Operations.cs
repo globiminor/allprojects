@@ -393,7 +393,35 @@ namespace OMapScratch
       }
     }
 
-    private class SetSymbolOperation : Operation
+    private class EditTextOperation : Operation
+    {
+      private readonly Elem _elem;
+      private readonly string _newText;
+
+      private string _oldText;
+      public EditTextOperation(Elem elem, string text)
+      {
+        _elem = elem;
+        _newText = text;
+      }
+      public bool LastSuccess { get; private set; }
+      public override void Undo()
+      {
+        _elem.Text = _oldText;
+      }
+      protected override bool Redo()
+      {
+        LastSuccess = false;
+        _oldText = _elem.Text;
+
+        _elem.Text = _newText;
+        LastSuccess = true;
+        return true;
+      }
+    }
+
+    [System.Obsolete("rename")]
+    private class SetSymbolOperation_ : Operation
     {
       private readonly Elem _elem;
       private readonly Symbol _newSymbol;
@@ -402,7 +430,7 @@ namespace OMapScratch
       private Symbol _oldSymbol;
       private ColorRef _oldColor;
 
-      public SetSymbolOperation(Elem elem, Symbol symbol, ColorRef color)
+      public SetSymbolOperation_(Elem elem, Symbol symbol, ColorRef color)
       {
         _elem = elem;
         _newSymbol = symbol;

@@ -12,6 +12,8 @@ namespace OcadScratch
   {
     public CntSettings()
     {
+      DataContext = new ConfigVm();
+
       InitializeComponent();
 
       txtElemTextSize.SetBinding(TextBox.TextProperty, new Binding(nameof(DataContext.ElemTextSize)));

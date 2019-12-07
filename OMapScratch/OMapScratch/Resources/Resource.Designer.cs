@@ -44,53 +44,53 @@ namespace OMapScratch
 		public partial class Drawable
 		{
 			
-			// aapt resource value: 0x7f020000
-			public const int BackImage = 2130837504;
+			// aapt resource value: 0x7F010000
+			public const int BackImage = 2130771968;
 			
-			// aapt resource value: 0x7f020001
-			public const int DetailLl = 2130837505;
+			// aapt resource value: 0x7F010001
+			public const int DetailLl = 2130771969;
 			
-			// aapt resource value: 0x7f020002
-			public const int DetailUr = 2130837506;
+			// aapt resource value: 0x7F010002
+			public const int DetailUr = 2130771970;
 			
-			// aapt resource value: 0x7f020003
-			public const int ExtentFix = 2130837507;
+			// aapt resource value: 0x7F010003
+			public const int ExtentFix = 2130771971;
 			
-			// aapt resource value: 0x7f020004
-			public const int ExtentMove = 2130837508;
+			// aapt resource value: 0x7F010004
+			public const int ExtentMove = 2130771972;
 			
-			// aapt resource value: 0x7f020005
-			public const int file = 2130837509;
+			// aapt resource value: 0x7F010005
+			public const int file = 2130771973;
 			
-			// aapt resource value: 0x7f020006
-			public const int folder = 2130837510;
+			// aapt resource value: 0x7F010006
+			public const int folder = 2130771974;
 			
-			// aapt resource value: 0x7f020007
-			public const int Icon = 2130837511;
+			// aapt resource value: 0x7F010007
+			public const int Icon = 2130771975;
 			
-			// aapt resource value: 0x7f020008
-			public const int Location = 2130837512;
+			// aapt resource value: 0x7F010008
+			public const int Location = 2130771976;
 			
-			// aapt resource value: 0x7f020009
-			public const int Redo = 2130837513;
+			// aapt resource value: 0x7F010009
+			public const int Redo = 2130771977;
 			
-			// aapt resource value: 0x7f02000a
-			public const int RotCompass = 2130837514;
+			// aapt resource value: 0x7F01000A
+			public const int RotCompass = 2130771978;
 			
-			// aapt resource value: 0x7f02000b
-			public const int RotL90 = 2130837515;
+			// aapt resource value: 0x7F01000B
+			public const int RotL90 = 2130771979;
 			
-			// aapt resource value: 0x7f02000c
-			public const int RotNorth = 2130837516;
+			// aapt resource value: 0x7F01000C
+			public const int RotNorth = 2130771980;
 			
-			// aapt resource value: 0x7f02000d
-			public const int Undo = 2130837517;
+			// aapt resource value: 0x7F01000D
+			public const int Undo = 2130771981;
 			
-			// aapt resource value: 0x7f02000e
-			public const int ZoomIn = 2130837518;
+			// aapt resource value: 0x7F01000E
+			public const int ZoomIn = 2130771982;
 			
-			// aapt resource value: 0x7f02000f
-			public const int ZoomOut = 2130837519;
+			// aapt resource value: 0x7F01000F
+			public const int ZoomOut = 2130771983;
 			
 			static Drawable()
 			{
@@ -105,32 +105,32 @@ namespace OMapScratch
 		public partial class Id
 		{
 			
-			// aapt resource value: 0x7f050002
-			public const int btnImages = 2131034114;
+			// aapt resource value: 0x7F020000
+			public const int btnImages = 2130837504;
 			
-			// aapt resource value: 0x7f050001
-			public const int lloTools = 2131034113;
+			// aapt resource value: 0x7F020001
+			public const int lloTools = 2130837505;
 			
-			// aapt resource value: 0x7f050006
-			public const int mniExportImg = 2131034118;
+			// aapt resource value: 0x7F020002
+			public const int mniExportImg = 2130837506;
 			
-			// aapt resource value: 0x7f050004
-			public const int mniLoad = 2131034116;
+			// aapt resource value: 0x7F020003
+			public const int mniLoad = 2130837507;
 			
-			// aapt resource value: 0x7f050007
-			public const int mniLocation = 2131034119;
+			// aapt resource value: 0x7F020004
+			public const int mniLocation = 2130837508;
 			
-			// aapt resource value: 0x7f050008
-			public const int mniOrientation = 2131034120;
+			// aapt resource value: 0x7F020005
+			public const int mniOrientation = 2130837509;
 			
-			// aapt resource value: 0x7f050005
-			public const int mniSave = 2131034117;
+			// aapt resource value: 0x7F020006
+			public const int mniSave = 2130837510;
 			
-			// aapt resource value: 0x7f050003
-			public const int mnuOptions = 2131034115;
+			// aapt resource value: 0x7F020007
+			public const int mnuOptions = 2130837511;
 			
-			// aapt resource value: 0x7f050000
-			public const int parentLayout = 2131034112;
+			// aapt resource value: 0x7F020008
+			public const int parentLayout = 2130837512;
 			
 			static Id()
 			{
@@ -145,10 +145,10 @@ namespace OMapScratch
 		public partial class Layout
 		{
 			
-			// aapt resource value: 0x7f030000
+			// aapt resource value: 0x7F030000
 			public const int Main = 2130903040;
 			
-			// aapt resource value: 0x7f030001
+			// aapt resource value: 0x7F030001
 			public const int Toolbar = 2130903041;
 			
 			static Layout()
@@ -164,11 +164,11 @@ namespace OMapScratch
 		public partial class String
 		{
 			
-			// aapt resource value: 0x7f040001
-			public const int ApplicationName = 2130968577;
+			// aapt resource value: 0x7F040000
+			public const int ApplicationName = 2130968576;
 			
-			// aapt resource value: 0x7f040000
-			public const int Hello = 2130968576;
+			// aapt resource value: 0x7F040001
+			public const int Hello = 2130968577;
 			
 			static String()
 			{

@@ -209,7 +209,7 @@ namespace Grid.Lcp
             stopDict.Add(portField, 1);
           }
 
-          stopHandler = new StopHandler(stops, costModel.MinUnitCost * _dx)
+          stopHandler = new StopHandler(stops, costModel.MinUnitCost * _dx, 5 * _dx, (int)(0.7 / _dx))
           {
             StopFactor = stopFactor,
             StopComparer = (x, y) =>
@@ -230,7 +230,8 @@ namespace Grid.Lcp
           };
         }
 
-        Calc calc = new Calc(lcg, invers, stopHandler);
+        Calc calc = new Calc(lcg, invers, 
+          costOptimizer: stopHandler, maxCostHandler: stopHandler);
         Dictionary<IField, IList<Teleport<TT>>> layerPorts =
           new Dictionary<IField, IList<Teleport<TT>>>(new FieldComparer());
 

@@ -165,6 +165,10 @@ namespace Grid.Lcp
           {
             _grdHeight = new ConstGrid<double>(new GridExtent(1000,1000, 0, 0, _resolution), constHeight);
           }
+          else if (string.IsNullOrEmpty(HeightPath))
+          {
+            _grdHeight = new ConstGrid<double>(new GridExtent(1000, 1000, 0, 0, _resolution), 0);
+          }
         }
         return _grdHeight;
       }

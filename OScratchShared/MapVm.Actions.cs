@@ -247,12 +247,13 @@ namespace OMapScratch
       public bool ShowDetail { get { return false; } }
     }
 
-    private class SetSymbolAction : IAction, ISymbolAction
+    [Obsolete("rename")]
+    private class SetSymbolAction_ : IAction, ISymbolAction
     {
       private readonly IMapView _view;
       private readonly Map _map;
       private readonly Elem _elem;
-      public SetSymbolAction(IMapView view, Map map, Elem elem)
+      public SetSymbolAction_(IMapView view, Map map, Elem elem)
       {
         _view = view;
         _map = map;
@@ -269,7 +270,31 @@ namespace OMapScratch
 
       public bool SetSymbol(Symbol symbol, ColorRef color, out string message)
       {
-        return _map.SetSymbol(_elem, symbol, color, out message);
+        return _map.SetSymbol_(_elem, symbol, color, out message);
+      }
+    }
+
+    private class EditTextAction : IAction, ITextAction
+    {
+      private readonly IMapView _view;
+      private readonly Map _map;
+      private readonly Elem _elem;
+      public EditTextAction(IMapView view, Map map, Elem elem)
+      {
+        _view = view;
+        _map = map;
+        _elem = elem;
+      }
+
+      public string Description { get { return "Add/Edit text"; } }
+
+      void IAction.Action()
+      { _view.EditText(_elem.Text, this); }
+
+      bool ITextAction.Action(string text) => EditText(text);
+      public bool EditText(string text)
+      {
+        return _map.EditText(_elem, text);
       }
     }
 

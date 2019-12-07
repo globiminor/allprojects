@@ -22,6 +22,9 @@ namespace Grid.Lcp
     {
       get
       {
+        if (HeightGrid is ConstGrid<double>)
+        { return VelocityGrid.Extent.Extent; }
+
         Basics.Geom.Box b = new Basics.Geom.Box(HeightGrid.Extent.Extent);
         Basics.Geom.IBox extent = (Basics.Geom.IBox)b.Intersection(VelocityGrid.Extent.Extent)[0];
         return extent;
@@ -130,7 +133,7 @@ namespace Grid.Lcp
     }
   }
 
-  public class BlockModell: IDirCostModel<BlockCell>
+  public class BlockModell : IDirCostModel<BlockCell>
   {
     public BlockGrid BlockGrid { get; }
     public BlockModell(BlockGrid grid)

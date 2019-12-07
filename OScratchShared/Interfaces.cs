@@ -28,6 +28,12 @@ namespace OMapScratch
     bool Action(ColorRef color);
   }
 
+  public interface ITextAction
+  {
+    string Description { get; }
+    bool Action(string text);
+  }
+
   public partial interface IMapView
   {
     MapVm MapVm { get; }
@@ -40,6 +46,7 @@ namespace OMapScratch
     void StartCompass(bool hide = false);
 
     void ShowText(string text, bool success = true);
+    void EditText(string text, ITextAction setText);
   }
 
   public partial interface ISegment

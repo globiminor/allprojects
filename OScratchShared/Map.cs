@@ -154,7 +154,8 @@ namespace OMapScratch
     }
 
 
-    public bool SetSymbol(Elem elem, Symbol symbol, ColorRef color, out string message)
+    [System.Obsolete("rename")]
+    public bool SetSymbol_(Elem elem, Symbol symbol, ColorRef color, out string message)
     {
       bool isElemLine = elem.Symbol.GetSymbolType() == SymbolType.Line;
       bool isSymbolLine = symbol.GetSymbolType() == SymbolType.Line;
@@ -166,9 +167,16 @@ namespace OMapScratch
         return false;
       }
 
-      SetSymbolOperation op = new SetSymbolOperation(elem, symbol, color);
+      SetSymbolOperation_ op = new SetSymbolOperation_(elem, symbol, color);
       op.Redo(this, true);
       message = null;
+      return op.LastSuccess;
+    }
+
+    public bool EditText(Elem elem, string text)
+    {
+      EditTextOperation op = new EditTextOperation(elem, text);
+      op.Redo(this, true);
       return op.LastSuccess;
     }
 

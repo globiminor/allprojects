@@ -37,6 +37,12 @@ namespace OcadScratch.ViewModels
       set { }
     }
 
+    public string Text
+    {
+      get { return _elem?.Text; }
+      set { }
+    }
+
     public bool Handled
     {
       get { return _handled; }

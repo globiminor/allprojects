@@ -207,6 +207,15 @@
     <Resource Include="Help\RotL90.png" />
     <Resource Include="Help\RotNorth.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Help\Image.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Help\ImageSel.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Help\ImageConfig.png" />
+  </ItemGroup>
   <Import Project="..\OScratchShared\OScratchShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

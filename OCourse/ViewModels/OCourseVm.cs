@@ -144,6 +144,8 @@ namespace OCourse.ViewModels
     }
     private string GetFullPath(string fileName, string dir)
     {
+      if (string.IsNullOrEmpty(fileName))
+      { return string.Empty; }
       string fullPath = Path.IsPathRooted(fileName)
         ? fileName
         : Path.GetFullPath(Path.Combine(dir, fileName));

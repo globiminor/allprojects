@@ -88,6 +88,11 @@ namespace OcadScratch
         grdElems.Columns.Add(col);
       }
       {
+        DataGridTextColumn col = new DataGridTextColumn { Header = "Text", Binding = new Binding(nameof(workElemVm.Text)) };
+        col.IsReadOnly = true;
+        grdElems.Columns.Add(col);
+      }
+      {
         DataGridCheckBoxColumn col = new DataGridCheckBoxColumn { Header = "Handled", Binding = new Binding(nameof(workElemVm.Handled)) };
         grdElems.Columns.Add(col);
       }

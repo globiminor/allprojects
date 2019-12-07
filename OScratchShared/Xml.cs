@@ -191,6 +191,8 @@ namespace OMapScratch
     public string SymbolId { get; set; }
     [XmlAttribute("Cid")]
     public string ColorId { get; set; }
+    [XmlAttribute("Txt")]
+    public string Text { get; set; }
     [XmlAttribute("Geom")]
     public string Geometry { get; set; }
 
@@ -200,6 +202,7 @@ namespace OMapScratch
       {
         SymbolId = elem.Symbol?.Id,
         ColorId = elem.Color?.Id,
+        Text = elem.Text,
         Geometry = elem.Geometry.ToText()
       };
 
@@ -208,6 +211,7 @@ namespace OMapScratch
     public Elem GetElem()
     {
       Elem elem = new Elem { Geometry = DrawableUtils.GetGeometry(Geometry) };
+      elem.Text = Text;
       return elem;
     }
   }

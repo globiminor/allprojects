@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Grid.Lcp
 {
-  public class StopHandler : ICostOptimizer
+  public class StopHandler : ICostOptimizer, IMaxCostHandler
   {
     private class StopInfo
     {
@@ -17,17 +17,29 @@ namespace Grid.Lcp
     private Dictionary<IField, List<StopInfo>> _startFields;
     private StopInfo _maxFullCostField;
 
-    public StopHandler(IList<IField> stops, double minCellCost)
+    private readonly Dictionary<IField, double> _costOverrideFields;
+    private readonly double _maxFixCost;
+    private readonly int _nearFixDist;
+
+
+    public StopHandler(IList<IField> stops, double minCellCost, double maxFixCost, int nearFix)
     {
       _stopDict = new Dictionary<IField, StopInfo>(new FieldComparer());
       _minCellCost = minCellCost;
 
+      _costOverrideFields = new Dictionary<IField, double>(new FieldComparer());
+      _maxFixCost = maxFixCost;
+      _nearFixDist = nearFix;
+
       foreach (var stop in stops)
       {
         _stopDict[stop] = new StopInfo { Stop = stop, Cost = -1 };
+        AddOverride(stop);
       }
       _startFields = new Dictionary<IField, List<StopInfo>>();
     }
+
+
 
     public double StopFactor { get; set; } = 1;
     public System.Func<IField, IField, int> StopComparer { get; set; }
@@ -36,6 +48,7 @@ namespace Grid.Lcp
     public void Init<T>(IField startField, SortedList<T, T> costList)
     {
       _startFields.Add(startField, GetSortedStops(startField));
+      AddOverride(startField);
 
       StopInfo maxFullCostField = GetMaxFullCostField();
       if (maxFullCostField != _maxFullCostField)
@@ -49,6 +62,9 @@ namespace Grid.Lcp
     {
       return HandleUncompleted?.Invoke(_stopDict.Values.Where(x => x.Handled == false).Select(x => x.Stop)) ?? false;
     }
+
+    double IMaxCostHandler.MaxCost => _maxFixCost;
+    IReadOnlyDictionary<IField, double> IMaxCostHandler.OverrideFields => _costOverrideFields;
 
     bool ICostOptimizer.Stop<T>(ICostField processField, SortedList<T, T> costList)
     {
@@ -86,6 +102,17 @@ namespace Grid.Lcp
       return SetMinRestCost(field as IRestCostField, _maxFullCostField.Stop);
     }
 
+    private void AddOverride(IField field)
+    {
+      for (int iy = -_nearFixDist; iy <= _nearFixDist; iy++)
+      {
+        for (int ix = -_nearFixDist; ix <= _nearFixDist; ix++)
+        {
+          Field near = new Field { X = field.X + ix, Y = field.Y + iy };
+          _costOverrideFields[near] = _maxFixCost;
+        }
+      }
+    }
     private StopInfo GetMaxFullCostField()
     {
       StopInfo maxFullCostField = null;

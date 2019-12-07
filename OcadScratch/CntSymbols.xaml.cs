@@ -59,6 +59,8 @@ namespace OcadScratch
 
     public CntSymbols()
     {
+      DataContext = new ConfigVm();
+
       InitializeComponent();
 
       StyleColors(grdColors);

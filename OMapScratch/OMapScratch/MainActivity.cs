@@ -21,7 +21,11 @@ namespace OMapScratch
       }
       bool IMenuItemOnMenuItemClickListener.OnMenuItemClick(IMenuItem item)
       {
-        Utils.Try(() => { _activity.ShowBrowser(); });
+        Utils.Try(() =>
+        {
+          _activity._imageList.RemoveAllViews();
+          _activity.ShowBrowser();
+        });
         return true;
       }
     }
