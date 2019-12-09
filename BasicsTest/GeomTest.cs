@@ -19,15 +19,17 @@ namespace BasicsTest
     [TestMethod]
     public void CanUseCallerMemberName()
     {
-      NotifyMock mock = new NotifyMock();
-      string prop = null;
-      mock.PropertyChanged += (s, e) =>
+      using (NotifyMock mock = new NotifyMock())
       {
-        prop = e.PropertyName;
-      };
+        string prop = null;
+        mock.PropertyChanged += (s, e) =>
+        {
+          prop = e.PropertyName;
+        };
 
-      mock.Test = "Hallo";
-      Assert.AreEqual(prop, nameof(NotifyMock.Test));
+        mock.Test = "Hallo";
+        Assert.AreEqual(prop, nameof(NotifyMock.Test));
+      }
     }
 
 

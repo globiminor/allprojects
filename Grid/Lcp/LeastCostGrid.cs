@@ -310,7 +310,7 @@ namespace Grid.Lcp
       return e;
     }
 
-    ILeastCostData ILcpModel.CalcCost(IPoint start, IPoint end) => CalcCost(start, end);
+    ILeastCostData ILcpModel.CalcCost(IPoint start, IList<IPoint> ends) => CalcCost(start, ends);
     public LeastCostData CalcCost(IPoint start, IPoint end)
     {
       return CalcCost(start, new IPoint[] { end });

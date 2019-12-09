@@ -321,7 +321,7 @@ namespace TennisStat
     {
       string title = null;
       string location = null;
-      DateTime date = default(DateTime);
+      DateTime date = default;
       string sglRef = null;
       string dblRef = null;
       string importance = null;

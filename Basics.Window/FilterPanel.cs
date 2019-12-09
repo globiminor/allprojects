@@ -2,6 +2,7 @@
 using Basics.Views;
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,7 +20,7 @@ namespace Basics.Window
       col.CellTemplate = new DataTemplate { VisualTree = factory };
     }
 
-    TextBlock _lblHeader;
+    private readonly TextBlock _lblHeader;
     public ErrorPanel()
     {
       int m = 5;
@@ -32,8 +33,7 @@ namespace Basics.Window
       _lblHeader.ToolTipOpening += (s, e) =>
       {
         string ttp = null;
-        IDataErrorInfo errInfo = _lblHeader.DataContext as IDataErrorInfo;
-        if (ttp == null && errInfo != null)
+        if (ttp == null && _lblHeader.DataContext is IDataErrorInfo errInfo)
         {
           ttp = errInfo["Path"];
         }
@@ -82,6 +82,7 @@ namespace Basics.Window
 
     private readonly TextBlock _lblHeader;
     private readonly Border _brdFilter;
+    private readonly CheckBox _chkFilter;
 
     private IFilterView _filterView;
 
@@ -154,6 +155,66 @@ namespace Basics.Window
         return false;
       }
     }
+    private class CheckBoxFilter : IFilterView
+    {
+      private readonly CheckBox _chkFilter;
+      public CheckBoxFilter(FilterPanel parent)
+      {
+        _chkFilter = new CheckBox();
+        _chkFilter.IsThreeState = true;
+
+        _chkFilter.SetBinding(CheckBox.IsCheckedProperty,
+          new Binding(nameof(parent.FilterText)) { UpdateSourceTrigger = UpdateSourceTrigger.Explicit, Converter = new CheckConverter() });
+        _chkFilter.DataContext = parent;
+        _chkFilter.Visibility = Visibility.Collapsed;
+        _chkFilter.Margin = new Thickness(0, 0, 0, 0);
+        _chkFilter.HorizontalAlignment = HorizontalAlignment.Center;
+        parent.Children.Add(_chkFilter);
+      }
+
+      public Visibility Visibility
+      {
+        get { return _chkFilter.Visibility; }
+        set { _chkFilter.Visibility = value; }
+      }
+      bool IFilterView.TryUpdateFilter(object source)
+      {
+        CheckBox filter = source as CheckBox;
+        if (filter == _chkFilter)
+        {
+          BindingExpression be = _chkFilter.GetBindingExpression(CheckBox.IsCheckedProperty);
+          be.UpdateSource();
+          return true;
+        }
+        return false;
+      }
+    }
+
+    private class CheckConverter : IValueConverter
+    {
+      public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+      {
+        if (value is string s)
+        {
+          if (s == "false")
+          { return false; }
+          if (s == "true")
+          { return true; }
+        }
+        return null;
+      }
+
+      public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+      {
+        if (value is bool b)
+        {
+          string query = b ? "true" : "false";
+          return query;
+        }
+        return null;
+      }
+    }
+
     public static void CreateHeader(DataGridColumn col)
     {
       FrameworkElementFactory factory = new FrameworkElementFactory(typeof(FilterPanel));
@@ -172,18 +233,32 @@ namespace Basics.Window
       _lblHeader.Margin = new Thickness(m, 0, m, 0);
       Children.Add(_lblHeader);
 
-      _brdFilter = new Border();
-      _brdFilter.BorderThickness = new Thickness(1);
-      _brdFilter.BorderBrush = Brushes.Gainsboro;
       {
+        _brdFilter = new Border();
+        _brdFilter.BorderThickness = new Thickness(1);
+        _brdFilter.BorderBrush = Brushes.Gainsboro;
+        _brdFilter.Margin = new Thickness(0, 0, 0, 0);
+        _brdFilter.DataContext = this;
+        _brdFilter.SetBinding(Border.VisibilityProperty, new Binding(nameof(TextVisibility)) { Mode = BindingMode.OneWay });
+
         TextBlock lblFilter = new TextBlock();
         lblFilter.SetBinding(TextBlock.TextProperty, new Binding(nameof(FilterText)));
         lblFilter.SetBinding(TextBlock.ToolTipProperty, new Binding(nameof(FilterToolTip)));
         lblFilter.DataContext = this;
         lblFilter.Margin = new Thickness(m, 0, m, 0);
         _brdFilter.Child = lblFilter;
+        Children.Add(_brdFilter);
       }
-      Children.Add(_brdFilter);
+      {
+        _chkFilter = new CheckBox();
+        _chkFilter.DataContext = this;
+        _chkFilter.HorizontalAlignment = HorizontalAlignment.Center;
+        _chkFilter.DataContext = this;
+        _chkFilter.SetBinding(CheckBox.VisibilityProperty, new Binding(nameof(CheckBoxVisibility)) { Mode = BindingMode.OneWay });
+        _chkFilter.IsEnabled = false;
+
+        Children.Add(_chkFilter);
+      }
 
       DataContextChanged += (s, a) =>
       {
@@ -215,6 +290,10 @@ namespace Basics.Window
               }
             }
           }
+          else if (column is DataGridCheckBoxColumn)
+          {
+            _filterView = new CheckBoxFilter(this);
+          }
           else
           {
             Type t = ListViewUtils.GetPropertyType(GetDataSource(), column.SortMemberPath);
@@ -228,6 +307,43 @@ namespace Basics.Window
       }
     }
 
+    public Visibility TextVisibility
+    {
+      get
+      {
+        if (CheckBoxVisibility == Visibility.Visible)
+        {
+          return Visibility.Collapsed;
+        }
+        if (_filterView?.Visibility == Visibility.Visible)
+        {
+          return Visibility.Collapsed;
+        }
+
+        return Visibility.Visible;
+      }
+    }
+    public Visibility CheckBoxVisibility
+    {
+      get
+      {
+        if (!(_filterView is CheckBoxFilter))
+        {
+          return Visibility.Collapsed;
+        }
+        if (FilterView.Visibility == Visibility.Visible)
+        {
+          return Visibility.Collapsed;
+        }
+        if (string.IsNullOrWhiteSpace(FilterText))
+        {
+          return Visibility.Collapsed;
+        }
+
+        return Visibility.Visible;
+      }
+    }
+
     protected override void OnMouseDown(MouseButtonEventArgs e)
     {
       Point p = e.GetPosition(this);
@@ -236,13 +352,14 @@ namespace Basics.Window
         HideAllEditFilters();
 
         FilterView.Visibility = Visibility.Visible;
-        _brdFilter.Visibility = Visibility.Collapsed;
 
         DataGrid grd = GetDataGrid();
         grd.CurrentCellChanged -= Grd_CurrentCellChanged;
         grd.CurrentCellChanged += Grd_CurrentCellChanged;
 
         e.Handled = true;
+        OnPropertyChanged(nameof(TextVisibility));
+        OnPropertyChanged(nameof(CheckBoxVisibility));
         return;
       }
       base.OnMouseDown(e);
@@ -268,8 +385,15 @@ namespace Basics.Window
     {
       if (_filterView?.Visibility == Visibility.Visible)
       { FilterView.Visibility = Visibility.Collapsed; }
-      if (_brdFilter.Visibility != Visibility.Visible)
-      { _brdFilter.Visibility = Visibility; }
+      {
+        if (_filterView is CheckBoxFilter chkboxFilter && !string.IsNullOrWhiteSpace(FilterText))
+        {
+          _chkFilter.IsChecked = FilterText == "true" ? true : false;
+        }
+
+        OnPropertyChanged(nameof(TextVisibility));
+        OnPropertyChanged(nameof(CheckBoxVisibility));
+      }
 
       if (grid != null)
       { grid.CurrentCellChanged -= Grd_CurrentCellChanged; }
@@ -323,10 +447,37 @@ namespace Basics.Window
       }
     }
 
-    private void FilterData()
+    public static void ClearFilter(DataGrid grd)
     {
-      DataGrid grd = GetDataGrid();
+      if (!(grd?.ItemsSource is IBindingListView data))
+      {
+        throw new ArgumentNullException(nameof(data),
+          "DataSource is not an IBindingListView or does not support filtering");
+      }
 
+      bool clearedAny = false;
+      StringBuilder filterBuilder = new StringBuilder();
+      foreach (var filter in Utils.GetChildren<FilterPanel>(grd))
+      {
+        if (!string.IsNullOrWhiteSpace(filter._filterText))
+        {
+          filter._filterText = null;
+          filter._filterStatement = null;
+          filter.OnPropertyChanged(nameof(FilterText));
+          filter.OnPropertyChanged(nameof(FilterStatement));
+          filter.OnPropertyChanged(nameof(FilterToolTip));
+
+          filter.OnPropertyChanged(nameof(TextVisibility));
+          filter.OnPropertyChanged(nameof(CheckBoxVisibility));
+          clearedAny = true;
+        }
+      }
+      if (clearedAny)
+      { data.Filter = string.Empty; }
+    }
+
+    public static void ApplyFilter(DataGrid grd)
+    {
       if (!(grd?.ItemsSource is IBindingListView data))
       {
         throw new ArgumentNullException(nameof(data),
@@ -348,6 +499,13 @@ namespace Basics.Window
       }
 
       data.Filter = filterBuilder.ToString();
+
+    }
+    private void FilterData()
+    {
+      DataGrid grd = GetDataGrid();
+
+      ApplyFilter(grd);
     }
 
     private string _filterStatement;
@@ -377,6 +535,9 @@ namespace Basics.Window
       { return; }
 
       _lblHeader.Text = column;
+
+      if (VisualTreeHelper.GetParent(this) is ContentPresenter depO && depO.HorizontalAlignment != HorizontalAlignment.Stretch)
+      { depO.HorizontalAlignment = HorizontalAlignment.Stretch; }
     }
 
     private DataGridColumn GetColumn()

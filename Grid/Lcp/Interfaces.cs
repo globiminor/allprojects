@@ -47,7 +47,7 @@ namespace Grid.Lcp
   public interface ILcpModel
   {
     event StatusEventHandler Status;
-    ILeastCostData CalcCost(IPoint start, IPoint end);
+    ILeastCostData CalcCost(IPoint start, IList<IPoint> ends);
   }
 
   public interface ITeleportProvider

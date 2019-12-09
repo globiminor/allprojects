@@ -30,7 +30,7 @@ namespace Basics.Data
 
     protected class ExpressionInfo
     {
-      private string _expression;
+      private readonly string _expression;
       private readonly BaseCommand _parent;
 
       private List<ParameterInfo> _params;
@@ -256,7 +256,7 @@ namespace Basics.Data
 
     protected class SelectCommand : WhereCommand
     {
-      List<FieldExpression> _fields;
+      private readonly List<FieldExpression> _fields;
 
       public SelectCommand(DbBaseCommand baseCommand)
         : base(baseCommand)
@@ -528,7 +528,7 @@ namespace Basics.Data
 
     protected class UpdateCommand : WhereCommand
     {
-      Dictionary<FieldInfo, ExpressionInfo> _updateFields;
+      private readonly Dictionary<FieldInfo, ExpressionInfo> _updateFields;
 
       public UpdateCommand(DbBaseCommand baseCommand)
         : base(baseCommand)
@@ -896,7 +896,7 @@ namespace Basics.Data
         }
       }
 
-      DbBaseCommand _baseCommand;
+      private readonly DbBaseCommand _baseCommand;
 
       public BaseCommand(DbBaseCommand baseCommand)
       {
@@ -960,7 +960,7 @@ namespace Basics.Data
 
     protected class Function
     {
-      private static Dictionary<string, Func<IList<object>, object>> _functionHandlers;
+      private static readonly Dictionary<string, Func<IList<object>, object>> _functionHandlers;
 
       static Function()
       {
@@ -1114,7 +1114,7 @@ namespace Basics.Data
       private readonly int _position;
       private readonly string _name;
       private DbParameter _dbParameter;
-      private BaseCommand _assignedTo;
+      private readonly BaseCommand _assignedTo;
 
       public ParameterInfo(int position, BaseCommand assignedTo)
       {

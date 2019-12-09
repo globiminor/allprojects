@@ -14,10 +14,8 @@
     {
       if (disposing)
       {
-        if (components != null)
-        {
-          components.Dispose();
-        }
+         components?.Dispose();
+        _lcpConfigVm?.Dispose();
       }
       base.Dispose(disposing);
     }

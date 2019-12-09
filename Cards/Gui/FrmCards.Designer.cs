@@ -1,33 +1,34 @@
 ﻿namespace Cards.Gui
 {
-    partial class FrmCards
+  partial class FrmCards
+  {
+    /// <summary>
+    /// Required designer variable.
+    /// </summary>
+    private System.ComponentModel.IContainer components = null;
+
+    /// <summary>
+    /// Clean up any resources being used.
+    /// </summary>
+    /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+    protected override void Dispose(bool disposing)
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
+      if (disposing)
+      {
+        components?.Dispose();
+        _bindingSource?.Dispose();
+      }
+      base.Dispose(disposing);
+    }
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
+    #region Windows Form Designer generated code
 
-        #region Windows Form Designer generated code
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent()
-        {
+    /// <summary>
+    /// Required method for Designer support - do not modify
+    /// the contents of this method with the code editor.
+    /// </summary>
+    private void InitializeComponent()
+    {
       this.btnSolve = new System.Windows.Forms.Button();
       this.txtMoves = new System.Windows.Forms.TextBox();
       this.lblMoves = new System.Windows.Forms.Label();
@@ -237,8 +238,8 @@
       // 
       // cntCards
       // 
-      this.cntCards.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+      this.cntCards.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
       this.cntCards.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
       this.cntCards.CardHeight = 30;
@@ -285,28 +286,28 @@
       this.ResumeLayout(false);
       this.PerformLayout();
 
-        }
+    }
 
-        #endregion
+    #endregion
 
-        private CntCards cntCards;
-        private System.Windows.Forms.Button btnSolve;
-        private System.Windows.Forms.TextBox txtMoves;
-        private System.Windows.Forms.Label lblMoves;
-        private System.Windows.Forms.Label lblDisp;
-        private System.Windows.Forms.TextBox txtDisp;
-        private System.Windows.Forms.TextBox txtInfo;
-        private System.Windows.Forms.Label lblInfo;
-        private System.Windows.Forms.Button btnRevert;
-        private System.Windows.Forms.Button btnSlow;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.MenuStrip mnuCards;
-        private System.Windows.Forms.ToolStripMenuItem mniSettings;
-        private System.Windows.Forms.TextBox txtPoints;
-        private System.Windows.Forms.Label lblPoints;
-        private System.Windows.Forms.ToolStripMenuItem mniSpider;
-        private System.Windows.Forms.ToolStripMenuItem mniSpider4;
-        private System.Windows.Forms.ToolStripMenuItem mniTriPeaks;
+    private CntCards cntCards;
+    private System.Windows.Forms.Button btnSolve;
+    private System.Windows.Forms.TextBox txtMoves;
+    private System.Windows.Forms.Label lblMoves;
+    private System.Windows.Forms.Label lblDisp;
+    private System.Windows.Forms.TextBox txtDisp;
+    private System.Windows.Forms.TextBox txtInfo;
+    private System.Windows.Forms.Label lblInfo;
+    private System.Windows.Forms.Button btnRevert;
+    private System.Windows.Forms.Button btnSlow;
+    private System.Windows.Forms.Button button1;
+    private System.Windows.Forms.MenuStrip mnuCards;
+    private System.Windows.Forms.ToolStripMenuItem mniSettings;
+    private System.Windows.Forms.TextBox txtPoints;
+    private System.Windows.Forms.Label lblPoints;
+    private System.Windows.Forms.ToolStripMenuItem mniSpider;
+    private System.Windows.Forms.ToolStripMenuItem mniSpider4;
+    private System.Windows.Forms.ToolStripMenuItem mniTriPeaks;
     private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
     private System.Windows.Forms.ToolStripMenuItem mniSave;
     private System.Windows.Forms.ToolStripMenuItem mniLoad;

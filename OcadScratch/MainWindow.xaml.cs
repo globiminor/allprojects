@@ -58,26 +58,14 @@ namespace OcadScratch
       WorkElemVm workElemVm;
       {
         DataGridTextColumn col = new DataGridTextColumn { Header = "Symbol ID", Binding = new Binding(nameof(workElemVm.SymbolId)) };
-
-        //Basics.Window.FilterPanel.CreateHeader(col);
-
         col.IsReadOnly = true;
+        Basics.Window.FilterPanel.CreateHeader(col);
         grdElems.Columns.Add(col);
       }
-      //{
-      //  DataGridComboBoxColumn col = new DataGridComboBoxColumn { Header = "Symbol Test" };
-      //  Basics.Window.Utils.SetBinding(col, this, dc => nameof(dc.SymbolIds));
-
-      //  col.SelectedItemBinding = new Binding(nameof(workElemVm.SymbolId));
-
-      //  Basics.Window.FilterPanel.CreateHeader(col);
-
-      //  col.IsReadOnly = true;
-      //  grdElems.Columns.Add(col);
-      //}
       {
         DataGridTextColumn col = new DataGridTextColumn { Header = "Color ID", Binding = new Binding(nameof(workElemVm.ColorId)) };
         col.IsReadOnly = true;
+        Basics.Window.FilterPanel.CreateHeader(col);
         grdElems.Columns.Add(col);
       }
       {
@@ -90,10 +78,12 @@ namespace OcadScratch
       {
         DataGridTextColumn col = new DataGridTextColumn { Header = "Text", Binding = new Binding(nameof(workElemVm.Text)) };
         col.IsReadOnly = true;
+        Basics.Window.FilterPanel.CreateHeader(col);
         grdElems.Columns.Add(col);
       }
       {
         DataGridCheckBoxColumn col = new DataGridCheckBoxColumn { Header = "Handled", Binding = new Binding(nameof(workElemVm.Handled)) };
+        Basics.Window.FilterPanel.CreateHeader(col);
         grdElems.Columns.Add(col);
       }
 

@@ -1,6 +1,7 @@
 ﻿using OcadScratch.ViewModels;
 using OMapScratch;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Media;
 
 namespace OcadScratch
@@ -36,11 +37,22 @@ namespace OcadScratch
 
     public CntWorkElem()
     {
+      DataContext = new WorkElemVm();
+
       InitializeComponent();
 
       SymbolPanel pnl = new SymbolPanel();
       pnl.Margin = new System.Windows.Thickness(0);
       cnvSymbol.Children.Add(pnl);
+
+      //Text = "{Binding SymbolId, UpdateSourceTrigger=Explicit}"
+      txtSymbol.SetBinding(TextBox.TextProperty, new Binding(nameof(DataContext.SymbolId)) { UpdateSourceTrigger = UpdateSourceTrigger.Explicit });
+
+      //Text = "{Binding ColorId, UpdateSourceTrigger=Explicit}"
+      txtColor.SetBinding(TextBox.TextProperty, new Binding(nameof(DataContext.ColorId)) { UpdateSourceTrigger = UpdateSourceTrigger.Explicit });
+
+      //Text = "{Binding Text, UpdateSourceTrigger=Explicit}"
+      txtText.SetBinding(TextBox.TextProperty, new Binding(nameof(DataContext.Text)) { UpdateSourceTrigger = UpdateSourceTrigger.Explicit });
     }
 
     public new WorkElemVm DataContext

@@ -39,10 +39,10 @@ namespace OCourse.Route
     public ITvmCalc TvmCalc => _tvmCalc;
 
 
-    private IGrid<double> _veloGrid_;
-    private IGrid<double> VeloGrid => _veloGrid_ ?? (System.IO.Path.GetExtension(VeloPath).Equals(".xml", StringComparison.InvariantCultureIgnoreCase)
+    private IGrid<double> _veloGrid;
+    private IGrid<double> VeloGrid => _veloGrid ?? (System.IO.Path.GetExtension(VeloPath).Equals(".xml", StringComparison.InvariantCultureIgnoreCase)
       ? null
-      : (_veloGrid_ = VelocityGrid.FromImage(VeloPath)));
+      : (_veloGrid = VelocityGrid.FromImage(VeloPath)));
 
     private ViewModels.SymbolVeloModel<TvmCell> _symVeloModel;
 
@@ -329,17 +329,28 @@ namespace OCourse.Route
       }
 
 
-      List<IPoint> endList = new List<IPoint>();
+      List<IPoint> endList = new List<IPoint>(calcList.Count);
+      foreach (var calc in calcList)
+      {
+        endList.Add(calc.End);
+      }
+
 
       //Box box = GetBox(calcList, endList);
 
       //GridTest.LeastCostPath path = new GridTest.LeastCostPath(new GridTest.Step16(), box, resolution);
-      IDirCostModel<TvmCell> costProvider = new TerrainVeloModel(_heightGrid, VeloGrid)
-      { TvmCalc = _tvmCalc };
-      LeastCostGrid<TvmCell> path = new LeastCostGrid<TvmCell>(costProvider, resolution, steps: Steps); // box: box);
-      path.Status += RouteCalc_Status;
+      ILcpModel lcpModel = GetLcpModel(resolution, _steps);
 
-      ILeastCostData lcg = path.CalcCost(calcList[0].Start, endList);
+      //IDirCostModel<TvmCell> costProvider = new TerrainVeloModel(_heightGrid, VeloGrid)
+      //{ TvmCalc = _tvmCalc };
+
+      lcpModel.Status += RouteCalc_Status;
+      ILeastCostData lcg = lcpModel.CalcCost(calcList[0].Start, endList); // endlist
+
+      //LeastCostGrid<TvmCell> path = new LeastCostGrid<TvmCell>(costProvider, resolution, steps: Steps); // box: box);
+      //path.Status += RouteCalc_Status;
+      //ILeastCostData lcg = path.CalcCost(calcList[0].Start, endList);
+
       List<CostFromTo> result = new List<CostFromTo>();
       foreach (var routeCost in calcList)
       {
@@ -407,17 +418,6 @@ namespace OCourse.Route
       ViewModels.SymbolVeloModel<TvmCell> symVeloModel = GetSymbolVeloModel(resol);
       if (symVeloModel != null)
       {
-        //  ViewModels.SymbolVeloModel<TvmCell> symVeloModel =
-        //    ViewModels.SymbolVeloModel.FromXml<TvmCell>(VeloPath, resol);
-        //  IGrid<double> veloGrd = symVeloModel;
-
-        //  //string heightPath = @"C:\daten\felix\kapreolo\karten\irchel\2019\irchel.asc";
-        //  //DataDoubleGrid.FromAsciiFile(heightPath, 0, 0.01, typeof(double));
-        //  GridExtent e = veloGrd.Extent;
-
-        //  TerrainVeloModel tvm = new TerrainVeloModel(_heightGrid, veloGrd);
-        //  symVeloModel.InitTeleports(tvm);
-
         LeastCostStack<TvmCell, IDirCostModel<TvmCell>> lcStack = LeastCostStack.Create(
           symVeloModel.Layers,
           symVeloModel.Teleports, resol);
@@ -484,7 +484,7 @@ namespace OCourse.Route
 
 
       DateTime t0 = DateTime.Now;
-      ILeastCostData lcg = lcpModel.CalcCost(start, end);
+      ILeastCostData lcg = lcpModel.CalcCost(start, new[] { end });
 
       DateTime t1 = DateTime.Now;
       TimeSpan dt = t1 - t0;

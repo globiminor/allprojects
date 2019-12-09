@@ -14,7 +14,7 @@ namespace Grid.Lcp
     private readonly Dictionary<IField, StopInfo> _stopDict;
     private readonly double _minCellCost;
 
-    private Dictionary<IField, List<StopInfo>> _startFields;
+    private readonly Dictionary<IField, List<StopInfo>> _startFields;
     private StopInfo _maxFullCostField;
 
     private readonly Dictionary<IField, double> _costOverrideFields;

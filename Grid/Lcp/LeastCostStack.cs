@@ -41,10 +41,13 @@ namespace Grid.Lcp
       _ends = new List<TelePoint>();
     }
 
-    ILeastCostData ILcpModel.CalcCost(IPoint start, IPoint end)
+    ILeastCostData ILcpModel.CalcCost(IPoint start, IList<IPoint> ends)
     {
       AddStart(start, _dirCostModels[0]);
-      AddEnd(end, _dirCostModels[0]);
+      foreach (var end in ends)
+      {
+        AddEnd(end, _dirCostModels[0]);
+      }
 
       CalcCost();
 

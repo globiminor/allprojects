@@ -177,8 +177,8 @@ namespace Grid.Processors
         _topoPoints = new Dictionary<IPoint, ITopoPoint>(new PointComparer());
       }
 
-      private RingGrower _ringGrower_;
-      private RingGrower _ringGrower => _ringGrower_ ?? (_ringGrower_ = new RingGrower(new Geometry.Comparer(new[] { 0, 1 })));
+      private RingGrower _ringGrower;
+      private RingGrower RingGrower => _ringGrower ?? (_ringGrower = new RingGrower(new Geometry.Comparer(new[] { 0, 1 })));
 
       public void ProcessPoints()
       {
@@ -224,7 +224,7 @@ namespace Grid.Processors
           DirectedRow pre = dirRows.Last();
           foreach (var line in dirRows)
           {
-            _ringGrower.Add(pre.Reverse(), line);
+            RingGrower.Add(pre.Reverse(), line);
             pre = line;
           }
 

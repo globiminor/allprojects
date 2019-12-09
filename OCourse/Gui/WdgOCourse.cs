@@ -21,7 +21,7 @@ namespace OCourse.Gui
     private static event Action<WdgOCourse> Init;
     private static event Action<WdgOutput> LcpDetailShowing;
 
-    List<ICost> _selectedRoute;
+    private readonly List<ICost> _selectedRoute;
     private bool _suspend;
 
     private readonly BindingSource _bindingSource;
@@ -594,12 +594,14 @@ namespace OCourse.Gui
 
     private void BtnRelay_Click(object sender, EventArgs e)
     {
-      WdgRelay wdg = new WdgRelay();
-      List<CostFromTo> infos = null;
-      if (!_vm.IsRouteCalculatorNull)
-      { infos = new List<CostFromTo>(_vm.RouteCalculator.RouteCostDict.Keys); }
-      wdg.Init(_vm.CourseFile, infos);
-      wdg.ShowDialog();
+      using (WdgRelay wdg = new WdgRelay())
+      {
+        List<CostFromTo> infos = null;
+        if (!_vm.IsRouteCalculatorNull)
+        { infos = new List<CostFromTo>(_vm.RouteCalculator.RouteCostDict.Keys); }
+        wdg.Init(_vm.CourseFile, infos);
+        wdg.ShowDialog();
+      }
     }
 
     private WdgPermutations _wdgVariations;
@@ -633,9 +635,8 @@ namespace OCourse.Gui
 
     private string TryRunTrack()
     {
+      using (WdgTrack wdg = new WdgTrack())
       {
-        WdgTrack wdg = new WdgTrack();
-
         wdg.SetData(_vm.CourseFile, this);
         wdg.ShowDialog();
       }
@@ -670,9 +671,8 @@ namespace OCourse.Gui
         control.Element.Geometry = control.Element.Geometry;
         prjControls.Add(control);
       }
+      using (WdgTrack wdg = new WdgTrack())
       {
-        WdgTrack wdg = new WdgTrack();
-
         wdg.SetData(_vm.CourseFile, this);
         wdg.ShowDialog();
       }
@@ -700,18 +700,19 @@ namespace OCourse.Gui
 
     private void BtnExportCourses_Click(object sender, EventArgs e)
     {
-      WdgExport wdg = new WdgExport { TemplateFile = _vm.CourseFile };
-      if (wdg.ShowDialog(this) != DialogResult.OK)
-      { return; }
-
-      IEnumerable<ICost> selectedCosts = DataGridViewUtils.GetSelectedItems(dgvInfo).Cast<ICost>();
-      IEnumerable<CostSectionlist> selectedCombs = CostSectionlist.GetUniqueCombs(selectedCosts);
-      string courseName = null;
-      if (_vm.Course != null)
-      { courseName = PermutationUtils.GetCoreCourseName(_vm.Course.Name); }
-      using (CmdCourseTransfer cmd = new CmdCourseTransfer(wdg.ExportFile, wdg.TemplateFile, _vm.CourseFile))
+      using (WdgExport wdg = new WdgExport { TemplateFile = _vm.CourseFile })
       {
-        cmd.Export(courseName, selectedCombs, courseName);
+        if (wdg.ShowDialog(this) != DialogResult.OK)
+        { return; }
+        IEnumerable<ICost> selectedCosts = DataGridViewUtils.GetSelectedItems(dgvInfo).Cast<ICost>();
+        IEnumerable<CostSectionlist> selectedCombs = CostSectionlist.GetUniqueCombs(selectedCosts);
+        string courseName = null;
+        if (_vm.Course != null)
+        { courseName = PermutationUtils.GetCoreCourseName(_vm.Course.Name); }
+        using (CmdCourseTransfer cmd = new CmdCourseTransfer(wdg.ExportFile, wdg.TemplateFile, _vm.CourseFile))
+        {
+          cmd.Export(courseName, selectedCombs, courseName);
+        }
       }
     }
 

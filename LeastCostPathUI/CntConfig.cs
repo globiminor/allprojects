@@ -112,11 +112,13 @@ namespace LeastCostPathUI
       if (_vm == null)
       { return; }
 
-      WdgCustom wdg = new WdgCustom();
-      if (wdg.ShowDialog(this) != DialogResult.OK)
-      { return; }
+      using (WdgCustom wdg = new WdgCustom())
+      {
+        if (wdg.ShowDialog(this) != DialogResult.OK)
+        { return; }
 
-      _vm.TvmCalc = wdg.TvmCalc;
+        _vm.TvmCalc = wdg.TvmCalc;
+      }
     }
 
     private void BtnHeight_Click(object sender, EventArgs e)

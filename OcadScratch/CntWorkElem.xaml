@@ -12,12 +12,14 @@
 
     <Grid>
         <Label x:Name="lblSymbol" Content="Symbol-ID" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
-        <TextBox x:Name="txtSymbol" HorizontalAlignment="Left" Height="23" Margin="81,10,0,0" TextWrapping="Wrap" Text="{Binding SymbolId, UpdateSourceTrigger=Explicit}" VerticalAlignment="Top" Width="66" IsReadOnly="True"/>
+        <TextBox x:Name="txtSymbol" HorizontalAlignment="Left" Height="23" Margin="81,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="66" IsReadOnly="True"/>
 
         <Label x:Name="lblColor" Content="Color-ID" HorizontalAlignment="Left" Margin="10,41,0,0" VerticalAlignment="Top"/>
-        <TextBox x:Name="txtColor" HorizontalAlignment="Left" Height="23" Margin="81,44,0,0" TextWrapping="Wrap" Text="{Binding ColorId, UpdateSourceTrigger=Explicit}" VerticalAlignment="Top" Width="66" IsReadOnly="True"/>
+        <TextBox x:Name="txtColor" HorizontalAlignment="Left" Height="23" Margin="81,44,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="66" IsReadOnly="True"/>
+        
         <Label Content="Text" HorizontalAlignment="Left" Margin="10,72,0,0" VerticalAlignment="Top"></Label>
-        <TextBox x:Name="txtText" HorizontalAlignment="Left" Height="23" Margin="81,75,0,0" TextWrapping="Wrap" Text="{Binding Text, UpdateSourceTrigger=Explicit}" VerticalAlignment="Top" MinWidth="10" IsReadOnly="True"/>
+        <TextBox x:Name="txtText" HorizontalAlignment="Left" Height="23" Margin="81,75,0,0" TextWrapping="Wrap" VerticalAlignment="Top" MinWidth="10" IsReadOnly="True"/>
+        
         <Canvas x:Name="cnvSymbol" RenderTransformOrigin="2.95,-1.3" Margin="152,11,10,10" DataContextChanged="CnvSymbol_DataContextChanged" />
     </Grid>
 </UserControl>
