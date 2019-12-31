@@ -8,7 +8,7 @@ namespace LeastCostPathUI
 {
   public partial class WdgOutput : Form
   {
-    private IDirCostModel<TvmCell> _costProvider;
+    private Func<IBox, ILcpGridModel> _getModelFunc;
     private IGrid<double> _height;
     private string _velo;
     private double _resol;
@@ -19,10 +19,10 @@ namespace LeastCostPathUI
       InitializeComponent();
     }
 
-    public void Init(IDirCostModel<TvmCell> costProvider, IGrid<double> height, string velo,
+    public void Init(Func<IBox, ILcpGridModel> getModelFunc, IGrid<double> height, string velo,
       double resolution, Steps step)
     {
-      _costProvider = costProvider;
+      _getModelFunc = getModelFunc;
       _height = height;
       _velo = velo;
       _resol = resolution;
@@ -67,7 +67,11 @@ namespace LeastCostPathUI
       {
         btnOK.Text = "Cancel";
         _calc = true;
-        cntOutput.Calc(_costProvider, _height, _velo, _resol, _step, ResetCalc);
+
+        IBox box = cntOutput.GetCalcBox();
+        ILcpGridModel costModel = _getModelFunc(box);
+
+        cntOutput.Calc(costModel, _height, _velo, ResetCalc);
       }
       else
       {

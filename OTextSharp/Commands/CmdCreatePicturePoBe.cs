@@ -13,11 +13,17 @@ namespace OTextSharp.Commands
   {
     private readonly string _ocadFile;
     private readonly IList<ControlInfo> _infos;
+    private readonly int _maxCols;
+    private readonly int _maxRows;
 
-    public CmdCreateImagePoBe(string ocadFile, IList<ControlInfo> infos)
+    public CmdCreateImagePoBe(string ocadFile, IList<ControlInfo> infos, 
+      int maxCols = 2, int maxRows = 4)
     {
       _ocadFile = ocadFile;
       _infos = infos;
+
+      _maxCols = maxCols;
+      _maxRows = maxRows;
     }
 
     public void WriteImages(string courseName, string imageTemplate)
@@ -34,7 +40,8 @@ namespace OTextSharp.Commands
       Course course = reader.ReadCourse(courseName, idxs);
 
       using (ImagePoBeWriter w = new ImagePoBeWriter(reader, _infos,
-        Path.ChangeExtension(_ocadFile, "Foto." + courseName + ".pdf"), imageTemplate))
+        Path.ChangeExtension(_ocadFile, "Foto." + courseName + ".pdf"), imageTemplate,
+        maxCols: _maxCols, maxRows: _maxRows))
       {
         float x0 = 20;
         float y0 = 810;

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Grid.Lcp
 {
-  public class LeastCostStackData : ILeastCostData
+  public class LeastCostStackData : ILeastCostGridData
   {
     private readonly IList<LeastCostData> _leastCostData;
     private readonly Dictionary<LeastCostData, List<Teleport<LeastCostData>>> _teleports;
@@ -24,6 +24,37 @@ namespace Grid.Lcp
     {
       Polyline path = GetPath(_leastCostData[0], end);
       return path;
+    }
+
+    IGrid<double> ILeastCostGridData.CostGrid => _leastCostData[0].CostGrid;
+    IGrid<int> ILeastCostGridData.DirGrid => _leastCostData[0].DirGrid;
+    Steps ILeastCostGridData.Steps => _leastCostData[0].Steps;
+    ILeastCostGridData ILeastCostGridData.GetReduced() => _leastCostData[0].GetReduced();
+    LinkedList<Point> ILeastCostGridData.GetPathPoints(IPoint pnt, Func<int, int, bool> getStop)
+    {
+      Polyline fullPath = GetPath(_leastCostData[0], pnt);
+      LinkedList<Point> gridPath = new LinkedList<Point>();
+      foreach (var p in fullPath.Points)
+      {
+        gridPath.AddLast(Point.Create(p));
+      }
+      _leastCostData[0].DirGrid.Extent.WorldToGrid(gridPath);
+      if (getStop == null)
+      { return gridPath; }
+
+      LinkedListNode<Point> node = gridPath.Last;
+      LinkedList<Point> stopped = new LinkedList<Point>();
+      while (node != null)
+      {
+        Point p = node.Value;
+        stopped.AddFirst(p);
+        if (getStop((int)p.X, (int)p.Y))
+        {
+          return stopped;
+        }
+        node = node.Previous;
+      }
+      return stopped;
     }
 
     public Polyline GetPath(LeastCostData lcd, IPoint end)
@@ -83,22 +114,27 @@ namespace Grid.Lcp
       _teleportsDict = _teleportsDict ?? new Dictionary<LeastCostData, Dictionary<IPoint, List<Teleport<LeastCostData>>>>();
       if (!_teleportsDict.TryGetValue(lcd, out Dictionary<IPoint, List<Teleport<LeastCostData>>> pointTeleports))
       {
-        List<Teleport<LeastCostData>> teleports = _teleports[lcd];
-
         pointTeleports = new Dictionary<IPoint, List<Teleport<LeastCostData>>>(new PointComparer());
 
-        foreach (var teleport in teleports)
+        foreach (var pair in _teleports)
         {
-          IPoint to = teleport.To;
-          teleport.ToData.CostGrid.Extent.GetNearest(to, out int ix, out int iy);
-          IPoint key = new Point2D(ix, iy);
-
-          if (!pointTeleports.TryGetValue(key, out List<Teleport<LeastCostData>> pointPorts))
+          List<Teleport<LeastCostData>> teleports = pair.Value;
+          foreach (var teleport in teleports)
           {
-            pointPorts = new List<Teleport<LeastCostData>>();
-            pointTeleports.Add(key, pointPorts);
+            if (teleport.ToData != lcd)
+            { continue; }
+
+            IPoint to = teleport.To;
+            teleport.ToData.CostGrid.Extent.GetNearest(to, out int ix, out int iy);
+            IPoint key = new Point2D(ix, iy);
+
+            if (!pointTeleports.TryGetValue(key, out List<Teleport<LeastCostData>> pointPorts))
+            {
+              pointPorts = new List<Teleport<LeastCostData>>();
+              pointTeleports.Add(key, pointPorts);
+            }
+            pointPorts.Add(teleport);
           }
-          pointPorts.Add(teleport);
         }
 
         _teleportsDict.Add(lcd, pointTeleports);

@@ -112,7 +112,7 @@ namespace LeastCostPathUI
       chkDirImg.Checked = check;
     }
 
-    public void Export(LeastCostData lcg)
+    public void Export(ILeastCostGridData lcg)
     {
       byte[] r = new byte[256];
       byte[] g = new byte[256];

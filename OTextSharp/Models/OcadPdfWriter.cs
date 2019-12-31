@@ -24,12 +24,13 @@ namespace OTextSharp.Models
       _ocadFile = ocadFile;
     }
 
-    public TimeSpan WriteStartTimes(string fileName, string categories, TimeSpan t0)
+    public TimeSpan WriteStartTimes(string fileName, string categories, TimeSpan t0, 
+      int nTimes, int nx = 5, int ny = 16, float marginX = 28.3f, float marginY = 34.0f)
     {
-      using (StartWriter w = new StartWriter(fileName, categories))
+      using (StartWriter w = new StartWriter(fileName, categories, nx, ny, marginX, marginY))
       {
         TimeSpan t = t0;
-        for (int i = 0; i < 60; i++)
+        for (int i = 0; i < nTimes; i++)
         {
           w.Add(t);
           t += new TimeSpan(0, 1, 0);
@@ -70,7 +71,8 @@ namespace OTextSharp.Models
       }
     }
 
-    public void WriteStartGroups(List<StartGroup> startGroups, TimeSpan tMin, TimeSpan tMax)
+    public void WriteStartGroups(List<StartGroup> startGroups, TimeSpan tMin, TimeSpan tMax,
+      int nTimes, int nx = 5, int ny = 16, float marginX = 28.3f, float marginY = 34.0f)
     {
       Dictionary<string, CategoryPar> catsDict = ValidateGroups(startGroups);
       Console.WriteLine("-----");
@@ -144,7 +146,7 @@ namespace OTextSharp.Models
             w.ShowText(PdfContentByte.ALIGN_CENTER, cats, PdfWrite.DefaultWidth / 2, PdfWrite.DefaultHeight / 3 - i * 32 - 72, 0);
 
             w.SetFontSize(24);
-            w.ShowText(PdfContentByte.ALIGN_CENTER, "(Etikette ablösen und auf Startnummer kleben)", PdfWrite.DefaultWidth / 2, 30, 0);
+            w.ShowText(PdfContentByte.ALIGN_CENTER, "(Etikette ablösen und auf Postenbeschreibung kleben)", PdfWrite.DefaultWidth / 2, 30, 0);
           }
         }
         TimeSpan t = tMin;
@@ -152,7 +154,8 @@ namespace OTextSharp.Models
         {
           string name = string.Format("StartTimes_{0}_{1}_{2}_{3}.pdf", startGroup.Key, filePart, t.Hours, t.Minutes);
           string fullName = Path.Combine(Path.GetDirectoryName(_ocadFile), name);
-          t = WriteStartTimes(fullName, cats, t);
+          t = WriteStartTimes(fullName, cats, t, nTimes, 
+            nx, ny, marginX, marginY);
         }
       }
       Console.WriteLine("-----");
@@ -274,35 +277,47 @@ namespace OTextSharp.Models
       private int _ix;
       private int _iy;
 
-      private static readonly int _maxX = 5;
-      private static readonly float _mx = 10;
-      private static readonly float _w = (DefaultWidth - 2 * _mx) / _maxX;
+      private readonly int _nX;
+      private readonly float _marginX;
+      private readonly float _w;
 
-      private static readonly int _maxY = 13;
-      private static readonly float _my = 10;
-      private static readonly float _h = (DefaultHeight - 2 * _my) / _maxY;
+      private readonly int _nY;
+      private readonly float _marginY = 10;
+      private readonly float _h;
 
-      public StartWriter(string export, string categories)
+      public StartWriter(string export, string categories,
+        int nx = 5, int ny = 13, float marginX = 10, float marginY = 10)
         : base(export)
       {
         _categories = categories;
+
+        _nX = nx;
+        _nY = ny;
+
+        _marginX = marginX;
+        _marginY = marginY;
+
+        _w = (DefaultWidth - 2 * _marginX) / _nX;
+        _h = (DefaultHeight - 2 * _marginY) / _nY;
+
         _ix = 0;
         _iy = 0;
       }
 
       public void Add(TimeSpan time)
       {
-        if (_ix >= _maxX)
+        if (_ix >= _nX)
         {
           _ix = 0;
           _iy++;
         }
 
         SetFontSize(9);
-        ShowText(PdfContentByte.ALIGN_CENTER, _categories, (_ix + 0.5f) * _w + _mx, (_maxY - 0.3f - _iy) * _h + _my, 0);
+        ShowText(PdfContentByte.ALIGN_CENTER, _categories, (_ix + 0.5f) * _w + _marginX, (_nY - 0.3f - _iy) * _h + _marginY, 0);
 
         SetFontSize(24);
-        ShowText(PdfContentByte.ALIGN_CENTER, string.Format("{0:D2}:{1:D2}", time.Hours, time.Minutes), (_ix + 0.5f) * _w + _mx, (_maxY - 0.8f - _iy) * _h + _my, 0);
+        ShowText(PdfContentByte.ALIGN_CENTER, string.Format("{0:D2}:{1:D2}", time.Hours, time.Minutes), 
+          (_ix + 0.5f) * _w + _marginX, (_nY - 0.8f - _iy) * _h + _marginY, 0);
 
         _ix++;
       }

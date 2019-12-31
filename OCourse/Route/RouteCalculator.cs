@@ -407,12 +407,12 @@ namespace OCourse.Route
       return cost;
     }
 
-    private ILcpModel GetLcpModel(double resol, Steps steps)
+    public ILcpGridModel GetLcpModel(double resol, Steps steps, IBox box = null)
     {
       TerrainVeloModel costProvider = GetTerrainVeloModel();
       if (costProvider != null)
       {
-        LeastCostGrid<TvmCell> lcGrid = new LeastCostGrid<TvmCell>(costProvider, resol, steps: steps); // box: box);
+        LeastCostGrid<TvmCell> lcGrid = new LeastCostGrid<TvmCell>(costProvider, resol, steps: steps, box: box);
         return lcGrid;
       }
       ViewModels.SymbolVeloModel<TvmCell> symVeloModel = GetSymbolVeloModel(resol);
@@ -420,7 +420,7 @@ namespace OCourse.Route
       {
         LeastCostStack<TvmCell, IDirCostModel<TvmCell>> lcStack = LeastCostStack.Create(
           symVeloModel.Layers,
-          symVeloModel.Teleports, resol);
+          symVeloModel.Teleports, resol, box);
         return lcStack;
       }
 

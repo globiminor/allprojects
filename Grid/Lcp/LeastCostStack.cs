@@ -13,29 +13,63 @@ namespace Grid.Lcp
     {
       return new LeastCostStack<T, TT>(dirCostModels, teleports, dx, userBox, steps);
     }
+
+    private readonly double _dx;
+    private readonly IBox _userBox;
+    private readonly Steps _steps;
+
+    protected LeastCostStack(double dx, IBox userBox = null, Steps steps = null)
+    {
+      _dx = dx;
+      _userBox = userBox;
+      _steps = steps ?? Steps.Step16;
+    }
+
+    public double Dx => _dx;
+    public Steps Steps => _steps;
+    public IBox UserBox => _userBox;
+    public bool EqualSettings(LeastCostStack other)
+    {
+      if (other == null)
+      { return false; }
+
+      if (_steps.Count != other._steps.Count)
+      { return false; }
+
+      if (Dx != other.Dx)
+      { return false; }
+
+      if ((_userBox == null) != (other._userBox == null))
+      { return false; }
+      if (_userBox == null)
+      { return true; }
+
+      return BoxOp.EqualGeometry(_userBox, other._userBox);
+    }
+
   }
 
-  public class LeastCostStack<T, TT> : LeastCostStack, ILcpModel
+  public class LeastCostStack<T, TT> : LeastCostStack, ILcpGridModel
   where T : class
   where TT : class, IDirCostModel<T>
   {
     private readonly IList<IDirCostModel<T>> _dirCostModels;
     private readonly IList<Teleport<TT>> _teleports;
-    private readonly double _dx;
-    private readonly IBox _userBox;
-    private readonly Steps _steps;
 
     private readonly List<TelePoint> _starts;
     private readonly List<TelePoint> _ends;
 
+    private Dictionary<IDirCostModel<T>, Layer> LayerDict => _layerDict ?? (_layerDict = new Dictionary<IDirCostModel<T>, Layer>());
+    private Dictionary<IDirCostModel<T>, Layer> _layerDict;
+    private Dictionary<IDirCostModel<T>, Layer> CalcLayerDict => _calcLayerDict ?? (_calcLayerDict = new Dictionary<IDirCostModel<T>, Layer>());
+    private Dictionary<IDirCostModel<T>, Layer> _calcLayerDict;
+
     public LeastCostStack(IList<IDirCostModel<T>> dirCostModels, IList<Teleport<TT>> teleports, double dx,
       IBox userBox = null, Steps steps = null)
+      : base(dx, userBox, steps)
     {
       _dirCostModels = dirCostModels;
       _teleports = teleports;
-      _dx = dx;
-      _userBox = userBox;
-      _steps = steps ?? Steps.Step16;
 
       _starts = new List<TelePoint>();
       _ends = new List<TelePoint>();
@@ -43,6 +77,8 @@ namespace Grid.Lcp
 
     ILeastCostData ILcpModel.CalcCost(IPoint start, IList<IPoint> ends)
     {
+      ResetCalc();
+
       AddStart(start, _dirCostModels[0]);
       foreach (var end in ends)
       {
@@ -54,6 +90,26 @@ namespace Grid.Lcp
       LeastCostStackData costData = GetCostData();
       return costData;
     }
+
+    ILeastCostGridData ILcpGridModel.CalcGridCost(IPoint start, IList<IPoint> ends, bool invers, double stopFactor)
+    {
+      ResetCalc();
+
+      AddStart(start, _dirCostModels[0]);
+      foreach (var end in ends)
+      {
+        AddEnd(end, _dirCostModels[0]);
+      }
+
+      CalcCost(invers, stopFactor);
+
+      LeastCostStackData costData = GetCostData();
+      return costData;
+    }
+
+
+    bool ILcpModel.EqualSettings(ILcpModel other) => EqualSettings(other as LeastCostStack);
+
     public void AddStart(IPoint p, IDirCostModel<T> costModel)
     {
       _starts.Add(new TelePoint(p, costModel));
@@ -61,6 +117,15 @@ namespace Grid.Lcp
     public void AddEnd(IPoint p, IDirCostModel<T> costModel)
     {
       _ends.Add(new TelePoint(p, costModel));
+    }
+
+    private void ResetCalc()
+    {
+      _starts?.Clear();
+      _ends?.Clear();
+
+      _calcLayerDict?.Clear();
+      _layerDict?.Clear();
     }
 
     private class TelePoint
@@ -80,10 +145,6 @@ namespace Grid.Lcp
       public Calc Calc { get; set; }
       public Dictionary<IField, IList<Teleport<TT>>> Teleports { get; set; }
     }
-    private Dictionary<IDirCostModel<T>, Layer> LayerDict => _layerDict ?? (_layerDict = new Dictionary<IDirCostModel<T>, Layer>());
-    private Dictionary<IDirCostModel<T>, Layer> _layerDict;
-    private Dictionary<IDirCostModel<T>, Layer> CalcLayerDict => _calcLayerDict ?? (_calcLayerDict = new Dictionary<IDirCostModel<T>, Layer>());
-    private Dictionary<IDirCostModel<T>, Layer> _calcLayerDict;
 
     public object CalcCost(bool invers = false, double stopFactor = 1)
     {
@@ -184,7 +245,7 @@ namespace Grid.Lcp
     {
       if (!LayerDict.TryGetValue(costModel, out Layer layer))
       {
-        LeastCostGrid<T> lcg = new LeastCostGrid<T>(costModel, _dx, _userBox, _steps);
+        LeastCostGrid<T> lcg = new LeastCostGrid<T>(costModel, Dx, UserBox, Steps);
         StopHandler stopHandler = null;
         if (_ends != null)
         {
@@ -212,7 +273,7 @@ namespace Grid.Lcp
             stopDict.Add(portField, 1);
           }
 
-          stopHandler = new StopHandler(stops, costModel.MinUnitCost * _dx, 5 * _dx, (int)(0.7 / _dx))
+          stopHandler = new StopHandler(stops, costModel.MinUnitCost * Dx, 5 * Dx, (int)(0.7 / Dx))
           {
             StopFactor = stopFactor,
             StopComparer = (x, y) =>
@@ -267,7 +328,7 @@ namespace Grid.Lcp
     {
       Dictionary<Layer, LeastCostData> layerDict = new Dictionary<Layer, LeastCostData>();
       Layer mainLayer = LayerDict[_dirCostModels[0]];
-      layerDict.Add(mainLayer, new LeastCostData(mainLayer.Calc.CostGrid, mainLayer.Calc.DirGrid, _steps));
+      layerDict.Add(mainLayer, new LeastCostData(mainLayer.Calc.CostGrid, mainLayer.Calc.DirGrid, Steps));
 
       Dictionary<LeastCostData, List<Teleport<LeastCostData>>> lcdTeleportsDict =
         new Dictionary<LeastCostData, List<Teleport<LeastCostData>>>();
@@ -297,7 +358,7 @@ namespace Grid.Lcp
 
               if (!layerDict.TryGetValue(toLayer, out LeastCostData toLcd))
               {
-                toLcd = new LeastCostData(toLayer.Calc.CostGrid, toLayer.Calc.DirGrid, _steps);
+                toLcd = new LeastCostData(toLayer.Calc.CostGrid, toLayer.Calc.DirGrid, Steps);
                 layerDict.Add(toLayer, toLcd);
                 addedAny = true;
               }

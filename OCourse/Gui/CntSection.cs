@@ -150,6 +150,10 @@ namespace OCourse.Gui
           else
           {
             Label ttl = tg.RecLbl;
+            if (ttl == null)
+            {
+              continue;
+            }
             graphics.DrawLines(b, new Point[]
                                     {
                                       new Point(fl.Left + fl.Width / 2, fl.Bottom),
@@ -511,14 +515,15 @@ namespace OCourse.Gui
          start, 0, new List<Control> { startWrapper, endWrapper });
       // Compensate for startWrapper:
       foreach (var value in ctrlLblDict.Values)
-      { value.Pos--; }
+      { value.ReducePos(); }
 
       _nextDict = next;
       _lblDict = ctrlLblDict;
       Dictionary<int, List<int>> rowOcc = new Dictionary<int, List<int>>();
 
       int h0 = 10;
-      for (int iPos = 0; iPos < ctrlLblDict.Count; iPos++)
+      int maxPos = ctrlLblDict.Count;
+      for (int iPos = 0; iPos < maxPos; iPos++)
       {
         int jCol = -1;
         int dh = 0;
@@ -559,7 +564,11 @@ namespace OCourse.Gui
                 if (nextLabel.Pos > iPos)
                 { nextPos = nextLabel.Pos; }
                 else
-                { nextPos = nextLabel.RecPos; }
+                { 
+                  nextPos = nextLabel.RecPos;
+                  if (nextPos >= maxPos)
+                  { maxPos = nextPos + 1; }
+                }
                 for (int k = iPos + 1; k < nextPos; k++)
                 {
                   if (!rowOcc.TryGetValue(k, out List<int> occ))
@@ -821,6 +830,13 @@ namespace OCourse.Gui
       public override string ToString()
       {
         return string.Format("{0},{1}, {2}", Pos, RecPos, Control);
+      }
+
+      public void ReducePos()
+      {
+        Pos--;
+        if (RecPos > 0)
+        { RecPos--; }
       }
     }
 

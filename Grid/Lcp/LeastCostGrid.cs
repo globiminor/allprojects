@@ -271,7 +271,7 @@ namespace Grid.Lcp
     }
   }
 
-  public partial class LeastCostGrid : LeastCostBase, ILcpModel
+  public partial class LeastCostGrid : LeastCostBase, ILcpGridModel
   {
     private readonly Steps _steps;
 
@@ -321,6 +321,15 @@ namespace Grid.Lcp
       return new Field { X = (int)((point.X - X0) / Dx), Y = (int)((point.Y - Y0) / Dy) };
     }
 
+    ILeastCostGridData ILcpGridModel.CalcGridCost(IPoint start, IList<IPoint> endList, bool invers, double stopFactor)
+    {
+      if (stopFactor < 0)
+      {
+        return CalcCost(start, invers: invers);
+      }
+      return CalcCost(start, endList, invers, stopFactor);
+    }
+
     public LeastCostData CalcCost(IPoint start, IList<IPoint> endList,
       bool invers = false, double stopFactor = 1)
     {
@@ -351,6 +360,7 @@ namespace Grid.Lcp
       return path;
     }
 
+    bool ILcpModel.EqualSettings(ILcpModel other) => EqualSettings(other as LeastCostGrid);
     public bool EqualSettings(LeastCostGrid other)
     {
       if (other == null)
@@ -445,7 +455,7 @@ namespace Grid.Lcp
       }
     }
     public static List<RouteRecord> CalcBestRoutes(IGrid<double> sum,
-      LeastCostData fromResult, LeastCostData toResult,
+      ILeastCostGridData fromResult, ILeastCostGridData toResult,
       double maxLengthFactor, double minDiffFactor, StatusEventHandler Status)
     {
       GridExtent e = sum.Extent;

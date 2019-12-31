@@ -44,11 +44,29 @@ namespace Grid.Lcp
     Polyline GetPath(IPoint end);
   }
 
+  public interface ILeastCostGridData : ILeastCostData
+  {
+    Steps Steps { get; }
+    IGrid<double> CostGrid { get; }
+    IGrid<int> DirGrid { get; }
+    ILeastCostGridData GetReduced();
+    LinkedList<Point> GetPathPoints(IPoint pnt, Func<int, int, bool> getStop);
+  }
+
+
   public interface ILcpModel
   {
     event StatusEventHandler Status;
     ILeastCostData CalcCost(IPoint start, IList<IPoint> ends);
+    bool EqualSettings(ILcpModel m);
   }
+
+  public interface ILcpGridModel : ILcpModel
+  {
+    Steps Steps { get; }
+    ILeastCostGridData CalcGridCost(IPoint start, IList<IPoint> ends, bool invers = false, double stopFactor = 1);
+  }
+
 
   public interface ITeleportProvider
   {

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Grid.Lcp
 {
-  public class LeastCostData : ILeastCostData
+  public class LeastCostData : ILeastCostGridData
   {
     private Steps _steps;
     public LeastCostData(IGrid<double> costGrid, IGrid<int> dirGrid, Steps steps)
@@ -70,6 +70,7 @@ namespace Grid.Lcp
       return path;
     }
 
+    ILeastCostGridData ILeastCostGridData.GetReduced() => GetReduced();
     public LeastCostData GetReduced()
     {
       IGrid<double> cost = BaseGrid.TryReduce(CostGrid);

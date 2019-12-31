@@ -231,14 +231,25 @@ namespace OCourse.Gui
       }
     }
 
+    private System.Windows.Forms.Control _focused;
     private void SetLayout(bool calculating)
     {
+      if (calculating)
+      {
+        _focused = Basics.Forms.Utils.FindFocusedControl(this);
+      }
+
       foreach (var ctr in Controls)
       {
         ((System.Windows.Forms.Control)ctr).Enabled = !calculating;
       }
       btnCancel.Enabled = calculating;
       btnCancel.Visible = calculating;
+
+      if (!calculating && _focused != null)
+      {
+        _focused.Focus();
+      }
     }
 
     private void BtnCourse_Click(object sender, EventArgs e)
@@ -578,7 +589,7 @@ namespace OCourse.Gui
       double l = Math.Sqrt(PointOp.Dist2(start, end)) / 2.0;
       Box box = _vm.RouteCalculator.GetBox(start, end, l);
 
-      wdg.Init(_vm.RouteCalculator.GetTerrainVeloModel(), _vm.RouteCalculator.HeightGrid,
+      wdg.Init((b)=> _vm.RouteCalculator.GetLcpModel(_vm.LcpConfig.Resolution, _vm.LcpConfig.StepsMode, b), _vm.RouteCalculator.HeightGrid,
         _vm.RouteCalculator.VeloPath, _vm.LcpConfig.Resolution, _vm.LcpConfig.StepsMode);
       wdg.SetExtent(box);
       wdg.SetStart(start);

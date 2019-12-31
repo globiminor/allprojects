@@ -52,7 +52,10 @@ namespace OMapScratch.ViewModels
       _locMgr = _locMgr ?? InitLocationManager(out _locProvider);
 
       if ((View?.HasGlobalLocation() ?? false) || forceInit)
-      { _locMgr?.RequestLocationUpdates(_locProvider, 1000, 0, this); }
+      {
+        if (_locProvider != null)
+        { _locMgr?.RequestLocationUpdates(_locProvider, 1000, 0, this); }
+      }
       else
       { _locMgr?.RemoveUpdates(this); }
       if (NextLocationAction != null)

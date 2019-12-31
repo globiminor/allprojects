@@ -10,6 +10,79 @@ namespace OcadTest.OEvent
   [TestClass]
   public class Events
   {
+    private static readonly string _courseDuebi2020 = @"C:\daten\felix\kapreolo\karten\dübendorf\Bahnlegung.ocd";
+    private static readonly string _imagesDuebi2020 = @"C:\daten\felix\kapreolo\karten\dübendorf\Fotos\P*.jpg";
+
+    [TestMethod]
+    public void Duebi2020_CreateImagePoBes()
+    {
+      CmdCreateImagePoBe cmd = new CmdCreateImagePoBe(_courseDuebi2020, new List<ControlInfo>
+      {
+        new ControlInfo{Key = "100", Info="Sockel"},
+        new ControlInfo{Key = "102", Info="Sockel"},
+        new ControlInfo{Key = "111", Info="Sockel"},
+        new ControlInfo{Key = "117", Info="!Folie!"},
+        new ControlInfo{Key = "123", Info="K-Binder"},
+        new ControlInfo{Key = "132", Info="K-Binder"},
+        new ControlInfo{Key = "136", Info="K-Binder"},
+
+        new ControlInfo{Key = "M2", Info="Tor:Schnur"},
+        new ControlInfo{Key = "M3", Info="Tor:K-Binder"},
+        new ControlInfo{Key = "M4", Info="Tor:K-Binder"},
+        new ControlInfo{Key = "M5", Info="Tor:K-Binder"},
+        new ControlInfo{Key = "M6", Info="Absperren"},
+        new ControlInfo{Key = "M7", Info="Tor:K-Binder"},
+        new ControlInfo{Key = "M8", Info="Tor:K-Binder"},
+        new ControlInfo{Key = "M9", Info="Verbot:Abdecken"},
+        new ControlInfo{Key = "M10", Info="Verbot:Abdecken"},
+
+      },
+      maxCols: 3);
+
+      //cmd.WriteImages("Setzen 1", _imagesOpfikon2018);
+      //cmd.WriteImages("Setzen 2", _imagesOpfikon2018);
+      //cmd.WriteImages("Setzen 3", _imagesOpfikon2018);
+      //cmd.WriteImages("Setzen 4", _imagesOpfikon2018);
+      cmd.WriteImages("setzen1", _imagesDuebi2020);
+      cmd.WriteImages("setzen2", _imagesDuebi2020);
+      cmd.WriteImages("setzen3", _imagesDuebi2020);
+      cmd.WriteImages("setzen4", _imagesDuebi2020);
+
+      List<OcadPdfWriter.StartGroup> startGroups = new List<OcadPdfWriter.StartGroup>
+      {
+        new OcadPdfWriter.StartGroup { Key="A", Cats  = new List<string> {"D18", "HAL", "H35", "H40", "Offen Lang"}},
+        new OcadPdfWriter.StartGroup { Key="B", Cats  = new List<string> {"DAL", "H45", "HAM", "H18" }},
+        new OcadPdfWriter.StartGroup { Key="C", Cats  = new List<string> {"D35", "D40", "H50", "H55", "H60"}},
+        new OcadPdfWriter.StartGroup { Key="D", Cats  = new List<string> {"DAM", "D55", "HAK", "H65"}},
+        new OcadPdfWriter.StartGroup { Key="E", Cats  = new List<string> {"DAK", "D45", "D50", "D60", "D65", "H70"}},
+        new OcadPdfWriter.StartGroup { Key="F", Cats  = new List<string> {"D70", "D75", "H75", "H80"}},
+        new OcadPdfWriter.StartGroup { Key="G", Cats  = new List<string> {"D14", "D16", "H14", "H16"}},
+        new OcadPdfWriter.StartGroup { Key="H", Cats  = new List<string> {"D10", "D12", "H10", "H12", "sCOOL"}},
+        new OcadPdfWriter.StartGroup { Key="J", Cats  = new List<string> {"DB", "HB", "Offen Mittel", "Offen Kurz", "Familien"}},
+      };
+
+      OcadPdfWriter w = new OcadPdfWriter(_courseDuebi2020);
+      w.WriteStartGroups(startGroups, new TimeSpan(0, 9, 30, 0), new TimeSpan(0, 12, 09, 0),
+        80, nx: 5, ny: 16, marginX: 28.3f, marginY: 34.0f);
+
+      List<OcadPdfWriter.StartGroup> catGroups = new List<OcadPdfWriter.StartGroup>
+      {
+        new OcadPdfWriter.StartGroup { Key="_1", Cats  = new List<string> {"H10", "H12", "H14", "H16", "H18", "HAL", "HAM", "HAK", "HB",
+          "H35", "H40", "H45", "H50", "H55", "H60", "H65", "H70", "H75", "H80", "Offen Lang", "Offen Mittel", "Offen Kurz"}},
+
+                new OcadPdfWriter.StartGroup { Key="_1", Cats  = new List<string> {"D10", "D12", "D14", "D16", "D18", "DAL", "DAM", "DAK", "DB",
+          "D35", "D40", "D45", "D50", "D55", "D60", "D65", "D70", "D75", null, "Familien", "sCOOL"}},
+      };
+
+      w.WriteCategories("Winter Stadt OL", catGroups, startGroups);
+      //int h = 9;
+      //int min = 30;
+      //string name = string.Format(@"C:\daten\felix\kapreolo\karten\effretikon\2015\StartTimes_{0}_{1}.pdf", h, min);
+      //w.WriteStartTimes(name, "D18/DAK/D60/D55/H70", new DateTime(2016, 1, 10, h, min, 0));
+
+      w.PrintCourseRunners();
+
+    }
 
     private static readonly string _courseOpfikon2018 = @"C:\daten\felix\kapreolo\karten\opfikon\2018\GlattalOL\Glattalol_v2_post.ocd";
     private static readonly string _imagesOpfikon2018 = @"C:\daten\felix\kapreolo\karten\opfikon\2018\GlattalOL\Po\P*.jpg";
@@ -79,7 +152,8 @@ namespace OcadTest.OEvent
       };
 
       OcadPdfWriter w = new OcadPdfWriter(courseFile);
-      w.WriteStartGroups(startGroups, new TimeSpan(0, 9, 30, 0), new TimeSpan(0, 12, 30, 0));
+      w.WriteStartGroups(startGroups, new TimeSpan(0, 9, 30, 0), new TimeSpan(0, 12, 30, 0), 60,
+        nx: 5, ny: 13, marginX: 28.3f, marginY: 34f);
 
       List<OcadPdfWriter.StartGroup> catGroups = new List<OcadPdfWriter.StartGroup>
       {

@@ -15,7 +15,7 @@ namespace LeastCostPathUI
   {
     public event StatusEventHandler StatusChanged;
 
-    private LeastCostGrid<TvmCell> _costPath;
+    private ILcpGridModel _costModel;
     private bool _cancelled;
     private bool _disposed;
 
@@ -63,26 +63,23 @@ namespace LeastCostPathUI
     }
 
     private IGrid<double> _grdHeight;
-    private string _grdVelo;
+    private string _pathVelo;
 
-    private LeastCostData _fromResult;
+    private ILeastCostGridData _fromResult;
 
-    private LeastCostData _toResult;
+    private ILeastCostGridData _toResult;
 
     private Point2D _from;
     private Point2D _to;
 
-    public void Calc(IDirCostModel<TvmCell> provider,
-      IGrid<double> grHeight, string grVelo, double resolution, Steps step, ThreadStart resetDlg)
+    public IBox GetCalcBox()
     {
-      _cancelled = false;
-
       double dX0 = Convert.ToDouble(txtXMin.Text);
       double dY0 = Convert.ToDouble(txtYMin.Text);
       double dX1 = Convert.ToDouble(txtXMax.Text);
       double dY1 = Convert.ToDouble(txtYMax.Text);
-      double dResol = resolution;
-      if (dY0 > dY1)
+
+      if (dX0 > dX1)
       {
         double t;
 
@@ -96,26 +93,29 @@ namespace LeastCostPathUI
       {
         double t;
 
-        t = dX0;
-        dX0 = dX1;
-        dX1 = t;
-        txtXMin.Text = dX0.ToString();
-        txtXMax.Text = dX1.ToString();
+        t = dY0;
+        dY0 = dY1;
+        dY1 = t;
+        txtYMin.Text = dY0.ToString();
+        txtYMax.Text = dY1.ToString();
       }
 
       Box box = chkAuto.Checked
         ? null
         : new Box(new Point2D(dX0, dY0), new Point2D(dX1, dY1));
 
-      IDirCostModel<TvmCell> costProvider = provider;
-      LeastCostGrid<TvmCell> costPath = new LeastCostGrid<TvmCell>(costProvider, dResol, box, step);
+      return box;
+    }
+    public void Calc(ILcpGridModel costModel, IGrid<double> grHeight, string pathVelo, ThreadStart resetDlg)
+    {
+      _cancelled = false;
 
-      if (!costPath.EqualSettings(_costPath) ||
-        grVelo != _grdVelo || grHeight != _grdHeight)
+      if (!costModel.EqualSettings(_costModel) ||
+        pathVelo != _pathVelo || grHeight != _grdHeight)
       {
-        _costPath = costPath;
+        _costModel = costModel;
 
-        _grdVelo = grVelo;
+        _pathVelo = pathVelo;
         _grdHeight = grHeight;
       }
 
@@ -132,7 +132,7 @@ namespace LeastCostPathUI
         offset = offsetPct / 100.0;
       }
 
-      CalcCostWorker worker = new CalcCostWorker(this, costPath, grHeight, from, to, _costPath.Steps,
+      CalcCostWorker worker = new CalcCostWorker(this, costModel, grHeight, from, to, _costModel.Steps,
         chkAuto.Checked, chkRoute.Checked || chkRouteShp.Checked, lengthFact, offset, resetDlg);
 
       Enable(false);
@@ -143,7 +143,7 @@ namespace LeastCostPathUI
     private class CalcCostWorker : IWorker
     {
       private readonly CntOutput _parent;
-      private readonly LeastCostGrid<TvmCell> _costPath;
+      private readonly ILcpGridModel _costModel;
       private readonly IGrid<double> _grHeight;
       private readonly Point2D _from;
       private readonly Point2D _to;
@@ -158,12 +158,12 @@ namespace LeastCostPathUI
       private IGrid<double> _route;
       private Basics.Views.BindingListView<RouteRecord> _routes;
 
-      public CalcCostWorker(CntOutput parent, LeastCostGrid<TvmCell> costPath,
+      public CalcCostWorker(CntOutput parent, ILcpGridModel costModel,
         IGrid<double> grHeight, Point2D from, Point2D to, Steps step, bool autoExtent,
         bool calcRoute, double lengthFact, double offset, ThreadStart resetDlg)
       {
         _parent = parent;
-        _costPath = costPath;
+        _costModel = costModel;
         _grHeight = grHeight;
         _from = from;
         _to = to;
@@ -177,8 +177,8 @@ namespace LeastCostPathUI
 
       public bool Start()
       {
-        _costPath.Status -= _parent.CostPath_Status;
-        _costPath.Status += _parent.CostPath_Status;
+        _costModel.Status -= _parent.CostPath_Status;
+        _costModel.Status += _parent.CostPath_Status;
 
         if (_parent._cancelled)
         {
@@ -188,16 +188,16 @@ namespace LeastCostPathUI
         _parent.SetStepLabel(this, "FROM:");
         if (_parent._from == null || _from.Dist2(_parent._from) != 0 || _parent._fromResult == null)
         {
-          LeastCostData result;
+          ILeastCostGridData result;
           if (_autoExtent)
           {
-            LeastCostData allResult = _costPath.CalcCost(_from, new[] { _to }, stopFactor: _lengthFact);
+            ILeastCostGridData allResult = _costModel.CalcGridCost(_from, new[] { _to }, stopFactor: _lengthFact);
 
             result = allResult.GetReduced();
           }
           else
           {
-            result = _costPath.CalcCost(_from);
+            result = _costModel.CalcGridCost(_from, new Point2D[] { }, stopFactor: -1);
           }
           _parent._fromResult = result;
           _parent._from = _from;
@@ -211,15 +211,15 @@ namespace LeastCostPathUI
         _parent.SetStepLabel(this, "TO:");
         if (_parent._to == null || _to.Dist2(_parent._to) != 0 || _parent._toResult == null)
         {
-          LeastCostData result;
+          ILeastCostGridData result;
           if (_autoExtent)
           {
-            LeastCostData allResult = _costPath.CalcCost(_to, new[] { _from }, invers: true, stopFactor: _lengthFact);
+            ILeastCostGridData allResult = _costModel.CalcGridCost(_to, new[] { _from }, invers: true, stopFactor: _lengthFact);
             result = allResult.GetReduced();
           }
           else
           {
-            result = _costPath.CalcCost(_to, invers: true);
+            result = _costModel.CalcGridCost(_to, new Point2D[] { }, stopFactor: -1, invers: true);
           }
 
           _parent._toResult = result;
@@ -291,7 +291,7 @@ namespace LeastCostPathUI
 
       public void Finally()
       {
-        _costPath.Status -= _parent.CostPath_Status;
+        _costModel.Status -= _parent.CostPath_Status;
         _parent.Enable(true);
         _resetDlg();
       }

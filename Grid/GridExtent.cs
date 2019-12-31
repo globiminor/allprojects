@@ -51,7 +51,7 @@ namespace Grid
       return (ix >= 0 && ix < _nx && iy >= 0 && iy < _ny);
     }
 
-    public void GridToWorld(LinkedList<Point> gridPath)
+    public void GridToWorld(IEnumerable<Point> gridPath)
     {
       foreach (var point in gridPath)
       {
@@ -62,6 +62,16 @@ namespace Grid
         point.Y = p.Y;
       }
     }
+    public void WorldToGrid(IEnumerable<Point> worldPath)
+    {
+      foreach (var point in worldPath)
+      {
+        GetNearest(point, out int ix, out int iy);
+        point.X = ix;
+        point.Y = iy;
+      }
+    }
+
     public void GetBilinear(double x, double y,
       out int ix, out int iy, out double dx, out double dy)
     {

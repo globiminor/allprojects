@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27428.2015
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29326.143
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Basics", "Basics\Basics.csproj", "{200E9400-2771-4ACE-A172-78EBD405B67E}"
 EndProject
@@ -64,6 +64,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gravity", "Gravity\Gravity.csproj", "{9CD27FE3-257E-4D31-9615-CB46BF061D9D}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "OScratchShared", "OScratchShared\OScratchShared.shproj", "{282449A6-0C44-41B9-926B-04EAF832E23D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeomProcessor", "GeomProcessor\GeomProcessor.csproj", "{FC55B56E-8383-4CB7-933D-31B92BBE5B0F}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -277,6 +279,14 @@ Global
 		{9CD27FE3-257E-4D31-9615-CB46BF061D9D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9CD27FE3-257E-4D31-9615-CB46BF061D9D}.Release|x86.ActiveCfg = Release|Any CPU
 		{9CD27FE3-257E-4D31-9615-CB46BF061D9D}.Release|x86.Build.0 = Release|Any CPU
+		{FC55B56E-8383-4CB7-933D-31B92BBE5B0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC55B56E-8383-4CB7-933D-31B92BBE5B0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC55B56E-8383-4CB7-933D-31B92BBE5B0F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FC55B56E-8383-4CB7-933D-31B92BBE5B0F}.Debug|x86.Build.0 = Debug|Any CPU
+		{FC55B56E-8383-4CB7-933D-31B92BBE5B0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC55B56E-8383-4CB7-933D-31B92BBE5B0F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC55B56E-8383-4CB7-933D-31B92BBE5B0F}.Release|x86.ActiveCfg = Release|Any CPU
+		{FC55B56E-8383-4CB7-933D-31B92BBE5B0F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

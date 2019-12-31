@@ -34,13 +34,17 @@ namespace OTextSharp.Models
     private Dictionary<int, PointSymbol> _symbs;
     private readonly Setup _setup;
 
-    public ImagePoBeWriter(OcadReader reader, IList<ControlInfo> infos, string export, string imageTemplate)
+    public ImagePoBeWriter(OcadReader reader, IList<ControlInfo> infos, string export, string imageTemplate,
+      int maxCols = 2, int maxRows = 4)
       : base(export)
     {
       _reader = reader;
       _infos = infos.ToDictionary(x => x.Key);
       _export = export;
       _imageTemplate = imageTemplate;
+
+      _maxX = maxCols;
+      _maxY = maxRows;
 
       _ix = 0;
       _iy = 0;
@@ -72,7 +76,7 @@ namespace OTextSharp.Models
         if (elem.ObjectString.Length < 2)
         { continue; }
 
-        ControlPar ctrPar = new ControlPar(elem.ObjectString.Substring(2));
+        ControlPar ctrPar = new ControlPar(elem.ObjectString.Substring(1).TrimStart('0'));
         _controlPars.Add(ctrPar.Name, ctrPar);
       }
       _setup = reader.ReadSetup();
@@ -232,7 +236,7 @@ namespace OTextSharp.Models
         }
         else if (graphics.Type == SymbolGraphicsType.Dot)
         {
-          DrawCurve(((GeoElement.Line)graphics.MapGeometry).BaseGeometry);
+          DrawCurve(((GeoElement.Area)graphics.MapGeometry).BaseGeometry.Border[0]); 
           Pcb.Fill();
         }
       }
