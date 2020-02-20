@@ -90,6 +90,7 @@
     <Compile Include="Geom\Geometry.cs" />
     <Compile Include="Geom\GeometryCollection.cs" />
     <Compile Include="Geom\IGeometry.cs" />
+    <Compile Include="Geom\Klothoide.cs" />
     <Compile Include="Geom\Line.cs" />
     <Compile Include="Geom\Mesh.cs" />
     <Compile Include="Geom\MeshEnum.cs" />

@@ -574,6 +574,7 @@ namespace Ocad
     // Symbol description
     public abstract string ReadDescription();
     public abstract void ReadAreaSymbol(Symbol.AreaSymbol symbol);
+    public abstract IList<Control> ReadControls(IList<StringParamIndex> indexList = null);
 
     public abstract ElementIndex GetIndex(Element element);
     public abstract int GetElementTextCount(Element element, string text);
@@ -582,7 +583,7 @@ namespace Ocad
     public abstract void WriteElementHeader(Element element);
     public abstract void WriteElementContent(Element element);
     public abstract void WriteElementSymbol(int symbol);
-
+    public abstract void AppendContolPar(OcadWriter writer, Control control, int elementPosition);
     public abstract int CalcElementLength(Element element);
   }
 }

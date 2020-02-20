@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Ocad;
 using Ocad.StringParams;
 using OCourse.Route;
@@ -18,6 +19,7 @@ namespace OCourse.Commands
     private readonly Dictionary<int, int> _oldNewElemDict = new Dictionary<int, int>();
 
     private OcadWriter _writer;
+    private Dictionary<string, Control> _targetControls;
     private Setup _setup;
 
     private bool _disposed;
@@ -131,28 +133,22 @@ namespace OCourse.Commands
           System.IO.File.Copy(_templateFile, _exportFile, true);
           _writer = OcadWriter.AppendTo(_exportFile);
 
-          if (_origFile != _templateFile)
-          {
-            using (OcadReader origReader = OcadReader.Open(_origFile))
-            { TransferCourseSetting(_writer, origReader); }
-          }
+          //if (_origFile != _templateFile)
+          //{
+          //  using (OcadReader origReader = OcadReader.Open(_origFile))
+          //  { TransferCourseSetting(_writer, origReader); }
+          //}
+          _targetControls = _writer.ReadControls().ToDictionary(x => x.Name);
         }
         return _writer;
       }
     }
 
-    public void Export(string prefix, IEnumerable<CostSectionlist> combs, string customLayoutCourse)
+    public void Export(IEnumerable<Course> courses, string customLayoutCourse)
     {
-      foreach (var comb in combs)
+      foreach (var course in courses)
       {
-        Course course = comb.Sections.ToSimpleCourse();
-        string name;
-        if (string.IsNullOrEmpty(comb.Name))
-        { name = prefix; }
-        else
-        { name = $"{prefix}.{comb.Name}"; }
-        course.Name = name;
-        Export(course, (int)Basics.Utils.Round(comb.Climb, 5), customLayoutCourse);
+        Export(course, (int)course.Climb, customLayoutCourse);
       }
     }
 
@@ -234,6 +230,18 @@ namespace OCourse.Commands
       CoursePar coursePar = CoursePar.Create(course);
       coursePar.Climb = climb;
       Writer.Append(StringType.Course, -1, coursePar.StringPar);
+
+      foreach (SimpleSection sec in course.GetAllSections())
+      {
+        foreach (Control ctr in new[] { sec.From, sec.To })
+        {
+          if (!_targetControls.ContainsKey(ctr.Name) && ctr.Code != ControlCode.MapChange)
+          {
+            Writer.Append(ctr);
+            _targetControls.Add(ctr.Name, ctr);
+          }
+        }
+      }
     }
 
 
@@ -245,6 +253,7 @@ namespace OCourse.Commands
       List<ControlHelper> controls = new List<ControlHelper>();
       foreach (var index in reader.ReadStringParamIndices())
       {
+        string sp = reader.ReadStringParam(index);
         if (index.Type == StringType.Control)
         {
           ControlHelper control = new ControlHelper

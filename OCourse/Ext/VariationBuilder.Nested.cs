@@ -80,10 +80,56 @@ namespace OCourse.Ext
       public const string Leg = "Leg";
       public const string PartControls = "PartControls";
       public const string LegControls = "LegControls";
+      private const string Lc = "Lc";
+      private const string Pc = "Pc";
 
       private static readonly List<string> _keys = new List<string> { Leg, PartControls, LegControls };
       public static IReadOnlyList<string> Keywords => _keys;
 
+      private string Evaluate(ISectionList sections, DataSet courseDs,
+        string tableName, string eval, string filter)
+      {
+        tableName = tableName.Trim();
+        if (tableName.Equals(Lc, StringComparison.InvariantCultureIgnoreCase))
+        { tableName = LegControls; }
+        if (tableName.Equals(Pc, StringComparison.InvariantCultureIgnoreCase))
+        { tableName = PartControls; }
+
+        eval = eval.Trim();
+        if (eval == "#")
+        { eval = "Count(Control)"; }
+
+        filter = filter.Trim();
+        if (filter[0] == '\'' && filter[filter.Length - 1] == '\'')
+        { filter = $"Control = {filter}"; }
+
+        if (!courseDs.Tables.Contains(tableName))
+        {
+
+          if (tableName.Equals(LegControls, StringComparison.InvariantCultureIgnoreCase))
+          {
+            DataTable t = new DataTable(LegControls);
+            courseDs.Tables.Add(t);
+
+            t.Columns.Add("Position", typeof(int));
+            t.Columns.Add("Control", typeof(string));
+
+            GetLegControls(sections, null, out List<Control> legControls);
+            int iControl = 0;
+            foreach (Control control in legControls)
+            {
+              t.Rows.Add(iControl, control.Name);
+              iControl++;
+            }
+            t.AcceptChanges();
+          }
+          else
+          { throw new NotImplementedException(); }
+          //TODO
+        }
+        DataTable tbl = courseDs.Tables[tableName];
+        return $"{tbl.Compute(eval, filter)}";
+      }
       private State GetState(string where, ISectionList sections, out string parse)
       {
         parse = where;
@@ -98,6 +144,65 @@ namespace OCourse.Ext
           whereTbl.Rows.Add();
           whereTbl.AcceptChanges();
           _whereView = new DataView(whereTbl);
+        }
+
+        using (DataSet courseDs = new DataSet())
+        {
+          State state = State.Unknown;
+          where = Evaluate(where, (string expression) =>
+            {
+              string[] parts = expression.Split(';');
+              if (parts.Length == 3)
+              {
+                string table = parts[0];
+                string aggr = parts[1];
+                string filter = parts[2];
+
+                return Evaluate(sections, courseDs, table, aggr, filter);
+              }
+              if (parts.Length == 1)
+              {
+                string ctrName = expression;
+
+                if (_exprRow == null)
+                {
+                  DataTable exprTbl = new DataTable();
+                  _exprColumn = exprTbl.Columns.Add("Expr", typeof(int), "1");
+                  _exprRow = exprTbl.NewRow();
+                  exprTbl.Rows.Add(_exprRow);
+                  _exprRow.AcceptChanges();
+                }
+
+                string ctrExpr = ctrName.Replace("#", sections.ControlsCount.ToString());
+                _exprColumn.Expression = ctrExpr;
+
+                int ctrIdx = (int)_exprRow[_exprColumn];
+                if (ctrIdx < 0)
+                {
+                  state = State.Failed;
+                  return null;
+                }
+
+                if (ctrIdx <= sections.ControlsCount)
+                {
+                  Control ctr = sections.GetControl(ctrIdx);
+                  return $"'{ctr.Name}'";
+                }
+                else
+                {
+                  MaxControl = Math.Max(MaxControl, ctrIdx);
+                  return null;
+                }
+
+              }
+              throw new NotImplementedException();
+            });
+
+          if (where == null)
+          {
+            return state;
+          }
+
         }
 
         RegexOptions opts = RegexOptions.IgnoreCase;
@@ -139,7 +244,16 @@ namespace OCourse.Ext
           {
             Match match = Regex.Match(where, $@"\b({LegControls})\b", opts);
             if (!match.Success) break;
-            if (legControls == null && !GetLegControls(sections, _nextControl, out legControls)) break;
+            if (legControls == null)
+            {
+              bool containsControl = GetLegControls(sections, _nextControl, out List<Control> legControlList);
+              if (!containsControl)
+              {
+                legControls = null;
+                break;
+              }
+              GetControlsInList(legControlList, out legControls);
+            }
 
             where = Replace(where, match, legControls);
           }
@@ -210,6 +324,38 @@ namespace OCourse.Ext
         }
       }
 
+      private string Evaluate(string where, Func<string, string> eval)
+      {
+        while (where?.IndexOf("[") >= 0)
+        {
+          where = EvaluateNext(where, eval, searchEnd: false);
+        }
+        return where;
+      }
+      private string EvaluateNext(string expression, Func<string, string> evalFunc, bool searchEnd)
+      {
+        int iStart = expression.IndexOf('[', 0);
+        int iEnd = expression.IndexOf(']');
+        if (iStart < iEnd && iStart >= 0)
+        {
+          string evaluated = EvaluateNext(expression.Substring(iStart + 1), evalFunc, searchEnd: true);
+          if (evaluated == null)
+          { return null; }
+          string result = $"{expression.Substring(0, iStart)}{evaluated}";
+          return result;
+        }
+        if (searchEnd)
+        {
+          string eval = expression.Substring(0, iEnd);
+          string evaluated = evalFunc(eval);
+          if (evaluated == null)
+          { return null; }
+          string result = $"{evaluated}{expression.Substring(iEnd + 1)}";
+          return result;
+        }
+        return expression;
+      }
+
       private bool GetPartControls(ISectionList sections, NextControl control, out string partControls)
       {
         List<Control> currentPart = null;
@@ -237,7 +383,7 @@ namespace OCourse.Ext
         partControls = null;
         return false;
       }
-      private bool GetLegControls(ISectionList sections, NextControl control, out string legControls)
+      private bool GetLegControls(ISectionList sections, NextControl control, out List<Control> legControls)
       {
         List<Control> currentLeg = null;
         bool isControlInCurrentPart = false;
@@ -245,7 +391,7 @@ namespace OCourse.Ext
         {
           if (_legController.IsLegStart(ctr))
           {
-            if (isControlInCurrentPart) { return GetControlsInList(currentLeg, out legControls); }
+            if (isControlInCurrentPart) { legControls = currentLeg; return true; }
             currentLeg = null;
           }
           currentLeg = currentLeg ?? new List<Control>();
@@ -257,11 +403,11 @@ namespace OCourse.Ext
 
           if (_legController.IsLegEnd(ctr))
           {
-            if (isControlInCurrentPart) { return GetControlsInList(currentLeg, out legControls); }
+            if (isControlInCurrentPart) { legControls = currentLeg; return true; }
             currentLeg = null;
           }
         }
-        legControls = null;
+        legControls = currentLeg;
         return false;
       }
       private bool GetControlsInList(List<Control> controls, out string partControls)
@@ -723,7 +869,7 @@ namespace OCourse.Ext
         return dict;
       }
 
-      protected static List<SimpleSection> MakeUniqueControls(IList<SimpleSection> sections, 
+      protected static List<SimpleSection> MakeUniqueControls(IList<SimpleSection> sections,
         bool whereDependent)
       {
         Dictionary<string, Control> controls = new Dictionary<string, Control>();

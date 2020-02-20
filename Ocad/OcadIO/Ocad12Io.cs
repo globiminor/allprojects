@@ -189,8 +189,31 @@ namespace Ocad
       return csElements;
     }
 
+    public override IList<Control> ReadControls(IList<StringParamIndex> indexList = null)
+    {
+      List<Control> controls = new List<Control>();
+      foreach (var e in CourseSettingElements)
+      {
+        if (e.ObjectStringType != ObjectStringType.CsObject)
+        { continue; }
 
-    public override GeoElement ReadControlGeometry(Control control, 
+        ControlPar par = new ControlPar(e.ObjectString);
+        string t = par.Name.Substring(0, 1);
+
+        ControlCode code;
+        if (t == $"1") code = ControlCode.Control;
+        else if (t == $"0") code = ControlCode.Start;
+        else if (t == $"2") code = ControlCode.MarkedRoute;
+        else if (t == $"3") code = ControlCode.Finish;
+        else
+          continue;
+
+        controls.Add(new Control(par.Id) { Element = e, Code = code });
+      }
+      return controls;
+    }
+
+    public override GeoElement ReadControlGeometry(Control control,
       IList<StringParamIndex> settingIndexList)
     {
       GeoElement match = null;
@@ -236,5 +259,9 @@ namespace Ocad
       control.Element = match;
       return match;
     }
+
+    public override void AppendContolPar(OcadWriter writer, Control control, int elementPosition)
+    { }
+
   }
 }

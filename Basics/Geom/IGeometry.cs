@@ -45,6 +45,23 @@ namespace Basics.Geom
     IPoint P2 { get; }
     IPoint End { get; }
   }
+  public interface IKlothoide : IDimension
+  {
+    /// <summary>
+    /// Wendepunkt der Klothoide
+    /// </summary>
+    IPoint K0 { get; }
+    /// <summary>
+    /// Rotationswinkel der Klothoide in rad
+    /// </summary>
+    double Angle { get; }
+    /// <summary>
+    /// Klothoiden parameter
+    /// </summary>
+    double A { get; } 
+    double L0 { get; }
+    double L1 { get; }
+  }
 
 
   public interface IVolume

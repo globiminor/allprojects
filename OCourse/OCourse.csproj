@@ -110,6 +110,7 @@
     <Compile Include="Route\CostMean.cs" />
     <Compile Include="Route\Cost.cs" />
     <Compile Include="Route\CostFromTo.cs" />
+    <Compile Include="Route\CostSectionList.cs" />
     <Compile Include="Route\RouteCalculator.cs" />
     <Compile Include="Tracking\Track.cs" />
     <Compile Include="Tracking\TrackReader.cs" />

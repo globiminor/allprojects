@@ -1,5 +1,6 @@
 
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -102,6 +103,16 @@ namespace Basics
 
   public static class Extensions
   {
+    public static TM GetOrCreateValue<TK, TM>(this Dictionary<TK, TM> dict, TK key)
+      where TM : new()
+    {
+      if (!dict.TryGetValue(key, out TM member))
+      {
+        member = new TM();
+        dict.Add(key, member);
+      }
+      return member;
+    }
     public static bool TryParse<T>(string text, out T value)
     {
       if (string.IsNullOrEmpty(text))

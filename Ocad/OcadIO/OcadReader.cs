@@ -187,28 +187,7 @@ namespace Ocad
 
     public IList<Control> ReadControls(IList<StringParamIndex> indexList = null)
     {
-      IList<StringParamIndex> indexEnum = indexList ?? ReadStringParamIndices();
-
-      Dictionary<Control, StringParamIndex> controls =
-        new Dictionary<Control, StringParamIndex>();
-      foreach (var index in indexEnum)
-      {
-        if (index.Type != StringType.Control)
-        { continue; }
-
-        string stringParam = _io.ReadStringParam(index);
-
-        Control control = Control.FromStringParam(stringParam);
-
-        controls.Add(control, index);
-      }
-
-      foreach (var pair in controls)
-      {
-        pair.Key.Element = _io.ReadElement(pair.Value.ElemNummer - 1, out GeoElement element);
-      }
-      IList<Control> result = new List<Control>(controls.Keys);
-      return result;
+      return _io.ReadControls(indexList);
     }
 
     public string ReadCourseName(int course, IList<StringParamIndex> indexList = null)
@@ -386,9 +365,9 @@ namespace Ocad
     {
       foreach (var section in sectionList)
       {
-        if (section is Control)
+        if (section is Control control)
         {
-          _io.ReadControlGeometry((Control)section, indexList);
+          _io.ReadControlGeometry(control, indexList);
         }
         else if (section is SplitSection fork)
         {

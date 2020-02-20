@@ -1,4 +1,5 @@
-﻿using Basics.Forms;
+﻿using Basics;
+using Basics.Forms;
 using Basics.Geom;
 using Basics.Views;
 using LeastCostPathUI;
@@ -589,7 +590,7 @@ namespace OCourse.Gui
       double l = Math.Sqrt(PointOp.Dist2(start, end)) / 2.0;
       Box box = _vm.RouteCalculator.GetBox(start, end, l);
 
-      wdg.Init((b)=> _vm.RouteCalculator.GetLcpModel(_vm.LcpConfig.Resolution, _vm.LcpConfig.StepsMode, b), _vm.RouteCalculator.HeightGrid,
+      wdg.Init((b) => _vm.RouteCalculator.GetLcpModel(_vm.LcpConfig.Resolution, _vm.LcpConfig.StepsMode, b), _vm.RouteCalculator.HeightGrid,
         _vm.RouteCalculator.VeloPath, _vm.LcpConfig.Resolution, _vm.LcpConfig.StepsMode);
       wdg.SetExtent(box);
       wdg.SetStart(start);
@@ -722,9 +723,29 @@ namespace OCourse.Gui
         { courseName = PermutationUtils.GetCoreCourseName(_vm.Course.Name); }
         using (CmdCourseTransfer cmd = new CmdCourseTransfer(wdg.ExportFile, wdg.TemplateFile, _vm.CourseFile))
         {
-          cmd.Export(courseName, selectedCombs, courseName);
+          cmd.Export(selectedCombs.Select(comb => GetCourse(courseName, comb, wdg.SplitCourses)), courseName);
         }
       }
+    }
+
+    private Course GetCourse(string prefix, CostSectionlist comb, bool split)
+    {
+      Course course = comb.Sections.ToSimpleCourse();
+
+      if (split)
+      {
+        VariationBuilder.Split(course);
+      }
+
+      string name;
+      if (string.IsNullOrEmpty(comb.Name))
+      { name = prefix; }
+      else
+      { name = $"{prefix}.{comb.Name}"; }
+      course.Name = name;
+      course.Climb = Basics.Utils.Round(comb.Climb, 5);
+
+      return course;
     }
 
     private void BtnExportCsv_Click(object sender, EventArgs e)
@@ -808,20 +829,22 @@ namespace OCourse.Gui
 
     private void BtnExportPermutOcad_Click(object sender, EventArgs e)
     {
-      WdgExport wdg = new WdgExport { TemplateFile = _vm.CourseFile };
-      if (wdg.ShowDialog(this) != DialogResult.OK)
-      { return; }
-
-      string courseName = null;
-      if (_vm.Course != null)
-      { courseName = PermutationUtils.GetCoreCourseName(_vm.Course.Name); }
-
-      IEnumerable<PermutationVm> selectedPermuts = DataGridViewUtils.GetSelectedItems(dgvPermut).Cast<PermutationVm>();
-      IEnumerable<CostSectionlist> selectedCombs =
-        CostSectionlist.GetCostSectionLists(selectedPermuts, _vm.RouteCalculator, _vm.LcpConfig.Resolution);
-      using (CmdCourseTransfer cmd = new CmdCourseTransfer(wdg.ExportFile, wdg.TemplateFile, _vm.CourseFile))
+      using (WdgExport wdg = new WdgExport { TemplateFile = _vm.CourseFile })
       {
-        cmd.Export(courseName, selectedCombs, courseName);
+        if (wdg.ShowDialog(this) != DialogResult.OK)
+        { return; }
+
+        string courseName = null;
+        if (_vm.Course != null)
+        { courseName = PermutationUtils.GetCoreCourseName(_vm.Course.Name); }
+
+        IEnumerable<PermutationVm> selectedPermuts = DataGridViewUtils.GetSelectedItems(dgvPermut).Cast<PermutationVm>();
+        IEnumerable<CostSectionlist> selectedCombs =
+          CostSectionlist.GetCostSectionLists(selectedPermuts, _vm.RouteCalculator, _vm.LcpConfig.Resolution);
+        using (CmdCourseTransfer cmd = new CmdCourseTransfer(wdg.ExportFile, wdg.TemplateFile, _vm.CourseFile))
+        {
+          cmd.Export(selectedCombs.Select(comb => GetCourse(courseName, comb, wdg.SplitCourses)), courseName);
+        }
       }
     }
 

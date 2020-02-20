@@ -114,6 +114,7 @@ namespace Ocad
       }
       return setup;
     }
+    public override IList<Control> ReadControls(IList<StringParams.StringParamIndex> indexList = null) => Ocad9Io.ReadControls(this, indexList);
 
     public override IEnumerable<ColorInfo> ReadColorInfos()
     {
@@ -275,5 +276,9 @@ namespace Ocad
       { return text.Length / 8 + 1; }
     }
 
+    public override void AppendContolPar(OcadWriter writer, Control control, int elementPosition)
+    {
+      Ocad9Io.AppendControlParam(writer, control, elementPosition);
+    }
   }
 }

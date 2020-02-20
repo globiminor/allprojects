@@ -25,6 +25,7 @@ namespace Ocad
     public override void WriteElementSymbol(int symbol) => Ocad9Io.WriteElementSymbol(this, symbol);
     public override void WriteElementContent(Element element) => Ocad9Io.WriteElementContent(this, element);
     public override int GetElementTextCount(Element element, string text) => Ocad9Io.TextCountV9(text);
+    public override IList<Control> ReadControls(IList<StringParams.StringParamIndex> indexList = null) => Ocad9Io.ReadControls(this, indexList);
 
     public override BaseSymbol ReadSymbol() => ReadSymbol(this);
     public static BaseSymbol ReadSymbol(OcadIo io)
@@ -50,6 +51,11 @@ namespace Ocad
       // OCAD 11
       string read = Encoding.Unicode.GetString(bytes).Trim('\0');
       return read;
+    }
+
+    public override void AppendContolPar(OcadWriter writer, Control control, int elementPosition)
+    {
+      Ocad9Io.AppendControlParam(writer, control, elementPosition);
     }
   }
 }

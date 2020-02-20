@@ -18,6 +18,87 @@ namespace OcadTest
   public class DataTest
   {
     [TestMethod]
+    public void TestRelation()
+    {
+      DataSet ds = new DataSet();
+
+      DataTable tblCntr = new DataTable("tblCntr");
+      ds.Tables.Add(tblCntr);
+      tblCntr.Columns.Add("Control", typeof(string));
+
+      DataTable tblCourse = new DataTable("tblCourse");
+      ds.Tables.Add(tblCourse);
+      tblCourse.Columns.Add("Position", typeof(int));
+      tblCourse.Columns.Add("Control", typeof(string));
+
+      ds.Relations.Add(tblCntr.Columns["Control"], tblCourse.Columns["Control"]);
+      tblCntr.Columns.Add("ControlCount", typeof(int), "Count(Child.Control)");
+
+      tblCntr.Rows.Add("31");
+      tblCntr.Rows.Add("32");
+      tblCntr.Rows.Add("33");
+      tblCntr.Rows.Add("34");
+      tblCntr.Rows.Add("Z1");
+
+      tblCourse.Rows.Add(1, "31");
+      tblCourse.Rows.Add(2, "32");
+      tblCourse.Rows.Add(3, "31");
+      tblCourse.Rows.Add(4, "33");
+      tblCourse.Rows.Add(5, "31");
+      tblCourse.Rows.Add(6, "34");
+      tblCourse.Rows.Add(7, "32");
+      tblCourse.Rows.Add(8, "31");
+      tblCourse.Rows.Add(9, "Z1");
+
+      DataView vCntr = new DataView(tblCntr);
+      vCntr.Sort = "Control";
+      Assert.IsTrue((int)vCntr[vCntr.Find("31")].Row["ControlCount"] == 4);
+
+      object count = tblCntr.Compute("Max(ControlCount)", "Control = '31'");
+
+      string expression = "where [tblCntr;Max(ControlCount);Control = '31'] = [tblCntr;Min(ControlCount);Control = '31']";
+      Evaluate(ds, expression);
+    }
+    private bool Evaluate(DataSet ds, string expression)
+    {
+      expression = expression.Trim();
+      if (!expression.StartsWith("where ", StringComparison.InvariantCultureIgnoreCase))
+      { return true; }
+      expression = expression.Substring(6).Trim();
+      while (expression.IndexOf("[") >= 0)
+      {
+        expression = EvaluateNext(ds, expression, searchEnd: false);
+      }
+      return true;
+    }
+    private string EvaluateNext(DataSet ds, string expression, bool searchEnd)
+    {
+      int iStart = expression.IndexOf('[', 0);
+      int iEnd = expression.IndexOf(']');
+      if (iStart < iEnd && iStart >= 0)
+      {
+        string result = $"{expression.Substring(0, iStart)}{ EvaluateNext(ds, expression.Substring(iStart + 1), searchEnd: true)}";
+        return result;
+      }
+      if (searchEnd)
+      {
+        string eval = expression.Substring(0, iEnd);
+        string[] parts = eval.Split(';');
+        if (parts.Length != 3)
+          throw new InvalidOperationException(eval);
+        string table = parts[0];
+        string aggr = parts[1];
+        string filter = parts[2];
+
+        DataTable tbl = ds.Tables[table];
+        object val = tbl.Compute(aggr, filter);
+
+        string result = $"{val}{expression.Substring(iEnd + 1)}";
+        return result;
+      }
+      return expression;
+    }
+    [TestMethod]
     public void TestBildObjekte()
     {
       using (OcadReader r = OcadReader.Open(@"C:\daten\felix\kapreolo\scool\regensdorf_ruggenacher\test.ocd"))

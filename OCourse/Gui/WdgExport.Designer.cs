@@ -38,12 +38,13 @@
       this.txtTemplate = new System.Windows.Forms.TextBox();
       this.btnOK = new System.Windows.Forms.Button();
       this.btnCancel = new System.Windows.Forms.Button();
+      this.chkSplit = new System.Windows.Forms.CheckBox();
       this.SuspendLayout();
       // 
       // txtExport
       // 
-      this.txtExport.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                  | System.Windows.Forms.AnchorStyles.Right)));
+      this.txtExport.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
       this.txtExport.Location = new System.Drawing.Point(89, 12);
       this.txtExport.Name = "txtExport";
       this.txtExport.Size = new System.Drawing.Size(478, 20);
@@ -91,8 +92,8 @@
       // 
       // txtTemplate
       // 
-      this.txtTemplate.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                  | System.Windows.Forms.AnchorStyles.Right)));
+      this.txtTemplate.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
       this.txtTemplate.Location = new System.Drawing.Point(89, 60);
       this.txtTemplate.Name = "txtTemplate";
       this.txtTemplate.Size = new System.Drawing.Size(478, 20);
@@ -120,11 +121,22 @@
       this.btnCancel.UseVisualStyleBackColor = true;
       this.btnCancel.Click += new System.EventHandler(this.BtnCancel_Click);
       // 
+      // chkSplit
+      // 
+      this.chkSplit.AutoSize = true;
+      this.chkSplit.Location = new System.Drawing.Point(89, 95);
+      this.chkSplit.Name = "chkSplit";
+      this.chkSplit.Size = new System.Drawing.Size(87, 17);
+      this.chkSplit.TabIndex = 16;
+      this.chkSplit.Text = "Split Courses";
+      this.chkSplit.UseVisualStyleBackColor = true;
+      // 
       // WdgExport
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.ClientSize = new System.Drawing.Size(627, 179);
+      this.Controls.Add(this.chkSplit);
       this.Controls.Add(this.btnCancel);
       this.Controls.Add(this.btnOK);
       this.Controls.Add(this.btnTemplate);
@@ -155,5 +167,6 @@
     private System.Windows.Forms.TextBox txtTemplate;
     private System.Windows.Forms.Button btnOK;
     private System.Windows.Forms.Button btnCancel;
+    private System.Windows.Forms.CheckBox chkSplit;
   }
 }

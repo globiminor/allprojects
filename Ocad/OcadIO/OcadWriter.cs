@@ -106,19 +106,13 @@ namespace Ocad
       return indexNr;
     }
 
-    public int Append(Element element)
+    public int Append(Element element, ElementIndex index = null)
     {
       if (element == null)
       { return -1; }
 
-      ElementIndex index = Io.GetIndex(element);
+      index = index ?? Io.GetIndex(element);
 
-      int pos = Append(element, index);
-      return pos;
-    }
-
-    public int Append(Element element, ElementIndex index)
-    {
       PointCollection coords = new PointCollection();
       coords.AddRange(element.GetCoords(Io.Setup).Select(x => x.GetPoint()));
       index.SetMapBox(coords.Extent);
@@ -129,6 +123,15 @@ namespace Ocad
       WriteElement(element);
 
       return pos;
+    }
+
+    public void Append(Control control)
+    {
+      if (control?.Element == null)
+      { return; }
+
+      int elementPosition = Append(control.Element);
+      Io.AppendContolPar(this, control, elementPosition);
     }
 
     public void Write(Symbol.SymbolGraphics graphics)

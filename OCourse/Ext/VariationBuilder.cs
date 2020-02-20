@@ -1,4 +1,7 @@
+using Basics;
+using Basics.Geom;
 using Ocad;
+using System;
 using System.Collections.Generic;
 
 namespace OCourse.Ext
@@ -76,6 +79,76 @@ namespace OCourse.Ext
 
       return new Control(key, ControlCode.TextBlock);
     }
+    public static void Split(Course course)
+    {
+      List<Control> controls = new List<Control>();
+      Dictionary<string, List<Control>> dict = new Dictionary<string, List<Control>>();
+      foreach (Control control in course)
+      {
+        controls.Add(control);
+        dict.GetOrCreateValue(control.Name).Add(control);
+      }
+      Dictionary<string, List<Control>> dictPre = new Dictionary<string, List<Control>>();
+      dictPre.GetOrCreateValue(controls[0].Name).Add(controls[0]);
+      int minDouble = int.MaxValue;
+      int minSplit = -1;
+      LinkedListNode<ISection> minNode = null;
+      LinkedListNode<ISection> currentNode = course.First;
+      for (int iSplit = 0; iSplit < controls.Count; iSplit++)
+      {
+        Control split = controls[iSplit];
+        dictPre.GetOrCreateValue(split.Name).Add(split);
+        currentNode = currentNode.Next;
+
+        if (dict[split.Name].Count > 1)
+        { continue; }
+
+        int nDouble = 0;
+        foreach (var pair in dict)
+        {
+          if (pair.Value.Count == 1)
+          { continue; }
+
+          if (!dictPre.TryGetValue(pair.Key, out List<Control> pre))
+          { pre = new List<Control>(); }
+          int n0 = pre.Count;
+          int n1 = pair.Value.Count - n0;
+          int d = n1 - n0;
+
+          nDouble += Math.Abs(d);
+        }
+        if (nDouble < minDouble)
+        {
+          minDouble = nDouble;
+          minSplit = iSplit;
+          minNode = currentNode;
+        }
+      }
+      if (minNode != null)
+      {
+        Control pre = (Control)minNode.Previous.Value;
+        Control start = new Control($"S{pre.Name}", ControlCode.Start);
+        foreach (IPoint p in pre.Element.Geometry.EnumPoints())
+        {
+          start.Element = new GeoElement(p);
+          start.Element.Type = GeomType.point;
+          start.Element.ObjectStringType = ObjectStringType.CsObject;
+          start.Element.Symbol = 701000;
+
+          Ocad.StringParams.ControlPar param = new Ocad.StringParams.ControlPar(pre.Element.ObjectString);
+          param.Name = $"0S{pre.Name}";
+          param.Type = 's';
+          param.Id = $"S{pre.Name}";
+          start.Element.ObjectString = param.StringPar; // pre.Element.ObjectString;
+          break;
+        }
+
+        course.AddBefore(minNode, new Control(string.Empty, ControlCode.MapChange));
+
+        course.AddBefore(minNode, start);
+      }
+    }
+
 
     public IReadOnlyList<SimpleSection> GetSimpleSections()
     {

@@ -53,6 +53,35 @@ namespace Ocad
       }
     }
 
+    public override IList<Control> ReadControls(IList<StringParamIndex> indexList = null) => ReadControls(this, indexList);
+    public static IList<Control> ReadControls(OcadIo io, IList<StringParamIndex> indexList)
+    {
+      IList<StringParamIndex> indexEnum = indexList ??
+              new List<StringParamIndex>(io.EnumStringParamIndices());
+
+      Dictionary<Control, StringParamIndex> controls =
+        new Dictionary<Control, StringParamIndex>();
+      foreach (var index in indexEnum)
+      {
+        if (index.Type != StringType.Control)
+        { continue; }
+
+        string stringParam = io.ReadStringParam(index);
+
+        Control control = Control.FromStringParam(stringParam);
+
+        controls.Add(control, index);
+      }
+
+      foreach (var pair in controls)
+      {
+        pair.Key.Element = io.ReadElement(pair.Value.ElemNummer - 1, out GeoElement element);
+      }
+      IList<Control> result = new List<Control>(controls.Keys);
+      return result;
+
+    }
+
     public override Setup ReadSetup() => ReadSetup(this);
     public static Setup ReadSetup(OcadIo io)
     {
@@ -602,5 +631,14 @@ namespace Ocad
       return 0;
     }
 
+    public override void AppendContolPar(OcadWriter writer, Control control, int elementPosition)
+    {
+      AppendControlParam(writer, control, elementPosition);
+    }
+    public static void AppendControlParam(OcadWriter writer, Control control, int elementPosition)
+    {
+      writer.Append(StringType.Control, elementPosition + 1,
+         control?.Element.ObjectString ?? ControlPar.Create(control).StringPar);
+    }
   }
 }

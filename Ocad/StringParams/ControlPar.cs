@@ -3,6 +3,7 @@ namespace Ocad.StringParams
   public class ControlPar : MultiParam
   {
     public const char TypeKey = 'Y';
+    public const char IdKey = 'a';
 
     public const char SymCKey = 'c';
     public const char SymDKey = 'd';
@@ -34,6 +35,13 @@ namespace Ocad.StringParams
       get { return GetString(TypeKey)[0]; }
       set { SetParam(TypeKey, value); }
     }
+
+    public string Id
+    {
+      get { return GetString(IdKey); }
+      set { SetParam(IdKey, value); }
+    }
+
 
     public string TextDesc
     {

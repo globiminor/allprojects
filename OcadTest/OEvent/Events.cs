@@ -22,17 +22,17 @@ namespace OcadTest.OEvent
         new ControlInfo{Key = "102", Info="Sockel"},
         new ControlInfo{Key = "111", Info="Sockel"},
         new ControlInfo{Key = "117", Info="!Folie!"},
-        new ControlInfo{Key = "123", Info="K-Binder"},
+        new ControlInfo{Key = "123", Info="Sockel"},
         new ControlInfo{Key = "132", Info="K-Binder"},
         new ControlInfo{Key = "136", Info="K-Binder"},
 
         new ControlInfo{Key = "M2", Info="Tor:Schnur"},
-        new ControlInfo{Key = "M3", Info="Tor:K-Binder"},
-        new ControlInfo{Key = "M4", Info="Tor:K-Binder"},
-        new ControlInfo{Key = "M5", Info="Tor:K-Binder"},
+        new ControlInfo{Key = "M3", Info="Tor:Schnur"},
+        new ControlInfo{Key = "M4", Info="Tor:Schnur"},
+        new ControlInfo{Key = "M5", Info="Tor:Schnur"},
         new ControlInfo{Key = "M6", Info="Absperren"},
-        new ControlInfo{Key = "M7", Info="Tor:K-Binder"},
-        new ControlInfo{Key = "M8", Info="Tor:K-Binder"},
+        new ControlInfo{Key = "M7", Info="Tor:Schnur"},
+        new ControlInfo{Key = "M8", Info="Tor:Schnur"},
         new ControlInfo{Key = "M9", Info="Verbot:Abdecken"},
         new ControlInfo{Key = "M10", Info="Verbot:Abdecken"},
 
@@ -63,7 +63,7 @@ namespace OcadTest.OEvent
 
       OcadPdfWriter w = new OcadPdfWriter(_courseDuebi2020);
       w.WriteStartGroups(startGroups, new TimeSpan(0, 9, 30, 0), new TimeSpan(0, 12, 09, 0),
-        80, nx: 5, ny: 16, marginX: 28.3f, marginY: 34.0f);
+        80, nx: 5, ny: 16, marginX: 28.3f, marginY: 40.0f);
 
       List<OcadPdfWriter.StartGroup> catGroups = new List<OcadPdfWriter.StartGroup>
       {
@@ -153,7 +153,7 @@ namespace OcadTest.OEvent
 
       OcadPdfWriter w = new OcadPdfWriter(courseFile);
       w.WriteStartGroups(startGroups, new TimeSpan(0, 9, 30, 0), new TimeSpan(0, 12, 30, 0), 60,
-        nx: 5, ny: 13, marginX: 28.3f, marginY: 34f);
+        nx: 5, ny: 13, marginX: 28.3f, marginY: 40.0f);
 
       List<OcadPdfWriter.StartGroup> catGroups = new List<OcadPdfWriter.StartGroup>
       {

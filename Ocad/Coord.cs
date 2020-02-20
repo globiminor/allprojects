@@ -323,7 +323,7 @@ namespace Ocad
         Flags c = ((seg.End as CodePoint)?.Flags ?? Flags.none) | remove;
         Flags code = c ^ remove;
 
-        coord = Coord.Create(seg.End, c);
+        coord = Coord.Create(seg.End, code);
         yield return coord;
       }
 

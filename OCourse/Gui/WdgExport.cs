@@ -20,6 +20,8 @@ namespace OCourse.Gui
       set { txtTemplate.Text = value; }
     }
 
+    public bool SplitCourses => chkSplit.Checked;
+
     private void BtnOK_Click(object sender, EventArgs e)
     {
       DialogResult = DialogResult.OK;
