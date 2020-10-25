@@ -1,0 +1,723 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css" />
+    <!--<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css" />
+
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js"></script>-->
+    <script src="//api3.geo.admin.ch/loader.js?version=4.4.2"></script>
+    <style>
+        .map {
+            width: 1600px;
+            height: 900px;
+        }
+
+        tr.selected {
+            background-color: lightgray;
+        }
+
+        tr.highlight {
+            background-color: whitesmoke;
+        }
+
+        .legend {
+            margin: 0;
+            height: 12px;
+        }
+
+        .ltxt {
+            height: 37px;
+            vertical-align: text-top;
+        }
+    </style>
+</head>
+<body>
+
+    <table>
+        <tr>
+            <td style="vertical-align:top">
+                <h3>Legende</h3>
+                <table>
+                    <tr>
+                        <td style="vertical-align:top">
+                            <div class="legend"><svg width="60" height="12"><rect width="60" height="12" style="fill:rgb(255,0,0);" /></svg></div>
+                            <div class="legend"><svg width="60" height="12"><rect width="60" height="12" style="fill:rgb(255,64,0);" /></svg></div>
+                            <div class="legend"><svg width="60" height="12"><rect width="60" height="12" style="fill:rgb(255,128,0);" /></svg></div>
+                            <div class="legend"><svg width="60" height="12"><rect width="60" height="12" style="fill:rgb(255,192,0);" /></svg></div>
+                            <div class="legend"><svg width="60" height="12"><rect width="60" height="12" style="fill:rgb(255,255,0);" /></svg></div>
+                            <div class="legend"><svg width="60" height="12"><rect width="60" height="12" style="fill:rgb(192,255,0);" /></svg></div>
+                            <div class="legend"><svg width="60" height="12"><rect width="60" height="12" style="fill:rgb(128,255,0);" /></svg></div>
+                            <div class="legend"><svg width="60" height="12"><rect width="60" height="12" style="fill:rgb(64,255,0);" /></svg></div>
+                            <div class="legend"><svg width="60" height="12"><rect width="60" height="12" style="fill:rgb(0,255,0);" /></svg></div>
+                            <div class="legend"><svg width="60" height="12"><rect width="60" height="12" style="fill:rgb(0,255,64);" /></svg></div>
+                            <div class="legend"><svg width="60" height="12"><rect width="60" height="12" style="fill:rgb(0,255,128);" /></svg></div>
+                            <div class="legend"><svg width="60" height="12"><rect width="60" height="12" style="fill:rgb(0,255,192);" /></svg></div>
+                            <div class="legend"><svg width="60" height="12"><rect width="60" height="12" style="fill:rgb(0,255,255);" /></svg></div>
+                            <div class="legend"><svg width="60" height="12"><rect width="60" height="12" style="fill:rgb(0,192,255);" /></svg></div>
+                            <div class="legend"><svg width="60" height="12"><rect width="60" height="12" style="fill:rgb(0,128,255);" /></svg></div>
+                            <div class="legend"><svg width="60" height="12"><rect width="60" height="12" style="fill:rgb(0,64,255);" /></svg></div>
+                            <div class="legend"><svg width="60" height="12"><rect width="60" height="12" style="fill:rgb(0,0,255);" /></svg></div>
+                        </td>
+                        <td style="vertical-align:top">
+                            <div class="ltxt" style="margin-top:4px">0%</div>
+                            <div class="ltxt">20%</div>
+                            <div class="ltxt">40%</div>
+                            <div class="ltxt">60%</div>
+                            <div class="ltxt">80%</div>
+                            <div class="ltxt">100%</div>
+                        </td>
+                    </tr>
+                </table>
+                <img id="idImgNordring" />
+                <p>Nordring</p>
+                <img id="idImgKatzenbach" width="75" height="75" />
+                <p>Katzenbach</p>
+            </td>
+            <td>
+                <div id="map" class="map" style="position:relative">
+                    <pre id="idInfo" style="z-index: 1; opacity: 0; position: absolute; bottom: 0; left: 0; margin: 0;
+                              background: rgba(0,60,136,0.7); color: white; border: 0; transition: opacity 100ms ease-in;"></pre>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <script>
+        var textStyle = new ol.style.Text({
+            font: 'bold 11px "Open Sans", "Arial Unicode MS", "sans-serif"',
+            placement: 'point',
+            fill: new ol.style.Fill({
+                color: 'darkgrey'
+            })
+        });
+
+        /**
+ * depth: 1 - monochrome
+ *        4 - 4-bit grayscale
+ *        8 - 8-bit grayscale
+ *       16 - 16-bit colour
+ *       32 - 32-bit colour
+ **/
+        function getImgSrc(arr, depth, height, width) {
+            var offset, data;
+
+            function conv(size) {
+                return String.fromCharCode(size & 0xff, (size >> 8) & 0xff, (size >> 16) & 0xff, (size >> 24) & 0xff);
+            }
+
+            offset = depth <= 8 ? 54 + Math.pow(2, depth) * 4 : 54;
+            var pixelCount = arr.length * 8 / depth;
+
+            // height = Math.ceil(Math.sqrt(pixelCount));
+            // width = Math.floor(pixelCount / height);
+            // alert('h,w:' + height + ';' + width);
+
+            //BMP Header
+            data = 'BM';                          // ID field
+            data += conv(offset + arr.length);     // BMP size
+            data += conv(0);                       // unused
+            data += conv(offset);                  // pixel data offset
+
+            //DIB Header
+            data += conv(40);                      // DIB header length
+            data += conv(height);                  // image height
+            data += conv(width);                  // image width
+            data += String.fromCharCode(1, 0);     // colour panes
+            data += String.fromCharCode(depth, 0); // bits per pixel
+            data += conv(0);                       // compression method
+            data += conv(arr.length);              // size of the raw data
+            data += conv(2835);                    // horizontal print resolution
+            data += conv(2835);                    // vertical print resolution
+            data += conv(0);                       // colour palette, 0 == 2^n
+            data += conv(0);                       // important colours
+
+            //Grayscale tables for bit depths <= 8
+            if (depth <= 8) {
+                data += conv(0);
+
+                for (var s = Math.floor(255 / (Math.pow(2, depth) - 1)), i = s; i < 256; i += s) {
+                    data += conv(i + i * 256 + i * 65536);
+                }
+            }
+
+            //Pixel data
+            data += String.fromCharCode.apply(String, arr);
+
+            //Image element
+            var src = 'data:image/bmp;base64,' + btoa(data);
+            return src;
+        }
+
+        //function drawArray(arr, depth) {
+        //    var src = getImgSrc(arr, depth);
+        //    var image = document.createElement('img');
+        //    image.src = src;
+        //    return image;
+        //}
+
+        /*Usage example, visualize random numbers generated by Math.random */
+
+        //for (var a = [], i = 0; i < 8192; i++) {
+        //    a[i] = Math.floor(Math.random() * 256);
+        //}
+
+        //document.body.appendChild(drawArray(a, 1));
+        //document.body.appendChild(drawArray(a, 4));
+        //document.body.appendChild(drawArray(a, 8));
+        //document.body.appendChild(drawArray(a, 16));
+        //document.body.appendChild(drawArray(a, 32));
+        function getImgFromLyr(lyr) {
+            //var b = [
+            //    31, 127, 0, 0,
+            //    63, 63,
+            //    63, 63,
+            //    15, 15,
+            //    31, 31,
+            //];
+            // var bytes = [];
+            var features = lyr.getSource().getFeatures();
+            var dim = features.length;
+            var fill = Math.ceil(dim / 32) * 32;
+            var keys = [];
+            var dict = {};
+            var isNumeric = false;
+            for (var iFtr = 0; iFtr < dim; iFtr++) {
+                var ftr = features[iFtr];
+                var k = ftr.get('key');
+                var s = ftr.get('starts');
+                var b = 0;
+                var bytes = [];
+                for (var i = 0; i < dim; i++) {
+                    b = b * 2;
+                    var c1 = String.fromCharCode(65 + i);
+                    var c2 = (i + 1).toString();
+                    if (s.includes(c1) || s.includes(c2)) {
+                        b = b + 1;
+                    }
+                    if (i % 8 == 7) {
+                        bytes.push(255 - b);
+                        b = 0;
+                    }
+                }
+                for (var i = dim; i < fill; i++) {
+                    b = b * 2;
+                    if (i % 8 == 7) {
+                        bytes.push(255 - b);
+                        b = 0;
+                    }
+                }
+                dict[k] = bytes;
+                keys.push(k);
+                isNumeric = !Number.isNaN(parseFloat(k));
+            }
+            if (isNumeric) {
+                keys.sort(function (a, b) { return a - b });
+            } else {
+                keys.sort();
+            }
+            keys.reverse();
+            var all = [];
+            for (var iKey = 0; iKey < keys.length; iKey++)
+            {
+                var bytes = dict[keys[iKey]];
+                for (var iByte = 0; iByte < bytes.length; iByte++) {
+                    all.push(bytes[iByte]);
+                }
+            }
+
+            return getImgSrc(all, 1, dim, dim);
+        }
+
+        function CalcCompleted(lyr) {
+            var c = 0;
+            var features = lyr.getSource().getFeatures();
+            var nFeatures = features.length;
+            for (var iFtr = 0; iFtr < nFeatures; iFtr++) {
+                var ftr = features[iFtr];
+                var s = ftr.get('starts');
+                c += s.length;
+            }
+            lyr.set('completed', c);
+        }
+
+        function addPlan(lyr, plan) {
+            var invalid = "";
+            var nPlan = plan.length;
+
+            var features = lyr.getSource().getFeatures();
+            var dim = features.length;
+            var startDict = {};
+            var endDict = {};
+            var isNumeric = false;
+            for (var iFtr = 0; iFtr < dim; iFtr++) {
+                var ftr = features[iFtr];
+                var k = ftr.get('key');
+                var s = ftr.get('starts');
+                startDict[k] = s;
+                var e = ftr.get('ends');
+                endDict[k] = e;
+                isNumeric = !Number.isNaN(parseFloat(k));
+            }
+
+            for (iPlan = 0; iPlan < nPlan; iPlan++) {
+                var p = plan[iPlan];
+                var nc = p.length;
+                var iKey = 0;
+                var keys = [];
+                for (var iC = 10; iC < nc; iC++) {
+                    var key = getKey(p, iC, isNumeric);
+                    if (key == null) {
+                        continue;
+                    }
+                    keys.push(key);
+                    iKey++;
+                    if (iKey == 2) {
+                        var s = keys[0];
+                        var e = keys[1];
+                        var sd = startDict[s];
+                        if (!sd.includes(e.toString())) {
+                            sd.push(e.toString());
+                        } else {
+                            invalid += s + "->" + e + ";";
+                        }
+
+                        var ed = endDict[e];
+                        if (!ed.includes(s.toString())) {
+                            ed.push(s.toString());
+                        }
+
+                        keys = [];
+                        iKey = 0;
+                    }
+                }
+            }
+            if (invalid.length > 0) {
+                alert("invalid: " + invalid);
+            }
+        }
+
+        function getKey(p, iC, isNumeric) {
+            if (isNumeric) {
+                var n = parseInt(p[iC]);
+                if (isNaN(n)) {
+                    var code = p.charCodeAt(iC);
+                    var a = "a".charCodeAt(0);
+                    var g = "g".charCodeAt(0);
+                    if (code >= a && code <= g) {
+                        n = 10 + code - a;
+                    }
+                }
+                if (isNaN(n)) {
+                    return null;
+                }
+                return n;
+            } else {
+                var a = "A".charCodeAt(0);
+                var y = "Y".charCodeAt(0);
+                var code = p.charCodeAt(iC);
+                if (code < a || code > y) {
+                    return null;
+                }
+                return p[iC];
+            }
+
+        }
+
+        function createLayer(kombs) {
+            var features = [];
+            var dict = {};
+            var iKomb = 0;
+            for (iKomb = 0; iKomb < kombs.length; iKomb++) {
+                var komb = kombs[iKomb];
+
+                var rep = komb.replace('  ', ' ');
+                while (komb.length > rep.length) {
+                    komb = rep;
+                    rep = komb.replace('  ', ' ');
+                }
+
+                var parts = komb.split(' ');
+                var x = parseFloat(parts[1]);
+                if (Number.isNaN(x) || x < 2000000) {
+                    continue;
+                }
+                dict[parts[0]] = parts;
+            }
+
+            var total = 0;
+            var completed = 0;
+            for (var key in dict) {
+                var isNumber = !Number.isNaN(parseFloat(key));
+                var parts = dict[key];
+
+                var x = parseFloat(parts[1]);
+                var y = parseFloat(parts[2]);
+                var starts = [];
+                var iPart = 0;
+                for (iPart = 4; iPart < parts.length; iPart++) {
+                    total++;
+                    if (parts[iPart] != '-') {
+                        completed++;
+                        if (isNumber) {
+                            starts.push((iPart - 3).toString());
+                        } else {
+                            starts.push(String.fromCharCode(61 + iPart));
+                        }
+                    }
+                }
+                var ends = [];
+                var iEnd = isNumber
+                    ? parseInt(key) + 3
+                    : key.charCodeAt(0) - 61;
+                for (var ek in dict) {
+                    var ep = dict[ek];
+                    if (ep[iEnd] != '-') {
+                        ends.push(ek);
+                    }
+                }
+
+                var feature = new ol.Feature({
+                    geometry: new ol.geom.Point([x, y]),
+                    key: key,
+                    title: parts[3],
+                    starts: starts,
+                    ends: ends
+                });
+                features.push(feature);
+            }
+
+            var vectorSource = new ol.source.Vector({ features: features });
+            var vectorLayer = new ol.layer.Vector({ source: vectorSource, total: total, completed: completed });
+
+            var nKombs = kombs.length - 1;
+            vectorLayer.setStyle(function (feature, resolution) {
+                var starts = feature.get('starts');
+                var ends = feature.get('ends');
+
+                var fStart = (starts.length + 0.0) / nKombs;
+                var fEnd = (ends.length + 0.0) / nKombs;
+                var style = new ol.style.Style({
+                    image: new ol.style.Circle({
+                        radius: 6,
+                        stroke: new ol.style.Stroke({
+                            color: getColor(fStart),
+                            width: 3
+                        }),
+                        fill: new ol.style.Fill({ color: getColor(fEnd) }),
+                    }),
+                    text: textStyle
+                });
+                style.getText().setText(feature.get('key'));
+                return style;
+            });
+            return vectorLayer;
+        }
+
+        // Create a GeoAdmin Map
+        var map = new ga.Map({
+
+            // Define the div where the map is placed
+            target: 'map',
+
+            // Create a view
+            view: new ol.View({
+
+                // Define the default resolution
+                // 10 means that one pixel is 10m width and height
+                // List of resolution of the WMTS layers:
+                // 650, 500, 250, 100, 50, 20, 10, 5, 2.5, 2, 1, 0.5, 0.25, 0.1
+                resolution: 5,
+
+                // Define a coordinate CH1903+ (EPSG:2056) for the center of the view
+                center: [2682000, 1253000]
+            })
+        });
+
+        // Create a background layer
+        var lyr1 = ga.layer.create('ch.swisstopo.pixelkarte-farbe');
+        map.addLayer(lyr1);
+
+        var nordringKombs = [
+            '                                                 1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16',
+            '1  2684705.0 1253361.2 Thurgauerstrasse          +   +   +   +   +   +   +   +   +   +   +   +   +   +   +   +',
+            '2  2684312.5 1253556.2 Schaffhauserstrasse       -   -   -   -   -   -   -   -   -   +   +   +   +   -   +   +',
+            '3  2684115.0 1253703.7 Frohbühl                  -   -   -   -   -   -   -   -   -   +   +   +   +   -   +   +',
+            '4  2683325.0 1254116.2 Waldegg                   -   -   -   -   -   -   -   -   -   +   +   +   +   -   +   +',
+            '5  2683080.0 1254181.2 Guldenen                  -   -   -   -   -   -   -   -   -   +   +   +   +   -   +   +',
+            '6  2682790.0 1254233.7 Altwi                     -   -   -   -   -   -   -   -   -   +   +   +   +   -   +   +',
+            '7  2682370.0 1254246.2 Chäshalden                -   -   -   -   -   -   -   -   L   +   +   +   +   -   +   +',
+            '8  2681305.0 1253971.3 Bärenbohl                 -   -   -   -   -   -   -   -   -   +   +   +   +   -   +   +',
+            '9  2681020.0 1253831.3 Büsisee                   +   +   +   +   +   +   +   +   +   +   +   +   +   +   +   +',
+            '10 2680515.0 1253598.8 Horenstein                +   +   +   +   +   +   +   +   +   +   +   +   +   -   +   +',
+            '11 2679925.0 1253428.8 Katzenseestrasse          +   +   +   +   +   +   +   +   +   +   +   +   +   -   +   +',
+            '12 2679572.5 1253371.3 Wehntalerstrasse          +   +   +   +   +   +   +   +   +   +   +   +   +   -   +   +',
+            '13 2679335.0 1253326.3 SBB-Nord                  +   +   +   +   +   +   +   +   +   +   +   +   +   +   +   +',
+            '14 2679265.0 1253306.3 SBB-Süd                   -   -   -   -   -   -   -   -   -   -   -   -   -   -   +   -',
+            '15 2678937.5 1253181.3 Furttalstrasse            +   +   +   +   +   +   +   +   +   +   +   +   +   -   +   +',
+            '16 2678520.0 1252971.3 Gubrist                   +   +   +   +   +   +   +   +   +   +   +   +   +   +   +   +'
+        ];
+        var katzenbachKombs = [
+            '                                                 A B C D E F G H I J K L M N O P Q R S T U V W X Y',
+            'A 2685268.0 1252747.0 Glatt                      + + + + + + + + + + + + + + + + + + + + + + + + +',
+            'B 2685220.0 1252721.0 Glattweg                   + + + + + + + + + + + + + + + + + + + + + + + + +',
+            'C 2684990.0 1252625.0 Orionstr.                  + + + + + + + - + + + + + + + + + + + + + + + + +',
+            'D 2684733.0 1252531.5 Glattparkstr.              + + + + + + + - - + + + + + + - - - + + + + + + +',
+            'E 2684681.0 1252535.5 Leutschenbachstr.          + + + + + + - - - + + + + + + - - - + + + + + + +',
+            'F 2684464.0 1252661.5 Lilienthal                 + + + + + + - - - + + + + + + - - - - + + + + + +',
+            'G 2684329.0 1252732.5 Thurgauerstr.              + - - - - - - - - - - - - - + - - - - - - - - + +',
+            'H 2684113.0 1252860.5 SBB                        - - - - - - - - - - - - - - - - - - - - - - - - -',
+            'I 2683889.0 1252942.5 Schaffhauserstr.           - - + - - - - - - - - - - - - - - - - - - - - - -',
+            'J 2683718.0 1253070.5 Badi                       - - + - - - - - - - - - - - - - - - - - - - - - -',
+            'K 2683496.0 1253163.5 GZ                         - - + + + + - - - - - - - - - - - - - - - - - - -',
+            'L 2683351.0 1253227.5 Hertensteinstr.            L - + + + + - - - - - - - - - - - - - - - - - - -',
+            'M 2683226.0 1253342.5 Birchstr.                  + + + + + + - - - - - - - - - - - - - - - - - - -',
+            'N 2682830.0 1253386.5 Köschenrütistr.            + + + + + + + - - - - - - - - - - - - - - - - - -',
+            'O 2682515.0 1253362.5 Lerchenweg                 + + + + + + + - - - - - - - - - - - - - - - - - -',
+            'P 2681983.0 1253334.5 Schwandenwisen             + + + + + + - - - - - - - - - - - - - - - - - - -',
+            'Q 2681381.0 1253271.5 Reckenholz                 + + - - - - - - - - - - - - - - - - - - - - - - -',
+            'R 2681075.0 1253610.5 Tüfwisen                   + + - - - - - - - - - - - - - - - - - - - - - - -',
+            'S 2681034.0 1253763.5 Bärenbohlstr.              + + + + - - - - - - - - - - - - - - - - - - - - -',
+            'T 2680854.0 1254006.5 Büsisee                    + + + + + + - - - - - - - - - - - - - - - - - - -',
+            'U 2680554.0 1254147.5 Rainacherweg               + + + + + + - - - - - - - - - - - - - - - - - - -',
+            'V 2680377.0 1254226.5 Huszelgweg                 + + + + + + - - - - - - - - - - - - - - - - - - -',
+            'W 2680219.0 1254316.5 Horensteinstr.             + + + + + + - - - - - - - - - - - - - - - - - - -',
+            'X 2680123.0 1254328.5 Rundweg                    + + + + + + + - - - - - - - - - - - - - - - - - -',
+            'Y 2679452.0 1254475.5 Katzensee                  + + + + + + + - - - - - - - - - - - - - - - - - -',
+        ];
+
+        var plan = [
+            ////'2020.08.24 xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx',
+            ////'        31 xxxxxx xxxxxx FDxxxx xxxxxx xxxxxx xxxxxx F4WaNF',
+            ////'     09.07 xxxxxx xxxxxx FExxxx xxxxxx xxxxxx xxxxxx aV4FMF',
+
+            ////'        14 xxxxxx xxxxxx FFxxxx xxxxxx xxxxxx xxxxxx F5VaLF',
+            ////'        21 xxxxxx xxxxxx FNxxxx xxxxxx xxxxxx xxxxxx aU5FKF',
+            ////'        28 xxxxxx xxxxxx FMxxxx xxxxxx xxxxxx F6TaFL aT6FFK',
+            ////'     10.05 SFxxxx SExxxx xxxxxx xxxxxx SGxxxx G7XaGB aX7GGC',
+            ////'        12 xxxxxx xxxxxx G8Taxx xxxxxx xxxxxx xxxxxx aT8ASA',
+            ////'        19 xxxxxx xxxxxx RAxxxx xxxxxx xxxxxx xxxxxx aaQAPA',
+            ////'        26 xxxxxx xxxxxx OAxxxx xxxxxx xxxxxx xxxxxx GAaT9G',
+            ////'     11.02 xxxxxx xxxxxx CGxxxx xxxxxx xxxxxx xxxxxx G29SFS',
+            ////'        09 xxxxxx xxxxxx FRxxxx xxxxxx xxxxxx xxxxxx E39RDR',
+            ////'        16 xxxxxx xxxxxx DQxxxx xxxxxx xxxxxx xxxxxx D49PEP',
+            ////'        23 xxxxxx xxxxxx EQxxxx xxxxxx xxxxxx xxxxxx F59QFP',
+            ////'        30 xxxxxx xxxxxx GPxxxx xxxxxx xxxxxx xxxxxx G69RGQ',
+            ////'     12.07 xxxxxx xxxxxx GDxxxx xxxxxx xxxxxx xxxxxx G79OGN',
+            ////'        14 xxxxxx xxxxxx NAxxxx xxxxxx xxxxxx xxxxxx MAG89M',
+
+            ////'        14 xxxxxx xxxxxx FFxxxx xxxxxx xxxxxx xxxxxx F5VaLF',
+            ////'        21 xxxxxx xxxxxx FNxxxx xxxxxx xxxxxx xxxxxx aU5FKF',
+            ////'        28 xxxxxx xxxxxx FMxxxx xxxxxx xxxxxx F6TaFL aT6FFK',
+            ////'     10.05 SFxxxx SExxxx xxxxxx xxxxxx SGxxxx G7YaGB aY7GGC',
+            ////'        12 xxxxxx xxxxxx G8Taxx xxxxxx xxxxxx xxxxxx aT8ASA',
+            ////'        19 xxxxxx xxxxxx RAxxxx xxxxxx xxxxxx xxxxxx aaQAPA',
+            ////'        26 xxxxxx xxxxxx OAxxxx xxxxxx xxxxxx xxxxxx GAaT9G',
+            ////'     11.02 xxxxxx xxxxxx CGxxxx xxxxxx xxxxxx xxxxxx G29SFS',
+            ////'        09 xxxxxx xxxxxx FRxxxx xxxxxx xxxxxx xxxxxx E39RDR',
+            ////'        16 xxxxxx xxxxxx DQxxxx xxxxxx xxxxxx xxxxxx D49PEP',
+            ////'        23 xxxxxx xxxxxx EQxxxx xxxxxx xxxxxx xxxxxx F59QFP',
+            ////'        30 xxxxxx xxxxxx GPxxxx xxxxxx xxxxxx xxxxxx G69RGQ',
+            ////'     12.07 xxxxxx xxxxxx GDxxxx xxxxxx xxxxxx xxxxxx G79OGN',
+            ////'        14 xxxxxx xxxxxx NAxxxx xxxxxx xxxxxx xxxxxx M89ALA',
+
+            //'        14 xxxxxx xxxxxx FFxxxx xxxxxx xxxxxx xxxxxx F5VaLF',
+            //'        21 xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx aU5FKF',
+            //'        28 xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx F6TaFL FKaT6F',
+            //'     10.05 aT7Axx SAxxxx xxxxxx xxxxxx RAxxxx aaQAPA GAG7Xa',
+            //'        12 xxxxxx xxxxxx CGxxxx xxxxxx xxxxxx xxxxxx aX8GOG',
+            //'        19 xxxxxx xxxxxx OAxxxx xxxxxx xxxxxx xxxxxx GOG8Wa',
+            //'        26 xxxxxx xxxxxx DGxxxx xxxxxx xxxxxx xxxxxx aY9GNG',
+            //'     11.02 xxxxxx xxxxxx NAxxxx xxxxxx xxxxxx xxxxxx GNG29M',
+            //'        09 xxxxxx xxxxxx MAxxxx xxxxxx xxxxxx xxxxxx MGL39G',
+            //'        16 xxxxxx xxxxxx LAxxxx xxxxxx xxxxxx xxxxxx LBG49L',
+            //'        23 xxxxxx xxxxxx EGxxxx xxxxxx xxxxxx xxxxxx SEF59S',
+            //'        30 xxxxxx xxxxxx FGxxxx xxxxxx xxxxxx xxxxxx G69KKA',
+            //'     12.07 xxxxxx xxxxxx KBxxxx xxxxxx xxxxxx xxxxxx KGG79J',
+            //'        14 xxxxxx xxxxxx JAxxxx xxxxxx xxxxxx xxxxxx JBG89B',
+
+            ////'        21 xxxxxx xxxxxx DGeY9G eY1HHA IAeY2I eY3JJA KAeY4K',
+            ////'        28 eY5LLA GLG2Ye eY6MMG NGeY7N eY8OOG OHH3Ye H28LLB',
+            ////'2021.01.04 xxxxxx xxxxxx KBxxxx xxxxxx xxxxxx xxxxxx JBI81B',
+            ////'        11 xxxxxx xxxxxx HBxxxx xxxxxx xxxxxx xxxxxx HCH82D',
+
+            ////'        21 xxxxxx xxxxxx GLL81A L82BLG GKeY2G eY8HHA IAeY3I',
+            ////'        28 IDJ38D J83AKA K84BKG G48EDG EGG4Ye H5YeHN INI6Ye',
+            ////'2021.01.04 xxxxxx xxxxxx IExxxx xxxxxx xxxxxx xxxxxx JEJ68B',
+            ////'        11 xxxxxx xxxxxx IBxxxx xxxxxx xxxxxx xxxxxx H85BHC',
+            ////'        18 xxxxxx xxxxxx CHxxxx xxxxxx xxxxxx xxxxxx H86DHE',
+
+            ////'        21 xxxxxx xxxxxx LBK81B K82GKA HAeY2H eY9IID JDeY3J',
+            ////'        28 JBJ83A I84AIB H85BHC C28HHD HNH2Ye xxxxxx xxxxxx',
+            ////'2021.01.04 xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx',
+            ////'        11 xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx',
+            ////'        18 xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx',
+
+            //'        21 xxxxxx xxxxxx I81BIA H82AHB eY2Hxx G2Yexx H3Yexx',
+            //'        28 H83CCH G84CGD HDI85D J86DJE IEI8Ye eY9Ixx J7Yexx',
+            //'2021.01.04 xxxxxx xxxxxx JFxxxx xxxxxx xxxxxx xxxxxx GFG88E',
+            //'        11 xxxxxx xxxxxx HExxxx xxxxxx xxxxxx xxxxxx HFD28H',
+            //'        18 xxxxxx xxxxxx DIxxxx xxxxxx xxxxxx xxxxxx E38IEH',
+            //'        25 xxxxxx xxxxxx FHxxxx xxxxxx xxxxxx xxxxxx F48IGI',
+
+      ];
+
+        //var arrayBufferView = new Uint8Array(this.response);
+        //var blob = new Blob([arrayBufferView], { type: "image/bmp" });
+        //var urlCreator = window.URL || window.webkitURL;
+        //var imageUrl = urlCreator.createObjectURL(blob);
+        //var img = document.getElementById("idCompletedImg");
+        //img.src = imageUrl;
+
+        // Karte und Liste zusammenstellen
+        var nordringLyr = createLayer(nordringKombs);
+        addPlan(nordringLyr, plan); CalcCompleted(nordringLyr);
+        nordringLyr.set('title', 'Nordring'); map.addLayer(nordringLyr);
+
+        var katzenbachLyr = createLayer(katzenbachKombs);
+        addPlan(katzenbachLyr, plan); CalcCompleted(katzenbachLyr);
+        katzenbachLyr.set('title', 'Katzenbach'); map.addLayer(katzenbachLyr);
+
+        document.getElementById("idImgNordring").src = getImgFromLyr(nordringLyr); // getImgSrc(b, 1, 16, 16);
+        document.getElementById("idImgKatzenbach").src = getImgFromLyr(katzenbachLyr); // getImgSrc(b, 1, 25, 25);
+
+        var dspLyr = new ol.layer.Vector({ visible: false, style: dspStyle, source: new ol.source.Vector({ features: [] }) });
+        map.addLayer(dspLyr);
+
+        map.on('pointermove', showInfo);
+        map.on('click', displayFeature);
+
+        var info = document.getElementById('idInfo');
+        var targetLyr = null;
+        var targetFeature = null;
+        var infoLyrs = [katzenbachLyr, nordringLyr];
+
+        function showInfo(event) {
+            infoLyr = null;
+            targetFeature = null;
+            dspLyr.setVisible(false);
+            for (var iLyr = 0; iLyr < infoLyrs.length; iLyr++) {
+                var lyr = infoLyrs[iLyr];
+                lyr.setVisible(true);
+            }
+
+            for (var iLyr = 0; iLyr < infoLyrs.length; iLyr++) {
+                var lyr = infoLyrs[iLyr];
+                var featuresAt = map.getFeaturesAtPixel(event.pixel, {
+                    layerFilter: function (cand) {
+                        return cand == lyr;
+                    }
+                });
+                if (featuresAt == null || featuresAt.length == 0) {
+                    info.innerText = '';
+                    info.style.opacity = 0;
+                    highlightKarte = '';
+                } else {
+                    var nPoints = lyr.getSource().getFeatures().length;
+                    var f = featuresAt[0];
+                    var k = f.get('key');
+                    var text = '';
+                    var starts = f.get('starts');
+                    var ends = f.get('ends');
+                    text = text + lyr.get('title') + ': ' + lyr.get('completed').toString() + ' von total ' + lyr.get('total').toString() + '\n';
+                    text = text + 'von ' + k + ' nach: ' + starts.toString() + '  ( ' + starts.length.toString() + ' von ' + nPoints.toString() + ' )' + '\n';
+                    text = text + 'nach ' + k + ' von: ' + ends.toString() + '  ( ' + ends.length.toString() + ' von ' + nPoints.toString() + ' )' + '\n';
+                    text = text + '(Klicken zum anzeigen)';
+
+                    info.innerText = text;
+                    info.style.opacity = 1;
+
+                    targetFeature = f;
+                    targetLyr = lyr;
+                    return;
+                }
+            }
+        }
+
+        function displayFeature(event) {
+            if (targetLyr == null || targetFeature == null) {
+                return;
+            }
+            for (var iLyr = 0; iLyr < infoLyrs.length; iLyr++) {
+                var lyr = infoLyrs[iLyr];
+                lyr.setVisible(false);
+            }
+
+            var targetKey = targetFeature.get('key');
+            var starts = targetFeature.get('starts');
+            var ends = targetFeature.get('ends');
+
+            var infoFeatures = targetLyr.getSource().getFeatures();
+            var dspSource = dspLyr.getSource();
+            dspSource.clear({ fast: true });
+            var dspFeatures = [];
+            var iFeature = 0;
+            for (iFeature = 0; iFeature < infoFeatures.length; iFeature++) {
+                var infoFeature = infoFeatures[iFeature];
+                var key = infoFeature.get('key');
+                var title = infoFeature.get('title');
+                var startsAtKey = starts.includes(key);
+                var endsAtKey = ends.includes(key);
+                var isTarget = (key == targetKey);
+
+                var dspFeature = new ol.Feature({
+                    geometry: infoFeature.getGeometry().clone(),
+                    key: key,
+                    title: title,
+                    startsAtKey: startsAtKey,
+                    endsAtKey: endsAtKey,
+                    isTarget: isTarget
+                });
+                dspFeatures.push(dspFeature);
+            }
+            dspSource.addFeatures(dspFeatures);
+            dspLyr.setVisible(true);
+        }
+
+        function dspStyle(feature, resolution) {
+            var fStart = feature.get('startsAtKey') ? 1 : 0;
+            var fEnd = feature.get('endsAtKey') ? 1 : 0;
+            var isTarget = feature.get('isTarget') ? 1 : 0;
+
+            var style = new ol.style.Style({
+                image: new ol.style.Circle({
+                    radius: 8,
+                    stroke: new ol.style.Stroke({
+                        color: getColor(fStart),
+                        width: isTarget ? 0 : 5
+                    }),
+                    fill: new ol.style.Fill({ color: getColor(fEnd) }),
+                }),
+                text: textStyle
+            });
+            style.getText().setText(feature.get('key'));
+            return style;
+        }
+
+        function getColor(f) {
+            //var fr = Math.min(2 - 2.0 * f, 1);
+            //var fg = Math.min(2.0 * f, 1);
+            //return [fr * 255, fg * 255, 0, 1];
+
+            var fr = Math.max(Math.min(2 - 4.0 * f, 1), 0);
+            var fg = Math.min(4.0 * f, 4 - 4.0 * f, 1);
+            var fb = Math.max(Math.min(-2 + 4.0 * f, 1), 0);
+            return [fr * 255, fg * 255, fb * 255, 1];
+        }
+
+
+        window.onresize = function () {
+            setTimeout(function () { map.updateSize(); }, 200);
+        }
+
+    </script>
+
+</body>
+</html>
