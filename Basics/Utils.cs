@@ -17,6 +17,8 @@ namespace Basics
   {
     public static T NotNull<T>(T value)
     {
+      if (value == null)
+      { throw new NullReferenceException(); }
       return value;
     }
 

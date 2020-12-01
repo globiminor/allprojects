@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\CmdCourseTransfer.cs" />
+    <Compile Include="Commands\CmdCourseVerifyLayout.cs" />
     <Compile Include="Commands\CmdExportCourseV8.cs" />
     <Compile Include="Commands\CmdShapeExport.cs" />
     <Compile Include="Common.cs" />

@@ -449,12 +449,12 @@
             '                                                 1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16',
             '1  2684705.0 1253361.2 Thurgauerstrasse          +   +   +   +   +   +   +   +   +   +   +   +   +   +   +   +',
             '2  2684312.5 1253556.2 Schaffhauserstrasse       -   -   -   -   -   -   -   -   +   +   +   +   +   -   +   +',
-            '3  2684115.0 1253703.7 Frohbühl                  -   -   -   -   -   -   -   -   L   +   +   +   +   -   +   +',
-            '4  2683325.0 1254116.2 Waldegg                   -   -   -   -   -   -   -   -   -   +   +   +   +   -   +   +',
+            '3  2684115.0 1253703.7 Frohbühl                  -   -   -   -   -   -   -   -   +   +   +   +   +   -   +   +',
+            '4  2683325.0 1254116.2 Waldegg                   -   -   -   -   -   -   -   -   +   +   +   +   +   -   +   +',
             '5  2683080.0 1254181.2 Guldenen                  -   -   -   -   -   -   -   -   +   +   +   +   +   -   +   +',
             '6  2682790.0 1254233.7 Altwi                     -   -   -   -   -   -   -   -   +   +   +   +   +   -   +   +',
             '7  2682370.0 1254246.2 Chäshalden                -   -   -   -   -   -   -   -   +   +   +   +   +   -   +   +',
-            '8  2681305.0 1253971.3 Bärenbohl                 -   -   -   -   -   -   -   -   -   +   +   +   +   -   +   +',
+            '8  2681305.0 1253971.3 Bärenbohl                 -   -   -   -   -   -   -   -   L   +   +   +   +   -   +   +',
             '9  2681020.0 1253831.3 Büsisee                   +   +   +   +   +   +   +   +   +   +   +   +   +   +   +   +',
             '10 2680515.0 1253598.8 Horenstein                +   +   +   +   +   +   +   +   +   +   +   +   +   -   +   +',
             '11 2679925.0 1253428.8 Katzenseestrasse          +   +   +   +   +   +   +   +   +   +   +   +   +   -   +   +',
@@ -469,9 +469,9 @@
             'A 2685268.0 1252747.0 Glatt                      + + + + + + + + + + + + + + + + + + + + + + + + +',
             'B 2685220.0 1252721.0 Glattweg                   + + + + + + + + + + + + + + + + + + + + + + + + +',
             'C 2684990.0 1252625.0 Orionstr.                  + + + + + + + + + + + + + + + + + + + + + + + + +',
-            'D 2684733.0 1252531.5 Glattparkstr.              + + + + + + + - - + + + + + + - - - + + + + + + +',
-            'E 2684681.0 1252535.5 Leutschenbachstr.          + + + + + + - - - + + + + + + - - - + + + + + + +',
-            'F 2684464.0 1252661.5 Lilienthal                 + + + + + + - - - + + + + + + L - - - + + + + + +',
+            'D 2684733.0 1252531.5 Glattparkstr.              + + + + + + + - - + + + + + + + + L + + + + + + +',
+            'E 2684681.0 1252535.5 Leutschenbachstr.          + + + + + + - - - + + + + + + + - - + + + + + + +',
+            'F 2684464.0 1252661.5 Lilienthal                 + + + + + + - - - + + + + + + + - - - + + + + + +',
             'G 2684329.0 1252732.5 Thurgauerstr.              + + - - - - - - - - - - - - + + - - - - - - - + +',
             'H 2684113.0 1252860.5 SBB                        + + - - - - - - - - - - - - - - - - - - - - - - -',
             'I 2683889.0 1252942.5 Schaffhauserstr.           + + + - - - - - - - - - - - - - - - - - - - - - -',
@@ -495,7 +495,27 @@
 
         var plan = [];
         var xplan = [];
-        var yplan = [];
+        xplan = [
+            '       .08 xxxxxx xxxxxx GDxxxx xxxxxx xxxxxx xxxxxx S85GGR',
+            '     03.01 xxxxxx xxxxxx FHxxxx xxxxxx xxxxxx xxxxxx F58SGS',
+            '        22 xxxxxx xxxxxx EIxxxx xxxxxx xxxxxx xxxxxx S84ESF',
+            '        15 xxxxxx xxxxxx EHxxxx xxxxxx xxxxxx xxxxxx R83EQE',
+            '        08 xxxxxx xxxxxx FGxxxx xxxxxx xxxxxx xxxxxx F48RER',
+            '     02.01 xxxxxx xxxxxx EGxxxx xxxxxx xxxxxx xxxxxx E38QFQ',
+            '        25 xxxxxx xxxxxx GCxxxx xxxxxx xxxxxx xxxxxx G28QGN',
+            '        18 xxxxxx xxxxxx HDxxxx xxxxxx xxxxxx xxxxxx R81DRC',
+            '        11 xxxxxx xxxxxx HCxxxx xxxxxx xxxxxx xxxxxx Q82CQD',
+            '2021.01.04 xxxxxx xxxxxx HOxxxx xxxxxx xxxxxx xxxxxx H2Yexx',
+            '        28 eYTaxx eYUbxx eYVcxx eYWexx fYXexx eYYgxx aXYeHX',
+            '        21 xxxxxx xxxxxx eY5Mxx eY6Nxx eY7Oxx eY8PYQ YRYSxx',
+            '        14 xxxxxx xxxxxx JPxxxx xxxxxx xxxxxx KPeY3K eY4Lxx',
+            '     12.07 xxxxxx xxxxxx DIxxxx xxxxxx xxxxxx eY1Ixx eY2Jxx',
+            '        30 xxxxxx xxxxxx DHxxxx xxxxxx xxxxxx eY9Hxx HPedIP',
+            //'        23 xxxxxx xxxxxx FPxxxx xxxxxx xxxxxx E49PDP DQD89R',
+            //'        16 xxxxxx xxxxxx HBxxxx xxxxxx xxxxxx xxxxxx GBG39P',
+            //'        09 xxxxxx xxxxxx IAxxxx xxxxxx xxxxxx xxxxxx HAC29H',
+            //'     11.02 xxxxxx xxxxxx JAxxxx xxxxxx xxxxxx xxxxxx J59BIB',
+        ];
         xplan = [
             '        08 xxxxxx xxxxxx GDxxxx xxxxxx xxxxxx xxxxxx Q87GGN',
             '     02.01 xxxxxx xxxxxx HCxxxx xxxxxx xxxxxx xxxxxx H78SHD',
@@ -514,7 +534,7 @@
             //'     11.02 xxxxxx xxxxxx JAxxxx xxxxxx xxxxxx xxxxxx J59BIB',
 
         ];
-        yplan = [
+        xplan = [
             '     03.01 xxxxxx xxxxxx HDxxxx xxxxxx xxxxxx xxxxxx H8Yexx',
             '        22 xxxxxx xxxxxx GGxxxx xxxxxx xxxxxx xxxxxx GRR85D',
             '        15 xxxxxx xxxxxx HCxxxx xxxxxx xxxxxx xxxxxx H58QGQ',

@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 
 namespace OcadTest
 {
@@ -114,6 +115,37 @@ namespace OcadTest
     }
 
     [TestMethod]
+    public void GetExtents()
+    {
+      StringBuilder txt = new StringBuilder();
+      foreach (var file in Directory.EnumerateFiles(@"C:\daten\felix\kapreolo\karten"))
+      {
+        if (Path.GetExtension(file) != ".png")
+        { continue; }
+        ImageGrid grd = ImageGrid.FromFile(file);
+
+        GridExtent ext = grd.Extent;
+        double x0 = ext.X0;
+        double y0 = ext.Y0 - ext.Ny * ext.Dx;
+        double x1 = ext.X0 + ext.Nx * ext.Dx;
+        double y1 = ext.Y0;
+        if (x0 < 2000000)
+        {
+          x0 += 2000000;
+          x1 += 2000000;
+          y0 += 1000000;
+          y1 += 1000000;
+        }
+        txt.Append("map.addLayer(new ol.layer.Image({source: new ol.source.ImageStatic({ ");
+        txt.Append($"url : '{Path.GetFileName(file)}', imageExtent: [{x0:0.0}, {y0:0.0}, {x1:0.0}, {y1:0.0}]");
+        txt.AppendLine("}) }));");
+
+        grd.Bitmap.Dispose();
+      }
+      string t = txt.ToString();
+    }
+
+    [TestMethod]
     public void TestLasShp()
     {
       int n = 0;
@@ -206,7 +238,8 @@ namespace OcadTest
       //string dir = @"C:\daten\felix\kapreolo\karten\irchel\2019\lidar";
       //string dir = @"C:\daten\felix\kapreolo\karten\hardwald\2017\lidar";
       // string dir = @"C:\daten\felix\kapreolo\scool\boppelsen_maiacher\lidar";
-      string dir = @"C:\daten\felix\kapreolo\scool\wallisellen_alpen\lidar";
+      //string dir = @"C:\daten\felix\kapreolo\scool\wallisellen_alpen\lidar";
+      string dir = @"C:\daten\felix\kapreolo\karten\ruemlangerwald\2021\lidar";
 
       Dictionary<string, string> tiles = new Dictionary<string, string>();
       foreach (var path in Directory.EnumerateFiles(dir))

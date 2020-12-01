@@ -66,6 +66,7 @@
     <Compile Include="OEvent\Events.cs" />
     <Compile Include="OEvent\FuenferStaffel.cs" />
     <Compile Include="LcpTest.cs" />
+    <Compile Include="OEvent\Ruemlang2021.cs" />
     <Compile Include="OEvent\Utils.cs" />
     <Compile Include="OscratchTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -371,10 +371,24 @@ namespace OMapScratch
 
     private IEnumerable<string> EnumImagePathes()
     {
-      foreach (string path in Directory.EnumerateFiles(ConfigDir ?? string.Empty, ImagePath, SearchOption.TopDirectoryOnly))
+      int n = 0;
+      foreach (string path in Directory.EnumerateFiles(ConfigDir ?? string.Empty, 
+        ImagePath, SearchOption.TopDirectoryOnly))
       {
+        n++;
         yield return path;
       }
+      if (n <= 0)
+			{
+        throw new InvalidOperationException($"No Image found in '{ConfigDir}' for image path '{ImagePath}'");
+			}
+
+      //foreach (string path in Directory.EnumerateFiles(ConfigDir ?? string.Empty))
+      //{
+      //  string fileName = Path.GetFileName(path);
+      //  if (ImagePath.Equals(fileName, StringComparison.InvariantCultureIgnoreCase))
+      //  { yield return path; }        
+      //}
     }
 
     public bool LoadNeeded(Func<MatrixPrj> getTargetPrj, float width, float height, IBox loadedExtent)
