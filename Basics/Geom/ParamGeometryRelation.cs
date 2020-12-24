@@ -240,6 +240,7 @@ namespace Basics.Geom
       Intersection = intersection;
     }
 
+    public IReadOnlyList<ParamGeometryRelation> BorderRelations => _borderRelations;
     public static ParamGeometryRelation CreateWithin(IGeometry contains, IGeometry within)
     {
       ParamGeometryRelation rel = new ParamGeometryRelation(null, null, within);
@@ -289,6 +290,13 @@ namespace Basics.Geom
       get { return _x.Current; }
     }
 
+    public string GetInfoString(Func<IGeometry, bool> select)
+    {
+      if (select(_x.Hierarchy.Last.Value.Geometry)) return _x.ToString();
+      if (select(_y.Hierarchy.Last.Value.Geometry)) return _y.ToString();
+
+      return "--";
+    }
     public IGeometry Intersection
     {
       get
@@ -382,12 +390,16 @@ namespace Basics.Geom
       return i;
     }
 
-    private class SortComparer : IComparer<ParamGeometryRelation>
+    public class SortComparer : IComparer<ParamGeometryRelation>
     {
       private readonly IGeometry _parent;
+      private readonly bool _nullFirst;
 
-      public SortComparer(IGeometry parentGeometry)
-      { _parent = parentGeometry; }
+      public SortComparer(IGeometry parentGeometry, bool nullFirst = false)
+      {
+        _parent = parentGeometry;
+        _nullFirst = nullFirst;
+      }
 
       public int Compare(ParamGeometryRelation x, ParamGeometryRelation y)
       {
@@ -395,10 +407,10 @@ namespace Basics.Geom
         {
           if (y == null)
           { return 0; }
-          return 1;
+          return _nullFirst ? -1 : 1;
         }
         if (y == null)
-        { return -1; }
+        { return _nullFirst ? 1 : -1; }
         Info ix = x.GetInfo(_parent);
         Info iy = y.GetInfo(_parent);
         int i = ix.CompareTo(iy);
@@ -773,9 +785,9 @@ namespace Basics.Geom
       { return; }
 
       IEnumerable<IGeometry> parts;
-      if (y is Polyline)
+      if (y is Polyline pl)
       {
-        parts = ((Polyline)y).Split(sortY);
+        parts = pl.Split(sortY);
       }
       else
       {

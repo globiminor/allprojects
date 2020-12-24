@@ -479,13 +479,23 @@ namespace OcadTest
       //  "26870_12660", "26870_12670", "26870_12680"
       //};
 
-      // duebendorf
-      string root = @"C:\daten\felix\kapreolo\karten\dübendorf\";
-      string result = "duebendorf";
+      //// duebendorf
+      //string root = @"C:\daten\felix\kapreolo\karten\dübendorf\";
+      //string result = "duebendorf";
+      //List<string> keys = new List<string> {
+      //  "26880_12510", "26890_12510",
+      //  "26880_12500", "26890_12500",
+      //};
+
+      // ruemlangerwald
+      string root = @"C:\daten\felix\kapreolo\karten\ruemlangerwald\2021\";
+      string result = "ruemlangerwald";
       List<string> keys = new List<string> {
-        "26880_12510", "26890_12510",
-        "26880_12500", "26890_12500",
+        "26790_12570", "26800_12570", "26810_12570",
+        "26790_12560", "26800_12560", "26810_12560",
+        "26790_12550", "26800_12550", "26810_12550",
       };
+
 
       double size = 2;
       double x0 = double.MaxValue;

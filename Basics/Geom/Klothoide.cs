@@ -69,7 +69,7 @@ namespace Basics.Geom
     public override double ParamAt(double distance) => KlothoideOp.ParamAt(this, distance);
     public override Point PointAt(double param)
     {
-      Point2D local = GetLocalPointAt(param);
+      IPoint local = GetLocalPointAt(param);
 
       if (_k0 == null)
       {

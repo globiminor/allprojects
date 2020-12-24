@@ -60,7 +60,12 @@ namespace Basics.Geom
       internal set { _topology = value; }
     }
 
-    protected override IPoint GetMin() => _min;
+		public override string ToString()
+		{
+			return $"{Min} ; {Max}";
+		}
+
+		protected override IPoint GetMin() => _min;
     protected override IPoint GetMax() => _max;
     protected override int GetDimension() => _dimension;
     protected override int GetTopology() => Topology;

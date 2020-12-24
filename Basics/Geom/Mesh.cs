@@ -184,7 +184,7 @@ namespace Basics.Geom
       MeshPoint p0 = null;
       foreach (var p in polyline.Points)
       {
-        Point2D p1 = (Point2D)Point.CastOrCreate(p);
+        Point p1 = Point.CastOrCreate(p);
         if (p0 != null)
         {
           if (p1.Dist2(p0.Point) > _fuzzy2)
@@ -211,7 +211,7 @@ namespace Basics.Geom
     /// returns Line starting in p0 and ending in p1 if existing,
     /// otherwise null
     /// </summary>
-    public MeshLine FindPointLine(MeshPoint p0, Point2D p1)
+    public MeshLine FindPointLine(MeshPoint p0, IPoint p1)
     {
       MeshLineEx l0 = p0.IndexLine;
       MeshLineEx l = l0;
@@ -228,14 +228,14 @@ namespace Basics.Geom
     /// <summary>
     /// Find a tri, where point lies within tris circle
     /// </summary>
-    private Tri FindCircle(Point2D point, out double radius2)
+    private Tri FindCircle(IPoint point, out double radius2)
     {
       Tri tri0 = null;
 
       radius2 = -1;
       foreach (var tri in Tris(null))
       {
-        double dr2 = point.Dist2(tri.Center) - tri.Radius2;
+        double dr2 = PointOp.Dist2(point, tri.Center) - tri.Radius2;
 
         if (dr2 < radius2 || radius2 < 0)
         {
@@ -366,11 +366,11 @@ namespace Basics.Geom
     }
 
 
-    private bool FindNextLine(ref MeshLineEx l0, Point2D goal)
+    private bool FindNextLine(ref MeshLineEx l0, IPoint goal)
     {
       return FindNextLine(ref l0, goal, out double lGoal2, out double vecProd1, out double vecProd2);
     }
-    private bool FindNextLine(ref MeshLineEx l0, Point2D goal,
+    private bool FindNextLine(ref MeshLineEx l0, IPoint goal,
       out double lGoal2, out double vecProd1, out double vecProd2)
     {
       IPoint p0 = l0.Start;
@@ -378,7 +378,7 @@ namespace Basics.Geom
       IPoint p2;
       Point dir = PointOp.Sub(p1, p0);
       MeshLineEx l2;
-      IPoint dirGoal = goal - p0;
+      IPoint dirGoal = PointOp.Sub(goal, p0);
       lGoal2 = PointOp.Dist2(p0, goal, GeomOp.DimensionXY);
 
       vecProd1 = dir.VectorProduct(dirGoal);
@@ -406,7 +406,7 @@ namespace Basics.Geom
       }
 
       dir = PointOp.Sub(p2, p1);
-      dirGoal = goal - p1;
+      dirGoal = PointOp.Sub(goal, p1);
       if (dir.VectorProduct(dirGoal) < 0)
       { // goal lies on right side of l1
         l0 = -(l0.GetNextTriLine());
@@ -417,7 +417,7 @@ namespace Basics.Geom
       return false;
     }
 
-    private MeshLineEx FindLine_(Point2D goal, MeshPoint start)
+    private MeshLineEx FindLine_(IPoint goal, MeshPoint start)
     {
       MeshLineEx l0;
       MeshLineEx l1 = start.IndexLine;
@@ -517,12 +517,12 @@ namespace Basics.Geom
       return FindLine(p, entry.Value);
     }
 
-    public MeshPoint InsertSeg(Point2D p0, Point2D p1, object lineInfo, InsertHandler insertFct)
+    public MeshPoint InsertSeg(IPoint p0, IPoint p1, object lineInfo, InsertHandler insertFct)
     {
       MeshPoint start = Add(p0);
       return StartInsertSeg(start, p1, null, lineInfo, insertFct, TagType.Untagged | TagType.Tagged);
     }
-    public MeshPoint InsertSeg(MeshPoint p0, Point2D p1, object lineInfo, InsertHandler insertFct)
+    public MeshPoint InsertSeg(MeshPoint p0, IPoint p1, object lineInfo, InsertHandler insertFct)
     {
       return StartInsertSeg(p0, p1, null, lineInfo, insertFct, TagType.Untagged | TagType.Tagged);
     }
@@ -666,12 +666,11 @@ namespace Basics.Geom
       int pntMax = _listPoint.Count;
       MeshPoint p0, p1, p2;
       MeshLineEx l0;
-      Point2D center;
 
       p0 = _listPoint[0].Value;
       p1 = _listPoint[pntMax - 1].Value;
 
-      center = Geometry.OutCircleCenter(p0.Point, p1.Point, newPoint);
+      IPoint center = Geometry.OutCircleCenter(p0.Point, p1.Point, newPoint);
       if (center == null)
       { return AddParallel(newPoint); }
 

@@ -313,7 +313,7 @@ namespace Basics.Geom
       return null;
     }
 
-    public IList<Polyline> Split(IEnumerable<ParamGeometryRelation> splits)
+    public List<Polyline> Split(IEnumerable<ParamGeometryRelation> splits)
     {
       Dictionary<ISegment, List<ParamGeometryRelation>> curveSplits =
         new Dictionary<ISegment, List<ParamGeometryRelation>>(new Curve.GeometryEquality());

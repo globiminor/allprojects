@@ -204,7 +204,7 @@ namespace Basics.Geom
     /// <returns></returns>
     public bool IsWithin_clockwiseArea(IPoint p)
     {
-      Point2D min = new Point2D(p.X, p.Y);
+      Point min = new Point2D(p.X, p.Y);
       Point2D max = new Point2D(Extent.Max.X, p.Y);
       IPoint near = null;
       bool onRightSide = false;
@@ -274,7 +274,7 @@ namespace Basics.Geom
         if (cutList == null)
         { return false; }
 
-        Point2D cut = (Point2D)cutList[0];
+        IPoint cut = (IPoint)cutList[0];
         if (!(cut.X >= p.X && cut.X <= max.X)) throw new InvalidOperationException($"unexptected cut.X");
 
         max.X = cut.X;

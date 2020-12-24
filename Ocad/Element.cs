@@ -95,10 +95,10 @@ namespace Ocad
       public override IGeometry GetGeometry() => BaseGeometry;
     }
 
-    public GeoElement(IPoint point) : this(new Point(point)) { }
+    public GeoElement(IPoint point) : this(new Point(point)) { Type = GeomType.point; }
     public GeoElement(PointCollection points) : this(new Points(points)) { }
-    public GeoElement(Polyline line) : this(new Line(line)) { }
-    public GeoElement(Basics.Geom.Area area) : this(new Area(area)) { }
+    public GeoElement(Polyline line) : this(new Line(line)) { Type = GeomType.line; }
+    public GeoElement(Basics.Geom.Area area) : this(new Area(area)) { Type = GeomType.area; }
 
     public GeoElement(Geom geometry)
     {

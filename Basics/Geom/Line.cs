@@ -175,7 +175,15 @@ namespace Basics.Geom
       if (other is IArc arc)
       {
         foreach (var rel in ArcOp.CutLine(arc, l))
-        { yield return rel; }
+        {
+          if (rel.Intersection != null)
+          {
+            if (trackProgress != null)
+            { trackProgress.OnRelationFound(l, rel); }
+
+            yield return rel;
+          }
+        }
         yield break;
       }
 

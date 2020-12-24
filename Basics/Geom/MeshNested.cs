@@ -38,7 +38,7 @@ namespace Basics.Geom
   {
     public abstract class Tri : IGeometry, IMeshTri
     {
-      private Point2D _center;
+      private IPoint _center;
       private double _radius2;
 
       private uint _processed;
@@ -48,7 +48,7 @@ namespace Basics.Geom
 
       public abstract MeshLine this[int i] { get; }
 
-      public Point2D Center
+      public IPoint Center
       {
         get
         {
@@ -74,7 +74,7 @@ namespace Basics.Geom
         IPoint p0 = this[0].Start;
         _center = Geometry.OutCircleCenter(p0, this[1].Start, this[2].Start);
         if (_center != null)
-        { _radius2 = _center.Dist2(p0); }
+        { _radius2 = PointOp.Dist2(_center, p0); }
         else
         { _radius2 = double.PositiveInfinity; }
       }
@@ -105,7 +105,7 @@ namespace Basics.Geom
         return this[i].Start;
       }
 
-      public int GetPointIndex(Point2D point)
+      public int GetPointIndex(IPoint point)
       {
         if (GetPoint(0) == point) { return 0; }
         if (GetPoint(1) == point) { return 1; }
@@ -436,7 +436,7 @@ namespace Basics.Geom
           ChangeDiag(rec);
           return true;
         }
-        if (rTri.Center != null && rTri.Center.Dist2(left) >= rTri.Radius2)
+        if (rTri.Center != null && PointOp.Dist2(rTri.Center, left) >= rTri.Radius2)
         { return false; }
 
         ChangeDiag(rec);

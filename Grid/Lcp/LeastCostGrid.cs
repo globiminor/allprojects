@@ -342,10 +342,10 @@ namespace Grid.Lcp
       StopHandler stopHandler = new StopHandler(stopList, DirCostModel.MinUnitCost * Dx, 5 * Dx, (int)(0.7 / Dx))
       { StopFactor = stopFactor };
       LeastCostData result = CalcCost(start, invers, calcAdapter: stopHandler);
-      return result;
       // Export to image:
-      //      IGrid<double> reduced = BaseGrid.TryReduce(costGrid);
-      //      ImageGrid.GridToTif(DoubleGrid.ToIntGrid(reduced), "C:\\temp\\test2.tif");
+      //      IGrid<double> reduced = BaseGrid.TryReduce(result.CostGrid);
+      //      ImageGrid.GridToImage(reduced.ToInt(), "C:\\temp\\test2.tif");
+      return result;
     }
     public LeastCostData CalcCost(IPoint start, bool invers = false)
     {

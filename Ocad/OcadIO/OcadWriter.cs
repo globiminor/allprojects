@@ -323,6 +323,34 @@ namespace Ocad
       return n;
     }
 
+    public int ProjectElements(Func<GeoElement, GeoElement> project)
+    {
+      int n = 0;
+      int iIndex = 0;
+      ElementIndex idx = Io.ReadIndex(iIndex);
+      while (idx != null)
+      {
+        long pos = BaseStream.Position;
+        foreach (var elem in Io.EnumGeoElements(null, new[] { idx }))
+				{
+          GeoElement projected = project(elem);
+          if (projected == null)
+          { continue; }
+
+          idx.SetMapBox(projected.GetExent(Setup));
+          BaseStream.Seek(pos - Io.FileParam.INDEX_LENGTH, SeekOrigin.Begin);
+          Io.Write(idx);
+
+          BaseStream.Seek(idx.Position, SeekOrigin.Begin);
+          WriteElement(projected);
+        }
+
+        iIndex++;
+        idx = Io.ReadIndex(iIndex);
+      }
+      return n;
+    }
+
     public int ChangeSymbols(ElementIndexDlg<int> changeSymbol)
     {
       int n = 0;

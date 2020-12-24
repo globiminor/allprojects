@@ -1232,12 +1232,12 @@ namespace Basics.Geom
         { return MpRelations(y, x, track); }
 
         IRelParamGeometry xParam = x as IRelParamGeometry;
-        if (xParam == null && x is IBox)
-        { xParam = new ParamBox((IBox)x); }
+        if (xParam == null && x is IBox xBox)
+        { xParam = new ParamBox(xBox); }
 
         IRelParamGeometry yParam = y as IRelParamGeometry;
-        if (yParam == null && y is IBox)
-        { yParam = new ParamBox((IBox)y); }
+        if (yParam == null && y is IBox yBox)
+        { yParam = new ParamBox(yBox); }
 
         if (xParam == null || yParam == null)
         {
