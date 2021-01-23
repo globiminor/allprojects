@@ -131,7 +131,7 @@ namespace OCourse.Ext
 
     }
 
-    internal void ExportCoursesTxt(string exportFileName, List<CostFromTo> routeCosts)
+    public void ExportCoursesTxt(string exportFileName, List<CostFromTo> routeCosts)
     {
       List<Course> courses;
       using (OcadReader reader = OcadReader.Open(_origOcd))
@@ -337,7 +337,7 @@ namespace OCourse.Ext
       combinationDoc.ExportCoursesV8(courses, txtExport, dummyPrefix);
     }
 
-    internal void AdaptMaps(IList<string> bahnen, string template, string pre,
+    public void AdaptMaps(IList<string> bahnen, string template, string pre,
                             List<CostFromTo> routeCosts)
     {
       List<Course> courses;

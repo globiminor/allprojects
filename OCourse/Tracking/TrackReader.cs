@@ -8,7 +8,7 @@ using Basics.Geom;
 
 namespace OCourse.Tracking
 {
-  class TrackPoint
+  public class TrackPoint
   {
     public double Lat;
     public double Long;
@@ -17,7 +17,7 @@ namespace OCourse.Tracking
     public double Puls;
   }
 
-  class GpxIO
+  public class GpxIO
   {
     private const string _trkSeg = "trkseg";
 
@@ -118,7 +118,7 @@ namespace OCourse.Tracking
     }
   }
 
-  class TcxReader
+  public class TcxReader
   {
     public static IList<TrackPoint> ReadData(string file)
     {

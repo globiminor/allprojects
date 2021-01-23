@@ -134,6 +134,26 @@ namespace OCourse.Ext
       return climb;
     }
 
+    public static Course GetCourse(string prefix, CostSectionlist comb, bool split)
+    {
+      Course course = comb.Sections.ToSimpleCourse();
+
+      if (split)
+      {
+        VariationBuilder.Split(course);
+      }
+
+      string name;
+      if (string.IsNullOrEmpty(comb.Name))
+      { name = prefix; }
+      else
+      { name = $"{prefix}.{comb.Name}"; }
+      course.Name = name;
+      course.Climb = Basics.Utils.Round(comb.Climb, 5);
+
+      return course;
+    }
+
     public static void AdaptCourseFiles(string orig, string rawDir, string cleanDir,
       IList<string> courseNames, bool showNr, bool showCodes, string combi)
     {

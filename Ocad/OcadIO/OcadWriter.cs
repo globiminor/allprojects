@@ -323,7 +323,7 @@ namespace Ocad
       return n;
     }
 
-    public int ProjectElements(Func<GeoElement, GeoElement> project)
+    public int ProjectElements(Func<MapElement, MapElement> project)
     {
       int n = 0;
       int iIndex = 0;
@@ -331,9 +331,9 @@ namespace Ocad
       while (idx != null)
       {
         long pos = BaseStream.Position;
-        foreach (var elem in Io.EnumGeoElements(null, new[] { idx }))
+        foreach (var elem in Io.EnumMapElements(null, new[] { idx }))
 				{
-          GeoElement projected = project(elem);
+          MapElement projected = project(elem);
           if (projected == null)
           { continue; }
 

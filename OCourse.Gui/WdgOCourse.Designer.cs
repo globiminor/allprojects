@@ -45,7 +45,6 @@
       this.btnBackCalc = new System.Windows.Forms.Button();
       this.chkOnTop = new System.Windows.Forms.CheckBox();
       this.pnlCourse = new System.Windows.Forms.Panel();
-      this._cntSection = new OCourse.Gui.CntSection();
       this.btnExport = new System.Windows.Forms.Button();
       this.btnImport = new System.Windows.Forms.Button();
       this.dlgSave = new System.Windows.Forms.SaveFileDialog();
@@ -90,6 +89,7 @@
       this.mniSaveAs = new System.Windows.Forms.ToolStripMenuItem();
       this._cntConfig = new LeastCostPathUI.CntConfigView();
       this.splModelCourse = new System.Windows.Forms.SplitContainer();
+      this._cntSection = new OCourse.Gui.CntSection();
       this.pnlCourse.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.splCourse)).BeginInit();
       this.splCourse.Panel1.SuspendLayout();
@@ -204,17 +204,6 @@
       this.pnlCourse.Size = new System.Drawing.Size(236, 218);
       this.pnlCourse.TabIndex = 19;
       // 
-      // _cntSection
-      // 
-      this._cntSection.BackColor = System.Drawing.SystemColors.Window;
-      this._cntSection.BoldCombination = null;
-      this._cntSection.Course = null;
-      this._cntSection.Location = new System.Drawing.Point(1, 1);
-      this._cntSection.Name = "_cntSection";
-      this._cntSection.Size = new System.Drawing.Size(160, 271);
-      this._cntSection.TabIndex = 18;
-      this._cntSection.Vm = null;
-      // 
       // btnExport
       // 
       this.btnExport.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
@@ -294,7 +283,7 @@
       // 
       this.btnRefreshSection.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
       this.btnRefreshSection.Enabled = false;
-      this.btnRefreshSection.Image = global::OCourse.Properties.Resources.calc_recalc;
+      this.btnRefreshSection.Image = global::OCourse.Gui.Properties.Resources.calc_recalc;
       this.btnRefreshSection.Location = new System.Drawing.Point(422, 3);
       this.btnRefreshSection.Name = "btnRefreshSection";
       this.btnRefreshSection.Size = new System.Drawing.Size(22, 23);
@@ -369,7 +358,7 @@
             this.mniVarExport});
       this.mnuVarExport.Location = new System.Drawing.Point(169, 3);
       this.mnuVarExport.Name = "mnuVarExport";
-      this.mnuVarExport.Size = new System.Drawing.Size(60, 24);
+      this.mnuVarExport.Size = new System.Drawing.Size(61, 24);
       this.mnuVarExport.TabIndex = 40;
       this.mnuVarExport.Text = "menuStrip1";
       // 
@@ -379,12 +368,12 @@
             this.mniVarExpOcad,
             this.mniVarExpCsv});
       this.mniVarExport.Name = "mniVarExport";
-      this.mniVarExport.Size = new System.Drawing.Size(52, 20);
+      this.mniVarExport.Size = new System.Drawing.Size(53, 20);
       this.mniVarExport.Text = "Export";
       // 
       // mniVarExpOcad
       // 
-      this.mniVarExpOcad.Image = global::OCourse.Properties.Resources.exp_course;
+      this.mniVarExpOcad.Image = global::OCourse.Gui.Properties.Resources.exp_course;
       this.mniVarExpOcad.Name = "mniVarExpOcad";
       this.mniVarExpOcad.Size = new System.Drawing.Size(116, 22);
       this.mniVarExpOcad.Text = "OCAD...";
@@ -392,7 +381,7 @@
       // 
       // mniVarExpCsv
       // 
-      this.mniVarExpCsv.Image = global::OCourse.Properties.Resources.exp_csv;
+      this.mniVarExpCsv.Image = global::OCourse.Gui.Properties.Resources.exp_csv;
       this.mniVarExpCsv.Name = "mniVarExpCsv";
       this.mniVarExpCsv.Size = new System.Drawing.Size(116, 22);
       this.mniVarExpCsv.Text = "Text...";
@@ -405,7 +394,7 @@
             this.mniPermExport});
       this.mnuPermExport.Location = new System.Drawing.Point(346, 21);
       this.mnuPermExport.Name = "mnuPermExport";
-      this.mnuPermExport.Size = new System.Drawing.Size(60, 24);
+      this.mnuPermExport.Size = new System.Drawing.Size(181, 24);
       this.mnuPermExport.TabIndex = 41;
       this.mnuPermExport.Text = "menuStrip1";
       // 
@@ -415,22 +404,22 @@
             this.mniPermExpOcad,
             this.varPermExpCsv});
       this.mniPermExport.Name = "mniPermExport";
-      this.mniPermExport.Size = new System.Drawing.Size(52, 20);
+      this.mniPermExport.Size = new System.Drawing.Size(53, 20);
       this.mniPermExport.Text = "Export";
       // 
       // mniPermExpOcad
       // 
-      this.mniPermExpOcad.Image = global::OCourse.Properties.Resources.exp_course;
+      this.mniPermExpOcad.Image = global::OCourse.Gui.Properties.Resources.exp_course;
       this.mniPermExpOcad.Name = "mniPermExpOcad";
-      this.mniPermExpOcad.Size = new System.Drawing.Size(116, 22);
+      this.mniPermExpOcad.Size = new System.Drawing.Size(180, 22);
       this.mniPermExpOcad.Text = "OCAD...";
       this.mniPermExpOcad.Click += new System.EventHandler(this.BtnExportPermutOcad_Click);
       // 
       // varPermExpCsv
       // 
-      this.varPermExpCsv.Image = global::OCourse.Properties.Resources.exp_csv;
+      this.varPermExpCsv.Image = global::OCourse.Gui.Properties.Resources.exp_csv;
       this.varPermExpCsv.Name = "varPermExpCsv";
-      this.varPermExpCsv.Size = new System.Drawing.Size(116, 22);
+      this.varPermExpCsv.Size = new System.Drawing.Size(180, 22);
       this.varPermExpCsv.Text = "Text...";
       this.varPermExpCsv.Click += new System.EventHandler(this.BtnExportPermutCsv_Click);
       // 
@@ -514,7 +503,7 @@
       // 
       // btnCalcPermut
       // 
-      this.btnCalcPermut.Image = global::OCourse.Properties.Resources.calc_permuts;
+      this.btnCalcPermut.Image = global::OCourse.Gui.Properties.Resources.calc_permuts;
       this.btnCalcPermut.Location = new System.Drawing.Point(321, 23);
       this.btnCalcPermut.Name = "btnCalcPermut";
       this.btnCalcPermut.Size = new System.Drawing.Size(22, 22);
@@ -693,6 +682,17 @@
       this.splModelCourse.Size = new System.Drawing.Size(685, 367);
       this.splModelCourse.SplitterDistance = 115;
       this.splModelCourse.TabIndex = 37;
+      // 
+      // _cntSection
+      // 
+      this._cntSection.BackColor = System.Drawing.SystemColors.Window;
+      this._cntSection.BoldCombination = null;
+      this._cntSection.Course = null;
+      this._cntSection.Location = new System.Drawing.Point(1, 1);
+      this._cntSection.Name = "_cntSection";
+      this._cntSection.Size = new System.Drawing.Size(160, 271);
+      this._cntSection.TabIndex = 18;
+      this._cntSection.Vm = null;
       // 
       // WdgOCourse
       // 

@@ -19,6 +19,10 @@ namespace Basics.Geom
       _pointList = new List<IPoint>();
     }
 
+    public static Polyline Create(IBox b)
+    {
+      return Create(new[] { b.Min, new Point2D(b.Min.X, b.Max.Y), b.Max, new Point2D(b.Max.X, b.Min.Y), b.Min });
+    }
     public static Polyline Create<T>(IEnumerable<T> pointList) where T : IPoint
     {
       Polyline p = new Polyline();

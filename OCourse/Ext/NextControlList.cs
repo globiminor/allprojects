@@ -4,7 +4,7 @@ using Ocad;
 
 namespace OCourse.Ext
 {
-  internal class NextControlList
+  public class NextControlList
   {
     private List<NextControl> _list = new List<NextControl>();
     private bool _codesAssured;

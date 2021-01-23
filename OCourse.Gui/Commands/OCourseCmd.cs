@@ -3,13 +3,12 @@ using Basics.Forms;
 using Basics.Geom;
 using Grid.Lcp;
 using Ocad;
-using OCourse.Gui;
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using TMap;
 
-namespace OCourse.Plugins
+namespace OCourse.Gui.Plugins
 {
   public class OCourseCmd : ICommand
   {
@@ -20,7 +19,7 @@ namespace OCourse.Plugins
       // "AssemblyResolve" is active only here
       // --> load all potentially needed libraries here
       _wdg = new WdgOCourse();
-      Common.Init();
+      Programm.Init();
     }
     #region ICommand Members
 
@@ -30,7 +29,7 @@ namespace OCourse.Plugins
       if (_wdg == null)
       {
         _wdg = new WdgOCourse();
-        Common.Init();
+        Programm.Init();
       }
       _wdg.TMapContext = context;
       if (context is IWin32Window parent)

@@ -324,7 +324,7 @@ namespace Basics.Geom
 		public static double GetFactor(IPoint p0, IPoint p1, IEnumerable<int> dimensions = null)
 		{
 			dimensions = dimensions ?? GeometryOperator.GetDimensions(p0, p1);
-			double dMin = 0;
+			double dMin = -1;
 			double f = 0;
 			foreach (int dim in dimensions)
 			{

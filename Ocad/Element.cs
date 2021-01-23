@@ -176,6 +176,11 @@ namespace Ocad
     {
       return (_coords.Count == 0) ? null : Coord.GetGeometry(Type, _coords);
     }
+    public void SetMapGeometry(GeoElement.Geom geom)
+    {
+      _coords.Clear();
+      _coords.AddRange(geom.EnumCoords());
+    }
 
     public static explicit operator Symbol.SymbolGraphics(MapElement element)
     {

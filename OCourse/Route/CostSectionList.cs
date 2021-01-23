@@ -24,7 +24,7 @@ namespace OCourse.Route
     public IReadOnlyList<CostBase> Parts
     { get { return _parts; } }
 
-    internal static IEnumerable<CostSectionlist> GetCostSectionLists(
+    public static IEnumerable<CostSectionlist> GetCostSectionLists(
       IEnumerable<ViewModels.PermutationVm> permutations,
       RouteCalculator routeCalc, double resol)
     {

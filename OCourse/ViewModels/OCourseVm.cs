@@ -33,7 +33,7 @@ namespace OCourse.ViewModels
     public event ShowGridInContext ShowProgress;
     public event DrawCourseHandler DrawingCourse;
 
-    internal const string _meanPrefix = "_Mean ";
+    public const string _meanPrefix = "_Mean ";
 
     private readonly BindingListView<string> _courseNames;
     private readonly List<EnumText<VelocityType>> _veloTypes;
@@ -195,7 +195,6 @@ namespace OCourse.ViewModels
       }
     }
     public string PathesFile { get; set; }
-
     public Course Course
     {
       get { return _course; }
@@ -435,7 +434,7 @@ namespace OCourse.ViewModels
       return courseInfo;
     }
 
-    internal void SetCourseList()
+    public void SetCourseList()
     {
       using (OcadReader reader = OcadReader.Open(CourseFile))
       {
@@ -445,7 +444,7 @@ namespace OCourse.ViewModels
         Config config = Utils.GetConfig(reader, indexList);
         string dir = Path.GetDirectoryName(CourseFile);
         _lcpConfig.SetConfig(dir, config);
-        if (config != null && config.Routes != null)
+        if (config?.Routes != null)
         {
           ImportRoutes(Config.GetFullPath(dir, config.Routes));
         }
@@ -471,7 +470,7 @@ namespace OCourse.ViewModels
         return _routeCalc;
       }
     }
-    internal bool IsRouteCalculatorNull
+    public bool IsRouteCalculatorNull
     {
       get { return _routeCalc == null; }
     }
@@ -792,7 +791,7 @@ namespace OCourse.ViewModels
       RunAsync(courseCalc);
     }
 
-    internal RouteCalculator InitHeightVelo()
+    public RouteCalculator InitHeightVelo()
     {
       string veloPath = null;
       IGrid<double> heightGrid = null;
@@ -892,7 +891,7 @@ namespace OCourse.ViewModels
       SetProgressAsync(_lastVariation);
     }
 
-    internal void PermutationsInit()
+    public void PermutationsInit()
     {
       PermutationBuilder pb;
       try
@@ -923,7 +922,7 @@ namespace OCourse.ViewModels
       RunAsync(pb);
     }
 
-    internal void PermutationsExport(IEnumerable<PermutationVm> selectedRows, string file)
+    public void PermutationsExport(IEnumerable<PermutationVm> selectedRows, string file)
     {
       List<PermutationVm> permutations = new List<PermutationVm>(selectedRows);
 

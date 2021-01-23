@@ -31,7 +31,7 @@ namespace OCourse.Ext
 
     public static Settings GetSettings(OcadReader reader, IList<ElementIndex> indexList)
     {
-      foreach (var element in reader.EnumMapElements(indexList))
+      foreach (var element in reader.EnumMapElements(indexList: indexList))
       {
         if (element.Symbol == 723000)
         {

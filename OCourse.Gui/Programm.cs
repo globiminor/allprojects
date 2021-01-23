@@ -1,12 +1,10 @@
 using System;
 using System.Windows.Forms;
 using Ocad;
-using OCourse.Gui;
-using System.IO;
 
-namespace OCourse
+namespace OCourse.Gui
 {
-  public static class Common
+  public static class Programm
   {
     private static bool _init;
     /// <summary>
@@ -19,31 +17,6 @@ namespace OCourse
       Application.SetCompatibleTextRenderingDefault(false);
       Init();
       Application.Run(new WdgOCourse());
-    }
-
-    private static int NewSymbol(ElementIndex index)
-    {
-      int symbol = index.Symbol;
-      if (symbol % 1000 == 1)
-      {
-        return symbol - 1;
-      }
-      else
-      {
-        return symbol;
-      }
-    }
-    public static void ChangeSymbol()
-    {
-      OcadWriter w = OcadWriter.AppendTo(@"D:\daten\felix\OL\wm2010\Henriksåsen\Henriksåsen2008_v.ocd");
-      try
-      {
-        w.ChangeSymbols(NewSymbol);
-      }
-      finally
-      {
-        w.Close();
-      }
     }
 
     public static void Init()

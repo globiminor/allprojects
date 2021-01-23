@@ -108,6 +108,10 @@
       <Project>{39b4f02a-e890-4afe-b00b-11d1e7ed5634}</Project>
       <Name>Ocad</Name>
     </ProjectReference>
+    <ProjectReference Include="..\OCourse.Cmd\OCourse.Cmd.csproj">
+      <Project>{4ce916b4-9c9f-4ff0-8481-5d861d7dab37}</Project>
+      <Name>OCourse.Cmd</Name>
+    </ProjectReference>
     <ProjectReference Include="..\OCourse\OCourse.csproj">
       <Project>{35ea7231-ad8b-4dc0-9e48-b9a577d777c2}</Project>
       <Name>OCourse</Name>

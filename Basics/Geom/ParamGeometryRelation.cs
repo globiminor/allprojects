@@ -420,7 +420,11 @@ namespace Basics.Geom
 
     private static int SortLinePt(ParamGeometryRelation x, ParamGeometryRelation y)
     {
-      return ((IPoint)x.Intersection).X.CompareTo(((IPoint)y.Intersection).X);
+      IPoint xInt = (IPoint)x.Intersection;
+      IPoint yInt = (IPoint)y.Intersection;
+      double vX = xInt?.X ?? x.XParam.X;
+      double vY = yInt?.X ?? y.XParam.X;
+      return vX.CompareTo(vY);
     }
     public static ParamGeometryRelation GetLineRelation(IParamGeometry xLine, IGeometry y)
     {
@@ -434,19 +438,19 @@ namespace Basics.Geom
       IPoint x0 = xLine.PointAt(p0);
       IPoint x1 = xLine.PointAt(p1);
       IPoint dx = PointOp.Sub(x1, x0);
-      IPoint y0 = xLine.PointAt(p0);
-      IPoint y1 = xLine.PointAt(p1);
+      IPoint y0 = yLine.PointAt(p0);
+      IPoint y1 = yLine.PointAt(p1);
       IPoint dy = PointOp.Sub(y1, y0);
-      double xy0 = PointOp.SkalarProduct(dx, PointOp.Sub(y0, x0));
-      double xy1 = PointOp.SkalarProduct(dx, PointOp.Sub(y1, x0));
-      double yx0 = PointOp.SkalarProduct(dy, PointOp.Sub(x0, y0));
-      double yx1 = PointOp.SkalarProduct(dy, PointOp.Sub(x1, y0));
+      double xy0 = PointOp.GetFactor(dx, PointOp.Sub(y0, x0));
+      double xy1 = PointOp.GetFactor(dx, PointOp.Sub(y1, x0));
+      double yx0 = PointOp.GetFactor(dy, PointOp.Sub(x0, y0));
+      double yx1 = PointOp.GetFactor(dy, PointOp.Sub(x1, y0));
 
       List<ParamGeometryRelation> rels = new List<ParamGeometryRelation>(4);
-      ParamGeometryRelation r0 = new ParamGeometryRelation(xLine, p0, yLine, Point.Create(new double[] { yx0 }), null);
-      ParamGeometryRelation r1 = new ParamGeometryRelation(xLine, p1, yLine, Point.Create(new double[] { yx1 }), null);
-      ParamGeometryRelation r2 = new ParamGeometryRelation(xLine, Point.Create(new double[] { xy0 }), yLine, p0, null);
-      ParamGeometryRelation r3 = new ParamGeometryRelation(xLine, Point.Create(new double[] { xy1 }), yLine, p1, null);
+      ParamGeometryRelation r0 = new ParamGeometryRelation(xLine, p0, yLine, Point.Create(new double[] { yx0 }), p0);
+      ParamGeometryRelation r1 = new ParamGeometryRelation(xLine, p1, yLine, Point.Create(new double[] { yx1 }), p0);
+      ParamGeometryRelation r2 = new ParamGeometryRelation(xLine, Point.Create(new double[] { xy0 }), yLine, p0, p0);
+      ParamGeometryRelation r3 = new ParamGeometryRelation(xLine, Point.Create(new double[] { xy1 }), yLine, p1, p0);
       rels.Add(r0);
       rels.Add(r1);
       rels.Add(r2);

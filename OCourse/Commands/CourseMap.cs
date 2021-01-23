@@ -12,36 +12,36 @@ namespace OCourse.Commands
 	{
 		public class ControlElement
 		{
-			public ControlElement(GeoElement elem)
+			public ControlElement(MapElement elem)
 			{
-				P = elem.Geometry.GetGeometry() as Point;
+				P = elem.GetMapGeometry().GetGeometry() as Point;
 				Elem = elem;
 			}
 			public Point P { get; }
-			public GeoElement Elem { get; }
+			public MapElement Elem { get; }
 		}
 		public class ConnectionElement
 		{
-			public ConnectionElement(GeoElement elem)
+			public ConnectionElement(MapElement elem)
 			{
-				L = elem.Geometry.GetGeometry() as Polyline;
+				L = elem.GetMapGeometry().GetGeometry() as Polyline;
 				Elem = elem;
 			}
 
 			public Polyline L { get; }
-			public GeoElement Elem { get; }
+			public MapElement Elem { get; }
 		}
 
 		public class ControlNrElement
 		{
-			public ControlNrElement(GeoElement elem, double textHeight)
+			public ControlNrElement(MapElement elem, double textHeight)
 			{
-				PointCollection pts = (PointCollection)elem.Geometry.GetGeometry();
+				PointCollection pts = (PointCollection)elem.GetMapGeometry().GetGeometry();
 				E = new Box(new Point2D(pts[0].X, pts[0].Y), new Point2D(pts[2].X, pts[0].Y + textHeight));
 				Elem = elem;
 			}
 			public Box E { get; }
-			public GeoElement Elem { get; }
+			public MapElement Elem { get; }
 		}
 
 		public List<int> StartSymbols { get; set; } = new List<int> { 701000 };
@@ -49,12 +49,17 @@ namespace OCourse.Commands
 		public List<int> ControlNrSymbols { get; set; } = new List<int> { 704000 };
 		public List<int> ConnectionSymbols { get; set; } = new List<int> { 705000 };
 		public List<int> FinishSymbols { get; set; } = new List<int> { 706000 };
+		public List<int> CourseNameSymbols { get; set; } = new List<int> { 721000 };
+
 
 		public double ControlDistance { get; set; }
-		public List<GeoElement> AllControls { get; set; }
-		public List<GeoElement> ConnectionElems { get; set; }
-		public List<GeoElement> ControlNrElems { get; set; }
+		public List<MapElement> AllControls { get; set; }
+		public List<MapElement> ConnectionElems { get; set; }
+		public List<MapElement> ControlNrElems { get; set; }
 		public double ControlNrHeight { get; set; }
+
+		public string CourseNameFont { get; set; }
+
 
 		public BoxTree<ControlElement> ControlsTree => _controlsTree ??
 			(_controlsTree = BoxTree.Create(AllControls.Select(e => new ControlElement(e)), (c) => c.P.Extent, 4));
@@ -69,17 +74,18 @@ namespace OCourse.Commands
 
 		public void InitFromFile(string courseFile)
 		{
-			List<GeoElement> startElems = new List<GeoElement>();
-			List<GeoElement> controlElems = new List<GeoElement>();
-			List<GeoElement> controlNrElems = new List<GeoElement>();
-			List<GeoElement> connectionElems = new List<GeoElement>();
-			List<GeoElement> finishElems = new List<GeoElement>();
+			List<MapElement> startElems = new List<MapElement>();
+			List<MapElement> controlElems = new List<MapElement>();
+			List<MapElement> controlNrElems = new List<MapElement>();
+			List<MapElement> connectionElems = new List<MapElement>();
+			List<MapElement> finishElems = new List<MapElement>();
 			double controlDistance = 0;
 			double textHeight = 0;
+			string courseNameFont = "";
 
 			using (OcadReader r = OcadReader.Open(courseFile))
 			{
-				foreach (var elem in r.EnumGeoElements())
+				foreach (var elem in r.EnumMapElements())
 				{
 					if (StartSymbols.Contains(elem.Symbol))
 					{ startElems.Add(elem); }
@@ -112,13 +118,17 @@ namespace OCourse.Commands
 						double pts = t.Size / 10.0;
 						textHeight = Math.Max(textHeight, pts / 4.05); // mm
 					}
+					if (CourseNameSymbols.Contains(symbol.Number) && symbol is TextSymbol cn)
+					{
+						courseNameFont = cn.FontName;
+					}
 				}
 
-				controlDistance = mapDistance * FileParam.OCAD_UNIT * r.Setup.Scale;
-				textHeight = textHeight * 0.001 * r.Setup.Scale; // m
+				controlDistance = mapDistance; // * FileParam.OCAD_UNIT * r.Setup.Scale;
+				textHeight = textHeight * 0.001 / FileParam.OCAD_UNIT; // * 0.001 * r.Setup.Scale; // m
 			}
 
-			List<GeoElement> allControls = new List<GeoElement>(controlElems);
+			List<MapElement> allControls = new List<MapElement>(controlElems);
 			allControls.AddRange(startElems);
 			allControls.AddRange(finishElems);
 
@@ -127,6 +137,8 @@ namespace OCourse.Commands
 			ConnectionElems = connectionElems;
 			ControlNrElems = controlNrElems;
 			ControlNrHeight = textHeight;
+
+			CourseNameFont = courseNameFont;
 		}
 
 	}

@@ -157,12 +157,12 @@ namespace OCourse.ViewModels
       void IDrawable.BeginDraw(ISymbolPart symbolPart, DataRow dataRow) { }
       void IDrawable.Draw(MapData data) { }
 
-      public void DrawArea(Area area, ISymbolPart symbolPart)
+      void IDrawable.DrawArea(Area area, ISymbolPart symbolPart)
       {
         _brush.Color = symbolPart.Color;
         Basics.Forms.DrawUtils.DrawArea(_grp, area, _brush);
       }
-      public void DrawLine(Polyline line, ISymbolPart symbolPart)
+      void IDrawable.DrawLine(Polyline line, ISymbolPart symbolPart)
       {
         _pen.Color = symbolPart.Color;
         _pen.Width = (float)((symbolPart as SymbolPartLine)?.LineWidth ?? 1);

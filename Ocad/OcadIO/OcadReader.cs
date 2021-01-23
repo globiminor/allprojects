@@ -163,14 +163,9 @@ namespace Ocad
       return _io.EnumGeoElements(null, indexList);
     }
 
-    public IEnumerable<MapElement> EnumMapElements(IBox extentIntersect, IList<ElementIndex> indexList)
+    public IEnumerable<MapElement> EnumMapElements(IBox extentIntersect = null, IList<ElementIndex> indexList = null)
     {
       return _io.EnumMapElements(extentIntersect, indexList);
-    }
-
-    public IEnumerable<MapElement> EnumMapElements(IList<ElementIndex> indexList)
-    {
-      return EnumMapElements(null, indexList);
     }
 
     public void Close()

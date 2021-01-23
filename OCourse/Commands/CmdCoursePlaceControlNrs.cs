@@ -27,7 +27,7 @@ namespace OCourse.Commands
       _w.ProjectElements((elem) => PlaceElem(elem));
     }
 
-    private GeoElement PlaceElem(GeoElement elem)
+    private MapElement PlaceElem(MapElement elem)
     {
       if (!_cm.ControlNrSymbols.Contains(elem.Symbol))
       { return null; }
@@ -39,10 +39,11 @@ namespace OCourse.Commands
       if (!ControlsDict.TryGetValue(controlNr, out IPoint place))
       { return null; }
 
-      foreach (var elemP in elem.Geometry.EnumPoints())
+      foreach (var elemP in elem.GetMapGeometry().EnumPoints())
       {
         Basics.Geom.Projection.Translate prj = new Basics.Geom.Projection.Translate(PointOp.Sub(place, elemP));
-        elem.Geometry = elem.Geometry.Project(prj);
+        GeoElement.Geom prjGeom = elem.GetMapGeometry().Project(prj);
+        elem.SetMapGeometry(prjGeom);
         return elem;
       }
       return null;
@@ -59,10 +60,11 @@ namespace OCourse.Commands
         ControlPar p = new ControlPar(nrElem.ObjectString);
         string controlNr = p.GetString('d');
 
-        IBox b = nrElem.Geometry.Extent;
+        IBox b = nrElem.GetMapGeometry().Extent;
         nrWidthDict[controlNr] = b.Max.X - b.Min.X;
       }
 
+      double maxWidth = 0;
       List<ControlRegion> allRegions = new List<ControlRegion>();
       foreach (var control in _cm.AllControls)
       {
@@ -73,11 +75,13 @@ namespace OCourse.Commands
         if (!nrWidthDict.TryGetValue(par.Id, out double w))
         { continue; }
 
-        if (!(control.Geometry.GetGeometry() is IPoint cp))
+        if (!(control.GetMapGeometry().GetGeometry() is IPoint cp))
         { throw new InvalidOperationException($"invalid geometry for control {par.Id}"); }
 
         ControlRegion cr = ControlRegion.Create(par.Id, cp, w, _cm);
         allRegions.Add(cr);
+
+        maxWidth = Math.Max(maxWidth, w);
       }
 
       //foreach (var r in allRegions)
@@ -102,6 +106,19 @@ namespace OCourse.Commands
         ControlRegion r = unhandledRegions[i];
 
         dict.Add(r.ControlId, r.Position);
+        r.Handled = true;
+
+        Box posArea = r.GetPositionArea(_cm.ControlNrHeight);
+        Box search = posArea.Clone();
+        search.Min.X -= maxWidth;
+
+        foreach (var entry in regionTree.Search(search))
+        {
+          if (!entry.Value.Handled)
+          {
+            entry.Value.AddUsedArea(posArea);
+          }
+        }
 
         unhandledRegions.RemoveAt(i);
       }
@@ -131,7 +148,11 @@ namespace OCourse.Commands
           if (PointOp.EqualGeometry(cp, entry.Value.P))
           { continue; }
 
-          usedAreas.Add(new Area(GetCirclePositions(entry.Value.P, minDist, w, h)));
+          CourseMap.ControlElement e = entry.Value;
+          double dist = !courseMap.FinishSymbols.Contains(e.Elem.Symbol)
+            ? minDist
+            : r * 1.1;
+          usedAreas.Add(new Area(GetCirclePositions(entry.Value.P, dist, w, h)));
         }
 
         Box connectionSearchBox = new Box(
@@ -141,7 +162,7 @@ namespace OCourse.Commands
           usedAreas.Add(GetConnectionArea(entry.Value.L, w, h));
         }
 
-        return new ControlRegion(controlId, cp, nrPos, usedAreas);
+        return new ControlRegion(controlId, cp, textWidth, nrPos, usedAreas);
       }
 
       private readonly double _textWidth;
@@ -161,12 +182,14 @@ namespace OCourse.Commands
       public IReadOnlyList<Polyline> FreeParts => FreePartsCore;
       public IPoint Position => _position ?? _p;
       public Polyline NrPositions => _nrPos;
+      internal bool Handled { get; set; }
 
       public string ControlId { get; }
       public IBox NrBox;
-      private ControlRegion(string controlId, IPoint p, Polyline nrPos, List<Area> usedAreas)
+      private ControlRegion(string controlId, IPoint p, double textWidth, Polyline nrPos, List<Area> usedAreas)
       {
         ControlId = controlId;
+        _textWidth = textWidth;
         _p = p;
         _nrPos = nrPos;
         _usedAreas = usedAreas;
@@ -178,6 +201,24 @@ namespace OCourse.Commands
 
       public double MaxFreeLength => _maxFreeLength < 0 ? (_maxFreeLength = GetMaxFreeLength()) : _maxFreeLength;
 
+      public Box GetPositionArea(double height)
+      {
+        Point min = Point.Create(Position);
+        Point max = Point.Create(Position);
+
+        min.Y -= height;
+        max.X += _textWidth;
+        max.Y += height;
+        return new Box(min, max);
+      }
+      public void AddUsedArea(IBox area)
+      {
+        _maxFreeLength = -1;
+        _freeParts = null;
+        Box b = BoxOp.Clone(area);
+        b.Min.X -= _textWidth;
+        _usedAreas.Add(new Area(Polyline.Create(b)));
+      }
       private double GetMaxFreeLength()
       {
         Dictionary<Polyline, double> lengthsDict = FreeParts.ToDictionary(x => x, y => y.Length());
@@ -276,7 +317,11 @@ namespace OCourse.Commands
         {
           if (!_areaSplits.TryGetValue(usedArea, out List<UsedPart> areaSplits))
           {
-            List<ParamGeometryRelation> rels = new List<ParamGeometryRelation>(GeometryOperator.CreateRelations(usedArea, _nrPos));
+            IEnumerable<ParamGeometryRelation> relEnum = GeometryOperator.CreateRelations(usedArea, _nrPos);
+            if (relEnum == null)
+            { continue; }
+
+            List<ParamGeometryRelation> rels = new List<ParamGeometryRelation>(relEnum);
             areaSplits = new List<UsedPart>();
 
             foreach (var rel in rels)

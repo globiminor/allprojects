@@ -37,7 +37,7 @@ namespace OCourse.Commands
 		private IEnumerable<string> VerfiyConnections(double distance, double near = -1)
 		{
 			BoxTree<CourseMap.ControlElement> controlsTree = Assert.NotNull(_cm.ControlsTree);
-			IList<GeoElement> connections = Assert.NotNull(_cm.ConnectionElems);
+			IList<MapElement> connections = Assert.NotNull(_cm.ConnectionElems);
 
 			if (near < 0)
 			{
@@ -49,7 +49,7 @@ namespace OCourse.Commands
 
 			foreach (var connection in connections)
 			{
-				if (!(connection.Geometry.GetGeometry() is Polyline line))
+				if (!(connection.GetMapGeometry().GetGeometry() is Polyline line))
 				{
 					yield return "Invalid Geometrie";
 					continue;
@@ -127,7 +127,7 @@ namespace OCourse.Commands
 			BoxTree<CourseMap.ControlNrElement> controlNrsTree = Assert.NotNull(_cm.ControlNrsTree);
 			BoxTree<CourseMap.ConnectionElement> connectionTree = Assert.NotNull(_cm.ConnectionTree);
 
-			IList<GeoElement> controlNrs = Assert.NotNull(_cm.ControlNrElems);
+			IList<MapElement> controlNrs = Assert.NotNull(_cm.ControlNrElems);
 
 			foreach (var controlNrEntry in controlNrsTree.Search(null))
 			{

@@ -46,7 +46,7 @@ namespace OCourse.Route
 
     private ViewModels.SymbolVeloModel<TvmCell> _symVeloModel;
 
-    internal Dictionary<CostFromTo, CostFromTo> RouteCostDict
+    public Dictionary<CostFromTo, CostFromTo> RouteCostDict
     {
       get { return _calcList; }
     }
@@ -94,7 +94,7 @@ namespace OCourse.Route
           }
           endList.Add(info);
         }
-        string lcpPath = typeof(IO).Assembly.Location;
+        string lcpPath = typeof(LeastCostPathUI.IO).Assembly.Location;
         w.WriteLine("-- Start files scripts");
         foreach (var pair in starts)
         {

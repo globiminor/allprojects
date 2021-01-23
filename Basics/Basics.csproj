@@ -41,6 +41,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Cmd\Command.cs" />
+    <Compile Include="Cmd\Utils.cs" />
+    <Compile Include="Cmd\ProgressEventArgs.cs" />
     <Compile Include="Data\Cache.cs" />
     <Compile Include="Data\DataSetDb\EnumAdapter.cs">
       <SubType>Component</SubType>
