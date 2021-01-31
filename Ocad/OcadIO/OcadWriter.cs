@@ -323,7 +323,7 @@ namespace Ocad
       return n;
     }
 
-    public int ProjectElements(Func<MapElement, MapElement> project)
+    public int AdaptElements(Func<MapElement, MapElement> adapt)
     {
       int n = 0;
       int iIndex = 0;
@@ -333,16 +333,25 @@ namespace Ocad
         long pos = BaseStream.Position;
         foreach (var elem in Io.EnumMapElements(null, new[] { idx }))
 				{
-          MapElement projected = project(elem);
-          if (projected == null)
+          MapElement adapted = adapt(elem);
+          if (adapted == null)
           { continue; }
 
-          idx.SetMapBox(projected.GetExent(Setup));
+          int l0 = idx.Length;
+          idx.CalcElementLength(Io, adapted);
+          idx.SetMapBox(adapted.GetExent(Setup));
+          idx.Symbol = adapted.Symbol;
+
+          if (l0 < idx.Length)
+					{
+            idx.Position = (int)BaseStream.Seek(0, SeekOrigin.End);
+          }
+
           BaseStream.Seek(pos - Io.FileParam.INDEX_LENGTH, SeekOrigin.Begin);
           Io.Write(idx);
 
           BaseStream.Seek(idx.Position, SeekOrigin.Begin);
-          WriteElement(projected);
+          WriteElement(adapted);
         }
 
         iIndex++;

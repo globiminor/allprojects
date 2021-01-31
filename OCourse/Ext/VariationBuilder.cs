@@ -79,7 +79,8 @@ namespace OCourse.Ext
 
       return new Control(key, ControlCode.TextBlock);
     }
-    public static void Split(Course course)
+    public static void Split(Course course,
+      Func<int, Dictionary<string, List<Control>>, Dictionary<string, List<Control>>, int> customWeight = null)
     {
       List<Control> controls = new List<Control>();
       Dictionary<string, List<Control>> dict = new Dictionary<string, List<Control>>();
@@ -103,34 +104,25 @@ namespace OCourse.Ext
       for (int iSplit = 0; iSplit < controls.Count; iSplit++)
       {
         Control split = controls[iSplit];
-        dictPre.GetOrCreateValue(split.Name).Add(split);
+        dictPre.GetOrCreateValue(split.Name);
         currentNode = currentNode.Next;
 
-        if (dict[split.Name].Count > 1)
-        { continue; }
-
-        int nDouble = 0;
-        foreach (var pair in dict)
+        bool lastSplit = false;
+        if (dict[split.Name].Count <= 1 || 
+           (lastSplit = dictPre[split.Name].Count + 1 == dict[split.Name].Count))
         {
-          if (pair.Value.Count == 1)
-          { continue; }
-
-          if (!dictPre.TryGetValue(pair.Key, out List<Control> pre))
-          { pre = new List<Control>(); }
-          int n0 = pre.Count;
-          int n1 = pair.Value.Count - n0;
-          int d = n1 - n0;
-
-          nDouble += Math.Abs(d);
+          int nDouble = GetNDouble(dict, dictPre, lastSplit, customWeight);
+          if (nDouble < minDouble
+            || (nDouble == minDouble && Math.Abs(iSplit - iLastSplit / 2) < Math.Abs(minSplit - iLastSplit / 2)))
+          {
+            minDouble = nDouble;
+            minSplit = iSplit;
+            minNode = currentNode;
+          }
         }
-        if (nDouble < minDouble
-          || (nDouble == minDouble && Math.Abs(iSplit - iLastSplit / 2) < Math.Abs(minSplit - iLastSplit / 2)))
-        {
-          minDouble = nDouble;
-          minSplit = iSplit;
-          minNode = currentNode;
-        }
+        dictPre[split.Name].Add(split);
       }
+
       if (minNode != null)
       {
         Control pre = (Control)minNode.Previous.Value;
@@ -154,6 +146,30 @@ namespace OCourse.Ext
 
         course.AddBefore(minNode, start);
       }
+    }
+
+    private static int GetNDouble(Dictionary<string, List<Control>> dict,
+      Dictionary<string, List<Control>> dictPre, bool lastSplit,
+      Func<int, Dictionary<string, List<Control>>, Dictionary<string, List<Control>>, int> custom)
+		{
+      int nDouble = 0;
+      foreach (var pair in dict)
+      {
+        if (pair.Value.Count == 1)
+        { continue; }
+
+        if (!dictPre.TryGetValue(pair.Key, out List<Control> pre))
+        { pre = new List<Control>(); }
+        int n0 = pre.Count;
+        int n1 = pair.Value.Count - n0;
+        int d = n1 - n0;
+
+        nDouble += Math.Abs(d);
+      }
+      nDouble = 2 * nDouble + (lastSplit ? 1 : 0);
+
+      nDouble = custom?.Invoke(nDouble, dict, dictPre) ?? nDouble;
+      return nDouble;
     }
 
 

@@ -7,9 +7,9 @@ namespace Basics.Geom
   {
     Intersect, Touch, ExtentIntersect, Disjoint, Contains, Within
   }
-  public enum CalcMode
+  public class RelOp
   {
-    Full, First
+    public RelOp Flip() { throw new NotImplementedException(); }
   }
   /// <summary>
   /// Summary description for Geometry.

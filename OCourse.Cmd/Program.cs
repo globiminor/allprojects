@@ -8,7 +8,8 @@ namespace OCourse.Cmd
 	{
 		static void Main(string[] args)
 		{
-      Run(args);
+      if (args.Length > 0)
+      { Run(args); }
       while (true)
       {
         Console.Write("OCourse> ");
@@ -22,6 +23,7 @@ namespace OCourse.Cmd
     private static Dictionary<string, Func<IList<string>, ICommand>> _commands = new Dictionary<string, Func<IList<string>, ICommand>>
     {
       { "build", Commands.BuildParameters.ReadArgs },
+      { "place", Commands.PlaceParameters.ReadArgs },
     };
 
     public static bool Run(IList<string> args)

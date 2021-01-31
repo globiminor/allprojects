@@ -31,6 +31,17 @@ namespace OCourse.Commands
 			public Polyline L { get; }
 			public MapElement Elem { get; }
 		}
+		public class AreaElement
+		{
+			public AreaElement(MapElement elem)
+			{
+				A = elem.GetMapGeometry().GetGeometry() as Area;
+				Elem = elem;
+			}
+
+			public Area A { get; set; }
+			public MapElement Elem { get; }
+		}
 
 		public class ControlNrElement
 		{
@@ -47,9 +58,12 @@ namespace OCourse.Commands
 		public List<int> StartSymbols { get; set; } = new List<int> { 701000 };
 		public List<int> ControlSymbols { get; set; } = new List<int> { 703000 };
 		public List<int> ControlNrSymbols { get; set; } = new List<int> { 704000 };
+		public int ControlNrOverprintSymbol { get; set; }
 		public List<int> ConnectionSymbols { get; set; } = new List<int> { 705000 };
 		public List<int> FinishSymbols { get; set; } = new List<int> { 706000 };
 		public List<int> CourseNameSymbols { get; set; } = new List<int> { 721000 };
+		public List<int> ForbiddenAreaSymbols { get; set; } = new List<int> { 709000 };
+		public List<int> ForbiddenLineSymbols { get; set; } = new List<int> { 708000 };
 
 
 		public double ControlDistance { get; set; }
@@ -57,6 +71,10 @@ namespace OCourse.Commands
 		public List<MapElement> ConnectionElems { get; set; }
 		public List<MapElement> ControlNrElems { get; set; }
 		public double ControlNrHeight { get; set; }
+
+		public List<MapElement> ForbiddenAreaElems { get; set; }
+
+		public List<MapElement> ForbiddenLineElems { get; set; }
 
 		public string CourseNameFont { get; set; }
 
@@ -72,6 +90,10 @@ namespace OCourse.Commands
 			(_controlNrsTree = BoxTree.Create(ControlNrElems.Select(e => new ControlNrElement(e, ControlNrHeight)), (c) => c.E, 4));
 		private BoxTree<ControlNrElement> _controlNrsTree;
 
+		public BoxTree<AreaElement> ForbiddenAreaTree => _forbiddenAreaTree ??
+			(_forbiddenAreaTree = BoxTree.Create(ForbiddenAreaElems.Select(e => new AreaElement(e)), (c) => c.A.Extent, 4));
+		private BoxTree<AreaElement> _forbiddenAreaTree;
+
 		public void InitFromFile(string courseFile)
 		{
 			List<MapElement> startElems = new List<MapElement>();
@@ -79,6 +101,8 @@ namespace OCourse.Commands
 			List<MapElement> controlNrElems = new List<MapElement>();
 			List<MapElement> connectionElems = new List<MapElement>();
 			List<MapElement> finishElems = new List<MapElement>();
+			List<MapElement> forbiddenAreaElems = new List<MapElement>();
+			List<MapElement> forbiddenLineElems = new List<MapElement>();
 			double controlDistance = 0;
 			double textHeight = 0;
 			string courseNameFont = "";
@@ -96,7 +120,11 @@ namespace OCourse.Commands
 					else if (ConnectionSymbols.Contains(elem.Symbol))
 					{ connectionElems.Add(elem); }
 					else if (FinishSymbols.Contains(elem.Symbol))
-					{ finishElems.Add(elem); }
+					{ finishElems.Add(elem); } 
+					else if (ForbiddenAreaSymbols.Contains(elem.Symbol))
+					{ forbiddenAreaElems.Add(elem); }
+					else if (ForbiddenLineSymbols.Contains(elem.Symbol))
+					{ forbiddenLineElems.Add(elem); }
 				}
 
 				double mapDistance = 0;
@@ -137,6 +165,9 @@ namespace OCourse.Commands
 			ConnectionElems = connectionElems;
 			ControlNrElems = controlNrElems;
 			ControlNrHeight = textHeight;
+
+			ForbiddenAreaElems = forbiddenAreaElems;
+			ForbiddenLineElems = forbiddenLineElems;
 
 			CourseNameFont = courseNameFont;
 		}

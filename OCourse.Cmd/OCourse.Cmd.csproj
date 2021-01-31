@@ -44,6 +44,8 @@
   <ItemGroup>
     <Compile Include="Commands\BuildCommand.cs" />
     <Compile Include="Commands\BuildParameters.cs" />
+    <Compile Include="Commands\PlaceCommand.cs" />
+    <Compile Include="Commands\PlaceParameters.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

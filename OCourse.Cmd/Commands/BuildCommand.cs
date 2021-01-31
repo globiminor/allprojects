@@ -34,7 +34,8 @@ namespace OCourse.Cmd.Commands
 
         using (CmdCourseTransfer cmd = new CmdCourseTransfer(_pars.OutputPath, _pars.TemplatePath ?? vm.CourseFile, vm.CourseFile))
         {
-          cmd.Export(selectedCombs.Select(comb => Ext.PermutationUtils.GetCourse(courseName, comb, _pars.SplitCourses)), courseName);
+          cmd.Export(selectedCombs.Select(comb => Ext.PermutationUtils.GetCourse(courseName, comb, _pars.SplitCourses, 
+            _pars.CustomSplitWeight)), courseName);
         }
 
       }
