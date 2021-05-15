@@ -422,6 +422,73 @@ namespace OCourse.Ext
       }
     }
 
+    internal class SplitInfo // : IComparable<SplitInfo>
+    {
+      public ISectionList Sections { get; }
+      public int Position { get; }
+      public int Split { get; }
+      public SplitInfo(ISectionList sections, int position, int split)
+      {
+        Sections = sections;
+        Position = position;
+        Split = split;
+      }
+      public override string ToString()
+      {
+        StringBuilder sb = new StringBuilder();
+
+        sb.Append(Sections.GetControl(0).Name);
+        for (int i = 1; i <= Position; i++)
+        {
+          sb.AppendFormat(" {0}", Sections.GetNextControl(i).Control.Name);
+        }
+        return sb.ToString();
+      }
+
+      private int GetPreviousSplit(int start)
+      {
+        int i = start;
+        while (i > 0)
+        {
+          NextControl next = Sections.GetNextControl(i);
+          if (next.Code != 0)
+          {
+            return i;
+          }
+          i--;
+        }
+        return i;
+      }
+
+      public int CompareTo(SplitInfo other)
+      {
+        int posX = Position;
+        int posY = other.Position;
+
+        while (posX >= 0 && posY >= 0)
+        {
+          NextControl x = Sections.GetNextControl(posX + 1);
+          NextControl y = other.Sections.GetNextControl(posY + 1);
+
+          int d = x.Control.Name.CompareTo(y.Control.Name);
+          if (d != 0)
+          {
+            return d;
+          }
+          posX = GetPreviousSplit(posX);
+          posY = other.GetPreviousSplit(posY);
+        }
+
+        int i = posX.CompareTo(posY);
+        return i;
+      }
+
+      public NextControl GetNextControl()
+      {
+        return Sections.GetNextControl(Position);
+      }
+    }
+
     private class LegBuilder : Builder
     {
       private SectionCollection _course;

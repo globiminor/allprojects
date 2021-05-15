@@ -97,7 +97,7 @@ namespace OCourse.Cmd.Commands
 		public string BeginStartNr { get; set; }
 		public string EndStartNr { get; set; }
 		public bool SplitCourses { get; set; }
-		public Func<int, Dictionary<string, List<Ocad.Control>>, Dictionary<string, List<Ocad.Control>>, int> CustomSplitWeight { get; set; }
+		public Func<int, Ocad.Control, Dictionary<string, List<Ocad.Control>>, Dictionary<string, List<Ocad.Control>>, int> CustomSplitWeight { get; set; }
 
 		private ViewModels.OCourseVm _oCourseVm;
 		public ViewModels.OCourseVm OCourseVm => _oCourseVm;

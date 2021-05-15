@@ -13,6 +13,22 @@ namespace Ocad.Scripting
     public void Dispose()
     {
     }
+    public void Child(string key, string value)
+    {
+      XmlElement childElem = _node.OwnerDocument.CreateElement(key);
+      _node.AppendChild(childElem);
+
+      childElem.InnerText = value;
+    }
+
+    public Node Child(string nodeName)
+    {
+      XmlElement childElem = _node.OwnerDocument.CreateElement(nodeName);
+      _node.AppendChild(childElem);
+
+      return new Node(childElem);
+    }
+
     public Node File(string fileName)
     {
       XmlElement childElem = _node.OwnerDocument.CreateElement("File");

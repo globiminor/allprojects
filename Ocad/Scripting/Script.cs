@@ -23,6 +23,7 @@ namespace Ocad.Scripting
 
       return new Node(childElem);
     }
+
     public Node FileExport()
     {
       XmlElement childElem = _doc.CreateElement("File.Export");
@@ -44,7 +45,6 @@ namespace Ocad.Scripting
 
       return new Node(childElem);
     }
-
     public Node FileExit()
     {
       XmlElement childElem = _doc.CreateElement("File.Exit");
@@ -59,6 +59,16 @@ namespace Ocad.Scripting
 
       return new Node(childElem);
     }
+    public Node BackgroundMapRemove(string filename = "all")
+    {
+      XmlElement childElem = _doc.CreateElement("BackgroundMap.Remove");
+      childElem.InnerText = filename;
+      _scriptNode.AppendChild(childElem);
+
+      Node node = new Node(childElem);
+      return node;
+    }
+
     public void Dispose()
     {
       _doc.Save(_path);

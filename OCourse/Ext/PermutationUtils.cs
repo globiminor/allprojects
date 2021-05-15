@@ -135,7 +135,7 @@ namespace OCourse.Ext
     }
 
     public static Course GetCourse(string prefix, CostSectionlist comb, bool split,
-      Func<int, Dictionary<string, List<Control>>, Dictionary<string, List<Control>>, int> customSplitWeight = null)
+      Func<int, Control, Dictionary<string, List<Control>>, Dictionary<string, List<Control>>, int> customSplitWeight = null)
     {
       Course course = comb.Sections.ToSimpleCourse();
 

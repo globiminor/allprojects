@@ -28,7 +28,7 @@ namespace Ocad.Scripting
       new Utils { Exe = exe ?? defaultExe }.RunScript(script, defaultExe);
     }
 
-    private void RunScript(string script, string exe, bool setAccess = true)
+    public void RunScript(string script, string exe, bool setAccess = true)
     {
       if (exe == null)
       {

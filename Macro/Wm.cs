@@ -12,10 +12,19 @@ namespace Macro
     [DllImport("user32.dll")]
     internal static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
 
+    [System.Runtime.InteropServices.DllImport("user32.dll", EntryPoint = "SendMessage", CharSet = System.Runtime.InteropServices.CharSet.Auto)]
+    internal static extern bool SendMessage(IntPtr hWnd, uint Msg, int wParam, StringBuilder lParam);
+
+    [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)]
+    internal static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wparam, int lparam);
+
+
     [DllImport("Comdlg32.dll", CharSet = CharSet.Auto)]
     internal static extern bool GetOpenFileName([In, Out] OpenFileName ofn);
 
     public const int WM_SIZE = 0x0005;
+    public const int WM_GETTEXT = 0x000D;
+    public const int WM_GETTEXTLENGTH = 0x000E;
     public const int WM_SHOWWINDOW = 0x0018;
     public const int WM_CHILDACTIVATE = 0x0022;
     public const int WM_SETFONT = 0x0030;
@@ -104,6 +113,23 @@ namespace Macro
         Console.WriteLine("Offset from file name: {0}", ofn.fileOffset);
         Console.WriteLine("Offset from file extension: {0}", ofn.fileExtension);
       }
+    }
+
+    public static string GetControlText(IntPtr hWnd)
+    {
+
+      // Get the size of the string required to hold the window title (including trailing null.) 
+      Int32 titleSize = SendMessage(hWnd, WM_GETTEXTLENGTH, 0, 0).ToInt32();
+
+      // If titleSize is 0, there is no title so return an empty string (or null)
+      if (titleSize == 0)
+        return String.Empty;
+
+      StringBuilder title = new StringBuilder(titleSize + 1);
+
+      SendMessage(hWnd, (int)WM_GETTEXT, title.Capacity, title);
+
+      return title.ToString();
     }
 
     private static IntPtr HandleDialogEvents(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)

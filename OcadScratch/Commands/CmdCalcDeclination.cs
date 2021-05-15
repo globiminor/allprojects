@@ -92,23 +92,24 @@ namespace OcadScratch.Commands
       }
 
       string escapedRequest = request.ToString().Trim('&');
+      string url = $"{address}?{escapedRequest}";
 
       try
       {
         byte[] result;
         using (WebClient w = new WebClient())
         {
-          result = w.DownloadData($"{address}?{escapedRequest}");
+          result = w.DownloadData(url);  // needs .net-Framework >= 4.6.2, otherwise SSL/TLS-error
           //result = w.UploadValues(address, values);
         }
 
         string xml = System.Text.Encoding.Default.GetString(result);
 
-        XmlGeomag xmlGeomag;
         using (TextReader r = new StringReader(xml))
-        { Basics.Serializer.Deserialize(out xmlGeomag, r); }
-
-        Declination = xmlGeomag.Result.Declination.Value;
+        { 
+          Basics.Serializer.Deserialize(out XmlGeomag xmlGeomag, r);
+          Declination = xmlGeomag.Result.Declination.Value;
+        }
       }
       catch { }
     }

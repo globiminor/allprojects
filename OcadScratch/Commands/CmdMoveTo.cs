@@ -47,7 +47,8 @@ namespace OcadScratch.Commands
 
       Processor macro = new Processor();
       string fullText;
-      if (macro.SetForegroundWindow("OCAD", out fullText) == System.IntPtr.Zero)
+      IntPtr ocadWnd = macro.SetForegroundWindow("OCAD", out fullText);
+      if (ocadWnd == System.IntPtr.Zero)
       {
         Error = "Keine OCAD-Instanz gefunden";
         return false;
