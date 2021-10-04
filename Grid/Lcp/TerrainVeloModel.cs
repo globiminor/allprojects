@@ -125,7 +125,12 @@ namespace Grid.Lcp
     public double Velocity { get; private set; }
     public double Slope2 { get; private set; }
 
-    public void Init(double tx, double ty, IGrid<double> heightGrid, IGrid<double> velocityGrid)
+		public override string ToString()
+		{
+			return $"h:{Height:N1}; v:{Velocity:N2}; s:{System.Math.Sqrt(Slope2):N3}";
+		}
+
+		public void Init(double tx, double ty, IGrid<double> heightGrid, IGrid<double> velocityGrid)
     {
       Height = heightGrid.Value(tx, ty, EGridInterpolation.bilinear);
       Velocity = velocityGrid.Value(tx, ty);

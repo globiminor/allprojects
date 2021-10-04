@@ -104,7 +104,7 @@ namespace Grid.Lcp
       }
     }
     public string VeloFileFilter
-    { get { return $"{_veloExt} | {_veloExt} | <veloStack>.xml | {_veloStack}"; } }
+    { get { return $"{_veloExt} |{_veloExt}| <veloStack>.xml |{_veloStack}"; } }
 
     public string TeleportPath
     {

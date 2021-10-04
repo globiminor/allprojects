@@ -80,6 +80,7 @@
                 <p>Nordring</p>
                 <img id="idImgKatzenbach" width="75" height="75" />
                 <p>Katzenbach</p>
+                <button onclick="replay()">Replay</button>
             </td>
             <td width="100%">
                 <div id="map" class="map" style="position:relative">
@@ -100,12 +101,12 @@
         });
 
         /**
- * depth: 1 - monochrome
- *        4 - 4-bit grayscale
- *        8 - 8-bit grayscale
- *       16 - 16-bit colour
- *       32 - 32-bit colour
- **/
+* depth: 1 - monochrome
+*        4 - 4-bit grayscale
+*        8 - 8-bit grayscale
+*       16 - 16-bit colour
+*       32 - 32-bit colour
+**/
         function getImgSrc(arr, depth, height, width) {
             var offset, data;
 
@@ -225,8 +226,7 @@
             }
             keys.reverse();
             var all = [];
-            for (var iKey = 0; iKey < keys.length; iKey++)
-            {
+            for (var iKey = 0; iKey < keys.length; iKey++) {
                 var bytes = dict[keys[iKey]];
                 for (var iByte = 0; iByte < bytes.length; iByte++) {
                     all.push(bytes[iByte]);
@@ -248,14 +248,9 @@
             lyr.set('completed', c);
         }
 
-        function addPlan(lyr, plan) {
-            var invalid = "";
-            var nPlan = plan.length;
-
+        function fillDict(lyr, startDict, endDict) {
             var features = lyr.getSource().getFeatures();
             var dim = features.length;
-            var startDict = {};
-            var endDict = {};
             var isNumeric = false;
             for (var iFtr = 0; iFtr < dim; iFtr++) {
                 var ftr = features[iFtr];
@@ -266,12 +261,20 @@
                 endDict[k] = e;
                 isNumeric = !Number.isNaN(parseFloat(k));
             }
+            return isNumeric;
+        }
 
-            for (iPlan = 0; iPlan < nPlan; iPlan++) {
-                var p = plan[iPlan];
+        function getCombs(comp, isNumeric) {
+            var nComp = comp.length;
+
+            var combs = [];
+
+            for (iComp = nComp - 1; iComp >= 0; iComp--) {
+                var p = comp[iComp];
                 var nc = p.length;
                 var iKey = 0;
                 var keys = [];
+
                 for (var iC = 10; iC < nc; iC++) {
                     var key = getKey(p, iC, isNumeric);
                     if (key == null) {
@@ -282,21 +285,41 @@
                     if (iKey == 2) {
                         var s = keys[0];
                         var e = keys[1];
-                        var sd = startDict[s];
-                        if (!sd.includes(e.toString())) {
-                            sd.push(e.toString());
-                        } else {
-                            invalid += s + "->" + e + ";";
-                        }
 
-                        var ed = endDict[e];
-                        if (!ed.includes(s.toString())) {
-                            ed.push(s.toString());
-                        }
+                        combs.push([s, e]);
 
                         keys = [];
                         iKey = 0;
                     }
+                }
+            }
+            return combs;
+        }
+
+        function addPlan(lyr, plan) {
+            var invalid = "";
+
+            var startDict = {};
+            var endDict = {};
+            var isNumeric = fillDict(lyr, startDict, endDict);
+
+            var combs = getCombs(plan, isNumeric);
+            var nCombs = combs.length;
+
+            for (iComb = 0; iComb < nCombs; iComb++) {
+                var comb = combs[iComb];
+                var s = comb[0];
+                var e = comb[1];
+                var sd = startDict[s];
+                if (!sd.includes(e.toString())) {
+                    sd.push(e.toString());
+                } else {
+                    invalid += s + "->" + e + ";";
+                }
+
+                var ed = endDict[e];
+                if (!ed.includes(s.toString())) {
+                    ed.push(s.toString());
                 }
             }
             if (invalid.length > 0) {
@@ -441,6 +464,127 @@
             })
         });
 
+
+        //var nordringKombs = [
+        //    '                                                 1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16',
+        //    '1  2684705.0 1253361.2 Thurgauerstrasse          +   +   +   +   +   +   +   +   +   +   +   +   +   +   +   +',
+        //    '2  2684312.5 1253556.2 Schaffhauserstrasse       -   -   -   -   -   -   -   -   -   +   +   +   +   -   +   +',
+        //    '3  2684115.0 1253703.7 Frohbühl                  -   -   -   -   -   -   -   -   -   +   +   +   +   -   +   +',
+        //    '4  2683325.0 1254116.2 Waldegg                   -   -   -   -   -   -   -   -   -       +   +   +   -   +   +',
+        //    '5  2683080.0 1254181.2 Guldenen                  -   -   -   -   -   -   -   -   -       +   +   +   -   +   +',
+        //    '6  2682790.0 1254233.7 Altwi                     -   -   -   -   -   -   -   -   -       +   +   +   -   +   +',
+        //    '7  2682370.0 1254246.2 Chäshalden                -   -   -   -   -   -   -   -   L       +   +   +   -   +   +',
+        //    '8  2681305.0 1253971.3 Bärenbohl                 -   -   -   -   -   -   -   -   -       +   +   +   -   +   +',
+        //    '9  2681020.0 1253831.3 Büsisee                   +   +   +   +   +   +   +   +   +   +   +   +   +   +   +   +',
+        //    '10 2680515.0 1253598.8 Horenstein                +   +   +                   +   +       +   +   +   -   +   +',
+        //    '11 2679925.0 1253428.8 Katzenseestrasse          +   +   +   +   +   +   +   +   +   +   +   +   +   -   +   +',
+        //    '12 2679572.5 1253371.3 Wehntalerstrasse          +   +   +   +   +   +   +   +   +   +   +   +   +   -   +   +',
+        //    '13 2679335.0 1253326.3 SBB-Nord                  +   +   +   +   +   +   +   +   +   +   +   +   +   +   +   +',
+        //    '14 2679265.0 1253306.3 SBB-Süd                   -   -   -   -   -   -   -   -   -   -   -   -   -   -   +   -',
+        //    '15 2678937.5 1253181.3 Furttalstrasse            +   +   +   +   +   +   +   +   +   +   +   +   +   -   +   +',
+        //    '16 2678520.0 1252971.3 Gubrist                   +   +   +   +   +   +   +   +   +   +   +   +   +   +   +   +'
+        //];
+        //var katzenbachKombs = [
+        //    '                                                 A B C D E F G H I J K L M N O P Q R S T U V W X Y',
+        //    'A 2685268.0 1252747.0 Glatt                      + + + + + + + + + + + + + + + + + + + + + + + + +',
+        //    'B 2685220.0 1252721.0 Glattweg                   + + + + + + + + + + + + + + + + + + + + + + + + +',
+        //    'C 2684990.0 1252625.0 Orionstr.                  + + + + + + + - + + + + + + + + + + + + + + + + +',
+        //    'D 2684733.0 1252531.5 Glattparkstr.              + + + + + + + - - + + + + + + - - - + + + + + + +',
+        //    'E 2684681.0 1252535.5 Leutschenbachstr.          + + + + + + - - - + + + + + + - - - + + + + + + +',
+        //    'F 2684464.0 1252661.5 Lilienthal                 + + + + +   - - - +   + + + + - - - -       + + +',
+        //    'G 2684329.0 1252732.5 Thurgauerstr.                - - - - - - - - - - - - -   - - - - - - - -   +',
+        //    'H 2684113.0 1252860.5 SBB                        - - - - - - - - - - - - - - - - - - - - - - - - -',
+        //    'I 2683889.0 1252942.5 Schaffhauserstr.           - - + - - - - - - - - - - - - - - - - - - - - - -',
+        //    'J 2683718.0 1253070.5 Badi                       - - + - - - - - - - - - - - - - - - - - - - - - -',
+        //    'K 2683496.0 1253163.5 GZ                         - - + + +   - - - - - - - - - - - - - - - - - - -',
+        //    'L 2683351.0 1253227.5 Hertensteinstr.            L - + + +   - - - - - - - - - - - - - - - - - - -',
+        //    'M 2683226.0 1253342.5 Birchstr.                  + + + + + + - - - - - - - - - - - - - - - - - - -',
+        //    'N 2682830.0 1253386.5 Köschenrütistr.            + + + + + + + - - - - - - - - - - - - - - - - - -',
+        //    'O 2682515.0 1253362.5 Lerchenweg                 + + + + + +   - - - - - - - - - - - - - - - - - -',
+        //    'P 2681983.0 1253334.5 Schwandenwisen               + + + + + - - - - - - - - - - - - - - - - - - -',
+        //    'Q 2681381.0 1253271.5 Reckenholz                   + - - - - - - - - - - - - - - - - - - - - - - -',
+        //    'R 2681075.0 1253610.5 Tüfwisen                     + - - - - - - - - - - - - - - - - - - - - - - -',
+        //    'S 2681034.0 1253763.5 Bärenbohlstr.                + + + - - - - - - - - - - - - - - - - - - - - -',
+        //    'T 2680854.0 1254006.5 Büsisee                      + + + +   - - - - - - - - - - - - - - - - - - -',
+        //    'U 2680554.0 1254147.5 Rainacherweg               + + + + + + - - - - - - - - - - - - - - - - - - -',
+        //    'V 2680377.0 1254226.5 Huszelgweg                 + + + + + + - - - - - - - - - - - - - - - - - - -',
+        //    'W 2680219.0 1254316.5 Horensteinstr.             + + + + + + - - - - - - - - - - - - - - - - - - -',
+        //    'X 2680123.0 1254328.5 Rundweg                    + + + + + +   - - - - - - - - - - - - - - - - - -',
+        //    'Y 2679452.0 1254475.5 Katzensee                  + + + + + + + - - - - - - - - - - - - - - - - - -',
+        //];
+        ////'2020.08.24 xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx',
+        ////'        31 xxxxxx xxxxxx FDxxxx xxxxxx xxxxxx xxxxxx F4WaNF',
+        ////'     09.07 xxxxxx xxxxxx FExxxx xxxxxx xxxxxx xxxxxx aV4FMF',
+
+        //'        14 xxxxxx xxxxxx FFxxxx xxxxxx xxxxxx xxxxxx F5VaLF',
+        //'        21 xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx aU5FKF',
+        //'        28 xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx F6TaFL FKaT6F',
+        //'     10.05 aT7Axx SAxxxx xxxxxx xxxxxx RAxxxx aaQAPA GAG7Xa',
+        //'        12 xxxxxx xxxxxx CGxxxx xxxxxx xxxxxx xxxxxx aX8GOG',
+
+        //'        19 xxxxxx xxxxxx GOxxxx xxxxxx xxxxxx xxxxxx OANAMA',
+
+        //'        26 xxxxxx xxxxxx LBxxxx xxxxxx xxxxxx xxxxxx KBKA',
+
+        //'        19 xxxxxx xxxxxx OAxxxx xxxxxx xxxxxx xxxxxx GOG8Wa',
+        //'        26 xxxxxx xxxxxx DGxxxx xxxxxx xxxxxx xxxxxx aY9GNG',
+        //'     11.02 xxxxxx xxxxxx NAxxxx xxxxxx xxxxxx xxxxxx GNG29M',
+        //'        09 xxxxxx xxxxxx MAxxxx xxxxxx xxxxxx xxxxxx MGL39G',
+        //'        16 xxxxxx xxxxxx LAxxxx xxxxxx xxxxxx xxxxxx LBG49L',
+        //'        23 xxxxxx xxxxxx EGxxxx xxxxxx xxxxxx xxxxxx SEF59S',
+        //'        30 xxxxxx xxxxxx FGxxxx xxxxxx xxxxxx xxxxxx G69KKA',
+        //'     12.07 xxxxxx xxxxxx KBxxxx xxxxxx xxxxxx xxxxxx KGG79J',
+        //'        14 xxxxxx xxxxxx JAxxxx xxxxxx xxxxxx xxxxxx JBG89B',
+
+        ////'        21 xxxxxx xxxxxx DGeY9G eY1HHA IAeY2I eY3JJA KAeY4K',
+        ////'        28 eY5LLA GLG2Ye eY6MMG NGeY7N eY8OOG OHH3Ye H28LLB',
+        ////'2021.01.04 xxxxxx xxxxxx KBxxxx xxxxxx xxxxxx xxxxxx JBI81B',
+        ////'        11 xxxxxx xxxxxx HBxxxx xxxxxx xxxxxx xxxxxx HCH82D',
+
+        ////'        21 xxxxxx xxxxxx GLL81A L82BLG GKeY2G eY8HHA IAeY3I',
+        ////'        28 IDJ38D J83AKA K84BKG G48EDG EGG4Ye H5YeHN INI6Ye',
+        ////'2021.01.04 xxxxxx xxxxxx IExxxx xxxxxx xxxxxx xxxxxx JEJ68B',
+        ////'        11 xxxxxx xxxxxx IBxxxx xxxxxx xxxxxx xxxxxx H85BHC',
+        ////'        18 xxxxxx xxxxxx CHxxxx xxxxxx xxxxxx xxxxxx H86DHE',
+
+        ////'        21 xxxxxx xxxxxx LBK81B K82GKA HAeY2H eY9IID JDeY3J',
+        ////'        28 JBJ83A I84AIB H85BHC C28HHD HNH2Ye xxxxxx xxxxxx',
+        ////'2021.01.04 xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx',
+        ////'        11 xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx',
+        ////'        18 xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx',
+
+        //'        21 xxxxxx xxxxxx I81BIA H82AHB eY2Hxx G2Yexx H3Yexx',
+        //'        28 H83CCH G84CGD HDI85D J86DJE IEI8Ye eY9Ixx J7Yexx',
+        //'2021.01.04 xxxxxx xxxxxx JFxxxx xxxxxx xxxxxx xxxxxx GFG88E',
+        //'        11 xxxxxx xxxxxx HExxxx xxxxxx xxxxxx xxxxxx HFD28H',
+        //'        18 xxxxxx xxxxxx DIxxxx xxxxxx xxxxxx xxxxxx E38IEH',
+        //'        25 xxxxxx xxxxxx FHxxxx xxxxxx xxxxxx xxxxxx F48IGI',
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         // Create a background layer
         var lyr1 = ga.layer.create('ch.swisstopo.pixelkarte-farbe');
         map.addLayer(lyr1);
@@ -473,36 +617,65 @@
             'E 2684681.0 1252535.5 Leutschenbachstr.          + + + + + + + + + + + + + + + + + + + + + + + + +',
             'F 2684464.0 1252661.5 Lilienthal                 + + + + + + + + + + + + + + + + + + + + + + + + +',
             'G 2684329.0 1252732.5 Thurgauerstr.              + + + + + + + + + + + + + + + + + + + + + + + + +',
-            'H 2684113.0 1252860.5 SBB                        + + + + + + + + + + + + + + + + + + + + - - + + +',
-            'I 2683889.0 1252942.5 Schaffhauserstr.           + + + + + + + - - - + - - - + + + + + + - - - - +',
-            'J 2683718.0 1253070.5 Badi                       + + + + + + + - - - - - - - - + - - - - - - - - +',
-            'K 2683496.0 1253163.5 GZ                         + + + + + + + + - - - - - - - + - - - - - - - - +',
-            'L 2683351.0 1253227.5 Hertensteinstr.            + + + + + + + + - - - - - - - - - - - - - - - - +',
-            'M 2683226.0 1253342.5 Birchstr.                  + + + + + + + + - - - - - - - - - - - - - - - - +',
-            'N 2682830.0 1253386.5 Köschenrütistr.            + + + + + + + + - - - - - - - - - - - - - - - - +',
-            'O 2682515.0 1253362.5 Lerchenweg                 + + + + + + + + - - - - - - - - - - - - - - - - +',
-            'P 2681983.0 1253334.5 Schwandenwisen             + + + + + + + + + - - - - - - - - - - - - - - - +',
-            'Q 2681381.0 1253271.5 Reckenholz                 + + + + + + + + + - - - - - - - - - - - - - - - +',
-            'R 2681075.0 1253610.5 Tüfwisen                   + + + + + + + + + - - - - - - - - - - - - - - - +',
-            'S 2681034.0 1253763.5 Bärenbohlstr.              + + + + + + + + + - - - - - - - - - - - - - - - +',
-            'T 2680854.0 1254006.5 Büsisee                    + + + + + + + - - - - - - - - - - - - - - - - - +',
-            'U 2680554.0 1254147.5 Rainacherweg               + + + + + + L - - - - - - - - - - - - - - - - - +',
-            'V 2680377.0 1254226.5 Huszelgweg                 + + + + + + + - - - - - - - - - - - - - - - - - +',
-            'W 2680219.0 1254316.5 Horensteinstr.             + + + + + + + - - - - - - - - - - - - - - - - - +',
-            'X 2680123.0 1254328.5 Rundweg                    + + + + + + + - - - - - - - - - - - - - - - - - +',
+            'H 2684113.0 1252860.5 SBB                        + + + + + + + + + + + + + + + + + + + + + + + + +',
+            'I 2683889.0 1252942.5 Schaffhauserstr.           + + + + + + + + - - + - - - + + + + + + - + + + +',
+            'J 2683718.0 1253070.5 Badi                       + + + + + + + + - - - - - - - + - - - - - + + + +',
+            'K 2683496.0 1253163.5 GZ                         + + + + + + + + - - - - - - - + - - - - - + + + +',
+            'L 2683351.0 1253227.5 Hertensteinstr.            + + + + + + + + - - - - - - - - - - - - - + + + +',
+            'M 2683226.0 1253342.5 Birchstr.                  + + + + + + + + - - - - - - - - - - - - - + + + +',
+            'N 2682830.0 1253386.5 Köschenrütistr.            + + + + + + + + - - - - - - - - - - - - - + + + +',
+            'O 2682515.0 1253362.5 Lerchenweg                 + + + + + + + + - - - - - - - - - - - - - + + + +',
+            'P 2681983.0 1253334.5 Schwandenwisen             + + + + + + + + + - - - - - - - - - - - - + + + +',
+            'Q 2681381.0 1253271.5 Reckenholz                 + + + + + + + + + - - - - - - - - - - - - + + + +',
+            'R 2681075.0 1253610.5 Tüfwisen                   + + + + + + + + + - - - - - - - - - - - - - + + +',
+            'S 2681034.0 1253763.5 Bärenbohlstr.              + + + + + + + + + - - - - - - - - - - - - - + + +',
+            'T 2680854.0 1254006.5 Büsisee                    + + + + + + + + - - - - - - - - - - - - - - + + +',
+            'U 2680554.0 1254147.5 Rainacherweg               + + + + + + + + - - - - - - - - - - - - - - + + +',
+            'V 2680377.0 1254226.5 Huszelgweg                 + + + + + + + + + + + + - - - - L + + + + + + + +',
+            'W 2680219.0 1254316.5 Horensteinstr.             + + + + + + + + + + + + + + + + + + + + + + + + +',
+            'X 2680123.0 1254328.5 Rundweg                    + + + + + + + + + + + + + + + + + + + + + + + + +',
             'Y 2679452.0 1254475.5 Katzensee                  + + + + + + + + + + + + + + + + + + + + + + + + +',
         ];
 
         var plan = [];
         var xplan = [];
         xplan = [
-            '     06.07 LXxxxx LIxxxx NIxxxx MIxxxx XMxxxx xxxxxx QXxxxx',
-            '        31 OXxxxx OIxxxx ILxxxx IMxxxx MXxxxx xxxxxx PXxxxx',
-            '        24 JXxxxx JHxxxx IHxxxx INxxxx NXxxxx xxxxxx KXxxxx',
-            '        17 HVxxxx THxxxx UHxxxx VHxxxx WHxxxx XHxxxx IXxxxx',
-            '        10 WGxxxx xxxxxx xxxxxx xxxxxx VGxxxx UGxxxx HUxxxx',
+            '        27 OTxxxx NTxxxx MTxxxx LTxxxx KTxxxx JTxxxx JSxxxx',
+            '        20 xxxxxx RUxxxx xxxxxx RTxxxx STxxxx QTxxxx PTxxxx',
+            '        13 xxxxxx TUxxxx SUxxxx xxxxxx xxxxxx xxxxxx PUQUxx',
+            '     12.06 xxxxxx TIxxxx TJxxxx xxxxxx xxxxxx xxxxxx JUUUxx',
+            '        29 xxxxxx TTxxxx TKxxxx xxxxxx xxxxxx xxxxxx KUIUxx',
+            '        22 xxxxxx TSxxxx TLxxxx xxxxxx xxxxxx xxxxxx LUUTxx',
+            '        15 xxxxxx TRxxxx TMxxxx xxxxxx xxxxxx xxxxxx MUUSxx',
+            '        08 xxxxxx TQxxxx TNxxxx xxxxxx xxxxxx xxxxxx NUURxx',
+            '     11.01 xxxxxx TPxxxx TOxxxx xxxxxx xxxxxx xxxxxx OUUQxx',
+            '        25 xxxxxx UMxxxx UNxxxx xxxxxx xxxxxx xxxxxx UOUPxx',
+            '        18 xxxxxx ULxxxx UKxxxx xxxxxx xxxxxx xxxxxx UJUIxx',
+            '        11 xxxxxx VMxxxx VNxxxx xxxxxx xxxxxx xxxxxx VOUVxx',
+            '     10.04 xxxxxx xxxxxx RVxxxx SVxxxx xxxxxx xxxxxx TVVPxx',
         ];
         var cmpl = [
+            '        27 xxxxxx VRxxxx VLxxxx xxxxxx xxxxxx xxxxxx QVVQxx',
+            '        20 xxxxxx VKxxxx VSxxxx xxxxxx xxxxxx xxxxxx OVPVxx',
+            '        13 xxxxxx xxxxxx xxxxxx xxxxxx VIxxxx LVVJxx MVNVxx',
+            '     09.06 xxxxxx VVxxxx VUxxxx xxxxxx xxxxxx IVVTxx JVKVxx',
+            '        30 xxxxxx WSxxxx WRxxxx xxxxxx xxxxxx xxxxxx UWVWxx',
+            '        23 xxxxxx WVxxxx WUxxxx xxxxxx xxxxxx xxxxxx WQWTxx',
+            '        16 xxxxxx WMxxxx WNxxxx xxxxxx xxxxxx xxxxxx WOWPxx',
+            '        09 xxxxxx xxxxxx WLxxxx xxxxxx xxxxxx SWxxxx WWTWxx',
+            '     08.02 MWxxxx NWxxxx OWxxxx PWxxxx QWxxxx xxxxxx RWWKxx',
+            '        26 XWxxxx IWxxxx WIxxxx xxxxxx JWxxxx KWLWxx WJxxxx',
+            '        19 xxxxxx xxxxxx xxxxxx xxxxxx XSxxxx XTxxxx XUXVxx',
+            '        12 XXxxxx xxxxxx XQxxxx xxxxxx xxxxxx xxxxxx XRxxxx',
+            '     07.05 xxxxxx xxxxxx WXxxxx xxxxxx xxxxxx xxxxxx xxxxxx',
+            '        28 xxxxxx xxxxxx VXxxxx xxxxxx xxxxxx xxxxxx XOXPxx',
+            '        21 xxxxxx xxxxxx XNxxxx xxxxxx xxxxxx xxxxxx TXUXxx',
+            '        14 xxxxxx xxxxxx XMxxxx xxxxxx xxxxxx xxxxxx RXSXxx',
+            '     06.07 xxxxxx xxxxxx XLxxxx xxxxxx xxxxxx xxxxxx PXQXxx',
+            '        31 LXxxxx MXxxxx xxxxxx XKxxxx xxxxxx xxxxxx NXOXxx',
+            '        24 XIxxxx IHxxxx JHxxxx JXxxxx KXxxxx xxxxxx XJxxxx',
+            '        17 HVxxxx THxxxx UHxxxx VHxxxx WHxxxx XHxxxx IXxxxx',
+            '        10 WGxxxx xxxxxx xxxxxx xxxxxx VGxxxx UGxxxx HUxxxx',
             '     05.03 ITxxxx IOxxxx IKxxxx KHxxxx HTxxxx HXHHxx HWxxxx',
             '        26 P43Ixx H33Ixx HFxxxx HGxxxx GTxxxx xxxxxx TGxxxx',
             '        19 I31Fxx I21Gxx I22Sxx R32Ixx Q42Ixx xxxxxx S44Ixx',
@@ -530,6 +703,17 @@
             '        16 xxxxxx xxxxxx HBxxxx xxxxxx xxxxxx xxxxxx GBG39P',
             '        09 xxxxxx xxxxxx IAxxxx xxxxxx xxxxxx xxxxxx HAC29H',
             '     11.02 xxxxxx xxxxxx JAxxxx xxxxxx xxxxxx xxxxxx J59BIB',
+
+            //    '        26 xxxxxx xxxxxx OAxxxx xxxxxx xxxxxx xxxxxx GAaT9G',
+            //    '        19 xxxxxx xxxxxx RAxxxx xxxxxx xxxxxx xxxxxx aaQAPA',
+            //    '        12 xxxxxx xxxxxx G8Taxx xxxxxx xxxxxx xxxxxx aT8ASA',
+            //    '     10.05 SFxxxx SExxxx xxxxxx xxxxxx SGxxxx G7XaGB aX7GGC',
+            //    '        28 xxxxxx xxxxxx FMxxxx xxxxxx xxxxxx F6TaFL aT6FFK',
+            //    '        21 xxxxxx xxxxxx FNxxxx xxxxxx xxxxxx xxxxxx aU5FKF',
+            //    '        14 xxxxxx xxxxxx FFxxxx xxxxxx xxxxxx xxxxxx F5VaLF',
+            //    '     09.07 xxxxxx xxxxxx FExxxx xxxxxx xxxxxx xxxxxx aV4FMF',
+            //    '        31 xxxxxx xxxxxx FDxxxx xxxxxx xxxxxx xxxxxx F4WaNF',
+            //    '2020.08.24 xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx xxxxxx',
         ];
         xplan = [
             '        08 xxxxxx xxxxxx GDxxxx xxxxxx xxxxxx xxxxxx Q87GGN',
@@ -592,6 +776,9 @@
         var dspLyr = new ol.layer.Vector({ visible: false, style: dspStyle, source: new ol.source.Vector({ features: [] }) });
         map.addLayer(dspLyr);
 
+        var connLyr = new ol.layer.Vector({ visible: false, style: new ol.style.Style({ stroke: new ol.style.Stroke({ color: [255, 0, 0, 1], width: 4 }) }), source: new ol.source.Vector({ features: [] }) });
+        map.addLayer(connLyr);
+
         map.on('pointermove', showInfo);
         map.on('click', displayFeature);
 
@@ -642,6 +829,98 @@
             }
         }
 
+        function showComb(lyr, start, end) {
+            var connSource = connLyr.getSource();
+            connSource.clear({ fast: true });
+            var connFeatures = [];
+
+            var fs = lyr.getSource().getFeatures();
+            var nPoints = fs.length;
+            var pStart = null;
+            var pEnd = null;
+            for (iPoint = 0; iPoint < nPoints; iPoint++) {
+                var f = fs[iPoint];
+                var k = f.get('key');
+                if (k == start) {
+                    pStart = f.getGeometry().clone();
+                }
+                if (k == end) {
+                    pEnd = f.getGeometry().clone();
+                }
+            }
+
+            var connFeature = new ol.Feature({
+                geometry: new ol.geom.LineString([[2683278.0, 1252955.0], pStart.getFirstCoordinate(), pEnd.getFirstCoordinate()])
+            });
+            connFeatures.push(connFeature);
+
+            connSource.addFeatures(connFeatures);
+            connLyr.setVisible(true);
+        }
+        async function replayCombs(lyr, imgId, cmpl) {
+            var startDict = {};
+            var endDict = {};
+            var isNumeric = fillDict(lyr, startDict, endDict);
+            var combs = getCombs(cmpl, isNumeric);
+
+
+            var invalid = "";
+            var nCombs = combs.length;
+
+            for (iComb = 0; iComb < nCombs; iComb++) {
+                var comb = combs[iComb];
+                var s = comb[0];
+                var e = comb[1];
+                var sd = startDict[s];
+                var iS = sd.indexOf(e.toString());
+                if (iS >= 0) {
+                    sd.splice(iS, 1);
+                } else {
+                    invalid += s + "->" + e + ";";
+                }
+
+                var ed = endDict[e];
+                var iE = ed.indexOf(s.toString());
+                if (iE >= 0) {
+                    ed.splice(iE, 1);
+                }
+            }
+            if (invalid.length > 0) {
+                alert("invalid: " + invalid);
+            }
+
+            CalcCompleted(lyr);
+            document.getElementById(imgId).src = getImgFromLyr(lyr);
+            var src = lyr.getSource();
+            lyr.setSource(null);
+            lyr.setSource(src);
+
+            for (iComb = 0; iComb < nCombs; iComb++) {
+                await sleep(500);
+
+                var comb = combs[iComb];
+                var s = comb[0];
+                var e = comb[1];
+                var sd = startDict[s];
+                sd.push(e.toString());
+
+                var ed = endDict[e];
+                ed.push(s.toString());
+                CalcCompleted(lyr);
+                document.getElementById(imgId).src = getImgFromLyr(lyr);
+                var src = lyr.getSource();
+                lyr.setSource(null);
+                lyr.setSource(src);
+                showComb(lyr, s.toString(), e.toString());
+            }
+            await sleep(500);
+            connLyr.setVisible(false);
+        }
+        async function replay() {
+            await replayCombs(nordringLyr, "idImgNordring", cmpl);
+
+            await replayCombs(katzenbachLyr, "idImgKatzenbach", cmpl);
+        }
         function displayFeature(event) {
             if (targetLyr == null || targetFeature == null) {
                 return;
@@ -713,6 +992,9 @@
             return [fr * 255, fg * 255, fb * 255, 1];
         }
 
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
 
         window.onresize = function () {
             setTimeout(function () { map.updateSize(); }, 200);

@@ -12,7 +12,9 @@ namespace OMapScratch.Views
   {
     public MapButton(Android.Content.Context context)
       : base(context)
-    { }
+    {
+      SetBackgroundColor(Color.Argb(255, 216, 216, 216));
+    }
 
     protected sealed override void OnLayout(bool changed, int left, int top, int right, int bottom)
     {

@@ -1,7 +1,10 @@
 ﻿using Microsoft.Win32;
 using OcadScratch.ViewModels;
 using OMapScratch;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -53,26 +56,50 @@ namespace OcadScratch
     private void BtnAddClick(object sender, RoutedEventArgs e)
     {
       OpenFileDialog dlg = new OpenFileDialog();
-      dlg.Filter = "*.jpg | *.jpg";
+      dlg.Filter = "*.jpg | *.jpg | *.png | *.png";
+      dlg.Multiselect = true;
+      string ext;
       dlg.FileOk += (s, ca) =>
       {
-        string fileName = dlg.FileName;
-        string jgw = Path.ChangeExtension(fileName, ".jgw");
-        if (!File.Exists(jgw))
+        HashSet<string> msgs = new HashSet<string>();
+        foreach (var fileName in dlg.FileNames)
         {
-          MessageBox.Show($"World-file '{jgw}' is missing!.", "Missing world file", MessageBoxButton.OK, MessageBoxImage.Error);
+          string iext = Path.GetExtension(fileName).ToLower();
+          if (iext == ".jpg")
+          {
+            ext = ".jgw";
+          }
+          else if (iext == ".png")
+          {
+            ext = ".pgw";
+          }
+          else
+          {
+            msgs.Add($"Unhandled file format {iext}");
+            continue;
+          }
+          string worldFile = Path.ChangeExtension(fileName, ext);
+          if (!File.Exists(worldFile))
+          {
+            msgs.Add($"World-file '{worldFile}' is missing!");
+          }
+        }
+        if (msgs.Count > 0)
+				{
+          MessageBox.Show(string.Concat(msgs.Select(x=> x + Environment.NewLine)), "Unhandled", MessageBoxButton.OK, MessageBoxImage.Error);
           ca.Cancel = true;
         }
       };
       if (dlg.ShowDialog() != true)
       { return; }
 
-      string jpg = dlg.FileName;
+      foreach (var img in dlg.FileNames)
+      {
+        XmlImage add = new XmlImage { Name = Path.GetFileNameWithoutExtension(img), Path = Path.GetFileName(img) };
+        ImageVm vm = new ImageVm(add) { CopyFromPath = img };
 
-      XmlImage add = new XmlImage { Name = Path.GetFileNameWithoutExtension(jpg), Path = Path.GetFileName(jpg) };
-      ImageVm vm = new ImageVm(add) { CopyFromPath = jpg };
-
-      DataContext.AddImage(vm);
+        DataContext.AddImage(vm);
+      }
     }
   }
 }
