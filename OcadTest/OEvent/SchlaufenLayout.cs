@@ -7,11 +7,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Assert = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
 namespace OcadTest.OEvent
 {
 	[TestClass]
-	public class Ruemlang2021
+	public class SchlaufenLayout
 	{
 		[TestMethod]
 		public void TestLayout()
@@ -39,61 +40,73 @@ namespace OcadTest.OEvent
 			}
 		}
 
-		[TestMethod]
-		public void PrepareCourses()
-		{
-			string root = @"C:\daten\felix\kapreolo\karten\ruemlangerwald\2021\";
+		// private string _root = @"C:\daten\felix\kapreolo\karten\ruemlangerwald\2021\";
+		private string _root = @"C:\daten\felix\kapreolo\karten\wangenerwald\2020\NOM\";
+		private string _exportFolder = "Karten";
 
+
+		[TestMethod]
+		public void T01_PrepareCourses()
+		{
+			//string root = @"C:\daten\felix\kapreolo\karten\ruemlangerwald\2021\";
+			string root = _root;
+			string configPath = Path.Combine(root, "NOM.xml");
+			string eventName = "NOM 2022";
+
+			string exportFolder = _exportFolder;
 			Tmpl a4_15k = new Tmpl("tmpl_15k_A4_V.ocd", "tmpl_15k_A4_H.ocd");
 			Tmpl a3_10k = new Tmpl("tmpl_10k_A3_V.ocd", "tmpl_10k_A3_H.ocd");
 			Tmpl a4_10k = new Tmpl("tmpl_10k_A4_V.ocd", "tmpl_10k_A4_H.ocd");
+			Func<string, string> exportCourseFileFct = (tmpl) => tmpl.Replace("tmpl", "Bahnen");
+			string io3File = Path.Combine(root, exportFolder, "NOM.Courses.xml");
 
-			Conf ch20;
 			List<Conf> confs = new List<Conf>
 			{
-				new Conf("04_HE", a4_15k),
-				new Conf("01_HAL", a4_15k),
-				new Conf("05_HAM", a3_10k),
-				new Conf("08_HAK", a4_10k),
-				new Conf("10_HB", a3_10k),
-				new Conf("05_H35", a3_10k),
-				new Conf("05_H40", a3_10k),
-				new Conf("05_H45", a3_10k){ CustomSplitWeight = SplitH45 },
-				new Conf("05_H50", a3_10k),
-				new Conf("05_H55", a3_10k),
-				new Conf("11_H60", a3_10k),
-				new Conf("06_H65", a3_10k),
-				new Conf("14_H70", a3_10k),
-				new Conf("08_H75", a4_10k),
-				new Conf("10_H80", a4_10k),
-				(ch20 = new Conf("13_H20", a4_15k)),
-				new Conf("12_H18", a3_10k),
-				new Conf("05_H16", a3_10k),
-				new Conf("14_H14", a3_10k),
-				new Conf("H12", a4_10k){ CustomSplitWeight = SplitHD12 },
-				new Conf("13_DE", a4_15k),
-				new Conf("11_DAL", a4_15k),
-				new Conf("07_DAM", a4_10k),
-				new Conf("10_DAK", a4_10k),
-				new Conf("10_DB", a4_10k),
-				new Conf("06_D35", a3_10k),
-				new Conf("06_D40", a3_10k),
-				new Conf("06_D45", a3_10k),
-				new Conf("14_D50", a3_10k),
-				new Conf("14_D55", a3_10k),
-				new Conf("07_D60", a4_10k),
-				new Conf("08_D65", a4_10k),
-				new Conf("10_D70", a4_10k),
-				new Conf("10_D75", a4_10k),
-				new Conf("05_D20", a4_15k),
-				new Conf("11_D18", a3_10k),
-				new Conf("14_D16", a3_10k),
-				new Conf("07_D14", a4_10k),
-				new Conf("D12", a4_10k){ CustomSplitWeight = SplitHD12 },
-				new Conf("D10/H10", a4_10k),
+				new Conf("HE", a3_10k),
+				new Conf("D14", a4_10k),
+				new Conf("D75", a4_10k),
+				//new Conf("04_HE", a4_15k),
+				//new Conf("01_HAL", a4_15k),
+				//new Conf("05_HAM", a3_10k),
+				//new Conf("08_HAK", a4_10k),
+				//new Conf("10_HB", a3_10k),
+				//new Conf("05_H35", a3_10k),
+				//new Conf("05_H40", a3_10k),
+				//new Conf("05_H45", a3_10k){ CustomSplitWeight = SplitH45 },
+				//new Conf("05_H50", a3_10k),
+				//new Conf("05_H55", a3_10k),
+				//new Conf("11_H60", a3_10k),
+				//new Conf("06_H65", a3_10k),
+				//new Conf("14_H70", a3_10k),
+				//new Conf("08_H75", a4_10k),
+				//new Conf("10_H80", a4_10k),
+				//new Conf("13_H20", a4_15k),
+				//new Conf("12_H18", a3_10k),
+				//new Conf("05_H16", a3_10k),
+				//new Conf("14_H14", a3_10k),
+				//new Conf("H12", a4_10k){ CustomSplitWeight = SplitHD12 },
+				//new Conf("13_DE", a4_15k),
+				//new Conf("11_DAL", a4_15k),
+				//new Conf("07_DAM", a4_10k),
+				//new Conf("10_DAK", a4_10k),
+				//new Conf("10_DB", a4_10k),
+				//new Conf("06_D35", a3_10k),
+				//new Conf("06_D40", a3_10k),
+				//new Conf("06_D45", a3_10k),
+				//new Conf("14_D50", a3_10k),
+				//new Conf("14_D55", a3_10k),
+				//new Conf("07_D60", a4_10k),
+				//new Conf("08_D65", a4_10k),
+				//new Conf("10_D70", a4_10k),
+				//new Conf("10_D75", a4_10k),
+				//new Conf("05_D20", a4_15k),
+				//new Conf("11_D18", a3_10k),
+				//new Conf("14_D16", a3_10k),
+				//new Conf("07_D14", a4_10k),
+				//new Conf("D12", a4_10k){ CustomSplitWeight = SplitHD12 },
+				//new Conf("D10/H10", a4_10k),
 			};
 			int iStart = 101;
-			confs = new List<Conf> { ch20 };
 			Dictionary<Tmpl, List<Conf>> tmplDict = new Dictionary<Tmpl, List<Conf>>();
 			foreach (var conf in confs)
 			{
@@ -102,21 +115,60 @@ namespace OcadTest.OEvent
 				iStart += 40;
 				tmplDict.GetOrCreateValue(conf.Tmpl).Add(conf);
 			}
-			ch20.EndNr = ch20.StartNr + 39;
 
 			BuildParameters pars = new BuildParameters
 			{
-				ConfigPath = Path.Combine(root, "bahnen_1.xml"),
+				ConfigPath = configPath,
 				SplitCourses = true
 			};
 			BuildCommand cmd = new BuildCommand(pars);
 
+
+			OCourse.Iof3.OCourse2Io3 io3Exporter = null;
+
 			foreach (var pair in tmplDict)
 			{
 				Tmpl t = pair.Key;
+
+				Dictionary<string, List<Ocad.Course>> coursesDict
+					= new Dictionary<string, List<Ocad.Course>>();
+
+				foreach (var c in pair.Value)
+				{
+					pars.Course = c.Course;
+
+					//iStart = 101;
+					iStart = c.StartNr;
+					pars.BeginStartNr = iStart.ToString();
+					pars.EndStartNr = iStart.ToString();
+					pars.CustomSplitWeight = c.CustomSplitWeight;
+					pars.OutputPath = null;
+					string valdError = pars.Validate();
+					Assert.IsTrue(string.IsNullOrEmpty(valdError), valdError);
+
+					//pars.EndStartNr = (pars.OCourseVm.PermutEstimate + 100).ToString();
+					pars.EndStartNr = c.EndNr.ToString();
+					pars.Validate();
+
+					cmd.Execute(out string error);
+
+					IEnumerable<OCourse.Route.CostSectionlist> selectedCombs =
+						OCourse.Route.CostSectionlist.GetCostSectionLists(pars.OCourseVm.Permutations,
+						pars.OCourseVm.RouteCalculator, pars.OCourseVm.LcpConfig.Resolution);
+
+					List<Ocad.Course> selectedCourses = selectedCombs.Select(
+						comb => OCourse.Ext.PermutationUtils.GetCourse(c.Course, comb, pars.SplitCourses,
+						c.CustomSplitWeight)).ToList();
+					coursesDict.Add(c.Course, selectedCourses);
+
+					io3Exporter = io3Exporter ?? OCourse.Iof3.OCourse2Io3.Init(eventName, pars.OCourseVm.CourseFile);
+					io3Exporter.AddCurrentPermutations(pars.OCourseVm);
+				}
+
+
 				foreach (var s in new[] { t.Front, t.Back })
 				{
-					string tmpl = Path.Combine(root, "Karten", s.Replace("tmpl", "Bahnen"));
+					string tmpl = Path.Combine(root, exportFolder, exportCourseFileFct(s));
 					File.Copy(Path.Combine(root, s), tmpl, overwrite: true);
 					pars.TemplatePath = tmpl;
 					pars.OutputPath = tmpl;
@@ -126,28 +178,28 @@ namespace OcadTest.OEvent
 					{
 						pars.Course = c.Course;
 
-						//iStart = 101;
-						iStart = c.StartNr;
-						pars.BeginStartNr = iStart.ToString();
-						pars.EndStartNr = iStart.ToString();
-						pars.CustomSplitWeight = c.CustomSplitWeight;
-						pars.Validate();
-
-						//pars.EndStartNr = (pars.OCourseVm.PermutEstimate + 100).ToString();
-						pars.EndStartNr = c.EndNr.ToString();
-
-						pars.Validate();
+						List<Ocad.Course> selectedCourses = coursesDict[c.Course];
 
 						if (first)
 						{
-							CopyElems(pars);
+							CopyElems(pars.OCourseVm.CourseFile, pars.TemplatePath);
 							first = false;
 						}
 
-						cmd.Execute(out string error);
+						string courseName = c.Course;
+
+						using (CmdCourseTransfer cmdTrans = new CmdCourseTransfer(pars.OutputPath, pars.TemplatePath ?? pars.OCourseVm.CourseFile, pars.OCourseVm.CourseFile))
+						{
+							cmdTrans.Export(selectedCourses, courseName);
+						}
+
+						//cmd.Execute(out string error);
 					}
 				}
 			}
+
+			io3Exporter.InitMapInfo();
+			io3Exporter.Export(io3File);
 		}
 
 		private int SplitHD12(int nDouble, Ocad.Control split, Dictionary<string, List<Ocad.Control>> dict, Dictionary<string, List<Ocad.Control>> dictPre)
@@ -158,7 +210,7 @@ namespace OcadTest.OEvent
 		}
 		private int SplitH45(int nDouble, Ocad.Control split, Dictionary<string, List<Ocad.Control>> dict, Dictionary<string, List<Ocad.Control>> dictPre)
 		{
-			if (split.Name  == "70")
+			if (split.Name == "70")
 			{ return nDouble + 2; }
 			return nDouble;
 		}
@@ -257,11 +309,11 @@ namespace OcadTest.OEvent
 			}
 		}
 
-		private void CopyElems(BuildParameters pars)
+		private void CopyElems(string source, string target)
 		{
 			List<int> copySymbols = new List<int> { 708000, 709000, 709001, 709002, 709003, 709004 };
-			using (Ocad.OcadWriter w = Ocad.OcadWriter.AppendTo(pars.TemplatePath))
-			using (Ocad.OcadReader r = Ocad.OcadReader.Open(pars.OCourseVm.CourseFile))
+			using (Ocad.OcadWriter w = Ocad.OcadWriter.AppendTo(target))
+			using (Ocad.OcadReader r = Ocad.OcadReader.Open(source))
 			{
 				foreach (var elem in r.EnumGeoElements())
 				{
@@ -274,9 +326,10 @@ namespace OcadTest.OEvent
 		}
 
 		[TestMethod]
-		public void AdaptCourses()
+		public void T02_AdaptCourses()
 		{
-			string root = @"C:\daten\felix\kapreolo\karten\ruemlangerwald\2021\Karten";
+			//			string root = @"C:\daten\felix\kapreolo\karten\ruemlangerwald\2021\Karten";
+			string root = Path.Combine(_root, _exportFolder);
 			foreach (var mapFile in Directory.GetFiles(root))
 			{
 				IList<string> parts = Path.GetFileName(mapFile).Split(new[] { '.' });
@@ -297,18 +350,18 @@ namespace OcadTest.OEvent
 				using (Ocad.OcadWriter w = Ocad.OcadWriter.AppendTo(mapFile))
 				{
 					CmdCoursePlaceControlNrs cmd = new CmdCoursePlaceControlNrs(w, cm);
-					if (parts[1].EndsWith("HE"))
-					{ cmd.GetCustomPosition = GetCustomPositionHE; }
-					if (parts[1].EndsWith("HAL"))
-					{ cmd.GetCustomPosition = GetCustomPositionHAL; }
-					if (parts[1].EndsWith("H45"))
-					{ cmd.GetCustomPosition = GetCustomPositionH45; }
-					if (parts[1].EndsWith("D20"))
-					{ cmd.GetCustomPosition = GetCustomPositionD20; }
-					if (parts[1].EndsWith("12"))
-					{ cmd.GetCustomPosition = GetCustomPositionDH12; }
-					if (parts[1].EndsWith("D14") || parts[1].EndsWith("DAM") || parts[1].EndsWith("D60"))
-					{ cmd.GetCustomPosition = GetCustomPositionDAM; }
+					//if (parts[1].EndsWith("HE"))
+					//{ cmd.GetCustomPosition = GetCustomPositionHE; }
+					//if (parts[1].EndsWith("HAL"))
+					//{ cmd.GetCustomPosition = GetCustomPositionHAL; }
+					//if (parts[1].EndsWith("H45"))
+					//{ cmd.GetCustomPosition = GetCustomPositionH45; }
+					//if (parts[1].EndsWith("D20"))
+					//{ cmd.GetCustomPosition = GetCustomPositionD20; }
+					//if (parts[1].EndsWith("12"))
+					//{ cmd.GetCustomPosition = GetCustomPositionDH12; }
+					//if (parts[1].EndsWith("D14") || parts[1].EndsWith("DAM") || parts[1].EndsWith("D60"))
+					//{ cmd.GetCustomPosition = GetCustomPositionDAM; }
 
 					cmd.Execute();
 
@@ -321,10 +374,11 @@ namespace OcadTest.OEvent
 		}
 
 		[TestMethod]
-		public void ExportCourses()
+		public void T03_ExportCourses()
 		{
 			List<string> exports = new List<string>();
-			string root = @"C:\daten\felix\kapreolo\karten\ruemlangerwald\2021\Karten";
+			//			string root = @"C:\daten\felix\kapreolo\karten\ruemlangerwald\2021\Karten";
+			string root = Path.Combine(_root, _exportFolder);
 			foreach (var mapFile in Directory.GetFiles(root))
 			{
 				IList<string> parts = Path.GetFileName(mapFile).Split(new[] { '.' });
@@ -368,6 +422,7 @@ namespace OcadTest.OEvent
 				string bg = Path.GetFileName(exp).Split('.')[0];
 				bgs[bg] = exp;
 			}
+			bool first = true;
 			foreach (var pair in bgs)
 			{
 				string bg = pair.Value;
@@ -390,17 +445,21 @@ namespace OcadTest.OEvent
 				}
 				using (Ocad.Scripting.Node node = script.FileSave())
 				{ node.Enabled(true); }
-				//using (Ocad.Scripting.Node node = script.FileClose())
-				//{ node.Enabled(true); }
 
+				if (!first)
+				{
+					using (Ocad.Scripting.Node node = script.FileClose())
+					{ node.Enabled(true); }
+				}
+				first = false;
 			}
 		}
 
 		[TestMethod]
-		public void JoinPdfs()
+		public void T04_JoinPdfs()
 		{
 			List<PdfId> exports = new List<PdfId>();
-			string root = @"C:\daten\felix\kapreolo\karten\ruemlangerwald\2021\Karten";
+			string root = Path.Combine(_root, _exportFolder);
 			foreach (var mapFile in Directory.GetFiles(root))
 			{
 				IList<string> parts = Path.GetFileName(mapFile).Split(new[] { '.' });
@@ -427,7 +486,7 @@ namespace OcadTest.OEvent
 			{
 				catFiles.GetOrCreateValue(export.Cat).Add(export);
 			}
-			
+
 			foreach (var pair in catFiles)
 			{
 				string cat = pair.Key;
@@ -469,7 +528,7 @@ namespace OcadTest.OEvent
 				{
 					exe = Utils.FindExecutable(ocdFile);
 				}
-				string ocdTmpl = ocdFile.Replace(".1.ocd", ".Front.ocd").Replace(".2.ocd",".Rueck.ocd");
+				string ocdTmpl = ocdFile.Replace(".1.ocd", ".Front.ocd").Replace(".2.ocd", ".Rueck.ocd");
 				string pdfPath = PrepPdf(ocdTmpl);
 
 				using (Ocad.Scripting.Node node = expPdf.FileOpen())

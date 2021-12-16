@@ -172,6 +172,5 @@ namespace OcadTest.OEvent
 
       w.PrintCourseRunners();
     }
-
   }
 }

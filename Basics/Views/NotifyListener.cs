@@ -36,10 +36,26 @@ namespace Basics.Views
       }
     }
 
-    protected void RunAsync(IWorker worker)
+    protected void Run(IWorker worker, Action<bool> workingFct, bool inSynch = false)
     {
-      _runner = new Runner(worker, this);
-      _runner.Run();
+      workingFct(true);
+      if (!inSynch)
+      {
+        _runner = new Runner(worker, this);
+        _runner.Run();
+      }
+      else
+			{
+        try
+        {
+          worker.Start();
+          worker.Finish();
+        }
+        finally
+        {
+          worker.Finally();
+        }
+      }
     }
 
     protected void CancelRun()

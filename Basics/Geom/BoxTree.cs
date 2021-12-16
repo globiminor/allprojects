@@ -59,7 +59,7 @@ namespace Basics.Geom
         else
         { allBox.Include(box); }
       }
-      int dim = allBox.Dimension;
+      int dim = allBox?.Dimension ?? 2;
 
       BoxTree<T> bt = new BoxTree<T>(dim, nElem, dynamic);
       bt.Init(dim, allBox, nElem, nElem / 2);

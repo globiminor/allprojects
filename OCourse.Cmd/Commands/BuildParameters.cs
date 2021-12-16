@@ -129,6 +129,7 @@ namespace OCourse.Cmd.Commands
 					{
 						_oCourseVm = new ViewModels.OCourseVm();
 						_oCourseVm.LoadSettings(ConfigPath);
+						_oCourseVm.RunInSynch = true;
 					}
 					//_oCourseVm?.Dispose();
 					ViewModels.OCourseVm vm = _oCourseVm;
@@ -164,7 +165,7 @@ namespace OCourse.Cmd.Commands
 			}
 
 			string error = sb.ToString();
-			return sb.ToString();
+			return error;
 		}
 		/// <summary>
 		///     interpret and verify command line arguments

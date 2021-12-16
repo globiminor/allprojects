@@ -27,6 +27,12 @@ namespace OCourse.Cmd.Commands
         { System.Threading.Thread.Sleep(100); }
         //        _pars.OCourseVm.
 
+        if (string.IsNullOrWhiteSpace(_pars.OutputPath))
+        {
+          error = null;
+          return true; 
+        }
+
         IEnumerable<CostSectionlist> selectedCombs =
           CostSectionlist.GetCostSectionLists(vm.Permutations, vm.RouteCalculator, vm.LcpConfig.Resolution);
 
@@ -39,9 +45,10 @@ namespace OCourse.Cmd.Commands
         }
 
       }
-      finally
+      catch
       {
         _pars.Dispose();
+        throw;
       }
       error = null;
       return true;

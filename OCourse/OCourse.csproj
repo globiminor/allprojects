@@ -50,6 +50,7 @@
     <Compile Include="Commands\CmdExportCourseV8.cs" />
     <Compile Include="Commands\CmdShapeExport.cs" />
     <Compile Include="Commands\CourseMap.cs" />
+    <Compile Include="Iof3\Iof3.cs" />
     <Compile Include="Ext\Category.cs" />
     <Compile Include="Ext\Grafics.cs" />
     <Compile Include="Ext\NextControl.cs" />
@@ -62,6 +63,7 @@
     <Compile Include="Ext\SectionsBuilder.cs" />
     <Compile Include="Ext\Settings.cs" />
     <Compile Include="Ext\VariationBuilder.cs" />
+    <Compile Include="Iof3\OCourse2Io3.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Route\CostMean.cs" />
     <Compile Include="Route\Cost.cs" />

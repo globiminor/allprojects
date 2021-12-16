@@ -312,8 +312,7 @@ namespace OCourse.ViewModels
 
       EventCalculator calcEvent = new EventCalculator(this, RouteCalculator, _lcpConfig.Resolution, CourseFile);
 
-      Working = true;
-      RunAsync(calcEvent);
+      Run(calcEvent, (working) => Working = working, RunInSynch);
     }
 
     private void InitCategoryName()
@@ -786,10 +785,10 @@ namespace OCourse.ViewModels
 
       double resol = LcpConfig.Resolution;
 
-      Working = true;
       CourseCalculator courseCalc = new CourseCalculator(this, RouteCalculator, course, resol);
-      RunAsync(courseCalc);
+      Run(courseCalc, (working) => Working = working, RunInSynch);
     }
+    public bool RunInSynch { get; set; }
 
     public RouteCalculator InitHeightVelo()
     {
@@ -839,8 +838,7 @@ namespace OCourse.ViewModels
       EventSetter calcEvent = new EventSetter(this, RouteCalculator, _lcpConfig.Resolution, CourseFile);
 
       _info.Clear();
-      Working = true;
-      RunAsync(calcEvent);
+      Run(calcEvent, (working) => Working = working, RunInSynch);
     }
 
     private void RouteCalc_Status(object sender, StatusEventArgs args)
@@ -919,7 +917,7 @@ namespace OCourse.ViewModels
         Working = false;
         throw;
       }
-      RunAsync(pb);
+      Run(pb, (working) => { }, RunInSynch);
     }
 
     public void PermutationsExport(IEnumerable<PermutationVm> selectedRows, string file)

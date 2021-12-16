@@ -363,7 +363,7 @@ namespace OMapScratch
       canvas.Save();
       try
       {
-        p.SetStyle(fill: false, stroke: true);
+        p.SetStyle(fill: true, stroke: true);
         p.StrokeWidth = 0;
         p.TextAlignSetCenter();
 

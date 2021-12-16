@@ -104,12 +104,14 @@ namespace OCourse.Ext
       for (int iSplit = 0; iSplit < controls.Count; iSplit++)
       {
         Control split = controls[iSplit];
-        dictPre.GetOrCreateValue(split.Name);
+        List<Control> pres = dictPre.GetOrCreateValue(split.Name);
+        List<Control> totals = dict[split.Name];
         currentNode = currentNode.Next;
 
         bool lastSplit = false;
+        pres.Add(split);
         if (dict[split.Name].Count <= 1 || 
-           (lastSplit = dictPre[split.Name].Count + 1 == dict[split.Name].Count))
+           (lastSplit = (pres.Count == totals.Count)))
         {
           int nDouble = GetNDouble(split, dict, dictPre, lastSplit, customWeight);
           if (nDouble < minDouble
@@ -120,7 +122,6 @@ namespace OCourse.Ext
             minNode = currentNode;
           }
         }
-        dictPre[split.Name].Add(split);
       }
 
       if (minNode != null)
@@ -164,7 +165,8 @@ namespace OCourse.Ext
         int n1 = pair.Value.Count - n0;
         int d = n1 - n0;
 
-        nDouble += Math.Abs(d);
+        if (d != 0)
+        { nDouble += Math.Abs(d); }
       }
       nDouble = 2 * nDouble + (lastSplit ? 1 : 0);
 
