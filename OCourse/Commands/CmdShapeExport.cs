@@ -3,13 +3,11 @@ using OCourse.Route;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
 using OCourse.ViewModels;
 
 namespace OCourse.Commands
 {
-  public class CmdShapeExport : IDisposable
+	public class CmdShapeExport : IDisposable
   {
     private OCourseVm _vm;
 

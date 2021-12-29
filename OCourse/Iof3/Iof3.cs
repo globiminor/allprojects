@@ -22,7 +22,7 @@ namespace OCourse.Iof3
 		[XmlElement("Control")] public List<Control> Controls { get; set; }
 		[XmlElement("Course")] public List<Course> Courses { get; set; }
 		[XmlElement("ClassCourseAssignment")] public List<ClassCourseAssignment> ClassCourseAssignments { get; set; }
-		[XmlElement("PersonCourseAssigment")] public List<PersonCourseAssigment> PersonCourseAssigments { get; set; }
+		[XmlElement("PersonCourseAssignment")] public List<PersonCourseAssignment> PersonCourseAssignments { get; set; }
 	}
 	public class Map
 	{
@@ -69,7 +69,7 @@ namespace OCourse.Iof3
 		public string ClassName { get; set; }
 		public string CourseName { get; set; }
 	}
-	public class PersonCourseAssigment
+	public class PersonCourseAssignment
 	{
 		public int BibNumber { get; set; }
 		public string CourseName { get; set; }

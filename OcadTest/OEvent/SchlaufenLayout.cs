@@ -1,12 +1,15 @@
 ﻿using Basics;
 using Basics.Geom;
+using Macro;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OCourse.Cmd.Commands;
 using OCourse.Commands;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Windows.Automation;
 using Assert = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
 namespace OcadTest.OEvent
@@ -64,6 +67,7 @@ namespace OcadTest.OEvent
 			{
 				new Conf("HE", a3_10k),
 				new Conf("D14", a4_10k),
+				//new Conf("D65", a4_10k),
 				new Conf("D75", a4_10k),
 				//new Conf("04_HE", a4_15k),
 				//new Conf("01_HAL", a4_15k),
@@ -202,6 +206,92 @@ namespace OcadTest.OEvent
 			io3Exporter.Export(io3File);
 		}
 
+		[TestMethod]
+		public void T02_ExportCourseMaps()
+		{
+			string rootFolder = Path.Combine(_root, _exportFolder);
+			foreach (var mapFile in Directory.GetFiles(rootFolder))
+			{
+				IList<string> parts = Path.GetFileName(mapFile).Split(new[] { '.' });
+				if (parts.Count != 2)
+				{ continue; }
+				if (parts[1] != "ocd")
+				{ continue; }
+
+				if (!(parts[0].EndsWith("_V") || parts[0].EndsWith("_H")))
+				{ continue; }
+
+				string exe = Utils.FindExecutable(mapFile);
+				string script = Path.Combine(rootFolder, "exportCourse.xml");
+				using (Ocad.Scripting.Script expPdf = new Ocad.Scripting.Script(script))
+				{
+					using (Ocad.Scripting.Node node = expPdf.FileOpen())
+					{ node.File(mapFile); }
+				}
+				string pName = new Ocad.Scripting.Utils().RunScript(script, exe, wait: 3000);
+				IList<Process> processes = Process.GetProcessesByName(pName);
+
+				if (processes.Count < 1)
+				{ continue; }
+				Processor m = new Processor();
+				m.SetForegroundProcess(processes[0]);
+				m.SetForegroundWindow("OCAD", out string fullText);
+				System.Threading.Thread.Sleep(2000);
+
+				// Export Course maps...
+				m.SendCommand('c', new List<byte> { Ui.VK_ALT });
+				m.SendCommand('x');
+				m.SendCommand('x');
+
+				System.Threading.Thread.Sleep(1000);
+
+				//IntPtr p = Ui.GetFocus();
+				//var root = AutomationElement.FromHandle(processes[0].MainWindowHandle);
+
+				// Click "Select All"
+				SetFocusByName("Select all", m);
+				m.SendCode(new[] { Ui.VK_RETURN });
+				System.Threading.Thread.Sleep(500);
+
+				// Click "Select OK"
+				SetFocusByName("OK", m);
+				m.SendCode(new[] { Ui.VK_RETURN });
+				System.Threading.Thread.Sleep(500);
+
+				// "Save" exported course maps
+				m.SendCommand('s', new[] { Ui.VK_ALT });
+				System.Threading.Thread.Sleep(500);
+
+				// Close map
+				m.SendCommand('w', new[] { Ui.VK_CONTROL });
+				System.Threading.Thread.Sleep(500);
+				// Check for "Save File ...",
+				if (AutomationElement.FocusedElement.Current.ControlType.ProgrammaticName == "ControlType.Button")
+				{
+					// Do not save file
+					m.SendCommand('n', new[] { Ui.VK_ALT });
+					System.Threading.Thread.Sleep(500);
+				}
+				var c = AutomationElement.FocusedElement.Current;
+			}
+		}
+
+		private void SetFocusByName(string name, Processor m)
+		{
+			var parent = TreeWalker.ContentViewWalker.GetParent(AutomationElement.FocusedElement);
+			var toFocus = parent.FindFirst(TreeScope.Subtree, new PropertyCondition(AutomationElement.NameProperty, name));
+			toFocus?.SetFocus();
+			System.Threading.Thread.Sleep(500);
+			// Click "Select All"
+			while (!AutomationElement.FocusedElement.Current.Name.Trim().Equals(name, StringComparison.InvariantCultureIgnoreCase))
+			{
+				m.SendCommand('\t');
+				System.Threading.Thread.Sleep(500);
+			}
+
+		}
+
+
 		private int SplitHD12(int nDouble, Ocad.Control split, Dictionary<string, List<Ocad.Control>> dict, Dictionary<string, List<Ocad.Control>> dictPre)
 		{
 			if (!dictPre.ContainsKey("89"))
@@ -326,7 +416,7 @@ namespace OcadTest.OEvent
 		}
 
 		[TestMethod]
-		public void T02_AdaptCourses()
+		public void T03_AdaptCourses()
 		{
 			//			string root = @"C:\daten\felix\kapreolo\karten\ruemlangerwald\2021\Karten";
 			string root = Path.Combine(_root, _exportFolder);
@@ -374,7 +464,7 @@ namespace OcadTest.OEvent
 		}
 
 		[TestMethod]
-		public void T03_ExportCourses()
+		public void T04_ExportCourses()
 		{
 			List<string> exports = new List<string>();
 			//			string root = @"C:\daten\felix\kapreolo\karten\ruemlangerwald\2021\Karten";
@@ -456,7 +546,7 @@ namespace OcadTest.OEvent
 		}
 
 		[TestMethod]
-		public void T04_JoinPdfs()
+		public void T05_JoinPdfs()
 		{
 			List<PdfId> exports = new List<PdfId>();
 			string root = Path.Combine(_root, _exportFolder);

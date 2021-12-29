@@ -206,16 +206,19 @@ namespace Macro
     {
       SendCommand(key, states);
     }
-    public void SendCommand(char key, IList<byte> states)
+    public void SendCommand(char key, IList<byte> states = null)
     {
       List<byte> all = GetKeyBytes(key);
 
-      int nState = states.Count;
-      for (int iState = nState - 1; iState >= 0; iState--)
+      if (states != null)
       {
-        byte state = states[iState];
-        if (all.IndexOf(state) < 0)
-        { all.Insert(0, state); }
+        int nState = states.Count;
+        for (int iState = nState - 1; iState >= 0; iState--)
+        {
+          byte state = states[iState];
+          if (all.IndexOf(state) < 0)
+          { all.Insert(0, state); }
+        }
       }
 
       SendCode(all);

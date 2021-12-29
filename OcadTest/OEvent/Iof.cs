@@ -62,11 +62,11 @@ namespace OcadTest.OEvent
 						new ClassCourseAssignment{ ClassName="HE", CourseName="HE"},
 						new ClassCourseAssignment{ ClassName="DE", CourseName="DE"}
 					},
-					PersonCourseAssigments = new List<PersonCourseAssigment>
+					PersonCourseAssignments = new List<PersonCourseAssignment>
 					{
-						new PersonCourseAssigment { BibNumber = 100, CourseName = "R3_V1", CourseFamily = "R3"},
-						new PersonCourseAssigment { BibNumber = 100, CourseName = "R3_V2", CourseFamily = "R3"},
-						new PersonCourseAssigment { BibNumber = 100, CourseName = "R2"}
+						new PersonCourseAssignment { BibNumber = 100, CourseName = "R3_V1", CourseFamily = "R3"},
+						new PersonCourseAssignment { BibNumber = 100, CourseName = "R3_V2", CourseFamily = "R3"},
+						new PersonCourseAssignment { BibNumber = 100, CourseName = "R2"}
 					}
 				}
 			};

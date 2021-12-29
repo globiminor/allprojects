@@ -56,7 +56,7 @@ namespace OcadScratch
     private void BtnAddClick(object sender, RoutedEventArgs e)
     {
       OpenFileDialog dlg = new OpenFileDialog();
-      dlg.Filter = "*.jpg | *.jpg | *.png | *.png";
+      dlg.Filter = "*.jpg|*.jpg|*.png|*.png";
       dlg.Multiselect = true;
       string ext;
       dlg.FileOk += (s, ca) =>

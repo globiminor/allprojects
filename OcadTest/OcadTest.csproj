@@ -47,6 +47,8 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.XML" />
+    <Reference Include="UIAutomationClient" />
+    <Reference Include="UIAutomationTypes" />
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
@@ -101,6 +103,10 @@
     <ProjectReference Include="..\LeastCostPathUI\LeastCostPathUI.csproj">
       <Project>{8972d218-e70f-4428-9eb4-ddfe61dd7848}</Project>
       <Name>LeastCostPathUI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Macro\Macro.csproj">
+      <Project>{BB7DE197-D752-4378-8F2D-AF7F1AB343C0}</Project>
+      <Name>Macro</Name>
     </ProjectReference>
     <ProjectReference Include="..\OcadScratch\OcadScratch.csproj">
       <Project>{4b5672ef-fdc6-4fdf-9425-07a0d6ecbbe8}</Project>

@@ -3,6 +3,7 @@ using Basics.Geom;
 using Ocad;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OCourse.Ext
 {
@@ -96,7 +97,7 @@ namespace OCourse.Ext
         iControl++;
       }
       Dictionary<string, List<Control>> dictPre = new Dictionary<string, List<Control>>();
-      dictPre.GetOrCreateValue(controls[0].Name).Add(controls[0]);
+      //dictPre.GetOrCreateValue(controls[0].Name).Add(controls[0]);
       int minDouble = int.MaxValue;
       int minSplit = -1;
       LinkedListNode<ISection> minNode = null;
@@ -153,6 +154,15 @@ namespace OCourse.Ext
       Dictionary<string, List<Control>> dictPre, bool lastSplit,
       Func<int, Control, Dictionary<string, List<Control>>, Dictionary<string, List<Control>>, int> custom)
 		{
+      int nPre = GetNDouble(dictPre.Values.Select(x => x.Count));
+      int nPost = GetNDouble(dict.Select(x =>
+      {
+        dictPre.TryGetValue(x.Key, out List<Control> pre);
+        return x.Value.Count - (pre?.Count ?? 0);
+      }));
+
+      int nTotoal = nPre * nPre + nPost * nPost;
+      return nTotoal;
       int nDouble = 0;
       foreach (var pair in dict)
       {
@@ -174,6 +184,18 @@ namespace OCourse.Ext
       return nDouble;
     }
 
+    private static int GetNDouble(IEnumerable<int> frequencies)
+		{
+      int n = 0;
+      foreach (int freq in frequencies)
+			{
+        if (freq < 2)
+        { continue; }
+        int w = freq - 1;
+        n += w * w;
+			}
+      return n;
+		}
 
     public IReadOnlyList<SimpleSection> GetSimpleSections()
     {

@@ -48,7 +48,7 @@ namespace OCourse.Iof3
 
 			_raceData.Controls = _raceData.Controls ?? new List<Control>();
 			_raceData.Courses = _raceData.Courses ?? new List<Course>();
-			_raceData.PersonCourseAssigments = _raceData.PersonCourseAssigments ?? new List<PersonCourseAssigment>();
+			_raceData.PersonCourseAssignments = _raceData.PersonCourseAssignments ?? new List<PersonCourseAssignment>();
 
 			_courseDict = _raceData.Courses.ToDictionary(x => x.Name);
 			_controlDict = _raceData.Controls.ToDictionary(x => x.Id);
@@ -65,7 +65,7 @@ namespace OCourse.Iof3
 					string name = part.GetName();
 					string fullName = $"{vm.Course.Name}_{part.PreName}{name}";
 
-					_raceData.PersonCourseAssigments.Add(new PersonCourseAssigment
+					_raceData.PersonCourseAssignments.Add(new PersonCourseAssignment
 					{
 						BibNumber = permutation.StartNr,
 						CourseName = fullName,

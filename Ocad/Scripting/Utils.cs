@@ -28,11 +28,11 @@ namespace Ocad.Scripting
       new Utils { Exe = exe ?? defaultExe }.RunScript(script, defaultExe);
     }
 
-    public void RunScript(string script, string exe, bool setAccess = true)
+    public string RunScript(string script, string exe, bool setAccess = true, int wait = -1)
     {
       if (exe == null)
       {
-        return;
+        return null;
       }
 
       exe = Exe ?? exe;
@@ -45,11 +45,16 @@ namespace Ocad.Scripting
       proc.StartInfo = start;
 
       proc.Start();
+      string procName = proc.ProcessName;
 
-      proc.WaitForExit();
+      if (wait > 0)
+      { proc.WaitForExit(wait); }
+      else
+      { proc.WaitForExit(); }
 
       if (setAccess)
       { SetAccessControl(Environment.CurrentDirectory); }
+      return procName;
     }
 
     private static void SetAccessControl(string dir)

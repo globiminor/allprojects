@@ -46,6 +46,9 @@ namespace Macro
     [DllImport("user32.dll")]
     internal static extern bool GetWindowRect(IntPtr hWnd, ref System.Drawing.Rectangle rect);
 
+    [DllImport("user32")]
+    public static extern IntPtr GetFocus();
+
     [DllImport("user32.dll")]
     internal static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, IntPtr dwExtraInfo);
     [DllImport("user32.dll")]
