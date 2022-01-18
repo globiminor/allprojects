@@ -29,6 +29,11 @@ namespace OCourse.Commands
 
 		private MapElement PlaceElem(MapElement elem)
 		{
+			if (_cm.CustomGeometries.TryGetValue(elem, out GeoElement.Geom geom))
+			{
+				elem.SetMapGeometry(geom);
+				return elem;
+			}
 			if (!_cm.ControlNrSymbols.Contains(elem.Symbol))
 			{ return null; }
 			if (string.IsNullOrEmpty(elem.ObjectString))
@@ -65,7 +70,8 @@ namespace OCourse.Commands
 			return false;
 		}
 
-		private Dictionary<string, IPoint> GetControlsDict(Func<CourseMap, string, double, IReadOnlyList<Polyline>, IPoint> getCustomPosition)
+		private Dictionary<string, IPoint> GetControlsDict(
+			Func<CourseMap, string, double, IReadOnlyList<Polyline>, IPoint> getCustomPosition)
 		{
 			Dictionary<string, double> nrWidthDict = new Dictionary<string, double>();
 			Dictionary<string, string> nrTextDict = new Dictionary<string, string>();
@@ -99,7 +105,7 @@ namespace OCourse.Commands
 				if (!(control.GetMapGeometry().GetGeometry() is IPoint cp))
 				{ throw new InvalidOperationException($"invalid geometry for control {par.Id}"); }
 
-				ControlRegion cr = ControlRegion.Create(par.Id, cp, text, w, _cm);
+				ControlRegion cr = ControlRegion.Create(control, par.Id, cp, text, w, _cm);
 				cr.GetCustomPosition = getCustomPosition;
 
 				allRegions.Add(cr);
@@ -127,9 +133,9 @@ namespace OCourse.Commands
 
 				int i = unhandledRegions.Count - 1;
 				ControlRegion r = unhandledRegions[i];
-				
+
 				if (r.Position == r.Center)
-				{ }
+				{ _cm.UnplacedControls.Add(r.ControlId); }
 
 				dict.Add(r.ControlId, r.Position);
 				r.Handled = true;
@@ -142,7 +148,7 @@ namespace OCourse.Commands
 				{
 					if (!entry.Value.Handled)
 					{
-						entry.Value.AddUsedArea(posArea);
+						entry.Value.AddUsedArea(posArea, r.Control);
 					}
 				}
 
@@ -154,7 +160,8 @@ namespace OCourse.Commands
 
 		private class ControlRegion
 		{
-			public static ControlRegion Create(string controlId, IPoint cp, string text, double textWidth, CourseMap courseMap, double distanceFactor = 1.2)
+			public static ControlRegion Create(MapElement control,
+				string controlId, IPoint cp, string text, double textWidth, CourseMap courseMap, double distanceFactor = 1.2)
 			{
 				CourseMap cm = courseMap;
 
@@ -166,7 +173,7 @@ namespace OCourse.Commands
 
 				double minDist = 2 * r;
 				double q = minDist + r;
-				List<Area> usedAreas = new List<Area>();
+				Dictionary<Area, Element> usedAreas = new Dictionary<Area, Element>();
 				Box controlSearchBox = new Box(
 					new P(cp.X - w - q, cp.Y - h - q), new P(cp.X + w + q, cp.Y + h + q));
 				foreach (var entry in courseMap.ControlsTree.Search(controlSearchBox))
@@ -178,17 +185,17 @@ namespace OCourse.Commands
 					double dist = !courseMap.FinishSymbols.Contains(e.Elem.Symbol)
 						? minDist
 						: r * 1.1;
-					usedAreas.Add(new Area(GetCirclePositions(entry.Value.P, dist, w, h)));
+					usedAreas.Add(new Area(GetCirclePositions(entry.Value.P, dist, w, h)), e.Elem);
 				}
 
 				Box connectionSearchBox = new Box(
 					new P(cp.X - w - r, cp.Y - h - r), new P(cp.X + w + r, cp.Y + h + r));
 				foreach (var entry in courseMap.ConnectionTree.Search(connectionSearchBox))
 				{
-					usedAreas.Add(GetConnectionArea(entry.Value.L, w, h));
+					usedAreas.Add(GetConnectionArea(entry.Value.L, w, h), entry.Value.Elem);
 				}
 
-				return new ControlRegion(controlId, cp, text, textWidth, courseMap, nrPos, usedAreas);
+				return new ControlRegion(control, controlId, cp, text, textWidth, courseMap, nrPos, usedAreas);
 			}
 
 			private readonly string _text;
@@ -196,7 +203,7 @@ namespace OCourse.Commands
 			private readonly CourseMap _courseMap;
 
 			private readonly Polyline _nrPos;
-			private readonly List<Area> _usedAreas;
+			private readonly Dictionary<Area, Element> _usedAreas;
 
 			private readonly Dictionary<Area, List<UsedPart>> _areaSplits;
 			private double _maxFreeLength;
@@ -204,7 +211,7 @@ namespace OCourse.Commands
 			private IPoint _p;
 			private IPoint _position;
 
-			public IReadOnlyList<Area> UsedAreas => _usedAreas;
+			public IReadOnlyDictionary<Area, Element> UsedAreas => _usedAreas;
 			private List<Polyline> FreePartsCore => _freeParts ?? (_freeParts = GetPossibleParts());
 			public IReadOnlyList<Polyline> FreeParts => FreePartsCore;
 			public IPoint Position => _position ?? _p;
@@ -213,10 +220,13 @@ namespace OCourse.Commands
 			public Polyline NrPositions => _nrPos;
 			internal bool Handled { get; set; }
 
+			public MapElement Control { get; }
 			public string ControlId { get; }
 			public IBox NrBox;
-			private ControlRegion(string controlId, IPoint p, string text, double textWidth, CourseMap courseMap, Polyline nrPos, List<Area> usedAreas)
+			private ControlRegion(MapElement control, string controlId, IPoint p, string text, double textWidth,
+				CourseMap courseMap, Polyline nrPos, Dictionary<Area, Element> usedAreas)
 			{
+				Control = control;
 				ControlId = controlId;
 				_textWidth = textWidth;
 				_p = p;
@@ -243,13 +253,13 @@ namespace OCourse.Commands
 				max.Y += height;
 				return new Box(min, max);
 			}
-			public void AddUsedArea(IBox area)
+			public void AddUsedArea(IBox area, Element element)
 			{
 				_maxFreeLength = -1;
 				_freeParts = null;
 				Box b = BoxOp.Clone(area);
 				b.Min.X -= _textWidth;
-				_usedAreas.Add(new Area(Polyline.Create(b)));
+				_usedAreas.Add(new Area(Polyline.Create(b)), element);
 			}
 			private double GetMaxFreeLength()
 			{
@@ -345,8 +355,9 @@ namespace OCourse.Commands
 			private List<UsedPart> GetAllUsedParts()
 			{
 				List<UsedPart> allSplits = new List<UsedPart>();
-				foreach (var usedArea in _usedAreas)
+				foreach (var pair in _usedAreas)
 				{
+					var usedArea = pair.Key;
 					if (!_areaSplits.TryGetValue(usedArea, out List<UsedPart> areaSplits))
 					{
 						IEnumerable<ParamGeometryRelation> relEnum = GeometryOperator.CreateRelations(usedArea, _nrPos);
@@ -358,11 +369,14 @@ namespace OCourse.Commands
 
 						foreach (var rel in rels)
 						{
-							areaSplits.Add(new UsedPart { Start = rel.BorderRelations[0], End = rel.BorderRelations[1] });
+							UsedPart used = new UsedPart { Start = rel.BorderRelations[0], End = rel.BorderRelations[1] };
+							areaSplits.Add(used);
+							if (used.GetString(used.Start) == used.GetString(used.End))
+							{ }
 						}
 						_areaSplits.Add(usedArea, areaSplits);
 					}
-					allSplits.AddRange(areaSplits);
+					allSplits.AddRange(areaSplits.Where(x => x.GetString(x.Start) != x.GetString(x.End)));
 				}
 				return allSplits;
 			}
@@ -376,7 +390,7 @@ namespace OCourse.Commands
 				{
 					return $"S:{GetString(Start)} - E:{GetString(End)}";
 				}
-				private string GetString(ParamGeometryRelation r)
+				public string GetString(ParamGeometryRelation r)
 				{
 					if (r == null)
 					{ return "<null>"; }

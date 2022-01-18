@@ -101,6 +101,21 @@ namespace OCourse.Cmd.Commands
 
 		private ViewModels.OCourseVm _oCourseVm;
 		public ViewModels.OCourseVm OCourseVm => _oCourseVm;
+		public ViewModels.OCourseVm EnsureOCourseVm()
+		{
+			if (_oCourseVm == null)
+			{
+				if (_oCourseVm == null)
+				{
+					ViewModels.OCourseVm oCourseVm = new ViewModels.OCourseVm();
+					oCourseVm.LoadSettings(ConfigPath);
+					oCourseVm.RunInSynch = true;
+
+					_oCourseVm = oCourseVm;
+				}
+			}
+			return _oCourseVm;
+		}
 		public void Dispose()
 		{
 			_oCourseVm?.Dispose();
@@ -125,12 +140,7 @@ namespace OCourse.Cmd.Commands
 			{
 				try
 				{
-					if (_oCourseVm == null)
-					{
-						_oCourseVm = new ViewModels.OCourseVm();
-						_oCourseVm.LoadSettings(ConfigPath);
-						_oCourseVm.RunInSynch = true;
-					}
+					EnsureOCourseVm();
 					//_oCourseVm?.Dispose();
 					ViewModels.OCourseVm vm = _oCourseVm;
 

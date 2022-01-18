@@ -46,7 +46,7 @@ namespace OcadTest.OEvent
 		// private string _root = @"C:\daten\felix\kapreolo\karten\ruemlangerwald\2021\";
 		private string _root = @"C:\daten\felix\kapreolo\karten\wangenerwald\2020\NOM\";
 		private string _exportFolder = "Karten";
-
+		private string _allVarsName = @"allVars\allVars.ocd";
 
 		[TestMethod]
 		public void T01_PrepareCourses()
@@ -65,50 +65,44 @@ namespace OcadTest.OEvent
 
 			List<Conf> confs = new List<Conf>
 			{
-				new Conf("HE", a3_10k),
 				new Conf("D14", a4_10k),
-				//new Conf("D65", a4_10k),
+				new Conf("D16", a3_10k),
+				new Conf("D18", a3_10k),
+				new Conf("D20", a3_10k),
+				new Conf("DE",  a3_10k),
+				new Conf("DAL", a3_10k),
+				new Conf("DAM", a3_10k),
+				new Conf("DAK", a3_10k),
+				new Conf("DB",  a3_10k),
+				new Conf("D35", a3_10k),
+				new Conf("D40", a3_10k),
+				new Conf("D45", a3_10k),
+				new Conf("D50", a3_10k),
+				new Conf("D55", a3_10k),
+				new Conf("D60", a3_10k),
+				new Conf("D65", a3_10k),
+				new Conf("D70", a4_10k),
 				new Conf("D75", a4_10k),
-				//new Conf("04_HE", a4_15k),
-				//new Conf("01_HAL", a4_15k),
-				//new Conf("05_HAM", a3_10k),
-				//new Conf("08_HAK", a4_10k),
-				//new Conf("10_HB", a3_10k),
-				//new Conf("05_H35", a3_10k),
-				//new Conf("05_H40", a3_10k),
-				//new Conf("05_H45", a3_10k){ CustomSplitWeight = SplitH45 },
-				//new Conf("05_H50", a3_10k),
-				//new Conf("05_H55", a3_10k),
-				//new Conf("11_H60", a3_10k),
-				//new Conf("06_H65", a3_10k),
-				//new Conf("14_H70", a3_10k),
-				//new Conf("08_H75", a4_10k),
-				//new Conf("10_H80", a4_10k),
-				//new Conf("13_H20", a4_15k),
-				//new Conf("12_H18", a3_10k),
-				//new Conf("05_H16", a3_10k),
-				//new Conf("14_H14", a3_10k),
-				//new Conf("H12", a4_10k){ CustomSplitWeight = SplitHD12 },
-				//new Conf("13_DE", a4_15k),
-				//new Conf("11_DAL", a4_15k),
-				//new Conf("07_DAM", a4_10k),
-				//new Conf("10_DAK", a4_10k),
-				//new Conf("10_DB", a4_10k),
-				//new Conf("06_D35", a3_10k),
-				//new Conf("06_D40", a3_10k),
-				//new Conf("06_D45", a3_10k),
-				//new Conf("14_D50", a3_10k),
-				//new Conf("14_D55", a3_10k),
-				//new Conf("07_D60", a4_10k),
-				//new Conf("08_D65", a4_10k),
-				//new Conf("10_D70", a4_10k),
-				//new Conf("10_D75", a4_10k),
-				//new Conf("05_D20", a4_15k),
-				//new Conf("11_D18", a3_10k),
-				//new Conf("14_D16", a3_10k),
-				//new Conf("07_D14", a4_10k),
-				//new Conf("D12", a4_10k){ CustomSplitWeight = SplitHD12 },
-				//new Conf("D10/H10", a4_10k),
+
+				new Conf("H14", a3_10k),
+				new Conf("H16", a3_10k),
+				new Conf("H18", a3_10k),
+				new Conf("H20", a3_10k),
+				new Conf("HE",  a3_10k),
+				new Conf("HAL", a3_10k),
+				new Conf("HAM", a3_10k),
+				new Conf("HAK", a3_10k),
+				new Conf("HB",  a3_10k),
+				new Conf("H35", a3_10k),
+				new Conf("H40", a3_10k),
+				new Conf("H45", a3_10k),
+				new Conf("H50", a3_10k),
+				new Conf("H55", a3_10k),
+				new Conf("H60", a3_10k),
+				new Conf("H65", a3_10k),
+				new Conf("H70", a3_10k),
+				new Conf("H75", a3_10k),
+				new Conf("H80", a3_10k),
 			};
 			int iStart = 101;
 			Dictionary<Tmpl, List<Conf>> tmplDict = new Dictionary<Tmpl, List<Conf>>();
@@ -127,14 +121,45 @@ namespace OcadTest.OEvent
 			};
 			BuildCommand cmd = new BuildCommand(pars);
 
-
 			OCourse.Iof3.OCourse2Io3 io3Exporter = null;
+
+			string allVarsPath = Path.Combine(root, exportFolder, _allVarsName);
+			File.Copy(Path.Combine(root, a3_10k.Front), allVarsPath, overwrite: true);
+
+			pars.EnsureOCourseVm();
+			using (var r = Ocad.OcadReader.Open(pars.OCourseVm.CourseFile))
+			{
+				foreach (var pStrIdx in r.ReadStringParamIndices())
+				{
+					if (pStrIdx.Type == Ocad.StringParams.StringType.Template)
+					{
+						string sTemp = r.ReadStringParam(pStrIdx);
+						Ocad.StringParams.TemplatePar tplPar = new Ocad.StringParams.TemplatePar(sTemp);
+						if (!tplPar.Visible)
+						{ continue; }
+						string tpl = tplPar.Name;
+						string courseDir = Path.GetDirectoryName(pars.OCourseVm.CourseFile);
+						if (!Path.IsPathRooted(tpl) ||
+							Path.GetDirectoryName(tpl).Equals(courseDir, StringComparison.OrdinalIgnoreCase))
+						{
+							string sourcePath = Path.IsPathRooted(tpl) ? tpl : Path.Combine(courseDir, tpl);
+							string sourceName = Path.GetFileName(sourcePath);
+
+							File.Copy(sourcePath, Path.Combine(root, exportFolder, sourceName), overwrite: true);
+							File.Copy(sourcePath, Path.Combine(Path.GetDirectoryName(allVarsPath), sourceName), overwrite: true);
+						}
+					}
+				}
+			}
+			CopyElems(pars.OCourseVm.CourseFile, allVarsPath);
 
 			foreach (var pair in tmplDict)
 			{
 				Tmpl t = pair.Key;
 
 				Dictionary<string, List<Ocad.Course>> coursesDict
+					= new Dictionary<string, List<Ocad.Course>>();
+				Dictionary<string, List<Ocad.Course>> variationsDict
 					= new Dictionary<string, List<Ocad.Course>>();
 
 				foreach (var c in pair.Value)
@@ -164,6 +189,15 @@ namespace OcadTest.OEvent
 						comb => OCourse.Ext.PermutationUtils.GetCourse(c.Course, comb, pars.SplitCourses,
 						c.CustomSplitWeight)).ToList();
 					coursesDict.Add(c.Course, selectedCourses);
+
+
+					IEnumerable<OCourse.Route.CostSectionlist> allCombs =
+						OCourse.Route.CostSectionlist.GetCostSectionLists(GetAllPermutations(pars.OCourseVm.Info),
+						pars.OCourseVm.RouteCalculator, pars.OCourseVm.LcpConfig.Resolution);
+					List<Ocad.Course> allVariations = allCombs.Select(
+						comb => OCourse.Ext.PermutationUtils.GetCourse(c.Course, comb, pars.SplitCourses,
+						c.CustomSplitWeight)).ToList();
+					variationsDict.Add(c.Course, allVariations);
 
 					io3Exporter = io3Exporter ?? OCourse.Iof3.OCourse2Io3.Init(eventName, pars.OCourseVm.CourseFile);
 					io3Exporter.AddCurrentPermutations(pars.OCourseVm);
@@ -200,10 +234,40 @@ namespace OcadTest.OEvent
 						//cmd.Execute(out string error);
 					}
 				}
+
+				foreach (var c in pair.Value)
+				{
+					List<Ocad.Course> selectedCourses = variationsDict[c.Course];
+					string courseName = c.Course;
+					using (CmdCourseTransfer cmdTrans = new CmdCourseTransfer(allVarsPath, allVarsPath ?? pars.OCourseVm.CourseFile, pars.OCourseVm.CourseFile))
+					{
+						cmdTrans.Export(selectedCourses, courseName);
+					}
+				}
 			}
 
 			io3Exporter.InitMapInfo();
 			io3Exporter.Export(io3File);
+		}
+
+		private List<OCourse.ViewModels.PermutationVm> GetAllPermutations(IEnumerable<OCourse.Route.ICost> costs)
+		{
+			List<OCourse.ViewModels.PermutationVm> permuts = new List<OCourse.ViewModels.PermutationVm>();
+			int idx = 0;
+			int start = 1;
+			foreach (var cost in costs)
+			{
+				if (!(cost is OCourse.Route.CostSectionlist costSections)) continue;
+
+				OCourse.ViewModels.PermutationVm permut =
+					new OCourse.ViewModels.PermutationVm(costSections.Sections) { Index = idx, StartNr = start };
+
+				permuts.Add(permut);
+
+				idx++;
+				start++;
+			}
+			return permuts;
 		}
 
 		[TestMethod]
@@ -221,59 +285,95 @@ namespace OcadTest.OEvent
 				if (!(parts[0].EndsWith("_V") || parts[0].EndsWith("_H")))
 				{ continue; }
 
-				string exe = Utils.FindExecutable(mapFile);
-				string script = Path.Combine(rootFolder, "exportCourse.xml");
-				using (Ocad.Scripting.Script expPdf = new Ocad.Scripting.Script(script))
-				{
-					using (Ocad.Scripting.Node node = expPdf.FileOpen())
-					{ node.File(mapFile); }
-				}
-				string pName = new Ocad.Scripting.Utils().RunScript(script, exe, wait: 3000);
-				IList<Process> processes = Process.GetProcessesByName(pName);
-
-				if (processes.Count < 1)
-				{ continue; }
-				Processor m = new Processor();
-				m.SetForegroundProcess(processes[0]);
-				m.SetForegroundWindow("OCAD", out string fullText);
-				System.Threading.Thread.Sleep(2000);
-
-				// Export Course maps...
-				m.SendCommand('c', new List<byte> { Ui.VK_ALT });
-				m.SendCommand('x');
-				m.SendCommand('x');
-
-				System.Threading.Thread.Sleep(1000);
-
-				//IntPtr p = Ui.GetFocus();
-				//var root = AutomationElement.FromHandle(processes[0].MainWindowHandle);
-
-				// Click "Select All"
-				SetFocusByName("Select all", m);
-				m.SendCode(new[] { Ui.VK_RETURN });
-				System.Threading.Thread.Sleep(500);
-
-				// Click "Select OK"
-				SetFocusByName("OK", m);
-				m.SendCode(new[] { Ui.VK_RETURN });
-				System.Threading.Thread.Sleep(500);
-
-				// "Save" exported course maps
-				m.SendCommand('s', new[] { Ui.VK_ALT });
-				System.Threading.Thread.Sleep(500);
-
-				// Close map
-				m.SendCommand('w', new[] { Ui.VK_CONTROL });
-				System.Threading.Thread.Sleep(500);
-				// Check for "Save File ...",
-				if (AutomationElement.FocusedElement.Current.ControlType.ProgrammaticName == "ControlType.Button")
-				{
-					// Do not save file
-					m.SendCommand('n', new[] { Ui.VK_ALT });
-					System.Threading.Thread.Sleep(500);
-				}
-				var c = AutomationElement.FocusedElement.Current;
+				ExportCourseMaps(mapFile);
 			}
+		}
+		[TestMethod]
+		public void T02_Z_ExportAllVars()
+		{
+			string allVarsPath = Path.Combine(_root, _exportFolder, _allVarsName);
+			ExportCourseMaps(allVarsPath);
+		}
+
+		private void ExportCourseMaps(string mapFile)
+		{
+			string rootFolder = Path.GetDirectoryName(mapFile);
+
+			string mapName = Path.GetFileNameWithoutExtension(mapFile);
+			string lastCourse = null;
+			using (Ocad.OcadReader r = Ocad.OcadReader.Open(mapFile))
+			{
+				foreach (var course in r.ReadCourses())
+				{
+					lastCourse = course.Name;
+					foreach (var filePath in Directory.GetFiles(rootFolder, $"{mapName}.{lastCourse}.*"))
+					{
+						if (filePath.EndsWith(".ocd"))
+						{ File.Delete(filePath); }
+					}
+				}
+			}
+			string exe = Utils.FindExecutable(mapFile);
+			string script = Path.Combine(rootFolder, "exportCourse.xml");
+			using (Ocad.Scripting.Script expPdf = new Ocad.Scripting.Script(script))
+			{
+				using (Ocad.Scripting.Node node = expPdf.FileOpen())
+				{ node.File(mapFile); }
+			}
+			string pName = new Ocad.Scripting.Utils().RunScript(script, exe, wait: 3000);
+			IList<Process> processes = Process.GetProcessesByName(pName);
+
+			if (processes.Count < 1)
+			{ return; }
+			Processor m = new Processor();
+			m.SetForegroundProcess(processes[0]);
+			m.SetForegroundWindow("OCAD", out string fullText);
+			System.Threading.Thread.Sleep(2000);
+
+			// Export Course maps...
+			m.SendCommand('c', new List<byte> { Ui.VK_ALT });
+			m.SendCommand('x');
+			m.SendCommand('x');
+
+			System.Threading.Thread.Sleep(1000);
+
+			//IntPtr p = Ui.GetFocus();
+			//var root = AutomationElement.FromHandle(processes[0].MainWindowHandle);
+
+			// Click "Select All"
+			SetFocusByName("Select all", m);
+			m.SendCode(new[] { Ui.VK_RETURN });
+			System.Threading.Thread.Sleep(500);
+
+			// Click "Select OK"
+			SetFocusByName("OK", m);
+			m.SendCode(new[] { Ui.VK_RETURN });
+			System.Threading.Thread.Sleep(500);
+
+			// "Save" exported course maps
+			m.SendCommand('s', new[] { Ui.VK_ALT });
+			System.Threading.Thread.Sleep(500);
+
+			while (!(Directory.GetFiles(rootFolder, $"{mapName}.{lastCourse}.*")?.Length > 0))
+			{
+				System.Threading.Thread.Sleep(500);
+			}
+			System.Threading.Thread.Sleep(1000);
+			m.SetForegroundWindow("OCAD", out fullText);
+			System.Threading.Thread.Sleep(1000);
+
+
+			// Close map
+			m.SendCommand('w', new[] { Ui.VK_CONTROL });
+			System.Threading.Thread.Sleep(500);
+			// Check for "Save File ...",
+			if (AutomationElement.FocusedElement.Current.ControlType.ProgrammaticName == "ControlType.Button")
+			{
+				// Do not save file
+				m.SendCommand('n', new[] { Ui.VK_ALT });
+				System.Threading.Thread.Sleep(500);
+			}
+			var c = AutomationElement.FocusedElement.Current;
 		}
 
 		private void SetFocusByName(string name, Processor m)
@@ -323,50 +423,280 @@ namespace OcadTest.OEvent
 			return null;
 		}
 
-		private IPoint GetCustomPositionHE(CourseMap cm, string cntrText, double textWidth, IReadOnlyList<Polyline> freeParts)
+		private IPoint GetCustomPositionD20(CourseMap cm, string cntrText, double textWidth,
+			IReadOnlyList<Polyline> freeParts)
 		{
 			if (freeParts.Count > 0)
 			{ return null; }
 
-			if (cntrText.EndsWith("-93"))
-			{ return new Point2D(9099 - textWidth, -7628); }
+			if (cntrText.EndsWith("-73"))
+			{ return new Point2D(14032 - textWidth, 4642); }
 
 			return null;
 		}
-		private IPoint GetCustomPositionHAL(CourseMap cm, string cntrText, double textWidth, IReadOnlyList<Polyline> freeParts)
+
+		private IPoint GetCustomPositionD35(CourseMap cm, string cntrText, double textWidth,
+			IReadOnlyList<Polyline> freeParts)
 		{
 			if (freeParts.Count > 0)
 			{ return null; }
 
-			if (cntrText.EndsWith("-87"))
-			{ return new Point2D(-5598 - textWidth, 197); }
+			if (cntrText.EndsWith("-60"))
+			{ return new Point2D(15014, 5213); }
 
 			return null;
 		}
 
-		private IPoint GetCustomPositionH45(CourseMap cm, string cntrText, double textWidth, IReadOnlyList<Polyline> freeParts)
+		private IPoint GetCustomPositionD40(CourseMap cm, string cntrText, double textWidth,
+			IReadOnlyList<Polyline> freeParts)
 		{
 			if (freeParts.Count > 0)
 			{ return null; }
 
-			if (cntrText.EndsWith("-85"))
-			{ return new Point2D(3675 - textWidth, -2885); }
+			if (cntrText.EndsWith("-60"))
+			{
+				foreach (var elem in cm.ConnectionElems)
+				{
+					if (string.IsNullOrWhiteSpace(elem.ObjectString))
+					{ continue; }
+					Ocad.StringParams.ControlPar par = new Ocad.StringParams.ControlPar(elem.ObjectString);
+					string f = par.GetString('f');
+					if (f != "69")
+					{ continue; }
+					string t = par.GetString('t');
+					if (t != "52")
+					{ continue; }
+
+					Ocad.GeoElement.Line line = (Ocad.GeoElement.Line)elem.GetMapGeometry();
+					Polyline b = new Polyline();
+					b.Add(line.BaseGeometry.Points[0]);
+					b.Add(new Ocad.Coord.CodePoint(17148, 5076) { Flags = Ocad.Coord.Flags.noLine | Ocad.Coord.Flags.noLeftLine | Ocad.Coord.Flags.noRightLine });
+					b.Add(new Point2D(16794, 4378));
+					b.Add(line.BaseGeometry.Points[line.BaseGeometry.Points.Count - 1]);
+
+					Ocad.GeoElement.Line l1 = new Ocad.GeoElement.Line(b);
+					cm.CustomGeometries.Add(elem, l1);
+				}
+				return new Point2D(16166, 4539);
+			}
 
 			return null;
 		}
 
-
-		private IPoint GetCustomPositionD20(CourseMap cm, string cntrText, double textWidth, IReadOnlyList<Polyline> freeParts)
+		private IPoint GetCustomPositionD70(CourseMap cm, string cntrText, double textWidth,
+			IReadOnlyList<Polyline> freeParts)
 		{
 			if (freeParts.Count > 0)
 			{ return null; }
 
-			if (cntrText.EndsWith("-85"))
-			{ return new Point2D(3675 - textWidth, -2885); }
+			if (cntrText.EndsWith("-66"))
+			{ return new Point2D(6942, 7819); }
 
 			return null;
 		}
 
+		private IPoint GetCustomPositionDAL(CourseMap cm, string cntrText, double textWidth,
+			IReadOnlyList<Polyline> freeParts)
+		{
+			if (freeParts.Count > 0)
+			{ return null; }
+
+			if (cntrText.EndsWith("-73"))
+			{
+				if (cm.ConnectionElems.FirstOrDefault(x => x.ObjectString?.EndsWith("77\tt73") == true) != null
+					&& cm.ConnectionElems.FirstOrDefault(x => x.ObjectString?.EndsWith("73\tt32") == true) != null)
+				{
+					return new Point2D(13099, 5462);
+				}
+			}
+
+			if (cntrText.EndsWith("-60"))
+			{
+				if (//int.Parse(cntrText.Split('-')[0]) < 10 
+					cm.ConnectionElems.FirstOrDefault(x => x.ObjectString?.EndsWith("73\tt32") == true) != null
+					&& cm.ConnectionElems.FirstOrDefault(x => x.ObjectString?.EndsWith("75\tt46") == true) is Ocad.MapElement eTo46)
+				{
+					//					return new Point2D(15222, 5090);
+
+					Ocad.GeoElement.Line line = (Ocad.GeoElement.Line)eTo46.GetMapGeometry();
+					Polyline b = new Polyline();
+					b.Add(line.BaseGeometry.Points[0]);
+					b.Add(new Ocad.Coord.CodePoint(16388, 4401) { Flags = Ocad.Coord.Flags.noLine | Ocad.Coord.Flags.noLeftLine | Ocad.Coord.Flags.noRightLine });
+					b.Add(new Point2D(15604, 3937));
+					b.Add(line.BaseGeometry.Points[line.BaseGeometry.Points.Count - 1]);
+
+					Ocad.GeoElement.Line l1 = new Ocad.GeoElement.Line(b);
+					cm.CustomGeometries.Add(eTo46, l1);
+
+					return new Point2D(15547, 3938);
+				}
+			}
+
+
+			return null;
+		}
+
+		private IPoint GetCustomPositionH16(CourseMap cm, string cntrText, double textWidth,
+			IReadOnlyList<Polyline> freeParts)
+		{
+			if (freeParts.Count > 0)
+			{ return null; }
+
+			// as DAL
+			if (cntrText.EndsWith("-73"))
+			{
+				if (cm.ConnectionElems.FirstOrDefault(x => x.ObjectString?.EndsWith("77\tt73") == true) != null
+					&& cm.ConnectionElems.FirstOrDefault(x => x.ObjectString?.EndsWith("73\tt32") == true) != null)
+				{
+					return new Point2D(13099, 5462);
+				}
+			}
+
+			return null;
+		}
+
+		private IPoint GetCustomPositionH20(CourseMap cm, string cntrText, double textWidth,
+			IReadOnlyList<Polyline> freeParts)
+		{
+			if (freeParts.Count > 0)
+			{ return null; }
+
+			if (cntrText.EndsWith("-71"))
+			{
+				if (cm.ConnectionElems.FirstOrDefault(x => x.ObjectString?.EndsWith("47\tt39") == true) != null)
+				{
+					return new Point2D(13848, 4068);
+				}
+				else
+				{
+					return new Point2D(13427, 4087);
+				}
+			}
+
+			return null;
+		}
+
+		private IPoint GetCustomPositionH70(CourseMap cm, string cntrText, double textWidth,
+			IReadOnlyList<Polyline> freeParts)
+		{
+			if (freeParts.Count > 0)
+			{ return null; }
+
+			if (cntrText.EndsWith("-80"))
+			{
+				if (//int.Parse(cntrText.Split('-')[0]) < 10 
+					cm.ConnectionElems.FirstOrDefault(x => x.ObjectString?.EndsWith("77\tt80") == true) != null
+					&& cm.ConnectionElems.FirstOrDefault(x => x.ObjectString?.EndsWith("80\tt31") == true) != null
+					&& cm.ConnectionElems.FirstOrDefault(x => x.ObjectString?.EndsWith("31\tt38") == true) is Ocad.MapElement eTo38)
+				{
+					//					return new Point2D(15222, 5090);
+
+					Ocad.GeoElement.Line line = (Ocad.GeoElement.Line)eTo38.GetMapGeometry();
+					Polyline b = new Polyline();
+					b.Add(line.BaseGeometry.Points[0]);
+					b.Add(new Ocad.Coord.CodePoint(13207, 4920) { Flags = Ocad.Coord.Flags.noLine | Ocad.Coord.Flags.noLeftLine | Ocad.Coord.Flags.noRightLine });
+					b.Add(new Point2D(13195,  4284));
+					b.Add(line.BaseGeometry.Points[line.BaseGeometry.Points.Count - 1]);
+
+					Ocad.GeoElement.Line l1 = new Ocad.GeoElement.Line(b);
+					cm.CustomGeometries.Add(eTo38, l1);
+
+					return new Point2D(11782, 4377);
+				}
+			}
+			return null;
+		}
+
+
+		private IPoint GetCustomPositionH80(CourseMap cm, string cntrText, double textWidth,
+			IReadOnlyList<Polyline> freeParts)
+		{
+			if (freeParts.Count > 0)
+			{ return null; }
+
+			if (cntrText.EndsWith("-66"))
+			{ return new Point2D(7370 - textWidth, 6565); }
+
+			return null;
+		}
+
+		private IPoint GetCustomPositionHAM(CourseMap cm, string cntrText, double textWidth,
+			IReadOnlyList<Polyline> freeParts)
+		{
+			if (freeParts.Count > 0)
+			{ return null; }
+
+			// as DAL
+			if (cntrText.EndsWith("-73"))
+			{
+				if (cm.ConnectionElems.FirstOrDefault(x => x.ObjectString?.EndsWith("77\tt73") == true) != null
+					&& cm.ConnectionElems.FirstOrDefault(x => x.ObjectString?.EndsWith("73\tt32") == true) != null)
+				{
+					return new Point2D(13099, 5462);
+				}
+			}
+
+			return null;
+		}
+
+		private IPoint GetCustomPositionHAK(CourseMap cm, string cntrText, double textWidth,
+			IReadOnlyList<Polyline> freeParts)
+		{
+			if (freeParts.Count > 0)
+			{ return null; }
+
+			// see H80
+			if (cntrText.EndsWith("-66"))
+			{ return new Point2D(7370 - textWidth, 6565); }
+
+			return null;
+		}
+
+		private IPoint GetCustomPositionHE(CourseMap cm, string cntrText, double textWidth,
+			IReadOnlyList<Polyline> freeParts)
+		{
+			if (freeParts.Count > 0)
+			{ return null; }
+
+			if (cntrText.EndsWith("-82"))
+			{
+				if (//int.Parse(cntrText.Split('-')[0]) < 10 
+					cm.ConnectionElems.FirstOrDefault(x => x.ObjectString?.EndsWith("50\tt43") == true) is Ocad.MapElement e50To43)
+				{
+					//					return new Point2D(15222, 5090);
+
+					Ocad.GeoElement.Line line = (Ocad.GeoElement.Line)e50To43.GetMapGeometry();
+					Polyline b = new Polyline();
+					b.Add(line.BaseGeometry.Points[0]);
+					b.Add(new Ocad.Coord.CodePoint(20865, -1920) { Flags = Ocad.Coord.Flags.noLine | Ocad.Coord.Flags.noLeftLine | Ocad.Coord.Flags.noRightLine });
+					b.Add(new Point2D(21024, -2545));
+					b.Add(line.BaseGeometry.Points[line.BaseGeometry.Points.Count - 1]);
+
+					Ocad.GeoElement.Line l1 = new Ocad.GeoElement.Line(b);
+					cm.CustomGeometries.Add(e50To43, l1);
+
+					return new Point2D(20289, -2454);
+				}
+				if (//int.Parse(cntrText.Split('-')[0]) < 10 
+					cm.ConnectionElems.FirstOrDefault(x => x.ObjectString?.EndsWith("34\tt43") == true) is Ocad.MapElement e34To43)
+				{
+					//					return new Point2D(15222, 5090);
+
+					Ocad.GeoElement.Line line = (Ocad.GeoElement.Line)e34To43.GetMapGeometry();
+					Polyline b = new Polyline();
+					b.Add(line.BaseGeometry.Points[0]);
+					b.Add(new Ocad.Coord.CodePoint(21455, -1988) { Flags = Ocad.Coord.Flags.noLine | Ocad.Coord.Flags.noLeftLine | Ocad.Coord.Flags.noRightLine });
+					b.Add(new Point2D(21343, -2514));
+					b.Add(line.BaseGeometry.Points[line.BaseGeometry.Points.Count - 1]);
+
+					Ocad.GeoElement.Line l1 = new Ocad.GeoElement.Line(b);
+					cm.CustomGeometries.Add(e34To43, l1);
+
+					return new Point2D(20289, -2454);
+				}
+			}
+			return null;
+		}
 
 		private class Tmpl
 		{
@@ -418,57 +748,108 @@ namespace OcadTest.OEvent
 		[TestMethod]
 		public void T03_AdaptCourses()
 		{
-			//			string root = @"C:\daten\felix\kapreolo\karten\ruemlangerwald\2021\Karten";
-			string root = Path.Combine(_root, _exportFolder);
+			AdaptCourses(Path.Combine(_root, _exportFolder));
+		}
+
+		[TestMethod]
+		public void T03_Z_AdaptAllVars()
+		{
+			AdaptCourses(Path.GetDirectoryName(Path.Combine(_root, _exportFolder, _allVarsName)));
+		}
+
+		private void AdaptCourses(string root)
+		{
 			foreach (var mapFile in Directory.GetFiles(root))
 			{
-				IList<string> parts = Path.GetFileName(mapFile).Split(new[] { '.' });
-				if (parts.Count != 5 || parts[4] != "ocd")
-				{ continue; }
+				AdaptCourse(mapFile);
+			}
+		}
+		private void AdaptCourse(string mapFile)
+		{
+			string mapName = Path.GetFileName(mapFile);
+			IList<string> parts = mapName.Split(new[] { '.' });
+			if (parts.Count != 5 || parts[4] != "ocd")
+			{ return; }
 
-				//if (!parts[1].EndsWith("HE") || parts[2] != "110" || parts[3] != "2")
-				//{ continue; }
+			CourseMap cm = new CourseMap();
+			cm.ControlNrOverprintSymbol = 704005;
+			cm.ControlNrSymbols.Add(cm.ControlNrOverprintSymbol);
+			cm.InitFromFile(mapFile);
 
-				CourseMap cm = new CourseMap();
-				cm.InitFromFile(mapFile);
-				cm.ControlNrOverprintSymbol = 704005;
-				cm.ControlNrSymbols.Add(cm.ControlNrOverprintSymbol);
+			using (System.Drawing.Bitmap bmpFont = new System.Drawing.Bitmap(8, 8, System.Drawing.Imaging.PixelFormat.Format24bppRgb))
+			using (System.Drawing.Graphics grpFont = System.Drawing.Graphics.FromImage(bmpFont))
+			using (System.Drawing.Font font = new System.Drawing.Font(cm.CourseNameFont, 12))
+			using (Ocad.OcadWriter w = Ocad.OcadWriter.AppendTo(mapFile))
+			{
+				CmdCoursePlaceControlNrs cmd = new CmdCoursePlaceControlNrs(w, cm);
+				//if (parts[1].EndsWith("HE"))
+				//{ cmd.GetCustomPosition = GetCustomPositionHE; }
+				//if (parts[1].EndsWith("HAL"))
+				//{ cmd.GetCustomPosition = GetCustomPositionHAL; }
+				//if (parts[1].EndsWith("H45"))
+				//{ cmd.GetCustomPosition = GetCustomPositionH45; }
+				if (parts[1].EndsWith("D20"))
+				{ cmd.GetCustomPosition = GetCustomPositionD20; }
+				if (parts[1].EndsWith("D35"))
+				{ cmd.GetCustomPosition = GetCustomPositionD35; }
+				if (parts[1].EndsWith("D40"))
+				{ cmd.GetCustomPosition = GetCustomPositionD40; }
+				if (parts[1].EndsWith("D70"))
+				{ cmd.GetCustomPosition = GetCustomPositionD70; }
+				if (parts[1].EndsWith("DAL"))
+				{ cmd.GetCustomPosition = GetCustomPositionDAL; }
+				if (parts[1].EndsWith("H16"))
+				{ cmd.GetCustomPosition = GetCustomPositionH16; }
+				if (parts[1].EndsWith("H20"))
+				{ cmd.GetCustomPosition = GetCustomPositionH20; }
+				if (parts[1].EndsWith("H70"))
+				{ cmd.GetCustomPosition = GetCustomPositionH70; }
+				if (parts[1].EndsWith("H80"))
+				{ cmd.GetCustomPosition = GetCustomPositionH80; }
+				if (parts[1].EndsWith("HAK"))
+				{ cmd.GetCustomPosition = GetCustomPositionHAK; }
+				if (parts[1].EndsWith("HAM"))
+				{ cmd.GetCustomPosition = GetCustomPositionHAM; }
+				if (parts[1].EndsWith("HE"))
+				{ cmd.GetCustomPosition = GetCustomPositionHE; }
 
-				using (System.Drawing.Bitmap bmpFont = new System.Drawing.Bitmap(8, 8, System.Drawing.Imaging.PixelFormat.Format24bppRgb))
-				using (System.Drawing.Graphics grpFont = System.Drawing.Graphics.FromImage(bmpFont))
-				using (System.Drawing.Font font = new System.Drawing.Font(cm.CourseNameFont, 12))
-				using (Ocad.OcadWriter w = Ocad.OcadWriter.AppendTo(mapFile))
+				//if (parts[1].EndsWith("12"))
+				//{ cmd.GetCustomPosition = GetCustomPositionDH12; }
+				//if (parts[1].EndsWith("D14") || parts[1].EndsWith("DAM") || parts[1].EndsWith("D60"))
+				//{ cmd.GetCustomPosition = GetCustomPositionDAM; }
+
+				cmd.Execute();
+
+				if (parts[3] == "1")
 				{
-					CmdCoursePlaceControlNrs cmd = new CmdCoursePlaceControlNrs(w, cm);
-					//if (parts[1].EndsWith("HE"))
-					//{ cmd.GetCustomPosition = GetCustomPositionHE; }
-					//if (parts[1].EndsWith("HAL"))
-					//{ cmd.GetCustomPosition = GetCustomPositionHAL; }
-					//if (parts[1].EndsWith("H45"))
-					//{ cmd.GetCustomPosition = GetCustomPositionH45; }
-					//if (parts[1].EndsWith("D20"))
-					//{ cmd.GetCustomPosition = GetCustomPositionD20; }
-					//if (parts[1].EndsWith("12"))
-					//{ cmd.GetCustomPosition = GetCustomPositionDH12; }
-					//if (parts[1].EndsWith("D14") || parts[1].EndsWith("DAM") || parts[1].EndsWith("D60"))
-					//{ cmd.GetCustomPosition = GetCustomPositionDAM; }
-
-					cmd.Execute();
-
-					if (parts[3] == "1")
-					{
-						AdaptCourseName(w, cm, grpFont, font);
-					}
+					AdaptCourseName(w, cm, grpFont, font);
 				}
 			}
+
+			if (cm.UnplacedControls.Count > 0)
+			{ }
+
 		}
 
 		[TestMethod]
 		public void T04_ExportCourses()
 		{
-			List<string> exports = new List<string>();
 			//			string root = @"C:\daten\felix\kapreolo\karten\ruemlangerwald\2021\Karten";
 			string root = Path.Combine(_root, _exportFolder);
+			ExportCourses(root);
+		}
+
+		[TestMethod]
+		public void T04_Z_ExportCourses()
+		{
+			//			string root = @"C:\daten\felix\kapreolo\karten\ruemlangerwald\2021\Karten";
+			string root = Path.GetDirectoryName(Path.Combine(_root, _exportFolder, _allVarsName));
+			ExportCourses(root);
+		}
+
+		private static void ExportCourses(string root)
+		{ 
+			List<string> exports = new List<string>();
 			foreach (var mapFile in Directory.GetFiles(root))
 			{
 				IList<string> parts = Path.GetFileName(mapFile).Split(new[] { '.' });
@@ -504,7 +885,7 @@ namespace OcadTest.OEvent
 			new Ocad.Scripting.Utils { Exe = defaultExe }.RunScript(scriptFile, defaultExe);
 		}
 
-		private void ExportBackgrounds(Ocad.Scripting.Script script, List<string> exports)
+		private static void ExportBackgrounds(Ocad.Scripting.Script script, List<string> exports)
 		{
 			Dictionary<string, string> bgs = new Dictionary<string, string>();
 			foreach (var exp in exports)

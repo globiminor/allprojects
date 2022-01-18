@@ -1200,24 +1200,30 @@ namespace Basics.Geom
 
       IBox yExtent = y.Extent;
       int iPart = -1;
+      HashSet<ParamGeometryRelation> allRels = null;
       foreach (var xPart in xMulti.Subparts())
       {
         iPart++;
         if (track != null && track.Cancel)
-        { yield break; }
+        { break; }
 
         Relation extentRelation = BoxOp.GetRelation(xPart.Extent, yExtent);
-        IEnumerable<ParamGeometryRelation> list = CreateRelations(xPart, y,
+        IEnumerable<ParamGeometryRelation> rels = CreateRelations(xPart, y,
           track, extentRelation, false);
-        if (list != null)
+        if (rels != null)
         {
-          foreach (var rel in list)
+          foreach (var rel in rels)
           {
             rel.AddParent(x, iPart, xPart);
-            yield return rel;
+            allRels = allRels ?? new HashSet<ParamGeometryRelation>(new ParamGeometryRelation.GeomComparer(x));
+            allRels.Add(rel);
           }
         }
       }
+      if (allRels == null)
+      { return new ParamGeometryRelation[] { }; }
+
+      return allRels;
     }
 
     private static IEnumerable<ParamGeometryRelation> IntersectReduce(

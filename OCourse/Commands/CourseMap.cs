@@ -62,7 +62,7 @@ namespace OCourse.Commands
 		public List<int> ConnectionSymbols { get; set; } = new List<int> { 705000 };
 		public List<int> FinishSymbols { get; set; } = new List<int> { 706000 };
 		public List<int> CourseNameSymbols { get; set; } = new List<int> { 721000 };
-		public List<int> ForbiddenAreaSymbols { get; set; } = new List<int> { 709000 };
+		public List<int> ForbiddenAreaSymbols { get; set; } = new List<int> { 709000, 709003 };
 		public List<int> ForbiddenLineSymbols { get; set; } = new List<int> { 708000 };
 
 
@@ -76,7 +76,13 @@ namespace OCourse.Commands
 
 		public List<MapElement> ForbiddenLineElems { get; set; }
 
+		public Dictionary<Element, GeoElement.Geom> CustomGeometries { get; set; }
+
+
 		public string CourseNameFont { get; set; }
+
+		public List<string> UnplacedControls => _unplacedControls ?? (_unplacedControls = new List<string>());
+		private List<string> _unplacedControls;
 
 
 		public BoxTree<ControlElement> ControlsTree => _controlsTree ??
@@ -169,8 +175,22 @@ namespace OCourse.Commands
 			ForbiddenAreaElems = forbiddenAreaElems;
 			ForbiddenLineElems = forbiddenLineElems;
 
+			CustomGeometries = new Dictionary<Element, GeoElement.Geom>(new ObjectStringComparer());
+
 			CourseNameFont = courseNameFont;
 		}
 
+		private class ObjectStringComparer : IEqualityComparer<Element>
+		{
+			public bool Equals(Element x, Element y)
+			{
+				return x.ObjectString?.Equals(y.ObjectString) ?? false;
+			}
+
+			public int GetHashCode(Element obj)
+			{
+				return obj?.ObjectString?.GetHashCode() ?? 0;
+			}
+		}
 	}
 }
