@@ -22,10 +22,21 @@ namespace Ocad.Scripting
       new Utils { Exe = exe ?? defaultExe }.RunScript(script, defaultExe);
     }
 
-    public static void Optimize(IEnumerable<string> files, string script, string exe = null)
+    public static void Optimize(IEnumerable<string> files, string script, string exe = null, bool wait = false)
     {
-      string defaultExe = OptimizeScript(files, script);
+      string defaultExe = OptimizeScript(files, script, out string lastFile);
+      if (lastFile == null)
+      { return; }
+      DateTime t = DateTime.Now;
       new Utils { Exe = exe ?? defaultExe }.RunScript(script, defaultExe);
+
+      if (wait)
+      {
+        while (new FileInfo(lastFile).LastWriteTime < t)
+        {
+          System.Threading.Thread.Sleep(500);
+        }
+      }
     }
 
     public string RunScript(string script, string exe, bool setAccess = true, int wait = -1)
@@ -114,13 +125,15 @@ namespace Ocad.Scripting
       return exe;
     }
 
-    private static string OptimizeScript(IEnumerable<string> files, string script)
+    private static string OptimizeScript(IEnumerable<string> files, string script, out string lastFile)
     {
       string exe = null;
+      lastFile = null;
       using (Script opt = new Script(script))
       {
         foreach (var ocdFile in files)
         {
+          lastFile = ocdFile;
           if (exe == null)
           {
             exe = Basics.Utils.FindExecutable(ocdFile);
@@ -161,11 +174,54 @@ namespace Ocad.Scripting
       FileInfo fPdf = new FileInfo(@"C:\daten\ASVZ\SOLA\2014\Exp_Uebergabe\Ue_00_01_Bucheggplatz.pdf");
       FileInfo fGif = new FileInfo(@"C:\daten\ASVZ\SOLA\2014\Exp_Uebergabe\Ue_00_01_Bucheggplatz.gif");
 
-      System.Security.AccessControl.FileSecurity sec =
-    System.IO.File.GetAccessControl(fPdf.FullName, System.Security.AccessControl.AccessControlSections.All);
+      FileSecurity sec = File.GetAccessControl(fPdf.FullName, AccessControlSections.All);
       var rules = sec.GetAccessRules(true, true, typeof(System.Security.Principal.NTAccount));
 
       return true;
+    }
+
+    public static void CloseOcadProcs(string ocadExe, bool force = false)
+    {
+      bool cleanRoaming = force;
+      IList<Process> procs = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(ocadExe));
+      foreach (var proc in procs)
+      {
+        try
+        {
+          proc.CloseMainWindow();
+          System.Threading.Thread.Sleep(500);
+          if (!proc.HasExited && force)
+          {
+            proc.Kill();
+            cleanRoaming = true;
+          }
+        }
+        catch { }
+      }
+      if (cleanRoaming)
+      {
+        System.Threading.Thread.Sleep(500);
+        string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        string ocd = Path.Combine(appData, "OCAD");
+        Clean(ocd, DateTime.Now.AddHours(-1));
+      }
+    }
+
+    private static void Clean(string folder, DateTime limit)
+    {
+      foreach (var file in Directory.GetFiles(folder))
+      {
+        FileInfo fi = new FileInfo(file);
+        if (fi.LastWriteTime > DateTime.Now.AddHours(-1))
+        {
+          File.Delete(file);
+        }
+      }
+
+      foreach (var child in Directory.GetDirectories(folder))
+      {
+        Clean(child, limit);
+      }
     }
   }
 }

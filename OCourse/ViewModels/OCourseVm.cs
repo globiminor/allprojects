@@ -889,7 +889,7 @@ namespace OCourse.ViewModels
       SetProgressAsync(_lastVariation);
     }
 
-    public void PermutationsInit()
+    public void PermutationsInit(bool useAllPermutations = false)
     {
       PermutationBuilder pb;
       try
@@ -911,12 +911,17 @@ namespace OCourse.ViewModels
         VariationBuilder builder = new VariationBuilder(course);
         builder.VariationAdded += Builder_VariationAdded;
         pb = new PermutationBuilder(this, builder, min, max);
+        if (useAllPermutations)
+        {
+          pb.AllVariants = new List<SectionList>(Info.OfType<CostSectionlist>().Select(x=> x.Sections)); 
+        }
       }
       catch
       {
         Working = false;
         throw;
       }
+
       Run(pb, (working) => { }, RunInSynch);
     }
 
@@ -1099,9 +1104,11 @@ namespace OCourse.ViewModels
         _max = max;
       }
 
+      public List<SectionList> AllVariants { get; set; }
+
       public bool Start()
       {
-        _permuts = _builder.BuildPermutations(_max - _min + 1);
+        _permuts = _builder.BuildPermutations(_max - _min + 1, AllVariants);
         return true;
       }
 

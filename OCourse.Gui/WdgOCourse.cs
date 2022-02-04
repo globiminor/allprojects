@@ -723,7 +723,7 @@ namespace OCourse.Gui
         { courseName = PermutationUtils.GetCoreCourseName(_vm.Course.Name); }
         using (CmdCourseTransfer cmd = new CmdCourseTransfer(wdg.ExportFile, wdg.TemplateFile, _vm.CourseFile))
         {
-          cmd.Export(selectedCombs.Select(comb => PermutationUtils.GetCourse(courseName, comb, wdg.SplitCourses)), courseName);
+          cmd.Export(selectedCombs.Select(comb => PermutationUtils.GetCourse(courseName, comb, wdg.SplitCourses ? new SplitBuilder.Parameters() : null)), courseName);
         }
       }
     }
@@ -823,7 +823,7 @@ namespace OCourse.Gui
           CostSectionlist.GetCostSectionLists(selectedPermuts, _vm.RouteCalculator, _vm.LcpConfig.Resolution);
         using (CmdCourseTransfer cmd = new CmdCourseTransfer(wdg.ExportFile, wdg.TemplateFile, _vm.CourseFile))
         {
-          cmd.Export(selectedCombs.Select(comb => PermutationUtils.GetCourse(courseName, comb, wdg.SplitCourses)), courseName);
+          cmd.Export(selectedCombs.Select(comb => PermutationUtils.GetCourse(courseName, comb, wdg.SplitCourses ? new SplitBuilder.Parameters() : null)), courseName);
         }
       }
     }

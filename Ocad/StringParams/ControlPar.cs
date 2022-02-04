@@ -26,6 +26,16 @@ namespace Ocad.StringParams
       return par;
     }
 
+    public void ClearSymbols()
+    {
+      SetParam(SymCKey, null);
+      SetParam(SymDKey, null);
+      SetParam(SymEKey, null);
+      SetParam(SymFKey, null);
+      SetParam(SymGKey, null);
+      SetParam(SymHKey, null);
+      SetParam(SizeInfoKey, null);
+    }
     public ControlPar(string para)
       : base(para)
     { }

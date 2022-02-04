@@ -77,8 +77,13 @@ namespace OCourse.Route
 
       _route = route;
     }
+		public override string ToString()
+		{
+      ICost cost = this;
+			return $"{cost.Name}; {Direct:N1}";
+		}
 
-    string ICost.Name
+		string ICost.Name
     {
       get { return Name ?? $"{_from.Name} -> {_to.Name}"; }
     }

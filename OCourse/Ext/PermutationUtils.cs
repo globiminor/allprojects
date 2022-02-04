@@ -134,14 +134,14 @@ namespace OCourse.Ext
       return climb;
     }
 
-    public static Course GetCourse(string prefix, CostSectionlist comb, bool split,
-      Func<int, Control, Dictionary<string, List<Control>>, Dictionary<string, List<Control>>, int> customSplitWeight = null)
+    public static Course GetCourse(string prefix, CostSectionlist comb, SplitBuilder.Parameters splitPars = null)
     {
       Course course = comb.Sections.ToSimpleCourse();
 
-      if (split)
+      if (splitPars != null)
       {
-        VariationBuilder.Split(course, customSplitWeight);
+        SplitBuilder splitBuilder = new SplitBuilder(splitPars);
+        splitBuilder.Split(course);
       }
 
       string name;

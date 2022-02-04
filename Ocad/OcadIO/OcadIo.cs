@@ -583,7 +583,7 @@ namespace Ocad
     public abstract void WriteElementHeader(Element element);
     public abstract void WriteElementContent(Element element);
     public abstract void WriteElementSymbol(int symbol);
-    public abstract void AppendContolPar(OcadWriter writer, Control control, int elementPosition);
+    public abstract void AppendControlPar(OcadWriter writer, Control control, int elementPosition);
     public abstract int CalcElementLength(Element element);
   }
 }

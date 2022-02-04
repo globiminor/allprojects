@@ -631,7 +631,7 @@ namespace Ocad
       return 0;
     }
 
-    public override void AppendContolPar(OcadWriter writer, Control control, int elementPosition)
+    public override void AppendControlPar(OcadWriter writer, Control control, int elementPosition)
     {
       AppendControlParam(writer, control, elementPosition);
     }

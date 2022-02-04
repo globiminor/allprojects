@@ -50,6 +50,10 @@ namespace Macro
     public static extern IntPtr GetFocus();
 
     [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool ShowWindow(IntPtr hWnd, ShowWindowCommands command);
+
+    [DllImport("user32.dll")]
     internal static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, IntPtr dwExtraInfo);
     [DllImport("user32.dll")]
     public static extern int GetKeyboardState(byte[] lpKeyState);

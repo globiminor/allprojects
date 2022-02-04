@@ -27,6 +27,18 @@ namespace Ocad
   /// </summary>
   public class Control : ISection
   {
+    public class NameComparer : IEqualityComparer<Control>
+    {
+      public bool Equals(Control x, Control y)
+      {
+        return x.Name.Equals(y.Name);
+      }
+
+      public int GetHashCode(Control obj)
+      {
+        return obj.Name.GetHashCode();
+      }
+    }
     public Control()
     { }
     public static Control FromStringParam(string param)

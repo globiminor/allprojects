@@ -16,6 +16,7 @@ namespace Ocad.Scripting
       _scriptNode = _doc.CreateElement("OcadScript");
       _doc.AppendChild(_scriptNode);
     }
+    public XmlElement ScriptNode => _scriptNode;
     public Node FileOpen()
     {
       XmlElement childElem = _doc.CreateElement("File.Open");

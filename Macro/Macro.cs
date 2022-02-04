@@ -289,6 +289,12 @@ namespace Macro
 
       return rect;
     }
+
+    public static bool Minimize(IntPtr? hwnd = null)
+    {
+      IntPtr h = hwnd ?? Ui.GetForegroundWindow();
+      return Ui.ShowWindow(h, ShowWindowCommands.Minimize);
+    }
     public static string ForeGroundWindowName()
     {
       IntPtr hWnd = Ui.GetForegroundWindow();
@@ -356,6 +362,13 @@ namespace Macro
 
 
     #region maus
+    public void GlobalMove(int x, int y)
+    {
+      uint ux = (uint)(x * 65535 / Screen.PrimaryScreen.Bounds.Width);
+      uint uy = (uint)(y * 65535 / Screen.PrimaryScreen.Bounds.Height);
+      Ui.mouse_event(Ui.MOUSEEVENTF_MOVE | Ui.MOUSEEVENTF_ABSOLUTE, ux, uy, 0, IntPtr.Zero);
+    }
+
     public void ForegroundClick(int x, int y)
     {
       IntPtr foreGround = Ui.GetForegroundWindow();
@@ -373,22 +386,21 @@ namespace Macro
       else
       { iy = rect.Bottom + y; }
 
-      MausClick((uint)ix, (uint)iy);
+      MausClick(ix, iy);
     }
-    private void MausClick(uint x, uint y)
+    public void MausClick(int x, int y)
     {
-      x = (uint)(x * 65535 / Screen.PrimaryScreen.Bounds.Width);
-      y = (uint)(y * 65535 / Screen.PrimaryScreen.Bounds.Height);
+      uint ux = (uint)(x * 65535 / Screen.PrimaryScreen.Bounds.Width);
+      uint uy = (uint)(y * 65535 / Screen.PrimaryScreen.Bounds.Height);
 
-      Ui.mouse_event(Ui.MOUSEEVENTF_ABSOLUTE | Ui.MOUSEEVENTF_MOVE, x, y, 0, IntPtr.Zero);
+      Ui.mouse_event(Ui.MOUSEEVENTF_ABSOLUTE | Ui.MOUSEEVENTF_MOVE, ux, uy, 0, IntPtr.Zero);
       Sleep(50);
       Ui.mouse_event(Ui.MOUSEEVENTF_ABSOLUTE | Ui.MOUSEEVENTF_MOVE | Ui.MOUSEEVENTF_LEFTDOWN,
-        x, y, 0, IntPtr.Zero);
+        ux, uy, 0, IntPtr.Zero);
       Sleep(50);
-      Ui.mouse_event(Ui.MOUSEEVENTF_ABSOLUTE | Ui.MOUSEEVENTF_LEFTUP,
-        x, y, 0, IntPtr.Zero);
+      Ui.mouse_event(Ui.MOUSEEVENTF_ABSOLUTE | Ui.MOUSEEVENTF_LEFTUP, ux, uy, 0, IntPtr.Zero);
     }
-    private void MausDoubleClick(uint x, uint y)
+    private void MausDoubleClick(int x, int y)
     {
       MausClick(x, y);
       MausClick(x, y);

@@ -23,7 +23,10 @@ namespace Ocad.StringParams
       int n = ParaList.Count;
       for (int i = 1; i < n; i++) // 0 Index = Name!
       {
-        if (ParaList[i][0] == t)
+        string para = ParaList[i];
+        if (!(para?.Length > 0))
+        { continue; }
+        if (para[0] == t)
         { return i; }
       }
       return -1;

@@ -75,10 +75,9 @@ namespace OCourse.Cmd.Commands
 								Key = "-p",
 								Parameters = "(split courses)",
 								Optional = true,
-                //Default = ()=> new [] {SamaxContext.Instance.DefaultDb },
                 Read = (p, args, i) =>
 								{
-										p.SplitCourses = true;
+										p.SplitParameters = new Ext.SplitBuilder.Parameters();
 										return 0;
 								}
 						},
@@ -96,8 +95,8 @@ namespace OCourse.Cmd.Commands
 		public string Course { get; set; }
 		public string BeginStartNr { get; set; }
 		public string EndStartNr { get; set; }
-		public bool SplitCourses { get; set; }
-		public Func<int, Ocad.Control, Dictionary<string, List<Ocad.Control>>, Dictionary<string, List<Ocad.Control>>, int> CustomSplitWeight { get; set; }
+		public Ext.SplitBuilder.Parameters SplitParameters { get; set; }
+		public bool UseAllPermutations { get; set; }
 
 		private ViewModels.OCourseVm _oCourseVm;
 		public ViewModels.OCourseVm OCourseVm => _oCourseVm;

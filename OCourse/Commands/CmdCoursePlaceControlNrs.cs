@@ -169,7 +169,7 @@ namespace OCourse.Commands
 				double h = cm.ControlNrHeight;
 				double w = textWidth;
 
-				Polyline nrPos = GetCirclePositions(cp, r, w, h);
+				Polyline nrPos = GetCirclePositions(new Point2D(cp.X + 0.01, cp.Y + 0.01), r, w, h);  // 0.01 : to avoid numerical problems
 
 				double minDist = 2 * r;
 				double q = minDist + r;

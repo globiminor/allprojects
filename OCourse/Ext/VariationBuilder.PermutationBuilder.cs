@@ -494,7 +494,7 @@ namespace OCourse.Ext
 				private static Dictionary<Control, CountInfo> InitCountInfo(PermutationBuilder builder,
 					IEnumerable<List<SplitInfo>> splitLists)
 				{
-					Dictionary<Control, CountInfo> dict = new Dictionary<Control, CountInfo>();
+					Dictionary<Control, CountInfo> dict = new Dictionary<Control, CountInfo>(new Control.NameComparer());
 					foreach (var control in builder.NextControls)
 					{
 						foreach (var next in control.Value.List)
@@ -1034,8 +1034,25 @@ namespace OCourse.Ext
 				return nexts;
 			}
 
-			public List<SectionList> BuildPermutations(int nPermutations)
+			public List<SectionList> BuildPermutations(int nPermutations, IList<SectionList> allVariations)
 			{
+				_index = new Index(this);
+				_index.UseCountInfo = true;
+				Dictionary<string, SectionList> unusedDict = allVariations?.ToDictionary(x => x.GetName());
+
+				List<SectionList> variations = new List<SectionList>(nPermutations);
+				int nFull = nPermutations / (allVariations?.Count ?? int.MaxValue);
+				for (int iFull = 0; iFull < nFull; iFull++)
+				{
+					foreach (var variation in allVariations)
+					{
+						var clone = variation.Clone();
+						variations.Add(clone);
+						OnVariationAdded(clone);
+						_index.Add(clone);
+					}
+				}
+
 				_index = new Index(this);
 				_firstLegs = null;
 				int nLegs = _course.LegCount();
@@ -1043,15 +1060,36 @@ namespace OCourse.Ext
 				bool orderedLegs = false;
 				_index.UseCountInfo = true;
 
-				List<SectionList> variations = new List<SectionList>(nPermutations);
-				for (int iPermutation = 0; iPermutation < nPermutations; iPermutation++)
+				Dictionary<string, SectionList> existing = new Dictionary<string, SectionList>();
+				int nRest = nPermutations - nFull * (allVariations?.Count ?? 0);
+				for (int iPermutation = 0; iPermutation < nRest; iPermutation++)
 				{
 					SectionList variation = orderedLegs
 						? GetVariation(iPermutation, nLegs)
 						: GetVariation();
 
+					string key = variation.GetName();
+					if (unusedDict != null && existing.ContainsKey(key))
+          {
+						int useIdx = unusedDict.Count / 2;
+						int iUnused = 0;
+						foreach (var pair in unusedDict)
+            {
+							if (iUnused == useIdx)
+              {
+								key = pair.Key;
+								variation = pair.Value.Clone();
+								break;
+              }
+							iUnused++;
+            }
+          }
+
 					variations.Add(variation);
 					OnVariationAdded(variation);
+					existing.Add(key, variation);
+					unusedDict?.Remove(key);
+
 					_index.Add(variation);
 				}
 

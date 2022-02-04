@@ -260,7 +260,7 @@ namespace Ocad
       return match;
     }
 
-    public override void AppendContolPar(OcadWriter writer, Control control, int elementPosition)
+    public override void AppendControlPar(OcadWriter writer, Control control, int elementPosition)
     { }
 
   }

@@ -22,7 +22,7 @@ namespace OCourse.Cmd.Commands
         while (vm.Working)
         { System.Threading.Thread.Sleep(100); }
 
-        vm.PermutationsInit();
+        vm.PermutationsInit(_pars.UseAllPermutations);
         while (vm.Working)
         { System.Threading.Thread.Sleep(100); }
         //        _pars.OCourseVm.
@@ -40,8 +40,7 @@ namespace OCourse.Cmd.Commands
 
         using (CmdCourseTransfer cmd = new CmdCourseTransfer(_pars.OutputPath, _pars.TemplatePath ?? vm.CourseFile, vm.CourseFile))
         {
-          cmd.Export(selectedCombs.Select(comb => Ext.PermutationUtils.GetCourse(courseName, comb, _pars.SplitCourses, 
-            _pars.CustomSplitWeight)), courseName);
+          cmd.Export(selectedCombs.Select(comb => Ext.PermutationUtils.GetCourse(courseName, comb, _pars.SplitParameters)), courseName);
         }
 
       }

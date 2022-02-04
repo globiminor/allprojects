@@ -125,7 +125,7 @@ namespace OCourse.Iof3
 		}
 		private Control Create(Ocad.Control control)
 		{
-			IGeometry p0 = control.Element.Geometry.GetGeometry();
+			IGeometry p0 = (IGeometry)control.Element.Geometry.EnumPoints().First();
 			IPoint p = (IPoint)p0.Project(_prj2Wgs);
 			IPoint pMap = (IPoint)p0.Project(_prj2Map);
 			Control created = new Control
@@ -156,23 +156,35 @@ namespace OCourse.Iof3
 			};
 			double sumLength = 0;
 			double sumClimb = 0;
+			double preLength = 0;
 			Ocad.Control pre = null;
 			foreach (var control in sections.Controls)
 			{
-				CourseControl c = new CourseControl { Control = control.Name };
-				c.type =
-					control.Code == Ocad.ControlCode.Control ? "Control" :
-					control.Code == Ocad.ControlCode.Start ? "Start" :
-					control.Code == Ocad.ControlCode.Finish ? "Finish" : "unknown";
-				course.CourseControls.Add(c);
-
+				double legLength = -1;
 				if (pre != null)
 				{
 					Route.CostFromTo cost = vm.RouteCalculator.GetCost(pre.Name, control.Name);
-					c.LegLength = $"{(int)cost.Direct}";
+
+					legLength = cost.Direct + preLength;
+					preLength = legLength;
 
 					sumLength += cost.Direct;
 					sumClimb += cost.Climb;
+				}
+
+				if (control.Code != Ocad.ControlCode.MarkedRoute)
+				{
+					CourseControl c = new CourseControl { Control = control.Name };
+					c.type =
+						control.Code == Ocad.ControlCode.Control ? "Control" :
+						control.Code == Ocad.ControlCode.Start ? "Start" :
+						control.Code == Ocad.ControlCode.Finish ? "Finish" : "unknown";
+					course.CourseControls.Add(c);
+
+					if (legLength > 0)
+					{ c.LegLength = $"{(int)legLength}"; }
+
+					preLength = 0;
 				}
 				pre = control;
 			}

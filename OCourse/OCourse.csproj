@@ -50,6 +50,7 @@
     <Compile Include="Commands\CmdExportCourseV8.cs" />
     <Compile Include="Commands\CmdShapeExport.cs" />
     <Compile Include="Commands\CourseMap.cs" />
+    <Compile Include="Ext\SplitBuilder.cs" />
     <Compile Include="Iof3\Iof3.cs" />
     <Compile Include="Ext\Category.cs" />
     <Compile Include="Ext\Grafics.cs" />

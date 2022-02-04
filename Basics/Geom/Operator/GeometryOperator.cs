@@ -663,8 +663,10 @@ namespace Basics.Geom
           IGeometry i = rel.Intersection;
           if (i is IPoint)
           { rel.Intersection = Point.CastOrWrap(_x.ParamInfo.BaseGeometry.PointAt(rel.XParam)); }
+          else if (i is ILine l)
+          { rel.Intersection = new Line(_x.ParamInfo.BaseGeometry.PointAt(l.Start), _x.ParamInfo.BaseGeometry.PointAt(l.End)); }
           else
-          { throw new NotImplementedException(); }
+          { throw new NotImplementedException($"TODO: implement for {i?.GetType()}"); }
           _paramRelation = rel;
           return;
         }

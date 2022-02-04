@@ -276,7 +276,7 @@ namespace Ocad
       { return text.Length / 8 + 1; }
     }
 
-    public override void AppendContolPar(OcadWriter writer, Control control, int elementPosition)
+    public override void AppendControlPar(OcadWriter writer, Control control, int elementPosition)
     {
       Ocad9Io.AppendControlParam(writer, control, elementPosition);
     }

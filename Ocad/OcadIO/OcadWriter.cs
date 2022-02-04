@@ -125,13 +125,17 @@ namespace Ocad
       return pos;
     }
 
-    public void Append(Control control)
+    public void Append(Control control, Element element = null)
     {
-      if (control?.Element == null)
+      if (control == null)
       { return; }
 
-      int elementPosition = Append(control.Element);
-      Io.AppendContolPar(this, control, elementPosition);
+      element = element ?? control.Element;
+      if (element == null)
+      { return; }
+
+      int elementPosition = Append(element);
+      Io.AppendControlPar(this, control, elementPosition);
     }
 
     public void Write(Symbol.SymbolGraphics graphics)
