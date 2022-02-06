@@ -117,6 +117,19 @@ namespace Basics.Cmd
       Console.SetError(null);
     }
 
+    public static string ReadLine()
+    {
+      if (!Console.IsInputRedirected)
+      {
+        int bufSize = 1024;
+        System.IO.Stream inStream = Console.OpenStandardInput(bufSize);
+        Console.SetIn(new System.IO.StreamReader(inStream, Console.InputEncoding, false, bufSize));
+      }
+
+      string line = Console.ReadLine();
+      return line;
+    }
+
     /// <summary>
     ///     Convert commandLine to arguments as Console applications do when starting an application
     /// </summary>

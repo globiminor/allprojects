@@ -1,13 +1,13 @@
 ﻿using Basics.Cmd;
-using OCourse.Commands;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace OCourse.Cmd.Commands
 {
-  public class PlaceCommand : ICommand
+  public class OptimizeCommand : ICommand
   {
     public class Parameters : IDisposable
     {
@@ -23,11 +23,34 @@ namespace OCourse.Cmd.Commands
                     return 1;
                 }
             },
+            new Command<Parameters>
+            {
+                Key = "-s",
+                Parameters = "<script path>",
+                Optional = true,
+                Read = (p, args, i) =>
+                {
+                    p.ScriptPath = args[i + 1];
+                    return 1;
+                }
+            },
+        new Command<Parameters>
+            {
+                Key = "-nw",
+                Info = "Do not wait for finish",
+                Optional = true,
+                Read = (p, args, i) =>
+                {
+                    p.Wait = false;
+                    return 0;
+                }
+            },
 
         };
 
       public string CoursePath { get; set; }
-      public int ControlNrOverprintSymbol { get; set; }
+      public string ScriptPath { get; set; }
+      public bool Wait { get; set; } = true;
 
       public void Dispose()
       { }
@@ -61,12 +84,12 @@ namespace OCourse.Cmd.Commands
           return null;
         }
 
-        return new PlaceCommand(result);
+        return new OptimizeCommand(result);
       }
     }
 
     private readonly Parameters _pars;
-    public PlaceCommand(Parameters pars)
+    public OptimizeCommand(Parameters pars)
     {
       _pars = pars;
     }
@@ -75,25 +98,11 @@ namespace OCourse.Cmd.Commands
     {
       try
       {
-        foreach (var mapFile in Directory.EnumerateFiles(Path.GetDirectoryName(_pars.CoursePath), Path.GetFileName(_pars.CoursePath)))
-				{
-          CourseMap cm = new CourseMap();
-          cm.InitFromFile(mapFile);
-          cm.ControlNrOverprintSymbol = _pars.ControlNrOverprintSymbol;
-
-          string ext = Path.GetExtension(mapFile);
-          string dir = Path.GetDirectoryName(mapFile);
-          string name = Path.GetFileNameWithoutExtension(mapFile);
-          string result = Path.Combine(dir, $"{name}.p{ext}");
-
-          File.Copy(mapFile, result, overwrite: true);
-
-          using (Ocad.OcadWriter w = Ocad.OcadWriter.AppendTo(result))
-          {
-            CmdCoursePlaceControlNrs cmd = new CmdCoursePlaceControlNrs(w, cm);
-            cmd.Execute();
-          }
-        }
+        string dir = Path.GetDirectoryName(_pars.CoursePath);
+        IList<string> exports = Directory.EnumerateFiles(Path.GetDirectoryName(_pars.CoursePath), Path.GetFileName(_pars.CoursePath))
+          .Select(x => Path.GetFullPath(x)).ToList();
+        string scriptPath = _pars.ScriptPath ?? Path.Combine(dir, "optimize.xml");
+        Ocad.Scripting.Utils.Optimize(exports, scriptPath, wait: _pars.Wait);
       }
       finally
       {
@@ -103,4 +112,5 @@ namespace OCourse.Cmd.Commands
       return true;
     }
   }
+
 }

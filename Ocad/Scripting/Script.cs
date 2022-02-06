@@ -60,6 +60,15 @@ namespace Ocad.Scripting
 
       return new Node(childElem);
     }
+    public const string ExportBySymbol_Name = "Map.ExportObjectsBySymbol";
+    public Node ExportBySymbol()
+    {
+      XmlElement childElem = _doc.CreateElement(ExportBySymbol_Name);
+      _scriptNode.AppendChild(childElem);
+
+      return new Node(childElem);
+    }
+
     public Node BackgroundMapRemove(string filename = "all")
     {
       XmlElement childElem = _doc.CreateElement("BackgroundMap.Remove");

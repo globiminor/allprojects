@@ -38,6 +38,15 @@ namespace Ocad.Scripting
 
       return new Node(childElem);
     }
+    public Node SymbolNumber(double symbolNumber)
+    {
+      XmlElement childElem = _node.OwnerDocument.CreateElement("SymbolNumber");
+      _node.AppendChild(childElem);
+
+      childElem.InnerText = $"{symbolNumber:f3}";
+
+      return new Node(childElem);
+    }
 
     public Node Enabled(bool enabled)
     {

@@ -27,6 +27,7 @@ namespace OCourse.Ext
       List<Control> controls = new List<Control>();
       Dictionary<string, List<Control>> dict = new Dictionary<string, List<Control>>();
       int iControl = 0;
+      int iFirstSplit = int.MaxValue;
       int iLastSplit = -1;
       foreach (Control control in course)
       {
@@ -34,10 +35,13 @@ namespace OCourse.Ext
         List<Control> multiControls = dict.GetOrCreateValue(control.Name);
         multiControls.Add(control);
         if (multiControls.Count > 1)
-        { iLastSplit = iControl; }
+        {
+          iFirstSplit = Math.Min(iFirstSplit, iControl);
+          iLastSplit = iControl;
+        }
         iControl++;
       }
-      int nMean = (iLastSplit + 1) / 2;
+      int nMean = (iLastSplit - iFirstSplit + 1) / 2 + iFirstSplit;
       Dictionary<string, List<Control>> dictPre = new Dictionary<string, List<Control>>();
       //dictPre.GetOrCreateValue(controls[0].Name).Add(controls[0]);
       int minDouble = int.MaxValue;

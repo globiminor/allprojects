@@ -124,7 +124,7 @@ namespace OcadTest.OEvent
         tmplDict.GetOrCreateValue(conf.Tmpl).Add(conf);
       }
 
-      BuildParameters pars = new BuildParameters
+      BuildCommand.Parameters pars = new BuildCommand.Parameters
       {
         ConfigPath = configPath,
         SplitParameters = new OCourse.Ext.SplitBuilder.Parameters()
@@ -336,6 +336,18 @@ namespace OcadTest.OEvent
         { continue; }
 
         ExportCourseMaps(mapFile);
+
+        // Drop not needed files
+        foreach (var expFile in Directory.GetFiles(rootFolder, $"{parts[0]}.*.ocd"))
+        {
+          IList<string> ps = Path.GetFileName(expFile).Split(new[] { '.' });
+          if (ps.Count != 5 || ps[4] != "ocd")
+          { continue; }
+          if (ps[0].EndsWith("_V") && ps[3] != "1")
+          { File.Delete(expFile); }
+          if (ps[0].EndsWith("_H") && ps[3] != "2")
+          { File.Delete(expFile); }
+        }
       }
     }
     [TestMethod]
@@ -993,7 +1005,7 @@ namespace OcadTest.OEvent
         n++;
       }
 
-      Assert.AreEqual(4, n);
+      //Assert.AreEqual(4, n);
       Assert.IsNotNull(front);
       Assert.IsNotNull(back);
 
@@ -1122,49 +1134,49 @@ namespace OcadTest.OEvent
         lastPdf = lastExportNode.FirstChild.InnerText;
       }
 
-      ProcessStartInfo si = new ProcessStartInfo(defaultExe);
-      si.WindowStyle = ProcessWindowStyle.Normal;
-      Process proc = Process.Start(si);
-      {
-        IntPtr hwnd = IntPtr.Zero;
-        string version = null;
-        System.Threading.Thread.Sleep(2000);
-        while (hwnd == IntPtr.Zero)
-        {
-          Processor m = new Processor();
-          hwnd = string.IsNullOrEmpty(version)
-            ? IntPtr.Zero
-            : m.SetForegroundWindow(version, out string fullText);
-          if (hwnd == IntPtr.Zero)
-          {
-            var procs = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(defaultExe));
-            if (procs.Length > 0)
-            {
-              if (procs.Length > 1)
-              {
+      //ProcessStartInfo si = new ProcessStartInfo(defaultExe);
+      //si.WindowStyle = ProcessWindowStyle.Normal;
+      //Process proc = Process.Start(si);
+      //{
+      //  IntPtr hwnd = IntPtr.Zero;
+      //  string version = null;
+      //  System.Threading.Thread.Sleep(2000);
+      //  while (hwnd == IntPtr.Zero)
+      //  {
+      //    Processor m = new Processor();
+      //    hwnd = string.IsNullOrEmpty(version)
+      //      ? IntPtr.Zero
+      //      : m.SetForegroundWindow(version, out string fullText);
+      //    if (hwnd == IntPtr.Zero)
+      //    {
+      //      var procs = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(defaultExe));
+      //      if (procs.Length > 0)
+      //      {
+      //        if (procs.Length > 1)
+      //        {
 
-              }
-              version = procs[0].MainModule.FileVersionInfo.FileVersion;
-              version = version.Substring(0, version.LastIndexOf('.'));
+      //        }
+      //        version = procs[0].MainModule.FileVersionInfo.FileVersion;
+      //        version = version.Substring(0, version.LastIndexOf('.'));
 
-              m.GlobalMove(1120, 1060);
-              m.MausClick(1120, 1060);
-              //m.SetForegroundProcess(procs[0]);
-              //Ui.ShowWindow(procs[0].MainWindowHandle, ShowWindowCommands.Restore);
-            }
-          }
-          System.Threading.Thread.Sleep(2000);
-        }
-        Processor.Minimize(hwnd);
-        System.Threading.Thread.Sleep(2000);
-      }
+      //        m.GlobalMove(1120, 1060);
+      //        m.MausClick(1120, 1060);
+      //        //m.SetForegroundProcess(procs[0]);
+      //        //Ui.ShowWindow(procs[0].MainWindowHandle, ShowWindowCommands.Restore);
+      //      }
+      //    }
+      //    System.Threading.Thread.Sleep(2000);
+      //  }
+      //  Processor.Minimize(hwnd);
+      //  System.Threading.Thread.Sleep(2000);
+      //}
 
 
-      string procName = new Ocad.Scripting.Utils { Exe = defaultExe }.RunScript(scriptFile, defaultExe);
+      string procName = new Ocad.Scripting.Utils { Exe = defaultExe }.RunScript(scriptFile, defaultExe, wait: 20000);
       int nPrePdf = 0;
       while (!File.Exists(lastPdf))
       {
-        System.Threading.Thread.Sleep(2000);
+        System.Threading.Thread.Sleep(4000);
         int nPdf = Directory.GetFiles(Path.GetDirectoryName(lastPdf), "*.pdf").Length;
         if (nPdf == nPrePdf)
         {

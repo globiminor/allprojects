@@ -131,7 +131,10 @@ namespace OCourse.Commands
 					if (_disposed) throw new InvalidOperationException("disposed");
 
 					if (_templateFile != _exportFile)
-					{ System.IO.File.Copy(_templateFile, _exportFile, true); }
+					{
+						System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(_exportFile));
+						System.IO.File.Copy(_templateFile, _exportFile, true); 
+					}
 					_writer = OcadWriter.AppendTo(_exportFile);
 
 					//if (_origFile != _templateFile)
