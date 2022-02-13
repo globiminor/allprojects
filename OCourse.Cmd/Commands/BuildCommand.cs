@@ -88,6 +88,19 @@ namespace OCourse.Cmd.Commands
                   return 1;
                 }
             },
+
+            new Command<Parameters>
+            {
+                Key = "-x",
+                Parameters = "io3-course export xml",
+                Optional = true,
+                Read = (p, args, i) =>
+                {
+                    p.CourseExport = args[i + 1];
+                    return 1;
+                }
+            },
+
             new Command<Parameters>
             {
                 Key = "-ts",
@@ -124,6 +137,7 @@ namespace OCourse.Cmd.Commands
       public string Course { get; set; }
       public string BeginStartNr { get; set; }
       public string EndStartNr { get; set; }
+      public string CourseExport { get; set; }
       public Ext.SplitBuilder.Parameters SplitParameters { get; set; }
       public bool UseAllPermutations { get; set; } = true;
       public string TransferSymbols { get; set; }
@@ -268,6 +282,20 @@ namespace OCourse.Cmd.Commands
         {
           TransferTemplates(templatePath);
         }
+        Iof3.OCourse2Io3 io3Exporter = null;
+        if (!string.IsNullOrWhiteSpace(_pars.CourseExport))
+        {
+          if (File.Exists(_pars.CourseExport))
+          {
+            using (TextReader reader = new StreamReader(_pars.CourseExport))
+            {
+              Basics.Serializer.Deserialize(out Iof3.CourseData courseData, reader);
+              io3Exporter = Iof3.OCourse2Io3.Init(courseData, vm.CourseFile);
+            }
+          }
+          else
+          { io3Exporter = Iof3.OCourse2Io3.Init("Event", vm.CourseFile); }
+        }
 
         foreach (var course in _pars.Course.Split(','))
         {
@@ -299,6 +327,9 @@ namespace OCourse.Cmd.Commands
           {
             cmd.Export(selectedCombs.Select(comb => Ext.PermutationUtils.GetCourse(courseName, comb, _pars.SplitParameters)), courseName);
           }
+
+          io3Exporter?.AddCurrentPermutations(vm);
+
           templatePath = _pars.OutputPath;
         }
 
@@ -308,6 +339,11 @@ namespace OCourse.Cmd.Commands
           TransferSymbols();
         }
 
+        if (!string.IsNullOrWhiteSpace( _pars.CourseExport))
+        {
+          io3Exporter.InitMapInfo();
+          io3Exporter.Export(_pars.CourseExport);
+        }
       }
       catch
       {

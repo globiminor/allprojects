@@ -3,6 +3,12 @@ using System.Text;
 
 namespace Ocad.StringParams
 {
+  public class NamedParam: MultiParam
+  {
+    public NamedParam(string para)
+      :base(para)
+    { }
+  }
   public abstract class MultiParam : StringParam
   {
     protected MultiParam(string para)

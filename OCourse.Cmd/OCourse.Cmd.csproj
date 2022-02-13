@@ -8,7 +8,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>OCourse.Cmd</RootNamespace>
     <AssemblyName>OCourse.Cmd</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
@@ -46,6 +46,8 @@
     <Compile Include="Commands\ExportCommand.cs" />
     <Compile Include="Commands\OptimizeCommand.cs" />
     <Compile Include="Commands\PlaceCommand.cs" />
+    <Compile Include="Commands\TemplateUtils.cs" />
+    <Compile Include="Commands\ValidateCommand.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

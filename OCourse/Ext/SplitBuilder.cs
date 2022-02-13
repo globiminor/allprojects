@@ -36,7 +36,7 @@ namespace OCourse.Ext
         multiControls.Add(control);
         if (multiControls.Count > 1)
         {
-          iFirstSplit = Math.Min(iFirstSplit, iControl);
+          iFirstSplit = Math.Min(iFirstSplit, controls.IndexOf(multiControls[0]));
           iLastSplit = iControl;
         }
         iControl++;

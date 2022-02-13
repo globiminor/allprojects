@@ -350,6 +350,18 @@ namespace OcadTest.OEvent
         }
       }
     }
+
+    [TestMethod]
+    public void T02_ExportCourseMaps_Test()
+    {
+      string rootFolder = Path.Combine(_root, "test");
+      foreach (var mapFile in new[] {"A3_V_Bahn.ocd", "A3_H_Bahn.ocd", "A4_V_Bahn.ocd", "A4_H_Bahn.ocd" })
+      {
+        string mapPath = Path.Combine(rootFolder, mapFile);
+        ExportCourseMaps(mapPath);
+      }
+    }
+
     [TestMethod]
     public void T02_Z_ExportAllVars()
     {

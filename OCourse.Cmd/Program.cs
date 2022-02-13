@@ -24,6 +24,7 @@ namespace OCourse.Cmd
     {
       { "build", Commands.BuildCommand.Parameters.ReadArgs },
       { "place", Commands.PlaceCommand.Parameters.ReadArgs },
+      { "validate", Commands.ValidateCommand.Parameters.ReadArgs },
       { "optimize", Commands.OptimizeCommand.Parameters.ReadArgs },
       { "export", Commands.ExportCommand.Parameters.ReadArgs },
     };

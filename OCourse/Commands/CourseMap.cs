@@ -67,6 +67,8 @@ namespace OCourse.Commands
 
 
 		public double ControlDistance { get; set; }
+		public List<MapElement> StartElems { get; set; }
+		public List<MapElement> FinishElems { get; set; }
 		public List<MapElement> AllControls { get; set; }
 		public List<MapElement> ConnectionElems { get; set; }
 		public List<MapElement> ControlNrElems { get; set; }
@@ -166,6 +168,8 @@ namespace OCourse.Commands
 			allControls.AddRange(startElems);
 			allControls.AddRange(finishElems);
 
+			StartElems = startElems;
+			FinishElems = finishElems;
 			ControlDistance = controlDistance;
 			AllControls = allControls;
 			ConnectionElems = connectionElems;
