@@ -27,6 +27,7 @@ namespace OCourse.Cmd
       { "validate", Commands.ValidateCommand.Parameters.ReadArgs },
       { "optimize", Commands.OptimizeCommand.Parameters.ReadArgs },
       { "export", Commands.ExportCommand.Parameters.ReadArgs },
+      { "join", Commands.JoinCommand.Parameters.ReadArgs },
     };
 
     public static bool Run(IList<string> args)

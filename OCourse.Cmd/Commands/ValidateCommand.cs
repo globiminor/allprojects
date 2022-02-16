@@ -1,4 +1,5 @@
 ﻿
+using Basics;
 using Basics.Cmd;
 using Basics.Geom;
 using System;
@@ -139,16 +140,71 @@ namespace OCourse.Cmd.Commands
       StringBuilder sb = null;
       try
       {
+        Iof3.CourseData courseData;
+        using (TextReader r = new StreamReader(_pars.CourseExport))
+        {
+          Serializer.Deserialize(out courseData, r);
+        }
+        Dictionary<PersonKey, Iof3.PersonCourseAssignment> persons =
+          courseData.RaceCourseData.PersonCourseAssignments.ToDictionary(
+            x => new PersonKey { Bib = $"{x.BibNumber}", CourseFamily = $"{x.CourseFamily}" }, new PersonKey.Comparer());
+        Dictionary<string, Iof3.Course> courseDict = courseData.RaceCourseData.Courses.ToDictionary(x => x.Name);
+        Dictionary<PersonKey, Iof3.PersonCourseAssignment> 
+          unhandledPersons = new Dictionary<PersonKey, Iof3.PersonCourseAssignment>(persons, new PersonKey.Comparer());
+
         IList<string> parts = _pars.CourseFile.Split(',');
         TemplateUtils tmpl = new TemplateUtils(parts[0]);
         string dir = Path.GetDirectoryName(parts[0]);
         foreach (string course in Directory.GetFiles(dir, tmpl.Template))
         {
-          if (!Validate(course, parts, tmpl, out string fileError))
+          if (!Validate(course, parts, tmpl, out string fileError,
+            out List<string> files, out Dictionary<int, Ocad.MapElement> allControls))
           {
             sb = sb ?? new StringBuilder();
             sb.AppendLine($"error validating {course}: {fileError}");
             success = false;
+          }
+
+          string bib = tmpl.GetReplaced(course, _pars.Bib);
+          string courseFamily = tmpl.GetReplaced(course, _pars.CourseFamily);
+          PersonKey personKey = new PersonKey { Bib = bib, CourseFamily = courseFamily };
+
+          if (!unhandledPersons.TryGetValue(personKey, out Iof3.PersonCourseAssignment assignment))
+          {
+            sb.AppendLine($"PersonCourseAssignment {bib},{courseFamily} not found in {_pars.CourseExport}");
+            continue;
+          }
+          unhandledPersons.Remove(personKey);
+          string courseName = assignment.CourseName;
+          if (!courseDict.TryGetValue(courseName, out Iof3.Course c))
+          {
+            sb.AppendLine($"Course {courseName} of {bib},{courseFamily} not found in {_pars.CourseExport}");
+            continue;
+          }
+          ValidateCourse(c, allControls, sb);
+
+          if (!string.IsNullOrWhiteSpace(_pars.TextToReplace))
+          {
+            foreach (var file in files)
+            {
+              using (Ocad.OcadWriter w = Ocad.OcadWriter.AppendTo(file))
+              {
+                w.AdaptElements((e) =>
+                {
+                  if (e.Text != _pars.TextToReplace)
+                  { return null; }
+                  e.Text = c.Name;
+                  return e;
+                });
+              }
+            }
+          }
+        }
+        if (unhandledPersons.Count > 0)
+        {
+          foreach (var person in unhandledPersons.Keys)
+          {
+            sb.AppendLine($"No map files found for {person.CourseFamily},{person.Bib}");
           }
         }
       }
@@ -161,25 +217,82 @@ namespace OCourse.Cmd.Commands
       return success;
     }
 
-    private bool Validate(string startFile, IList<string> parts, TemplateUtils tmpl, out string error)
+    private bool ValidateCourse(Iof3.Course course, Dictionary<int,Ocad.MapElement> controlsDict, StringBuilder sb)
     {
-      Dictionary<int, Ocad.MapElement> allControls = new Dictionary<int, Ocad.MapElement>();
-      if (!Validate(startFile, allControls, parts.Count == 1, out string e))
+      int nCtrs = course.CourseControls.Count;
+      if (nCtrs - 2!=  controlsDict.Count)
       {
-        error = e;
+        sb.AppendLine($"Expected {nCtrs - 2} controls from course file, found {controlsDict.Count} in map files");
         return false;
+      }
+      if ("Start" != course.CourseControls[0].type)
+      {
+        sb.AppendLine($"Expected Start as first control in course file");
+        return false;
+      }
+      if ("Finish" != course.CourseControls[course.CourseControls.Count - 1].type)
+      {
+        sb.AppendLine($"Expected Finish as last control in course file");
+        return false;
+      }
+
+      bool success = true;
+      for (int iControl = 1; iControl < nCtrs - 1; iControl++)
+      {
+        int courseControl = int.Parse(course.CourseControls[iControl].Control);
+        int mapControl = int.Parse(controlsDict[iControl].Text.Split('-')[1]);
+        if (courseControl != mapControl)
+        {
+          sb.AppendLine($"Expected courseControl {courseControl} as {iControl}th in map, got {mapControl}");
+          success = false;
+        }
+      }
+      return success;
+    }
+
+    private class PersonKey
+    {
+      public class Comparer : IEqualityComparer<PersonKey>
+      {
+        public bool Equals(PersonKey x, PersonKey y)
+        {
+          return x.Bib == y.Bib && x.CourseFamily == y.CourseFamily;
+        }
+
+        public int GetHashCode(PersonKey obj)
+        {
+          return obj.Bib.GetHashCode() ^ 37 * obj.CourseFamily.GetHashCode();
+        }
+      }
+      public string Bib { get; set; }
+      public string CourseFamily { get; set; }
+    }
+
+    private bool Validate(string startFile, IList<string> parts, TemplateUtils tmpl, out string error,
+      out List<string> files, out Dictionary<int, Ocad.MapElement> allControls)
+    {
+      allControls = new Dictionary<int, Ocad.MapElement>();
+      files = new List<string>();
+      files.Add(startFile);
+      StringBuilder sb = new StringBuilder();
+      if (!Validate(startFile, allControls, parts.Count == 1, out string startError))
+      {
+        sb.AppendLine(startError);
       }
       for (int iPart = 1; iPart < parts.Count; iPart++)
       {
         string result = tmpl.GetReplaced(startFile, parts[iPart]);
-        if (!Validate(result, allControls, iPart == parts.Count - 1, out string pe))
+        files.Add(result);
+        if (!Validate(result, allControls, iPart == parts.Count - 1, out string partError))
         {
-          error = pe;
-          return false;
+          sb.AppendLine(partError);
         }
       }
-      error = null;
-      return true;
+
+      bool success = sb.Length == 0;
+      error = !success ? sb.ToString() : null;
+
+      return success;
     }
 
     private bool Validate(string file, Dictionary<int, Ocad.MapElement> allControls, bool isLast, out string error)
@@ -252,47 +365,7 @@ namespace OCourse.Cmd.Commands
         }
         PointCollection geom = (PointCollection)controlNr.GetMapGeometry().GetGeometry();
 
-        // Verify ControlNr is only near corresponding control circle
-        double cd = 2 * cm.ControlDistance;
-        Point2D maxOff = new Point2D(cd, cd);
-        Point2D ll = new Point2D(geom[0].X, geom[0].Y);
-        Point2D ur = new Point2D(geom[2].X, geom[0].Y + cm.ControlNrHeight);
-        Box textBox = new Box(ll, ur);
-        IBox searchBox = new Box(ll - maxOff, ur + maxOff);
-        bool nearCtr = false;
-        foreach (var entry in cm.ControlsTree.Search(searchBox))
-        {
-          Point center = Point.CastOrCreate(entry.Value.Elem.GetMapGeometry().EnumPoints().First());
-          double off = Math.Sqrt(textBox.Dist2(center));
-          Ocad.StringParams.ControlPar p = new Ocad.StringParams.ControlPar(entry.Value.Elem.ObjectString);
-          if (p.Id != parts[1])
-          {
-            if (cm.FinishSymbols.Contains(entry.Value.Elem.Symbol))
-            {
-              if (off < 1.2 * cm.ControlDistance)
-              {
-                sb.AppendLine($"Control nr {text} too close to finish: Offset {off:N0} < {1.2 * cm.ControlDistance:N0}");
-              }
-              continue; 
-            }
-            if (off < 1.8 * cm.ControlDistance)
-            {
-              sb.AppendLine($"Control nr {text} too near to control {p.Id}: Offset {off:N0} < {1.8 * cm.ControlDistance:N0}");
-            }
-            continue;
-          }
-          if (off < cm.ControlDistance)
-          {
-            sb.AppendLine($"Misplaced control nr {text}: Offset {off:N0} < {cm.ControlDistance:N0}");
-          }
-          if (off > 1.6 * cm.ControlDistance)
-          {
-            sb.AppendLine($"Control nr {text} too far from control: Offset {off:N0} > {1.5 * cm.ControlDistance:N0}");
-          }
-          nearCtr = true;
-        }
-        if (!nearCtr)
-        { sb.AppendLine($"Control text {text} not near Control {parts[1]}"); }
+        bool nearCtr = Near(text, parts[1], geom, cm, sb);
       }
       int nControls = cm.AllControls.Where(c => cm.ControlSymbols.Contains(c.Symbol)).Count();
       if (cm.ControlNrElems.Count - nHelp != nControls)
@@ -311,18 +384,65 @@ namespace OCourse.Cmd.Commands
         sb.AppendLine($"Expected maximum control {controlNrs[0] + nCtr - 1}, got {controlNrs[nCtr - 1]}");
       }
 
-      if (sb.Length > 0)
-      {
-        error = sb.ToString();
-        return false;
-      }
       foreach (var pair in controlsDict)
       {
         allControls.Add(pair.Key, pair.Value);
       }
 
+      if (sb.Length > 0)
+      {
+        error = sb.ToString();
+        return false;
+      }
+
       error = null;
       return true;
+    }
+
+    private bool Near(string text, string ctr, PointCollection geom, OCourse.Commands.CourseMap cm, StringBuilder sb)
+    {
+      double cd = 2 * cm.ControlDistance;
+      Point2D maxOff = new Point2D(cd, cd);
+      Point2D ll = new Point2D(geom[0].X, geom[0].Y);
+      Point2D ur = new Point2D(geom[2].X, geom[0].Y + cm.ControlNrHeight);
+      Box textBox = new Box(ll, ur);
+      IBox searchBox = new Box(ll - maxOff, ur + maxOff);
+      bool nearCtr = false;
+      foreach (var entry in cm.ControlsTree.Search(searchBox))
+      {
+        Point center = Point.CastOrCreate(entry.Value.Elem.GetMapGeometry().EnumPoints().First());
+        double off = Math.Sqrt(textBox.Dist2(center));
+        Ocad.StringParams.ControlPar p = new Ocad.StringParams.ControlPar(entry.Value.Elem.ObjectString);
+        if (p.Id != ctr)
+        {
+          if (cm.FinishSymbols.Contains(entry.Value.Elem.Symbol))
+          {
+            if (off < 1.2 * cm.ControlDistance)
+            {
+              sb.AppendLine($"Control nr {text} too close to finish: Offset {off:N0} < {1.2 * cm.ControlDistance:N0}");
+            }
+            continue;
+          }
+          if (off < 1.8 * cm.ControlDistance)
+          {
+            sb.AppendLine($"Control nr {text} too near to control {p.Id}: Offset {off:N0} < {1.8 * cm.ControlDistance:N0}");
+          }
+          continue;
+        }
+        if (off < cm.ControlDistance)
+        {
+          sb.AppendLine($"Misplaced control nr {text}: Offset {off:N0} < {cm.ControlDistance:N0}");
+        }
+        if (off > 1.6 * cm.ControlDistance)
+        {
+          sb.AppendLine($"Control nr {text} too far from control: Offset {off:N0} > {1.5 * cm.ControlDistance:N0}");
+        }
+        nearCtr = true;
+      }
+      if (!nearCtr)
+      { sb.AppendLine($"Control text {text} not near Control {ctr}"); }
+
+      return nearCtr;
     }
   }
 }

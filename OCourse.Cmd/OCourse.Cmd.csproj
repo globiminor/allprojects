@@ -47,6 +47,7 @@
     <Compile Include="Commands\OptimizeCommand.cs" />
     <Compile Include="Commands\PlaceCommand.cs" />
     <Compile Include="Commands\TemplateUtils.cs" />
+    <Compile Include="Commands\JoinCommand.cs" />
     <Compile Include="Commands\ValidateCommand.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -70,6 +71,10 @@
     <ProjectReference Include="..\OCourse\OCourse.csproj">
       <Project>{35ea7231-ad8b-4dc0-9e48-b9a577d777c2}</Project>
       <Name>OCourse</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\OTextSharp\OTextSharp.csproj">
+      <Project>{01CF73D5-AF53-4FB8-B60B-CFAA372C6695}</Project>
+      <Name>OTextSharp</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

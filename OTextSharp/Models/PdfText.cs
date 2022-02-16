@@ -11,14 +11,17 @@ namespace OTextSharp.Models
     private class FilePdfReader { public string File; public PdfReader Reader; }
 
     public static void OverprintFrontBack(string exportFile, IList<string> fileNames,
-      string frontBack, string rueckBack)
+      string frontBack, string rueckBack, string frontKey = "Front", string reverseKey = "Rueck")
     {
-      OverprintFrontBack(exportFile, fileNames, (f) => frontBack, rueckBack);
+      OverprintFrontBack(exportFile, fileNames, (f) => frontBack, rueckBack, frontKey, reverseKey);
     }
 
     public static void OverprintFrontBack(string exportFile, IList<string> fileNames,
-      Func<string, string> getFrontBack, string rueckBack)
+      Func<string, string> getFrontBack, string rueckBack, string frontKey = "Front", string reverseKey = "Rueck")
     {
+      frontKey = string.IsNullOrWhiteSpace(frontKey) ? "Front" : frontKey;
+      reverseKey = string.IsNullOrWhiteSpace(reverseKey) ? "Rueck" : reverseKey;
+
       List<FilePdfReader> readers = new List<FilePdfReader>();
       PdfReader template = null;
 
@@ -49,12 +52,12 @@ namespace OTextSharp.Models
 
           PdfReader reader = fileReader.Reader;
           PdfReader front = GetBackReader(getFrontBack, fileReader.File, frontDict);
-          if (fileReader.File.Contains("Front") && front != null)
+          if (fileReader.File.Contains(frontKey) && front != null)
           {
             PdfImportedPage p = writer.GetImportedPage(front, 1);
             cb.AddTemplate(p, 1, 0, 0, 1, 0, 0);
           }
-          if (fileReader.File.Contains("Rueck") && rueck != null)
+          if (fileReader.File.Contains(reverseKey) && rueck != null)
           {
             PdfImportedPage p = writer.GetImportedPage(rueck, 1);
             cb.AddTemplate(p, 1, 0, 0, 1, 0, 0);

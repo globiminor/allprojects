@@ -126,6 +126,7 @@ namespace OCourse.Commands
 			BoxTree<CourseMap.ControlElement> controlsTree = Assert.NotNull(_cm.ControlsTree);
 			BoxTree<CourseMap.ControlNrElement> controlNrsTree = Assert.NotNull(_cm.ControlNrsTree);
 			BoxTree<CourseMap.ConnectionElement> connectionTree = Assert.NotNull(_cm.ConnectionTree);
+			BoxTree<CourseMap.AreaElement> layoutsTree = Assert.NotNull(_cm.LayoutsTree);
 
 			IList<MapElement> controlNrs = Assert.NotNull(_cm.ControlNrElems);
 
@@ -150,6 +151,13 @@ namespace OCourse.Commands
 					if (GeometryOperator.Intersects(entry.Value.E, search))
 					{
 						yield return $"{elem.Elem.Text} intersects {entry.Value.Elem.ObjectString}";
+					}
+				}
+				foreach (var entry in layoutsTree.Search(search))
+				{
+					if (GeometryOperator.Intersects(entry.Value.A, search))
+					{
+						yield return $"Layout element intersects {entry.Value.Elem.ObjectString}";
 					}
 				}
 
