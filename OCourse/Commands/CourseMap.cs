@@ -80,9 +80,11 @@ namespace OCourse.Commands
     public List<MapElement> ForbiddenLineElems { get; set; }
 
     public Dictionary<Element, GeoElement.Geom> CustomGeometries { get; set; }
+    public Dictionary<string, string> CustomTexts { get; set; }
 
 
     public string CourseNameFont { get; set; }
+    public TextSymbol ControlNrTextSymbol { get; set; }
 
     public List<string> UnplacedControls => _unplacedControls ?? (_unplacedControls = new List<string>());
     private List<string> _unplacedControls;
@@ -120,6 +122,7 @@ namespace OCourse.Commands
       double controlDistance = 0;
       double textHeight = 0;
       string courseNameFont = "";
+      TextSymbol controlNrTextSymbol = null;
 
       using (OcadReader r = OcadReader.Open(courseFile))
       {
@@ -142,6 +145,7 @@ namespace OCourse.Commands
           {
             double pts = t.Size / 10.0;
             textHeight = Math.Max(textHeight, pts / 4.05); // mm
+            controlNrTextSymbol = controlNrTextSymbol ?? t;
           }
           if (CourseNameSymbols.Contains(symbol.Number) && symbol is TextSymbol cn)
           {
@@ -215,6 +219,7 @@ namespace OCourse.Commands
       CustomGeometries = new Dictionary<Element, GeoElement.Geom>(new ObjectStringComparer());
 
       CourseNameFont = courseNameFont;
+      ControlNrTextSymbol = controlNrTextSymbol;
     }
 
     private class ObjectStringComparer : IEqualityComparer<Element>

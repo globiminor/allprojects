@@ -1421,17 +1421,7 @@ namespace OcadTest.OEvent
         if (coreCn == fullCn)
         { return null; }
 
-        float fullW = grpFont.MeasureString(fullCn, font).Width;
-        float coreW = grpFont.MeasureString(coreCn, font).Width;
-
-        Ocad.GeoElement.Geom geom = elem.GetMapGeometry();
-        Basics.Geom.PointCollection pts = (Basics.Geom.PointCollection)geom.GetGeometry();
-        double f = coreW / fullW;
-        double fullWidth = pts[2].X - pts[0].X;
-        ((Basics.Geom.Point)pts[2]).X = pts[0].X + f * fullWidth;
-        ((Basics.Geom.Point)pts[3]).X = pts[2].X;
-        elem.SetMapGeometry(Ocad.GeoElement.Geom.Create(pts));
-        elem.Text = coreCn;
+        elem.SetText(coreCn, grpFont, font);
 
         return elem;
       });

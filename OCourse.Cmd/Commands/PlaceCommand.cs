@@ -1,6 +1,7 @@
 ﻿using Basics;
 using Basics.Cmd;
 using Basics.Geom;
+using Ocad;
 using OCourse.Commands;
 using System;
 using System.Collections.Generic;
@@ -165,7 +166,7 @@ namespace OCourse.Cmd.Commands
 
           File.Copy(mapFile, result, overwrite: true);
 
-          using (Ocad.OcadWriter w = Ocad.OcadWriter.AppendTo(result))
+          using (OcadWriter w = OcadWriter.AppendTo(result))
           {
             CmdCoursePlaceControlNrs cmd = new CmdCoursePlaceControlNrs(w, cm);
             cmd.GetCustomPosition = (courseMap, controlName, textWidth, polylines) =>
@@ -176,12 +177,14 @@ namespace OCourse.Cmd.Commands
           {
             string search = tmpl.GetReplaced(mapFile, _pars.SearchText);
             string replace = tmpl.GetReplaced(mapFile, _pars.ReplaceText);
-            using (Ocad.OcadWriter w = Ocad.OcadWriter.AppendTo(result))
+            using (OcadWriter w = OcadWriter.AppendTo(result))
             {
-              w.AdaptElements((e) => { 
+              w.AdaptElements((e) =>
+              {
                 if (e.Text != search)
                 { return null; }
-                e.Text = replace;
+                using (System.Drawing.Font font = new System.Drawing.Font(cm.CourseNameFont, 12))
+                { e.SetText(replace, font: font); }
                 return e;
               });
             }
@@ -234,10 +237,10 @@ namespace OCourse.Cmd.Commands
     private class CustomLayoutImpl
     {
       private readonly CustomLayout _customLayout;
-      private readonly List<CustomGeometries> _freePartLayouts;
       private readonly DataTable _courseTable;
       private readonly DataRow _courseRow;
       private readonly List<CustomHelper> _customHelpers;
+      private readonly List<CustomHelper> _freepartHelpers;
 
       private readonly HashSet<string> _messages;
 
@@ -251,6 +254,9 @@ namespace OCourse.Cmd.Commands
       private const string FromCol = "FromCtrl";
       private const string ToCol = "ToCtrl";
 
+      private const double _mm = 100; // 
+
+
       public CustomLayoutImpl(string customLayoutFile)
       {
         _customLayout = null;
@@ -261,7 +267,6 @@ namespace OCourse.Cmd.Commands
         {
           Serializer.Deserialize(out _customLayout, r);
         }
-        _freePartLayouts = _customLayout.CustomGeometries.Where(x => x.hasFreeParts).ToList();
 
         _messages = new HashSet<string>();
 
@@ -277,109 +282,116 @@ namespace OCourse.Cmd.Commands
         {
           foreach (var customGeometry in customGeometries.CustomGeometry)
           {
-            CustomHelper customHelper = new CustomHelper();
-            customHelper.CustomGeometry = customGeometry;
-
-            DataView view = new DataView(_courseTable);
-            view.RowFilter = customGeometry.where;
-            customHelper.CourseView = view;
-
-            DataTable positionTbl = new DataTable();
-            positionTbl.Columns.Add(TextWidthCol, typeof(double));
-            positionTbl.Columns.Add(XCol, typeof(double), customGeometry.Point.x);
-            positionTbl.Columns.Add(YCol, typeof(double), customGeometry.Point.y);
-            positionTbl.Rows.Add(positionTbl.NewRow());
-            customHelper.PositionTable = positionTbl;
-
-            Dictionary<DataView, MapLine> customLines = new Dictionary<DataView, MapLine>();
-            if (customGeometry.Line != null)
-            {
-              foreach (var customLine in customGeometry.Line)
-              {
-                DataTable connectionTable = new DataTable();
-                connectionTable.Columns.Add(FromCol, typeof(string));
-                connectionTable.Columns.Add(ToCol, typeof(string));
-                connectionTable.Rows.Add(connectionTable.NewRow());
-
-                DataView connectionView = new DataView(connectionTable);
-                connectionView.RowFilter = customLine.where;
-                customLines.Add(connectionView, customLine);
-              }
-            }
-            customHelper.CustomLines = customLines;
-
+            CustomHelper customHelper = Create(customGeometry, createPositionTable: true);
             _customHelpers.Add(customHelper);
           }
         }
+
+        _freepartHelpers = new List<CustomHelper>();
+        foreach (var customGeometries in _customLayout.CustomGeometries.Where(x => x.hasFreeParts))
+        {
+          foreach (var customGeometry in customGeometries.CustomGeometry)
+          {
+            CustomHelper customHelper = Create(customGeometry, createPositionTable: false);
+            _freepartHelpers.Add(customHelper);
+          }
+        }
       }
+
+      private CustomHelper Create(CustomGeometry customGeometry, bool createPositionTable)
+      {
+        CustomHelper customHelper = new CustomHelper();
+        customHelper.CustomGeometry = customGeometry;
+
+        DataView view = new DataView(_courseTable);
+        view.RowFilter = customGeometry.where;
+        customHelper.CourseView = view;
+
+        if (createPositionTable)
+        {
+          DataTable positionTbl = new DataTable();
+          positionTbl.Columns.Add(TextWidthCol, typeof(double));
+          positionTbl.Columns.Add(XCol, typeof(double), customGeometry.Point.x);
+          positionTbl.Columns.Add(YCol, typeof(double), customGeometry.Point.y);
+          positionTbl.Rows.Add(positionTbl.NewRow());
+          customHelper.PositionTable = positionTbl;
+        }
+
+        Dictionary<DataView, MapLine> customLines = new Dictionary<DataView, MapLine>();
+        if (customGeometry.Line != null)
+        {
+          foreach (var customLine in customGeometry.Line)
+          {
+            DataTable connectionTable = new DataTable();
+            connectionTable.Columns.Add(FromCol, typeof(string));
+            connectionTable.Columns.Add(ToCol, typeof(string));
+            connectionTable.Rows.Add(connectionTable.NewRow());
+
+            DataView connectionView = new DataView(connectionTable);
+            connectionView.RowFilter = customLine.where;
+            customLines.Add(connectionView, customLine);
+          }
+        }
+        customHelper.CustomLines = customLines;
+
+        return customHelper;
+      }
+
       public IPoint GetCustomPosition(string course, string courseFile, CourseMap courseMap, string controlName, double textWidth, IReadOnlyList<Polyline> freePlaces)
       {
         if (_customLayout == null)
-        { return null; }
-
-        foreach (var withFreeParts in _freePartLayouts)
-        {
-          throw new NotImplementedException("To implement: handle free parts");
-        }
-        if (freePlaces?.Count > 0)
         { return null; }
 
         IList<string> controlParts = controlName.Split('-');
         string ctrl = controlParts[1].Trim();
         _courseRow[CourseCol] = course;
         _courseRow[ControlCol] = ctrl;
-        const double mm = 100; // 
+
+        foreach (var withFreeParts in _freepartHelpers)
+        {
+          if (withFreeParts.CourseView.Count != 1)
+          { continue; }
+
+          Dictionary<MapElement, Polyline> replaceDict = GetReplaceDict(courseMap, withFreeParts.CustomLines);
+          if (replaceDict == null)
+          { continue; }
+
+          foreach (var pair in replaceDict)
+          {
+            // add only if not existing
+            if (courseMap.CustomGeometries.ContainsKey(pair.Key))
+            { continue; }
+            courseMap.CustomGeometries.Add(pair.Key, new GeoElement.Line(pair.Value));
+          }
+        }
+        if (freePlaces?.Count > 0)
+        { return null; }
 
         foreach (var customHelper in _customHelpers)
         {
           if (customHelper.CourseView.Count != 1)
           { continue; }
 
-          bool success = true;
-          Dictionary<Ocad.MapElement, Polyline> replaceDict = new Dictionary<Ocad.MapElement, Polyline>();
-          foreach (var customLine in customHelper.CustomLines)
-          {
-            success = false;
-            DataView lineView = customLine.Key;
-            DataRow connRow = customLine.Key.Table.Rows[0];
-            foreach (var connectionElem in courseMap.ConnectionElems)
-            {
-              if (string.IsNullOrWhiteSpace(connectionElem.ObjectString))
-              { continue; }
-              Ocad.StringParams.NamedParam strPar = new Ocad.StringParams.NamedParam(connectionElem.ObjectString);
-              string fromCtrl = strPar.GetString('f');
-              if (fromCtrl.StartsWith("S") && fromCtrl.Length > 2)
-              { fromCtrl = fromCtrl.Substring(1); }
-              string toCtrl = strPar.GetString('t');
-
-              connRow[FromCol] = fromCtrl;
-              connRow[ToCol] = toCtrl;
-              if (lineView.Count == 1)
-              {
-                Polyline replaceLine = GetReplaceLine(connectionElem, customLine.Value, mm);
-
-                if (replaceLine != null)
-                { replaceDict.Add(connectionElem, replaceLine); }
-
-                success = true;
-                break;
-              }
-            }
-            if (!success)
-            { break; }
-          }
-          if (success == false)
+          Dictionary<MapElement, Polyline> replaceDict = GetReplaceDict(courseMap, customHelper.CustomLines);
+          if (replaceDict == null)
           { continue; }
 
-          // all checks successfull, apply custom geometries
           foreach (var pair in replaceDict)
           {
-            courseMap.CustomGeometries.Add(pair.Key, new Ocad.GeoElement.Line(pair.Value));
+            // overwrite existing entry if necessairy
+            courseMap.CustomGeometries[pair.Key] = new GeoElement.Line(pair.Value);
           }
 
           DataRow positionRow = customHelper.PositionTable.Rows[0];
-          positionRow[TextWidthCol] = textWidth / mm;
-          return new Point2D(mm * (double)positionRow[XCol], mm * (double)positionRow[YCol]);
+          positionRow[TextWidthCol] = textWidth / _mm;
+          if (customHelper.CustomGeometry.TextReplace is TextReplace tr)
+          {
+            TemplateUtils tmpl = new TemplateUtils(tr.template, fullPath: true);
+            string replaced = tmpl.GetReplaced(controlName, tr.replaceBy, fullSource: true);
+            courseMap.CustomTexts = courseMap.CustomTexts ?? new Dictionary<string, string>();
+            courseMap.CustomTexts.Add(controlName, replaced);
+          }
+          return new Point2D(_mm * (double)positionRow[XCol], _mm * (double)positionRow[YCol]);
         }
 
         string msg = $"Unable to place Control '{ctrl}' in Course '{course}'";
@@ -389,12 +401,52 @@ namespace OCourse.Cmd.Commands
         }
         return null;
       }
-      private Polyline GetReplaceLine(Ocad.MapElement connectionElem, MapLine customLine, double mm)
+
+      private Dictionary<MapElement, Polyline> GetReplaceDict(CourseMap courseMap, Dictionary<DataView, MapLine> customLines)
+      {
+        bool success = true;
+        Dictionary<MapElement, Polyline> replaceDict = new Dictionary<MapElement, Polyline>();
+        foreach (var customLine in customLines)
+        {
+          success = false;
+          DataView lineView = customLine.Key;
+          DataRow connRow = customLine.Key.Table.Rows[0];
+          foreach (var connectionElem in courseMap.ConnectionElems)
+          {
+            if (string.IsNullOrWhiteSpace(connectionElem.ObjectString))
+            { continue; }
+            Ocad.StringParams.NamedParam strPar = new Ocad.StringParams.NamedParam(connectionElem.ObjectString);
+            string fromCtrl = strPar.GetString('f');
+            if (fromCtrl.StartsWith("S") && fromCtrl.Length > 2)
+            { fromCtrl = fromCtrl.Substring(1); }
+            string toCtrl = strPar.GetString('t');
+
+            connRow[FromCol] = fromCtrl;
+            connRow[ToCol] = toCtrl;
+            if (lineView.Count == 1)
+            {
+              Polyline replaceLine = GetReplaceLine(connectionElem, customLine.Value, _mm);
+
+              if (replaceLine != null)
+              { replaceDict.Add(connectionElem, replaceLine); }
+
+              success = true;
+              break;
+            }
+          }
+          if (!success)
+          { break; }
+        }
+
+        return success ? replaceDict : null;
+      }
+
+      private Polyline GetReplaceLine(MapElement connectionElem, MapLine customLine, double mm)
       {
         if (!(customLine.Geometry?.Count > 0)) // if has no geometry
         { return null; }
 
-        Ocad.GeoElement.Line line = (Ocad.GeoElement.Line)connectionElem.GetMapGeometry();
+        GeoElement.Line line = (GeoElement.Line)connectionElem.GetMapGeometry();
         Polyline b = new Polyline();
         foreach (var geom in customLine.Geometry)
         {
@@ -410,7 +462,7 @@ namespace OCourse.Cmd.Commands
           {
             if (seg.noLine == "true")
             {
-              b.Add(new Ocad.Coord.CodePoint(mm * seg.x0, mm * seg.y0) { Flags = Ocad.Coord.Flags.noLine | Ocad.Coord.Flags.noLeftLine | Ocad.Coord.Flags.noRightLine });
+              b.Add(new Coord.CodePoint(mm * seg.x0, mm * seg.y0) { Flags = Coord.Flags.noLine | Coord.Flags.noLeftLine | Coord.Flags.noRightLine });
             }
             else
             {
@@ -424,7 +476,6 @@ namespace OCourse.Cmd.Commands
         return b;
       }
     }
-
 
     private class CustomHelper
     {
@@ -455,10 +506,19 @@ namespace OCourse.Cmd.Commands
       public string where { get; set; }
 
       public MapPoint Point { get; set; }
+      public TextReplace TextReplace { get; set; }
+
       [XmlElement]
       public List<MapLine> Line { get; set; }
     }
 
+    public class TextReplace
+    {
+      [XmlAttribute]
+      public string template { get; set; }
+      [XmlAttribute]
+      public string replaceBy { get; set; }
+    }
     public class MapPoint : MapGeom
     {
       [XmlAttribute]

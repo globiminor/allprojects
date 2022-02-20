@@ -68,6 +68,7 @@ namespace Ocad.StringParams
 
     protected StringParam(string para)
     {
+      para = para ?? string.Empty;
       _paraList = new List<string>(para.Split('\t'));
     }
 

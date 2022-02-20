@@ -182,6 +182,54 @@ namespace Ocad
       _coords.AddRange(geom.EnumCoords());
     }
 
+    public void SetText(string text, System.Drawing.Graphics graphics = null, System.Drawing.Font font = null)
+    {
+      if (text == Text)
+      { return; }
+      if (graphics == null)
+      {
+        using (System.Drawing.Bitmap bmpFont = new System.Drawing.Bitmap(8, 8, System.Drawing.Imaging.PixelFormat.Format24bppRgb))
+        using (System.Drawing.Graphics tempGrp = System.Drawing.Graphics.FromImage(bmpFont))
+        {
+          SetText(text, tempGrp, font);
+          return;
+        }
+      }
+
+      if (font == null)
+      {
+        string fontName = (BaseSymbol as Symbol.TextSymbol)?.FontName ?? System.Drawing.FontFamily.GenericSansSerif.Name;
+        using (System.Drawing.Font tempFont = new System.Drawing.Font(fontName, 12))
+        {
+          SetText(text, graphics, tempFont);
+          return;
+        }
+      }
+
+      string orig = Text;
+      float origW = MeasureWidth(orig, graphics, font);
+      float textW = MeasureWidth(orig, graphics, font);
+
+      GeoElement.Geom geom = GetMapGeometry();
+      PointCollection pts = (PointCollection)geom.GetGeometry();
+      double f = textW / origW;
+      double fullWidth = pts[2].X - pts[0].X;
+      ((Point)pts[2]).X = pts[0].X + f * fullWidth;
+      ((Point)pts[3]).X = pts[2].X;
+      SetMapGeometry(GeoElement.Geom.Create(pts));
+      Text = text;
+    }
+
+    private static float MeasureWidth(string text, System.Drawing.Graphics graphics, System.Drawing.Font font)
+    {
+      float w = 0;
+      foreach (string part in text.Split('\r', '\n'))
+      {
+        w = Math.Max(w, graphics.MeasureString(part, font).Width);
+      }
+      return w;
+    }
+
     public static explicit operator Symbol.SymbolGraphics(MapElement element)
     {
       Symbol.SymbolGraphics graphics = new Symbol.SymbolGraphics();
@@ -213,6 +261,7 @@ namespace Ocad
     public int Color { get; set; }       // color or color index
     public int LineWidth { get; set; }   // units = 0.01 mm
     public int Flags { get; set; }
+    public Symbol.BaseSymbol BaseSymbol { get; set; }
 
     public Element()
     {

@@ -336,7 +336,7 @@ namespace Ocad
       {
         long pos = BaseStream.Position;
         foreach (var elem in Io.EnumMapElements(null, new[] { idx }))
-				{
+        {
           MapElement adapted = adapt(elem);
           if (adapted == null)
           { continue; }
@@ -347,7 +347,7 @@ namespace Ocad
           idx.Symbol = adapted.Symbol;
 
           if (l0 < idx.Length)
-					{
+          {
             idx.Position = (int)BaseStream.Seek(0, SeekOrigin.End);
           }
 

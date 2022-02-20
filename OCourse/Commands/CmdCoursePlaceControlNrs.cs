@@ -29,6 +29,9 @@ namespace OCourse.Commands
 
     private MapElement PlaceElem(MapElement elem)
     {
+      if (ControlsDict == null)
+      { return null; }
+
       if (_cm.CustomGeometries.TryGetValue(elem, out GeoElement.Geom geom))
       {
         elem.SetMapGeometry(geom);
@@ -50,6 +53,11 @@ namespace OCourse.Commands
         GeoElement.Geom prjGeom = elem.GetMapGeometry().Project(prj);
         elem.SetMapGeometry(prjGeom);
 
+        if (_cm.CustomTexts?.TryGetValue(elem.Text, out string replace) == true)
+        {
+          elem.BaseSymbol = _cm.ControlNrTextSymbol;
+          elem.SetText(replace); 
+        }
         if (_cm.ControlNrOverprintSymbol > 0 && UseOverprintSymbol(prjGeom))
         { elem.Symbol = _cm.ControlNrOverprintSymbol; }
 

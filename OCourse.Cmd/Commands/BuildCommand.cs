@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Xml.Serialization;
 
 namespace OCourse.Cmd.Commands
 {
@@ -62,6 +63,18 @@ namespace OCourse.Cmd.Commands
                 Read = (p, args, i) =>
                 {
                     p.TemplatePath = args[i + 1];
+                    return 1;
+                }
+            },
+
+            new Command<Parameters>
+            {
+                Key = "-sf",
+                Parameters = "<runners.xml>",
+                Optional = true,
+                Read = (p, args, i) =>
+                {
+                    p.RunnersFile = args[i + 1];
                     return 1;
                 }
             },
@@ -135,6 +148,7 @@ namespace OCourse.Cmd.Commands
       public string OutputPath { get; set; }
       public string TemplatePath { get; set; }
       public string Course { get; set; }
+      public string RunnersFile { get; set; }
       public string BeginStartNr { get; set; }
       public string EndStartNr { get; set; }
       public string CourseExport { get; set; }
@@ -144,6 +158,8 @@ namespace OCourse.Cmd.Commands
 
       private ViewModels.OCourseVm _oCourseVm;
       public ViewModels.OCourseVm OCourseVm => _oCourseVm;
+      public Dictionary<string, List<int>> CatRunners {get; set;}
+
       public ViewModels.OCourseVm EnsureOCourseVm()
       {
         if (_oCourseVm == null)
@@ -168,6 +184,27 @@ namespace OCourse.Cmd.Commands
       {
         StringBuilder sb = new StringBuilder();
 
+        if (!string.IsNullOrWhiteSpace(RunnersFile))
+        {
+          if (!File.Exists(RunnersFile))
+          { sb.AppendLine($"Cannot find runners file {RunnersFile}"); }
+          if (!string.IsNullOrEmpty(BeginStartNr))
+          { sb.AppendLine($"-s must not be specified if -sf is specified"); }
+          if (!string.IsNullOrEmpty(BeginStartNr))
+          { sb.AppendLine($"-e must not be specified if -sf is specified"); }
+
+          if (!string.IsNullOrEmpty(RunnersFile))
+          {
+            if (File.Exists(RunnersFile))
+            {
+              using (TextReader reader = new StreamReader(RunnersFile))
+              {
+                Basics.Serializer.Deserialize(out Categories runners, reader);
+                CatRunners = InitCategories(runners);
+              }
+            }
+          }
+        }
 
         int beginStartNr = -1;
         if (!string.IsNullOrEmpty(BeginStartNr) && !int.TryParse(BeginStartNr, out beginStartNr))
@@ -211,15 +248,17 @@ namespace OCourse.Cmd.Commands
               vm.CourseName = course;
               while (vm.Working)
               { System.Threading.Thread.Sleep(100); }
-              if (beginStartNr > 0)
-              { vm.StartNrMin = beginStartNr; }
-              if (endStartNr > 0)
-              { vm.StartNrMax = endStartNr; }
+
+
+              List<int> runners = null;
+              CatRunners?.TryGetValue(course, out runners);
+              if (vm.StartNrMin <= 0) vm.StartNrMin = runners?.First() ?? beginStartNr;
+              if (vm.StartNrMax <= 0) vm.StartNrMax = runners?.Last() ?? endStartNr;
 
               if (vm.StartNrMin <= 0)
-              { sb.AppendLine($"Invalid start nr Min '{vm.StartNrMin}'"); }
+              { sb.AppendLine($"{course}: Invalid start nr Min '{vm.StartNrMin}'"); }
               if (vm.StartNrMax < vm.StartNrMin)
-              { sb.AppendLine($"Invalid start nr range '[{vm.StartNrMin} - {vm.StartNrMax}]'"); }
+              { sb.AppendLine($"{course}: Invalid start nr range '[{vm.StartNrMin} - {vm.StartNrMax}]'"); }
 
               vm.StartNrMin = vmMinNr;
               vm.StartNrMax = vmMaxNr;
@@ -303,8 +342,10 @@ namespace OCourse.Cmd.Commands
           while (vm.Working)
           { System.Threading.Thread.Sleep(100); }
 
-          if (vm.StartNrMin <= 0) vm.StartNrMin = int.Parse(_pars.BeginStartNr);
-          if (vm.StartNrMax <= 0) vm.StartNrMax = int.Parse(_pars.EndStartNr);
+          List<int> runners = null;
+          _pars.CatRunners?.TryGetValue(course, out runners);
+          if (vm.StartNrMin <= 0) vm.StartNrMin = runners?.First() ?? int.Parse(_pars.BeginStartNr);
+          if (vm.StartNrMax <= 0) vm.StartNrMax = runners?.Last() ?? int.Parse(_pars.EndStartNr);
 
           vm.PermutationsInit(_pars.UseAllPermutations);
           while (vm.Working)
@@ -339,7 +380,7 @@ namespace OCourse.Cmd.Commands
           TransferSymbols();
         }
 
-        if (!string.IsNullOrWhiteSpace( _pars.CourseExport))
+        if (!string.IsNullOrWhiteSpace(_pars.CourseExport))
         {
           io3Exporter.InitMapInfo();
           io3Exporter.Export(_pars.CourseExport);
@@ -395,6 +436,49 @@ namespace OCourse.Cmd.Commands
           w.Append(elem);
         }
       }
+    }
+
+    public static Dictionary<string, List<int>> InitCategories(Categories cats)
+    {
+      int minNr = cats.minStartNr;
+      Dictionary<string, List<int>> catRunners = new Dictionary<string,List<int>>();
+      foreach (var cat in cats.Categorie)
+      {
+        int minStartNr = minNr;
+        int maxStartNr = minNr + cat.runners - 1;
+
+        List<int> runners = new List<int>();
+        for (int i = minStartNr; i <= maxStartNr; i++)
+        { runners.Add(i); }
+        try
+        {
+          catRunners.Add(cat.name, runners);
+        }
+        catch (Exception ex)
+        { throw new InvalidOperationException($"Error adding {cat.name} {cat.startTime}", ex); }
+
+        minNr = maxStartNr + 1;
+      }
+      return catRunners;
+    }
+
+    [XmlRoot]
+    public class Categories
+    {
+      [XmlAttribute]
+      public int minStartNr { get; set; }
+      public string TimeFormat { get; set; }
+      [XmlElement]
+      public List<Categorie> Categorie { get; set; }
+    }
+    public class Categorie
+    {
+      [XmlAttribute]
+      public string name { get; set; }
+      [XmlAttribute]
+      public int runners { get; set; }
+      [XmlAttribute]
+      public string startTime { get; set; }
     }
   }
 }

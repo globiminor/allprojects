@@ -7,9 +7,9 @@ namespace OCourse.Cmd.Commands
   public class TemplateUtils
   {
     private readonly List<string> _tmplParts;
-    public TemplateUtils(string path)
+    public TemplateUtils(string path, bool fullPath = false)
     {
-      Template = Path.GetFileName(path);
+      Template = !fullPath ? Path.GetFileName(path) : path;
       _tmplParts = new List<string>(Template.Split(new[] { '*' }, StringSplitOptions.None));
 
     }
@@ -30,19 +30,28 @@ namespace OCourse.Cmd.Commands
       return part;
     }
 
-    public string GetReplaced(string path, string resultTemplate)
+    /// <summary>
+    /// replace file name part of source and replace by resultTemplate adapted corresponding to Template
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="resultTemplate"></param>
+    /// <param name="fullSource">if true: take all of source to replace</param>
+    /// <returns></returns>
+    public string GetReplaced(string source, string resultTemplate, bool fullSource = false)
     {
-      string mapFileName = Path.GetFileName(path);
+      string s = !fullSource ? Path.GetFileName(source) : source;
       string t = resultTemplate;
       int idx = 0;
       for (int iPart = 0; iPart < _tmplParts.Count; iPart++)
       {
-        int eIdx = mapFileName.IndexOf(_tmplParts[iPart], idx, StringComparison.InvariantCultureIgnoreCase);
-        string rep = mapFileName.Substring(idx, eIdx - idx);
+        int eIdx = s.IndexOf(_tmplParts[iPart], idx, StringComparison.InvariantCultureIgnoreCase);
+        if (eIdx < 0) // could not be fully parsed
+        { return s; }
+        string rep = s.Substring(idx, eIdx - idx);
         t = t.Replace($"[{iPart - 1}]", rep);
         idx = eIdx + _tmplParts[iPart].Length;
       }
-      t = t.Replace($"[{_tmplParts.Count}]", mapFileName.Substring(idx));
+      t = t.Replace($"[{_tmplParts.Count}]", s.Substring(idx));
 
       return t;
     }
