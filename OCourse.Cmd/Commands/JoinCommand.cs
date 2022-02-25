@@ -89,6 +89,18 @@ namespace OCourse.Cmd.Commands
                     return 1;
                 }
             },
+            new Command<Parameters>
+            {
+                Key = "-s",
+                Parameters = "<sort index>",
+                Info = "template field to sort after. the values must convertalbe to integers!",
+                Optional = true,
+                Read = (p, args, i) =>
+                {
+                    p.SortIndex = args[i + 1];
+                    return 1;
+                }
+            },
         };
 
       public string Foreground { get; set; }
@@ -98,6 +110,8 @@ namespace OCourse.Cmd.Commands
       public string JoinedFile { get; set; }
       public string FrontKey { get; set; }
       public string ReverseKey { get; set; }
+      public string SortIndex { get; set; }
+
       public void Dispose()
       { }
 
@@ -184,6 +198,12 @@ namespace OCourse.Cmd.Commands
           { File.Delete(joined); }
 
           List<Comb> combs = pair.Value;
+          if (!string.IsNullOrEmpty(_pars.SortIndex))
+          {
+            int sortIndex = int.Parse(_pars.SortIndex);
+            combs.ForEach(comb => comb.InitNr(tmpl, sortIndex));
+            combs.Sort((x, y) => x.Nr.CompareTo(y.Nr));
+          }
           List<string> files = new List<string>();
           string background = null;
           string backReverse = null;
@@ -243,6 +263,19 @@ namespace OCourse.Cmd.Commands
       public string ForeReverse { get; }
       public string BackReverse { get; }
       public string Joined { get; }
+
+      public int Nr { get; set; }
+
+      public override string ToString()
+      {
+        return $"{Path.GetFileName(Foreground)} {Nr}";
+      }
+
+      public void InitNr(TemplateUtils tmpl, int sortIndex)
+      {
+        string part = tmpl.GetPart(Foreground, sortIndex);
+        Nr = int.Parse(part); 
+      }
     }
   }
 }

@@ -444,8 +444,8 @@ namespace OCourse.Cmd.Commands
       Dictionary<string, List<int>> catRunners = new Dictionary<string,List<int>>();
       foreach (var cat in cats.Categorie)
       {
-        int minStartNr = minNr;
-        int maxStartNr = minNr + cat.runners - 1;
+        int minStartNr = string.IsNullOrWhiteSpace(cat.minStartNr) ? minNr : int.Parse(cat.minStartNr);
+        int maxStartNr = minStartNr + cat.runners - 1;
 
         List<int> runners = new List<int>();
         for (int i = minStartNr; i <= maxStartNr; i++)
@@ -477,6 +477,9 @@ namespace OCourse.Cmd.Commands
       public string name { get; set; }
       [XmlAttribute]
       public int runners { get; set; }
+      [XmlAttribute]
+      public string minStartNr { get; set; }
+
       [XmlAttribute]
       public string startTime { get; set; }
     }

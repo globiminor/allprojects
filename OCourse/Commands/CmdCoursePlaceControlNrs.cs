@@ -56,7 +56,7 @@ namespace OCourse.Commands
         if (_cm.CustomTexts?.TryGetValue(elem.Text, out string replace) == true)
         {
           elem.BaseSymbol = _cm.ControlNrTextSymbol;
-          elem.SetText(replace); 
+          elem.SetText(replace);
         }
         if (_cm.ControlNrOverprintSymbol > 0 && UseOverprintSymbol(prjGeom))
         { elem.Symbol = _cm.ControlNrOverprintSymbol; }
@@ -73,6 +73,10 @@ namespace OCourse.Commands
       {
         ln = ln ?? Polyline.Create(geom.Extent);
         if (GeometryOperator.Intersects(area.Value.A, ln))
+        { return true; }
+
+        if (BoxOp.IsWithin(geom.Extent, area.Value.A.Extent.Min)
+        && BoxOp.IsWithin(geom.Extent, area.Value.A.Extent.Max))
         { return true; }
       }
       return false;
