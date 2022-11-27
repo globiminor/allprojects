@@ -1,0 +1,42 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+    <link href="/Content/Images/kapreolo-16x16.png" rel="icon" type="image/png" sizes="16x16">
+    <link href="/Content/Images/kapreolo-32x32.png" rel="icon" type="image/png" sizes="32x32">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css" />
+
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js"></script>
+    <script src="//api3.geo.admin.ch/loader.js?version=4.4.2"></script>
+    <style>
+        .map {
+            width: 600px;
+            height: 600px;
+        }
+
+        tr.selected {
+            background-color: lightgray;
+        }
+
+        tr.highlight {
+            background-color: whitesmoke;
+        }
+
+        .hi {
+            color: red;
+            font-weight: bold
+        }
+    </style>
+</head>
+<body>
+    @RenderBody()
+</body>
+</html>
