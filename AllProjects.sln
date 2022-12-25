@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29326.143
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Basics", "Basics\Basics.csproj", "{200E9400-2771-4ACE-A172-78EBD405B67E}"
 EndProject
@@ -41,8 +41,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cards", "Cards\Cards.csproj", "{6D94DA0A-69B9-4502-8D79-A0B9B18293CD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BasicsTest", "BasicsTest\BasicsTest.csproj", "{EE410E43-848B-41DD-8426-6D8CA43F9A57}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OMapIssues", "OMapIssues\OMapIssues.csproj", "{083C6D5D-55F6-437A-AEDB-6BB96D23F887}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OcadScratch", "OcadScratch\OcadScratch.csproj", "{4B5672EF-FDC6-4FDF-9425-07A0D6ECBBE8}"
 EndProject
@@ -219,14 +217,6 @@ Global
 		{EE410E43-848B-41DD-8426-6D8CA43F9A57}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EE410E43-848B-41DD-8426-6D8CA43F9A57}.Release|x86.ActiveCfg = Release|Any CPU
 		{EE410E43-848B-41DD-8426-6D8CA43F9A57}.Release|x86.Build.0 = Release|Any CPU
-		{083C6D5D-55F6-437A-AEDB-6BB96D23F887}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{083C6D5D-55F6-437A-AEDB-6BB96D23F887}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{083C6D5D-55F6-437A-AEDB-6BB96D23F887}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{083C6D5D-55F6-437A-AEDB-6BB96D23F887}.Debug|x86.Build.0 = Debug|Any CPU
-		{083C6D5D-55F6-437A-AEDB-6BB96D23F887}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{083C6D5D-55F6-437A-AEDB-6BB96D23F887}.Release|Any CPU.Build.0 = Release|Any CPU
-		{083C6D5D-55F6-437A-AEDB-6BB96D23F887}.Release|x86.ActiveCfg = Release|Any CPU
-		{083C6D5D-55F6-437A-AEDB-6BB96D23F887}.Release|x86.Build.0 = Release|Any CPU
 		{4B5672EF-FDC6-4FDF-9425-07A0D6ECBBE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4B5672EF-FDC6-4FDF-9425-07A0D6ECBBE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4B5672EF-FDC6-4FDF-9425-07A0D6ECBBE8}.Debug|x86.ActiveCfg = Debug|Any CPU
