@@ -61,8 +61,7 @@ namespace Basics.Geom
 
           public IEnumerable<TileEntry> GetEntries(IBox search)
           {
-            foreach (var entry in new TileEntryEnumerable(
-              _tree, _tile, _tileBox, search))
+            foreach (var entry in _tree.Search(_tile, _tileBox, search))
             {
               yield return entry;
             }
@@ -338,9 +337,8 @@ namespace Basics.Geom
           {
             foreach (var neighbourTile in _neighbourTiles)
             {
-              foreach (var neighbour in new TileEntryEnumerable(
-                _master._neighbourTree, neighbourTile,
-                _master._neighbourTree.GetBox(neighbourTile), search))
+              foreach (var neighbour in _master._neighbourTree.Search(
+                neighbourTile, _master._neighbourTree.GetBox(neighbourTile), search))
               {
                 yield return neighbour;
               }

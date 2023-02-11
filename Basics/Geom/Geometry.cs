@@ -3,10 +3,6 @@ using System.Collections.Generic;
 
 namespace Basics.Geom
 {
-  public enum Relation
-  {
-    Intersect, Touch, ExtentIntersect, Disjoint, Contains, Within
-  }
   public class RelOp
   {
     public RelOp Flip() { throw new NotImplementedException(); }

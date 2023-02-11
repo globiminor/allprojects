@@ -130,16 +130,16 @@ namespace Basics.Geom
     IBox IParamGeometry.ParameterRange
     { get { return _paramBox; } }
 
-    ParamRelate IRelationGeometry.Relation(IBox paramRange)
+    Relation IRelationGeometry.GetRelation(IBox paramRange)
     {
       double min = paramRange.Min[0];
       double max = paramRange.Max[0];
       if (min > 1 || max < 0)
-      { return ParamRelate.Disjoint; }
+      { return Relation.Disjoint; }
       if (min < 0 || max > 1)
-      { return ParamRelate.Near; }
+      { return Relation.Near; }
       else
-      { return ParamRelate.Intersect; }
+      { return Relation.Intersect; }
     }
 
     public virtual IEnumerable<ParamGeometryRelation> CreateRelations(IParamGeometry other,

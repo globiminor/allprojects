@@ -49,6 +49,7 @@ namespace Grid
     { LockBits(); }
     public BitmapData LockBits()
     {
+      UnlockBits();
       if (_bitmap.PixelFormat == PixelFormat.Format8bppIndexed)
       {
         _data = _bitmap.LockBits(new Rectangle(0, 0, _bitmap.Width, _bitmap.Height),

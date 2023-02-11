@@ -70,6 +70,20 @@ namespace Grid
     public void LockBits()
     {
       _img.LockBits();
+      if (_cashed == null)
+      {
+        int nx = Extent.Nx;
+        int ny = Extent.Ny;
+        double[,] cashed = new double[nx, ny];
+        for (int ix = 0; ix < nx; ix++)
+        {
+          for (int iy = 0; iy < ny; iy++)
+          {
+            cashed[ix, iy] = GetCell(ix, iy);
+          }
+        }
+        _cashed = cashed;
+      }
     }
     public void UnlockBits()
     {
@@ -78,10 +92,15 @@ namespace Grid
     public const double DefaultMinVelo = 0.0001;
     public double MinVelo { get; set; } = DefaultMinVelo;
 
+    double[,] _cashed;
+
     public override double GetCell(int ix, int iy)
     {
       if (ix < 0 || ix >= Extent.Nx || iy < 0 || iy >= Extent.Ny)
       { return 0.001; }
+
+      if (_cashed != null)
+      { return _cashed[ix, iy]; }
 
       Color pCol = _img[ix, iy];
       double t;

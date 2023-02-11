@@ -321,7 +321,22 @@ namespace Basics.Geom
 
 	public static class PointOp
 	{
-		public static double GetFactor(IPoint p0, IPoint p1, IEnumerable<int> dimensions = null)
+    public static string ToString(IPoint p, string format = null, IEnumerable<int> dimensions = null)
+    {
+      dimensions = dimensions ?? GeometryOperator.GetDimensions(p);
+      System.Text.StringBuilder sb = new System.Text.StringBuilder();
+			string s = format == null
+				? "{0}"
+				: "{0:" + format + "}"; 
+      foreach (int dim in dimensions)
+      {
+				string d = string.Format(s, p[dim]);
+				sb.Append($"{d} ");
+      }
+			return sb.ToString();
+    }
+
+    public static double GetFactor(IPoint p0, IPoint p1, IEnumerable<int> dimensions = null)
 		{
 			dimensions = dimensions ?? GeometryOperator.GetDimensions(p0, p1);
 			double dMin = -1;

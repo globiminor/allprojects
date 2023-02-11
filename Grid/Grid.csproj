@@ -59,12 +59,10 @@
     <Compile Include="Lcp\LeastCostData.cs" />
     <Compile Include="Lcp\LeastCostStack.cs" />
     <Compile Include="Lcp\LeastCostStackData.cs" />
+    <Compile Include="Lcp\RouteRecord.cs" />
     <Compile Include="Lcp\Teleport.cs" />
     <Compile Include="Lcp\TerrainVeloModel.cs" />
     <Compile Include="Lcp\LeastCostGrid.cs" />
-    <Compile Include="Lcp\RouteTable.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="Lcp\Steps.cs" />
     <Compile Include="Lcp\StopHandler.cs" />
     <Compile Include="Lcp\Interfaces.cs" />

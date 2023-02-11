@@ -1,7 +1,5 @@
+﻿using Basics.Geom;
 using System.Collections.Generic;
-using System.Data;
-using Basics.Data;
-using Basics.Geom;
 
 namespace Grid.Lcp
 {

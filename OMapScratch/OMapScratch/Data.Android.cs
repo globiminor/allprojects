@@ -83,6 +83,10 @@ namespace OMapScratch
     {
       return _map.SaveImg(currentScratch, worldMatrix);
     }
+    internal string SavePicture(Bitmap picture)
+    {
+      return _map.SavePicture(picture);
+    }
 
     public void SetRecent(string configPath)
     {
@@ -221,6 +225,23 @@ namespace OMapScratch
       return imgPath;
     }
 
+    public string SavePicture(Bitmap picture)
+    {
+      string now = System.DateTime.Now.ToString("yyyyMMddHHmmss");
+      string pictureName = $"pct{now}.jpg";
+      string imgPath = GetLocalPath(pictureName);
+      if (imgPath == null)
+      { return null; }
+
+      using (var stream = new System.IO.FileStream(imgPath, System.IO.FileMode.Create))
+      {
+        picture.Compress(Bitmap.CompressFormat.Jpeg, 95, stream);
+        stream.Close();
+      }
+      return imgPath;
+
+    }
+
     public static bool Deserialize<T>(string path, out T obj)
     {
       if (!System.IO.File.Exists(path))
@@ -331,6 +352,5 @@ namespace OMapScratch
       float[] m = matrix;
       _matrix = new double[] { m[0], m[1], m[3], m[4], m[2], m[5] };
     }
-
   }
 }

@@ -1,5 +1,7 @@
 ﻿using Basics.Views;
 using OMapScratch;
+using System.Linq;
+using System.Text;
 
 namespace OcadScratch.ViewModels
 {
@@ -40,6 +42,20 @@ namespace OcadScratch.ViewModels
     public string Text
     {
       get { return _elem?.Text; }
+      set { }
+    }
+
+    public string PicturesText
+    {
+      get
+      {
+        if (_elem.Pictures == null)
+        { return null; }
+        StringBuilder sb = new StringBuilder();
+        foreach (var p in _elem.Pictures)
+        { sb.Append($"{p};"); }
+        return sb.ToString();
+      }
       set { }
     }
 

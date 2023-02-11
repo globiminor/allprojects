@@ -247,13 +247,12 @@ namespace OMapScratch
       public bool ShowDetail { get { return false; } }
     }
 
-    [Obsolete("rename")]
-    private class SetSymbolAction_ : IAction, ISymbolAction
+    private class SetSymbolAction : IAction, ISymbolAction
     {
       private readonly IMapView _view;
       private readonly Map _map;
       private readonly Elem _elem;
-      public SetSymbolAction_(IMapView view, Map map, Elem elem)
+      public SetSymbolAction(IMapView view, Map map, Elem elem)
       {
         _view = view;
         _map = map;
@@ -270,7 +269,7 @@ namespace OMapScratch
 
       public bool SetSymbol(Symbol symbol, ColorRef color, out string message)
       {
-        return _map.SetSymbol_(_elem, symbol, color, out message);
+        return _map.SetSymbol(_elem, symbol, color, out message);
       }
     }
 
@@ -295,6 +294,30 @@ namespace OMapScratch
       public bool EditText(string text)
       {
         return _map.EditText(_elem, text);
+      }
+    }
+
+    private class AddPictureAction : IAction, IPictureAction
+    {
+      private readonly IMapView _view;
+      private readonly Map _map;
+      private readonly Elem _elem;
+      public AddPictureAction(IMapView view, Map map, Elem elem)
+      {
+        _view = view;
+        _map = map;
+        _elem = elem;
+      }
+
+      public string Description { get { return "Add Picture"; } }
+
+      void IAction.Action()
+      { _view.AddPicture(this); }
+
+      bool IPictureAction.Action(string picturePath) => AddPicture(picturePath);
+      public bool AddPicture(string picturePath)
+      {
+        return _map.AddPicture(_elem, picturePath);
       }
     }
 

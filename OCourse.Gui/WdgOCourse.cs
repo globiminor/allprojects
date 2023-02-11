@@ -38,6 +38,7 @@ namespace OCourse.Gui
       _cntSection.PartChanged += CntSection_PartChanged;
     }
 
+    public IList<string> Args { get; set; }
     private OCourseVm _vm;
     public OCourseVm Vm
     {
@@ -855,6 +856,12 @@ namespace OCourse.Gui
 
       Init?.Invoke(this);
       InitGridLayout();
+
+      if (Args?.Count > 0)
+      {
+        if (File.Exists(Args[0]))
+        _vm.LoadSettings(Args[0]);
+      }
     }
 
     private void MniOpen_Click(object sender, EventArgs e)

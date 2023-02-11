@@ -1,6 +1,7 @@
 using Basics.Geom;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Grid.Lcp
 {
@@ -125,17 +126,25 @@ namespace Grid.Lcp
 
       public void Process()
       {
-        int i = 0;
-        ICostField processField = InitNextProcessField(remove: true);
-        while (processField != null)
+//        (_parent.DirCostModel as ILockable)?.LockBits();
+        try
         {
-          if (!Process(processField, ref i))
+          int i = 0;
+          ICostField processField = InitNextProcessField(remove: true);
+          while (processField != null)
           {
-            return;
+            if (!Process(processField, ref i))
+            {
+              return;
+            }
+            processField = InitNextProcessField(remove: true);
           }
-          processField = InitNextProcessField(remove: true);
+          _parent.OnStatus(new StatusEventArgs(_costGrid, _dirGrid, -1, -1, _nFields, _nFields));
         }
-        _parent.OnStatus(new StatusEventArgs(_costGrid, _dirGrid, -1, -1, _nFields, _nFields));
+        finally
+        {
+          (_parent.DirCostModel as ILockable)?.UnlockBits();
+        }
       }
 
       public LeastCostData GetResult()
@@ -190,6 +199,102 @@ namespace Grid.Lcp
         return nextField;
       }
 
+      private ICostField InitField(ICostField startField, Step distStep, ICostField[] fields)
+      {
+        Field key = new Field
+        { X = startField.X + distStep.Dx, Y = startField.Y + distStep.Dy };
+
+        // check range
+        if (key.X < 0 || key.X >= _parent.XMax ||
+            key.Y < 0 || key.Y >= _parent.YMax)
+        {
+          return null;
+        }
+        // check set
+        if (_dirGrid[key.X, key.Y] != 0)
+        {
+          return null;
+        }
+
+        bool exists = _fieldList.TryGetValue(key, out ICostField stepField);
+        if (!exists)
+        {
+          stepField = _parent.InitField(key);
+          _costOptimizer?.AdaptCost(stepField);
+        }
+        fields[distStep.Index] = stepField;
+        return exists ? null : stepField;
+      }
+
+      private int GotoNeighbours_(ICostField startField, bool invers)
+      {
+        _parent.InitField(startField);
+
+        bool[] cancelFields = null;
+        IReadOnlyList<Step> distSteps = _parent.Steps.GetDistSteps();
+        ICostField[] fields = new ICostField[distSteps.Count];
+
+        Task<ICostField>[] newFields = new Task<ICostField>[distSteps.Count];
+        int iStep = 0;
+        foreach (var distStep in distSteps)
+        {
+          newFields[iStep] = Task.Run(() => InitField(startField, distStep, fields));
+          iStep++;
+        }
+        Task.WaitAll(newFields);
+        foreach (var newField in newFields)
+        {
+          ICostField cost = newField.Result;
+          if (cost == null)
+          { continue; }
+          _fieldList.Add(cost, cost);
+        }
+
+        foreach (var distStep in distSteps)
+        {
+          int iField = distStep.Index;
+          ICostField stepField = fields[iField];
+          if (stepField == null)
+          { continue; }
+
+          double cost = _parent.CalcCost(startField, distStep, iField, fields, invers);
+          {
+            if (cost < 0)
+            {
+              cancelFields = _parent.Steps.GetCancelIndexes(distStep, cancelFields);
+              cost = Math.Abs(cost);
+            }
+            if (cost > _maxCostHandler?.MaxCost)
+            {
+              if (_maxCostHandler.OverrideFields.TryGetValue(startField, out double maxCost))
+              {
+                cost = Math.Min(cost, maxCost * distStep.Distance);
+              }
+              else if (_maxCostHandler.OverrideFields.TryGetValue(fields[iField], out maxCost))
+              {
+                cost = Math.Min(cost, maxCost * distStep.Distance);
+              }
+            }
+            if (cancelFields != null && cancelFields[distStep.Index])
+            { continue; }
+          }
+          if (stepField.IdDir < 0 || stepField.Cost > startField.Cost + cost)
+          {
+            // new minimum path found
+            if (stepField.IdDir >= 0)
+            {
+              // remove current position
+              _costList.Remove(stepField);
+            }
+            // add at new position
+            stepField.SetCost(startField, cost, distStep.Index);
+            _costList.Add(stepField, stepField);
+          }
+        }
+
+        return 0;
+      }
+
       private int GotoNeighbours(ICostField startField, bool invers)
       {
         _parent.InitField(startField);
@@ -198,6 +303,7 @@ namespace Grid.Lcp
         IReadOnlyList<Step> distSteps = _parent.Steps.GetDistSteps();
         int iStep = 0;
         ICostField[] fields = new ICostField[distSteps.Count];
+
         foreach (var distStep in distSteps)
         {
           iStep++;

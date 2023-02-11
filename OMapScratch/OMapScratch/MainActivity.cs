@@ -1,6 +1,8 @@
 ﻿using Android.App;
+using Android.Content;
 using Android.Locations;
 using Android.OS;
+using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using Basics.Views;
@@ -250,6 +252,12 @@ namespace OMapScratch
     //  sendPictureIntent.PutExtra(Android.Content.Intent.ExtraStream, uri);
     //  return sendPictureIntent;
     //}
+    protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Intent data)
+    {
+      base.OnActivityResult(requestCode, resultCode, data);
+      ActivityResultAction?.Invoke(requestCode, resultCode, data);
+    }
+    public System.Action<int, Result, Intent> ActivityResultAction;
 
     protected override void OnCreate(Bundle bundle)
     {

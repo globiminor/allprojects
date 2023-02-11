@@ -63,7 +63,7 @@ namespace TMap
       string fields = sym.NeededFields;
 
       TData.GeometryQuery query = new TData.GeometryQuery(sym.GeometryColumn,
-                                              drawable.Extent, Basics.Geom.Relation.ExtentIntersect);
+                                              drawable.Extent, Basics.Geom.BoxRelation.ExtentIntersect);
 
       using (new TData.OpenConnection(_data.Connection))
       using (System.Data.Common.DbDataReader reader = _data.GetSelectCmd(query, fields).ExecuteReader())

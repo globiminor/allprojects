@@ -34,6 +34,13 @@ namespace OMapScratch
     bool Action(string text);
   }
 
+  public interface IPictureAction
+  {
+    string Description { get; }
+    bool Action(string picturePath);
+  }
+
+
   public partial interface IMapView
   {
     MapVm MapVm { get; }
@@ -47,6 +54,7 @@ namespace OMapScratch
 
     void ShowText(string text, bool success = true);
     void EditText(string text, ITextAction setText);
+    void AddPicture(IPictureAction addPicture);
   }
 
   public partial interface ISegment

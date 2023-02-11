@@ -616,7 +616,7 @@ namespace Basics.Geom
       private readonly List<ParamsRelation> _parentList;
 
       private LinearIntersect _linearIntersect;
-      private ParamRelate _rel;
+      private Relation _rel;
 
       public ParamsRelation(ParamPart x, ParamPart y, List<ParamsRelation> parentList)
       {
@@ -624,7 +624,7 @@ namespace Basics.Geom
         _y = y;
         _parentList = parentList;
 
-        _rel = ParamRelate.Unknown;
+        _rel = Relation.Unknown;
       }
 
       public bool IsKnown()
@@ -892,11 +892,11 @@ namespace Basics.Geom
       /// <summary>
       /// Relation  of the x and y linear approximations
       /// </summary>
-      public ParamRelate Relation
+      public Relation GeomRelation
       {
         get
         {
-          if (_rel == ParamRelate.Unknown)
+          if (_rel == Relation.Unknown)
           {
             bool xLinear = _x.ParamInfo.BaseGeometry.IsLinear;
             bool yLinear = _y.ParamInfo.BaseGeometry.IsLinear;
@@ -905,9 +905,9 @@ namespace Basics.Geom
             if (_x.MaxOffset == 0 && _y.MaxOffset == 0)
             {
               if (i.Offset2Epsi == 0 && i.IsInside(!xLinear, !yLinear))
-              { _rel = ParamRelate.Intersect; }
+              { _rel = Relation.Intersect; }
               else
-              { _rel = ParamRelate.Disjoint; }
+              { _rel = Relation.Disjoint; }
               return _rel;
             }
             else
@@ -923,7 +923,7 @@ namespace Basics.Geom
                     LinearIntersect near = _y.LinearIntersect(border);
                     if (near.Offset2 < n2 && near.IsInside(!xLinear, !yLinear))
                     {
-                      _rel = ParamRelate.Near;
+                      _rel = Relation.Near;
                       return _rel;
                     }
                   }
@@ -937,12 +937,12 @@ namespace Basics.Geom
                     LinearIntersect near = _x.LinearIntersect(border);
                     if (near.Offset2 < n2 && near.IsInside(!xLinear, !yLinear))
                     {
-                      _rel = ParamRelate.Near;
+                      _rel = Relation.Near;
                       return _rel;
                     }
                   }
                 }
-                _rel = ParamRelate.Intersect;
+                _rel = Relation.Intersect;
                 return _rel;
 
               }
@@ -953,7 +953,7 @@ namespace Basics.Geom
                 LinearIntersect near = _y.LinearIntersect(border);
                 if (near.Offset2 < m2 && near.IsInside(!xLinear, !yLinear))
                 {
-                  _rel = ParamRelate.Near;
+                  _rel = Relation.Near;
                   return _rel;
                 }
               }
@@ -962,11 +962,11 @@ namespace Basics.Geom
                 LinearIntersect near = _x.LinearIntersect(border);
                 if (near.Offset2 < m2 && near.IsInside(!xLinear, !yLinear))
                 {
-                  _rel = ParamRelate.Near;
+                  _rel = Relation.Near;
                   return _rel;
                 }
               }
-              _rel = ParamRelate.Disjoint;
+              _rel = Relation.Disjoint;
             }
           }
           return _rel;
@@ -1014,18 +1014,185 @@ namespace Basics.Geom
 
       if (pg.IsLinear)
       {
-        Gaga gaga = new Gaga(pg, null);
-        Axis a = gaga.OrthoSys.GetOrthogonal(p);
-        // TODO
+        RelParamGeometry lg = new RelParamGeometry(pg);
+        IPoint pp = PointOp.Sub(p, lg.Origin);
+        Axis a = lg.OrthoSys.GetOrthogonal(pp);
+        bool maybeWithin = true;
+        foreach (var f in a.Factors)
+        {
+          if (f < 0 || f > 1)
+          {
+            maybeWithin = false;
+            break;
+          }
+        }
+        if (maybeWithin)
+        {
+          IPoint closest = PointOp.Sub(p, a.Point);
+          if (a.Factors.Length <= 1)
+          {
+            return closest;
+          }
+          if (g.IsWithin(closest))
+          { return closest; }
+        }
+        if (a.Factors.Length == 0)
+        { return Point.Create(lg.Origin); }
+        if (a.Factors.Length == 1)
+        {
+          return a.Factors[0] < 0 
+            ? Point.Create(lg.Origin) 
+            : lg.Origin + lg.OrthoSys.Axes[0].Point;
+        }
+        return ClosestPoint(p, g.Border);
       }
 
-      return null;
+      double minDist = double.MaxValue;
+      return GetClosestPoint(p, new RelParamGeometry(pg), ref minDist);
+    }
+
+    public static IPoint GetClosestPoint(IPoint p, IGeometry g)
+    {
+      if (IsMultipart(g))
+      {
+        IMultipartGeometry xMulti = (IMultipartGeometry)g;
+        return ClosestPoint(p, xMulti);
+      }
+      if (!(g is IRelParamGeometry pg))
+      { throw new InvalidOperationException("IGeometry is not of type " + typeof(IRelParamGeometry)); }
+
+      if (pg.IsWithin(p))
+      { return null; }
+
+      if (pg.IsLinear)
+      {
+        RelParamGeometry lg = new RelParamGeometry(pg);
+        IPoint pp = PointOp.Sub(p, lg.Origin);
+        Axis a = lg.OrthoSys.GetOrthogonal(pp);
+        bool maybeWithin = true;
+        foreach (var f in a.Factors)
+        {
+          if (f < 0 || f > 1)
+          {
+            maybeWithin = false;
+            break;
+          }
+        }
+        if (maybeWithin)
+        {
+          IPoint closest = PointOp.Sub(p, a.Point);
+          if (a.Factors.Length <= 1)
+          {
+            return closest;
+          }
+          if (g.IsWithin(closest))
+          { return closest; }
+        }
+        if (a.Factors.Length == 0)
+        { return Point.Create(lg.Origin); }
+        if (a.Factors.Length == 1)
+        {
+          return a.Factors[0] < 0
+            ? Point.Create(lg.Origin)
+            : lg.Origin + lg.OrthoSys.Axes[0].Point;
+        }
+        return ClosestPoint(p, g.Border);
+      }
+
+      double minDist = double.MaxValue;
+      return GetClosestPoint(p, new RelParamGeometry(pg), ref minDist);
+    }
+
+    private static IPoint GetClosestPoint(IPoint p, RelParamGeometry lg, ref double minDist)
+    {
+      double l2 = PointOp.Dist2(lg.Extent.Max, lg.Extent.Min);
+      double no = lg.BaseGeom.NormedMaxOffset;
+      double maxOffset = no * no * l2;
+      if (maxOffset > 1e-8)
+      {
+        List<Tuple<double, RelParamGeometry>> candidates = new List<Tuple<double, RelParamGeometry>>();
+        foreach (var part in lg.Split())
+        {
+          IPoint c = GetClosestLinearPoint(p, part);
+          double d = Math.Sqrt(PointOp.Dist2(c, p));
+          candidates.Add(new Tuple<double, RelParamGeometry>(d, part));
+        }
+        candidates.Sort((x, y) => x.Item1.CompareTo(y.Item1));
+
+        IPoint closest = null;
+        foreach (var candidate in candidates)
+        {
+          if (candidate.Item1 - maxOffset > minDist)
+          { continue; }
+
+          IPoint c = GetClosestPoint(p, candidate.Item2, ref minDist);
+          if (c == null)
+          { continue; }
+          double d = Math.Sqrt(PointOp.Dist2(c, p));
+          if (d <= minDist)
+          {
+            minDist = d;
+            closest = c;
+          }
+
+        }
+        return closest;
+      }
+      return GetClosestLinearPoint(p, lg);
+    }
+
+    private static IPoint GetClosestLinearPoint(IPoint p, RelParamGeometry lg)
+    {
+      IPoint pp = PointOp.Sub(p, lg.Origin);
+      Axis a = lg.OrthoSys.GetOrthogonal(pp);
+
+      int nAx = a.Factors.Length;
+      IPoint closest = lg.Origin;
+      for (int iAx = 0; iAx < nAx; iAx++)
+      {
+        double f = a.Factors[iAx];
+        if (f < 0) { continue; }
+        f = f > 1 ? 1 : f;
+        closest = closest + PointOp.Scale(f, lg.OrthoSys.Axes[iAx].Point);
+      }
+      return closest;
     }
 
     private static IPoint ClosestPoint(IPoint p, IMultipartGeometry xMulti)
     {
       IPoint pMin = null;
       double d2 = 0;
+      foreach (var part in xMulti.Subparts())
+      {
+        if (pMin == null)
+        {
+          pMin = ClosestPoint(p, part);
+          d2 = PointOp.Dist2(p, pMin);
+        }
+        else
+        {
+          IPoint extent = ClosestPoint(p, part.Extent);
+          if (PointOp.Dist2(extent, p) < d2)
+          {
+            IPoint pPart = ClosestPoint(p, part);
+            double dPart2 = PointOp.Dist2(pPart, p);
+
+            if (dPart2 < d2)
+            {
+              pMin = pPart;
+              d2 = dPart2;
+            }
+          }
+        }
+      }
+      return pMin;
+    }
+
+    private static IPoint GetClosestPoint(IPoint p, IMultipartGeometry xMulti)
+    {
+      IPoint pMin = null;
+      double d2 = 0;
+
       foreach (var part in xMulti.Subparts())
       {
         if (pMin == null)
@@ -1125,25 +1292,25 @@ namespace Basics.Geom
         return CreateRelations(y, x, track, calcLinearized);
       }
 
-      Relation rel;
+      BoxRelation rel;
       if (x.Extent == null)
-      { rel = Relation.Disjoint; }
+      { rel = BoxRelation.Disjoint; }
       else
       { rel = BoxOp.GetRelation(x.Extent, y.Extent); }
       return CreateRelations(x, y, track, rel, calcLinearized);
     }
 
     private static IEnumerable<ParamGeometryRelation> CreateRelations(IGeometry x, IGeometry y,
-      TrackOperatorProgress track, Relation extentRelation, bool calcLinearized)
+      TrackOperatorProgress track, BoxRelation extentRelation, bool calcLinearized)
     {
-      if (extentRelation == Relation.Disjoint)
+      if (extentRelation == BoxRelation.Disjoint)
       { return null; }
-      if (extentRelation == Relation.Contains)
+      if (extentRelation == BoxRelation.Contains)
       {
         if (x is IBox && track != null)
         { track.OnRelationFound(null, null); }
       }
-      if (extentRelation == Relation.Within)
+      if (extentRelation == BoxRelation.Within)
       {
         if (y is IBox && track != null)
         { track.OnRelationFound(null, null); }
@@ -1170,7 +1337,7 @@ namespace Basics.Geom
         }
 
         // y is single part
-        if (extentRelation == Relation.Within)
+        if (extentRelation == BoxRelation.Within)
         {
           return IntersectReduce(y, x, track, false);
         }
@@ -1181,7 +1348,7 @@ namespace Basics.Geom
       }
       if (y.Topology >= x.Topology && IsMultipart(y))
       {
-        if (extentRelation == Relation.Contains)
+        if (extentRelation == BoxRelation.Contains)
         {
           return IntersectReduce(x, y, track, calcLinearized);
         }
@@ -1209,7 +1376,7 @@ namespace Basics.Geom
         if (track != null && track.Cancel)
         { break; }
 
-        Relation extentRelation = BoxOp.GetRelation(xPart.Extent, yExtent);
+        BoxRelation extentRelation = BoxOp.GetRelation(xPart.Extent, yExtent);
         IEnumerable<ParamGeometryRelation> rels = CreateRelations(xPart, y,
           track, extentRelation, false);
         if (rels != null)
@@ -1298,7 +1465,7 @@ namespace Basics.Geom
 
     public static IPoint GetFirstPoint(IGeometry y)
     {
-      if (y is IBox b) 
+      if (y is IBox b)
         return b.Min;
 
       IGeometry g = y;
@@ -1402,18 +1569,18 @@ namespace Basics.Geom
       public bool IsLinear
       { get { return true; } }
 
-      public ParamRelate Relation(IBox paramBox)
+      public Relation GetRelation(IBox paramBox)
       {
         int n = paramBox.Dimension;
-        ParamRelate rel = ParamRelate.Intersect;
+        Relation rel = Relation.Intersect;
         for (int i = 0; i < n; i++)
         {
           double min = paramBox.Min[i];
           double max = paramBox.Max[i];
           if (min > 1 || max < 0)
-          { return ParamRelate.Disjoint; }
+          { return Relation.Disjoint; }
           if (min < 0 || max > 1)
-          { rel = ParamRelate.Near; }
+          { rel = Relation.Near; }
         }
         return rel;
       }
@@ -1478,20 +1645,20 @@ namespace Basics.Geom
         if (rel.IsKnown())
         { continue; }
 
-        ParamRelate r = rel.Relation;
-        if (r == ParamRelate.Disjoint)
+        Relation r = rel.GeomRelation;
+        if (r == Relation.Disjoint)
         { continue; }
 
-        if (r == ParamRelate.Intersect)
+        if (r == Relation.Intersect)
         {
-          ParamRelate xRel = x.Relation(rel.X.ParamBox);
-          if (xRel == ParamRelate.Disjoint)
+          Relation xRel = x.GetRelation(rel.X.ParamBox);
+          if (xRel == Relation.Disjoint)
           { continue; }
-          ParamRelate yRel = y.Relation(rel.Y.ParamBox);
-          if (yRel == ParamRelate.Disjoint)
+          Relation yRel = y.GetRelation(rel.Y.ParamBox);
+          if (yRel == Relation.Disjoint)
           { continue; }
 
-          if (xRel == ParamRelate.Intersect && yRel == ParamRelate.Intersect)
+          if (xRel == Relation.Intersect && yRel == Relation.Intersect)
           {
             if (result == null)
             { result = new List<ParamGeometryRelation>(); }
@@ -1510,7 +1677,7 @@ namespace Basics.Geom
           continue;
         }
 
-        if (r != ParamRelate.Near)
+        if (r != Relation.Near)
         { throw new InvalidOperationException("Unhandled relation " + r); }
 
         rel.Split();
@@ -1519,7 +1686,7 @@ namespace Basics.Geom
       return result;
     }
 
-    private class Gaga
+    private class RelParamGeometry
     {
       private readonly IRelParamGeometry _geom;
       private readonly IBox _paramRange;
@@ -1531,12 +1698,12 @@ namespace Basics.Geom
       private IList<IPoint> _axes;
       private IPoint _origin;
 
-      public Gaga(IRelParamGeometry geom, IRelationGeometry rel)
+      public RelParamGeometry(IRelParamGeometry geom)
       {
         _geom = geom;
       }
 
-      private Gaga(IRelParamGeometry geom, IBox paramRange, IBox extent)
+      private RelParamGeometry(IRelParamGeometry geom, IBox paramRange, IBox extent)
       {
         _geom = geom;
         _paramRange = paramRange;
@@ -1552,7 +1719,7 @@ namespace Basics.Geom
         }
       }
 
-      public LinearIntersect LinearIntersect(Gaga other)
+      public LinearIntersect LinearIntersect(RelParamGeometry other)
       {
         OrthogonalSystem fullSystem = OrthoSys.Clone();
         LinearIntersect intersect =
@@ -1661,16 +1828,16 @@ namespace Basics.Geom
           return _center;
         }
       }
-      public IList<Gaga> Split(bool includeLinears)
+      public IList<RelParamGeometry> Split(bool includeLinears)
       {
         if (includeLinears && BaseGeom.IsLinear)
         {
-          return new Gaga[] { this };
+          return new RelParamGeometry[] { this };
         }
         return Split();
       }
 
-      public List<Gaga> Split()
+      public List<RelParamGeometry> Split()
       {
         IBox paramRange;
         if (_paramRange == null)
@@ -1711,7 +1878,7 @@ namespace Basics.Geom
           return true;
         }
       }
-      private List<Gaga> GetSplits(IBox paramRange)
+      private List<RelParamGeometry> GetSplits(IBox paramRange)
       {
         int dim = paramRange.Dimension;
         IPoint min = paramRange.Min;
@@ -1762,7 +1929,7 @@ namespace Basics.Geom
           {
             int r = j % 3;
             code[d] = r;
-            coords[d] = cs[r][dim];
+            coords[d] = cs[r][d];
             j = j / 3;
           }
           IPoint paramPt = Point.Create(coords);
@@ -1772,7 +1939,7 @@ namespace Basics.Geom
           { b.TryAdd(code, geomPt); }
         }
 
-        List<Gaga> splits = new List<Gaga>(builders.Count);
+        List<RelParamGeometry> splits = new List<RelParamGeometry>(builders.Count);
         double normed = _geom.NormedMaxOffset;
         normed = normed * normed;
         foreach (var builder in builders)
@@ -1786,7 +1953,7 @@ namespace Basics.Geom
             sMin[iDim] -= off;
             sMax[iDim] += off;
           }
-          splits.Add(new Gaga(_geom, builder.ParamExtent, extent));
+          splits.Add(new RelParamGeometry(_geom, builder.ParamExtent, extent));
         }
         return splits;
       }
@@ -1823,26 +1990,26 @@ namespace Basics.Geom
 
     private class GagaRel
     {
-      private readonly Gaga _x;
-      private readonly Gaga _y;
+      private readonly RelParamGeometry _x;
+      private readonly RelParamGeometry _y;
 
-      public GagaRel(Gaga x, Gaga y)
+      public GagaRel(RelParamGeometry x, RelParamGeometry y)
       {
         _x = x;
         _y = y;
       }
 
-      private ParamRelate _rel;
-      public ParamRelate Relation
+      private Relation _rel;
+      public Relation GeomRelation
       {
         get
         {
-          if (_rel == ParamRelate.Unknown)
+          if (_rel == Relation.Unknown)
           {
-            ParamRelate rel;
+            Relation rel;
             if (!BoxOp.Intersects(_x.Extent, _y.Extent))
             {
-              rel = ParamRelate.Disjoint;
+              rel = Relation.Disjoint;
             }
             LinearIntersect intersect = _x.LinearIntersect(_y);
 
@@ -1851,7 +2018,7 @@ namespace Basics.Geom
               if (_y.BaseGeom.IsLinear)
               {
                 // TODO;
-                rel = ParamRelate.Unknown;
+                rel = Relation.Unknown;
               }
               else
               {
@@ -1866,11 +2033,11 @@ namespace Basics.Geom
             {
               if (BoxOp.Intersects(_x.Extent, _y.Extent))
               {
-                rel = ParamRelate.Near;
+                rel = Relation.Near;
               }
               else
               {
-                rel = ParamRelate.Disjoint;
+                rel = Relation.Disjoint;
               }
             }
             _rel = rel;
@@ -1886,10 +2053,10 @@ namespace Basics.Geom
 
       public bool IsKnown()
       {
-        return _rel != ParamRelate.Unknown;
+        return _rel != Relation.Unknown;
       }
 
-      private ParamRelate GetNearRelation(Gaga linear, Gaga y)
+      private Relation GetNearRelation(RelParamGeometry linear, RelParamGeometry y)
       {
         OrthogonalSystem o = linear.OrthoSys;
 
@@ -1900,7 +2067,7 @@ namespace Basics.Geom
         //  return ParamRelate.Near;
         //}
         //TODO
-        return ParamRelate.Unknown;
+        return Relation.Unknown;
       }
 
       public IEnumerable<GagaRel> Split()
@@ -1910,8 +2077,8 @@ namespace Basics.Geom
           return new GagaRel[] { };
         }
 
-        IList<Gaga> xSplits = _x.Split(false);
-        IList<Gaga> ySplits = _y.Split(false);
+        IList<RelParamGeometry> xSplits = _x.Split(false);
+        IList<RelParamGeometry> ySplits = _y.Split(false);
         List<GagaRel> rels = new List<GagaRel>(xSplits.Count * ySplits.Count);
         foreach (var xSplit in xSplits)
         {
@@ -1929,8 +2096,8 @@ namespace Basics.Geom
     {
       List<ParamGeometryRelation> result = null;
 
-      Gaga xPara = new Gaga(x, null);
-      Gaga yPara = new Gaga(y, null);
+      RelParamGeometry xPara = new RelParamGeometry(x);
+      RelParamGeometry yPara = new RelParamGeometry(y);
 
       Queue<GagaRel> relations = new Queue<GagaRel>();
       relations.Enqueue(new GagaRel(xPara, yPara));
@@ -1945,11 +2112,11 @@ namespace Basics.Geom
         if (rel.IsKnown())
         { continue; }
 
-        ParamRelate r = rel.Relation;
-        if (r == ParamRelate.Disjoint)
+        Relation r = rel.GeomRelation;
+        if (r == Relation.Disjoint)
         { continue; }
 
-        else if (r == ParamRelate.Intersect)
+        else if (r == Relation.Intersect)
         {
           if (result == null)
           { result = new List<ParamGeometryRelation>(); }
@@ -1959,7 +2126,7 @@ namespace Basics.Geom
           { track.OnRelationFound(track, rel.ParamRelation); }
           continue;
         }
-        else if (r == ParamRelate.Near)
+        else if (r == Relation.Near)
         {
           foreach (var splitRel in rel.Split())
           {

@@ -3,6 +3,11 @@ using System.Collections.Generic;
 
 namespace Basics.Geom
 {
+  public enum BoxRelation
+  {
+    Intersect, Touch, ExtentIntersect, Disjoint, Contains, Within
+  }
+
   public class Box : BoxCore
   {
     private Point _min;
@@ -60,12 +65,12 @@ namespace Basics.Geom
       internal set { _topology = value; }
     }
 
-		public override string ToString()
-		{
-			return $"{Min} ; {Max}";
-		}
+    public override string ToString()
+    {
+      return $"{Min} ; {Max}";
+    }
 
-		protected override IPoint GetMin() => _min;
+    protected override IPoint GetMin() => _min;
     protected override IPoint GetMax() => _max;
     protected override int GetDimension() => _dimension;
     protected override int GetTopology() => Topology;
@@ -147,23 +152,23 @@ namespace Basics.Geom
     public bool Contains(IBox box, IEnumerable<int> dimensionList = null) => BoxOp.ExceedDimension(this, box, dimensionList) == 0;
     public int ExceedDimension(IBox box, IEnumerable<int> dimensionList = null) => BoxOp.ExceedDimension(this, box, dimensionList);
 
-    public Relation RelationTo(IBox box, IEnumerable<int> dimensions = null) => BoxOp.GetRelation(this, box, dimensions);
+    public BoxRelation RelationTo(IBox box, IEnumerable<int> dimensions = null) => BoxOp.GetRelation(this, box, dimensions);
 
     public GeometryCollection Intersection(IGeometry other)
     {
       GeometryCollection result;
 
-      Relation relation = RelationTo(other.Extent);
-      if (relation == Relation.Contains)
+      BoxRelation relation = RelationTo(other.Extent);
+      if (relation == BoxRelation.Contains)
       {
         result = new GeometryCollection(new[] { other });
         return result;
       }
       else if (other is IBox)
       {
-        if (relation == Relation.Within)
+        if (relation == BoxRelation.Within)
         { return new GeometryCollection(new IGeometry[] { this }); }
-        else if (relation == Relation.Intersect)
+        else if (relation == BoxRelation.Intersect)
         {
           Box box = (Box)other;
           Point min = Point.Create(Min);
@@ -176,7 +181,7 @@ namespace Basics.Geom
           result = new GeometryCollection(new IGeometry[] { new Box(min, max) });
           return result;
         }
-        else if (relation == Relation.Disjoint)
+        else if (relation == BoxRelation.Disjoint)
         { return null; }
       }
 
@@ -188,7 +193,7 @@ namespace Basics.Geom
     {
       throw new NotImplementedException();
     }
-    
+
     [Obsolete("use BoxOp.EqualGeometry")]
     public override bool Equals(object obj)
     {
@@ -224,6 +229,10 @@ namespace Basics.Geom
 
   public static class BoxOp
   {
+    public static string ToString(IBox box, string format = null, IEnumerable<int> dimensions = null)
+    {
+      return $"{PointOp.ToString(box.Min, format, dimensions)}, {PointOp.ToString(box.Max, format, dimensions)}";
+    }
     public static Box Clone(IBox box)
     {
       return new Box(Point.Create(box.Min), Point.Create(box.Max));
@@ -277,7 +286,7 @@ namespace Basics.Geom
       return 0;
     }
 
-    public static Relation GetRelation(IBox x, IBox y, IEnumerable<int> dimensions = null)
+    public static BoxRelation GetRelation(IBox x, IBox y, IEnumerable<int> dimensions = null)
     {
       dimensions = dimensions ?? GeometryOperator.GetDimensions(x, y);
       bool xIny = true;
@@ -293,14 +302,14 @@ namespace Basics.Geom
         double y1 = y.Max[dim];
 
         if (x1 < y0)
-        { return Relation.Disjoint; }
+        { return BoxRelation.Disjoint; }
         else if (x1 < y1)
         { yInx = false; }
         else if (x1 > y1)
         { xIny = false; }
 
         if (x0 > y1)
-        { return Relation.Disjoint; }
+        { return BoxRelation.Disjoint; }
         else if (x0 > y0)
         { yInx = false; }
         else if (x0 < y0)
@@ -308,11 +317,11 @@ namespace Basics.Geom
       }
 
       if (xIny)
-      { return Relation.Within; }
+      { return BoxRelation.Within; }
       if (yInx)
-      { return Relation.Contains; }
+      { return BoxRelation.Contains; }
 
-      return Relation.Intersect;
+      return BoxRelation.Intersect;
     }
 
     public static bool EqualGeometry(IBox x, IBox y, ICollection<int> dimensions = null)
@@ -327,20 +336,20 @@ namespace Basics.Geom
 
     public static bool Intersects(IBox box, IBox other)
     {
-      Relation relation = GetRelation(box, other);
-      return relation != Relation.Disjoint;
+      BoxRelation relation = GetRelation(box, other);
+      return relation != BoxRelation.Disjoint;
     }
 
     public static bool Intersects(IBox box, IGeometry other)
     {
-      Relation relation = GetRelation(box, other.Extent);
-      if (relation == Relation.Contains)
+      BoxRelation relation = GetRelation(box, other.Extent);
+      if (relation == BoxRelation.Contains)
       { return true; }
       if (other is IBox)
       {
-        return relation != Relation.Disjoint;
+        return relation != BoxRelation.Disjoint;
       }
-      if (relation == Relation.Disjoint)
+      if (relation == BoxRelation.Disjoint)
       { return false; }
 
       bool intersects = GeometryOperator.Intersects(Box.CastOrWrap(box), other);

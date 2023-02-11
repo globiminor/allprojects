@@ -63,8 +63,8 @@ namespace Basics.Geom
 
       foreach (var border in Lines)
       {
-        Relation rel = BoxOp.GetRelation(border.Extent, Point.CastOrWrap(p).Extent);
-        if (rel == Relation.Disjoint)
+        BoxRelation rel = BoxOp.GetRelation(border.Extent, Point.CastOrWrap(p).Extent);
+        if (rel == BoxRelation.Disjoint)
         { continue; }
 
         if (PointOp.EqualGeometry(border.Points[0], border.Points.Last()) == false)

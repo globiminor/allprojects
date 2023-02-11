@@ -162,7 +162,7 @@ namespace Basics.Window.Browse
       devMgr.GetDevices(null, ref nDev);
       string[] devices = new string[nDev];
       // bei error : see _Readme.PortableDeviceApiLib.txt
-      devMgr.GetDevices(devices, ref nDev);
+      //devMgr.GetDevices(devices, ref nDev);
 
       return devices;
     }

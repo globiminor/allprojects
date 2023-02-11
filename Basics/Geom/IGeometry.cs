@@ -106,7 +106,7 @@ namespace Basics.Geom
     double this[int index] { get; }
   }
 
-  public enum ParamRelate { Unknown, Intersect, Near, Disjoint }
+  public enum Relation { Unknown, Intersect, Near, Disjoint }
 
   public interface IParamGeometry : IGeometry
   {
@@ -116,7 +116,7 @@ namespace Basics.Geom
 
   public interface IRelationGeometry
   {
-    ParamRelate Relation(IBox paramBox);
+    Relation GetRelation(IBox paramBox);
 
     IEnumerable<ParamGeometryRelation> CreateRelations(IParamGeometry other, TrackOperatorProgress trackProgress);
 

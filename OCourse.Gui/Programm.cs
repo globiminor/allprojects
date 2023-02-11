@@ -16,7 +16,9 @@ namespace OCourse.Gui
       //ChangeSymbol();
       Application.SetCompatibleTextRenderingDefault(false);
       Init();
-      Application.Run(new WdgOCourse());
+      WdgOCourse frm = new WdgOCourse();
+      frm.Args = args;
+      Application.Run(frm);
     }
 
     public static void Init()

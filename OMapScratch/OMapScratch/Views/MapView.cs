@@ -155,7 +155,7 @@ namespace OMapScratch.Views
     void IMapView.EditText(string text, ITextAction setText)
     {
 
-      Android.Widget.EditText editText = new EditText(this.Context);
+      EditText editText = new EditText(this.Context);
       editText.Text = text;
       RelativeLayout.LayoutParams lprams = new RelativeLayout.LayoutParams(Android.Views.ViewGroup.LayoutParams.MatchParent, Android.Views.ViewGroup.LayoutParams.MatchParent);
       editText.LayoutParameters = lprams;
@@ -163,7 +163,7 @@ namespace OMapScratch.Views
       editText.Visibility = Android.Views.ViewStates.Visible;
       editText.SetBackgroundColor(new Color(255, 255, 255, 192));
 
-      editText.KeyPress += (object sender, Android.Views.View.KeyEventArgs e) => {
+      editText.KeyPress += (object sender, KeyEventArgs e) => {
         e.Handled = false;
         if (e.Event.Action == Android.Views.KeyEventActions.Down && e.KeyCode == Android.Views.Keycode.Enter)
         {
@@ -179,17 +179,29 @@ namespace OMapScratch.Views
         }
       };
 
-      RelativeLayout parentLayout = this.Parent as RelativeLayout;
+      RelativeLayout parentLayout = Parent as RelativeLayout;
       parentLayout.AddView(editText);
 
       Utils.StartEdit(editText);
 
       parentLayout.PostInvalidate();
       PostInvalidate();
-
-
-      //Utils.ShowText(text, success);
     }
+
+    void IMapView.AddPicture(IPictureAction addPicture)
+    {
+      Context.ActivityResultAction = (requestCode, resultCode, data) =>
+      {
+        Bitmap bitmap = (Bitmap)data.Extras.Get("data");
+        string picturePath = MapVm.SavePicture(bitmap);
+        addPicture.Action(picturePath);
+
+        Context.ActivityResultAction = null;
+      };
+      Android.Content.Intent intent = new Android.Content.Intent(Android.Provider.MediaStore.ActionImageCapture);
+      Context.StartActivityForResult(intent, 0);
+    }
+
 
     void IMapView.SetGetSymbolAction(ISymbolAction symbolAction)
     {

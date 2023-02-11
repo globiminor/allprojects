@@ -182,13 +182,11 @@ namespace Basics.Geom.Network
 
       Box searchBox = new Box(new Point2D(pnt.X, pnt.Y), new Point2D(xMax, pnt.Y));
       tree.ExcludeEqual = excludeEqual;
-      IEnumerator<BoxTree<TopologicalLine>.TileEntry> enumerator =
-        tree.Search(searchBox).GetEnumerator();
 
       double x1Nearest = 0;
       double y1Nearest = 0;
 
-      while (enumerator.MoveNext())
+      foreach (var entry in tree.Search(searchBox))
       {
         if (xMax <= pnt.X)
         {
@@ -196,7 +194,7 @@ namespace Basics.Geom.Network
           return nearestLine;
         }
 
-        TopologicalLine currentLine = enumerator.Current.Value;
+        TopologicalLine currentLine = entry.Value;
         IBox _tBox;
         if (excludeEqual)
         {

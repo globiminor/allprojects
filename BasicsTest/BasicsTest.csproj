@@ -54,6 +54,7 @@
   <ItemGroup>
     <Compile Include="DataTest.cs" />
     <Compile Include="GeomTest.cs" />
+    <Compile Include="Geom\BoxTreeTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

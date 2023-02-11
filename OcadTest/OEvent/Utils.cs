@@ -34,7 +34,7 @@ public class DeviceTest
 
     devMgr.GetDevices(null, ref nDev);
     string[] devices = new string[nDev];
-    devMgr.GetDevices(devices, ref nDev);
+//    devMgr.GetDevices(devices, ref nDev);
 
 
     for (int i = 0; i < nDev; i++)

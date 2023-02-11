@@ -4,7 +4,14 @@ using System.Collections.Generic;
 
 namespace Basics.Geom
 {
-  public abstract partial class BoxTree
+  public interface ISearchable
+  {
+    IBox Box { get; }
+    IEnumerable<ISearchable> Search(IBox box);
+    bool IsSingle { get; }
+    object SingleValue { get; }
+  }
+  public abstract partial class BoxTree : ISearchable
   {
     private int _dimension;
     private Box _unitBox;
@@ -48,7 +55,7 @@ namespace Basics.Geom
     }
     public static BoxTree<T> Create<T>(IEnumerable<T> elems, Func<T, IBox> getBox, int nElem = DefaultMaxElementCountPerTile, bool dynamic = DefaultDynamic)
     {
-      Dictionary<IBox,T> adds = new Dictionary<IBox, T>(new MyBoxComparer());
+      Dictionary<IBox, T> adds = new Dictionary<IBox, T>(new MyBoxComparer());
       Box allBox = null;
       foreach (var elem in elems)
       {
@@ -290,10 +297,104 @@ namespace Basics.Geom
       return VerifyTile(_mainTile);
     }
 
-    protected virtual IEnumerator<TileEntry> GetTileEnumerator(
-      TileEntryEnumerator enumerator, IEnumerable<TileEntry> list)
+    public IEnumerable<TileEntry> Search(IBox search)
     {
-      return list?.GetEnumerator();
+      return Search(MainTile, MainBox, search);
+    }
+
+    private class EntrySearchable : ISearchable
+    {
+      private readonly TileEntry _entry;
+      public EntrySearchable(TileEntry entry)
+      {
+        _entry = entry;
+      }
+      IBox ISearchable.Box => _entry.Box;
+      IEnumerable<ISearchable> ISearchable.Search(IBox box)
+      {
+        if (BoxOp.Intersects(_entry.Box, box))
+        { yield return new EntrySearchable(_entry); }
+      }
+      bool ISearchable.IsSingle => true;
+      public object SingleValue => _entry.BaseValue;
+    }
+    private class TileSearchable : ISearchable
+    {
+      private readonly BoxTile _tile;
+      public TileSearchable(IBox box, BoxTile tile)
+      {
+        Box = box;
+        _tile = tile;
+      }
+      public IBox Box { get; }
+      public IEnumerable<ISearchable> Search(IBox box)
+      {
+        foreach (var entry in _tile.EnumElems())
+        {
+          if (BoxOp.Intersects(entry.Box, box))
+          { yield return new EntrySearchable(entry); }
+          foreach (var child in new[] { _tile.Child0, _tile.Child1 })
+          {
+            if (child == null)
+            { continue; }
+            Box childBox = BoxOp.Clone(Box);
+            childBox.Min[_tile.SplitDimension] = child.MinInParentSplitDim;
+            childBox.Max[_tile.SplitDimension] = child.MaxInParentSplitDim;
+
+            if (BoxOp.Intersects(childBox, box))
+            { yield return new TileSearchable(childBox, child); }
+          }
+        }
+      }
+      bool ISearchable.IsSingle => false;
+      public object SingleValue => null;
+    }
+    IBox ISearchable.Box => MainBox;
+    IEnumerable<ISearchable> ISearchable.Search(IBox box)
+    {
+      if (BoxOp.Intersects(MainBox, box))
+      {
+        yield return new TileSearchable(MainBox, MainTile);
+      }
+    }
+    bool ISearchable.IsSingle => false;
+    public object SingleValue => null;
+
+    internal IEnumerable<TileEntry> Search(BoxTile startTile, Box startBox, IBox search)
+    {
+      foreach (var tile in EnumTiles(startTile, startBox, search))
+      {
+        foreach (var entry in tile.EnumElems())
+        {
+          if (search == null || BoxOp.Intersects(entry.Box, search))
+          {
+            yield return entry;
+          }
+        }
+      }
+    }
+
+    internal IEnumerable<BoxTile> EnumTiles(BoxTile startTile, Box startBox, IBox search)
+    {
+      if (search != null && !BoxOp.Intersects(startBox, search))
+      {
+        yield break;
+      }
+      yield return startTile;
+
+      foreach (var child in new[] { startTile.Child0, startTile.Child1 })
+      {
+        if (child == null)
+        { continue; }
+
+        Box childBox = startBox.Clone();
+        int splitDim = startTile.SplitDimension;
+        childBox.Min[splitDim] = child.MinInParentSplitDim;
+        childBox.Max[splitDim] = child.MaxInParentSplitDim;
+
+        foreach (var tile in EnumTiles(child, childBox, search))
+        { yield return tile; }
+      }
     }
 
     private bool VerifyTile(BoxTile tile)
@@ -669,16 +770,17 @@ namespace Basics.Geom
 
     public abstract class TileEntry
     {
-      private readonly IBox _box;
-
-      protected TileEntry(IBox box)
+      protected TileEntry(IBox box, object value)
       {
-        _box = box;
+        Box = box;
+        BaseValue = value;
       }
 
-      public IBox Box
+      public IBox Box { get; }
+      public object BaseValue { get; }
+      public override string ToString()
       {
-        get { return _box; }
+        return $"{BoxOp.ToString(Box, "N3")}: {BaseValue}";
       }
     }
 
@@ -948,7 +1050,7 @@ namespace Basics.Geom
 
   public partial class BoxTree<T> : BoxTree
   {
-    public BoxTree(int dimension, int nElem = DefaultMaxElementCountPerTile , bool dynamic = DefaultDynamic)
+    public BoxTree(int dimension, int nElem = DefaultMaxElementCountPerTile, bool dynamic = DefaultDynamic)
       : base(dimension, nElem, dynamic, new BoxTile()) { }
 
     internal new BoxTile MainTile
@@ -993,11 +1095,13 @@ namespace Basics.Geom
       }
     }
 
-    public TileEntryEnumerable Search(IBox box)
+    public new IEnumerable<TileEntry> Search(IBox search)
     {
-      return new TileEntryEnumerable(this, box);
+      foreach (var baseEntry in base.Search(search))
+      {
+        yield return (TileEntry)baseEntry;
+      }
     }
-
     public TileEntry Near(IBox box)
     {
       if (MainBox == null)
@@ -1071,18 +1175,14 @@ namespace Basics.Geom
 
     public new class TileEntry : BoxTree.TileEntry
     {
-      private readonly T _value;
-
       public TileEntry(IBox box, T value)
-        : base(box)
-      {
-        _value = value;
-      }
+        : base(box, value)
+      { }
 
       [NotNull]
       public T Value
       {
-        get { return _value; }
+        get { return (T)BaseValue; }
       }
     }
 

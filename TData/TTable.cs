@@ -234,7 +234,7 @@ namespace TData
         else
         { stmt.Append(" AND "); }
 
-        if (query.Relation == Relation.Intersect)
+        if (query.Relation == BoxRelation.Intersect)
         {
           stmt.AppendFormat($" ST_Intersects({query.Column.ColumnName}, :p1)");
           DbBaseParameter param = cmd.CreateParameter();
@@ -242,7 +242,7 @@ namespace TData
           param.Value = query.Geometry;
           paramList.Add(param);
         }
-        else if (query.Relation == Relation.ExtentIntersect)
+        else if (query.Relation == BoxRelation.ExtentIntersect)
         {
           stmt.AppendFormat($" ST_Intersects( ST_Envelope({query.Column.ColumnName}), :p1)");
           DbBaseParameter param = cmd.CreateParameter();
@@ -684,8 +684,8 @@ namespace TData
         Box box = null;
         foreach (var pQuery in schema._queryList)
         {
-          if (pQuery.Relation == Relation.Intersect ||
-            pQuery.Relation == Relation.ExtentIntersect)
+          if (pQuery.Relation == BoxRelation.Intersect ||
+            pQuery.Relation == BoxRelation.ExtentIntersect)
           {
             if (box == null)
             { box = new Box(pQuery.Geometry.Extent); }

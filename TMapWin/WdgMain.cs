@@ -197,7 +197,7 @@ namespace TMapWin
         string sMap = "";
         DbBaseCommand cmd = tbl.GetSelectCmd(
           new TData.GeometryQuery(grData.Symbolisation.GeometryColumn,
-          new Basics.Geom.Box(e.Start, e.End, true), Basics.Geom.Relation.Intersect),
+          new Basics.Geom.Box(e.Start, e.End, true), Basics.Geom.BoxRelation.Intersect),
           null);
         DbBaseAdapter adapter = cmd.Connection.CreateAdapter();
         adapter.SelectCommand = cmd;

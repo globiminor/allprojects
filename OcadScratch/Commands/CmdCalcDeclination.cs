@@ -66,6 +66,7 @@ namespace OcadScratch.Commands
     {
       // see https://www.ngdc.noaa.gov/geomag-web/calculators/declinationHelp
 
+
       string address = "https://www.ngdc.noaa.gov/geomag-web/calculators/calculateDeclination";
       //string address = "https://www.ngdc.noaa.gov/geomag-web/calculators/calculateDeclination?browserRequest=true&magneticComponent=d&lat1=48&lat1Hemisphere=N&lon1=7&lon1Hemisphere=E&model=WMM&startYear=2018&startMonth=12&startDay=14&resultFormat=xml";
       //address = "https://www.ngdc.noaa.gov/geomag-web/calculators/calculateDeclination?lat1=40&lon1=-105.25&resultFormat=xml ";

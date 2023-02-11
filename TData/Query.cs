@@ -5,31 +5,31 @@ using Basics.Geom;
 
 namespace TData
 {
-	/// <summary>
-	/// Geometric Query
-	/// </summary>
-	public class GeometryQuery
-	{
+  /// <summary>
+  /// Geometric Query
+  /// </summary>
+  public class GeometryQuery
+  {
     private DataColumn _column;
     private IGeometry _geom;
-    private Relation _rel;
-    public GeometryQuery(DataColumn geomColum, IGeometry geometry, Relation relation)
-		{
+    private BoxRelation _rel;
+    public GeometryQuery(DataColumn geomColum, IGeometry geometry, BoxRelation relation)
+    {
       _column = geomColum;
       _geom = geometry;
       _rel = relation;
-		}
+    }
 
     public DataColumn Column
     { get { return _column; } }
     public IGeometry Geometry
     { get { return _geom; } }
-    public Relation Relation
+    public BoxRelation Relation
     { get { return _rel; } }
 
     public static IList<string> Parse(string expression)
     {
-      return Parse(expression, new char[] { '\'' }, new char[] { }, 
+      return Parse(expression, new char[] { '\'' }, new char[] { },
         new char[] { ',', ':', '(', ')', '=', '<', '>', '+', '-', '*', '/' });
     }
 
@@ -68,7 +68,7 @@ namespace TData
             specialChars.Contains(expression[iStart]))
           { }
           else
-          { 
+          {
             string error = GetError(expression, iPos);
             throw new InvalidExpressionException(error);
           }
@@ -127,8 +127,8 @@ namespace TData
       {
         e.Append("...");
       }
-      string error = string.Format("{0}" + Environment.NewLine + 
-        "Invalid expression near position {1}" + Environment.NewLine + 
+      string error = string.Format("{0}" + Environment.NewLine +
+        "Invalid expression near position {1}" + Environment.NewLine +
         "{2}", expression, iStart, e);
       return error;
     }

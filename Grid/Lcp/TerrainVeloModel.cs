@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Grid.Lcp
 {
-  public class TerrainVeloModel : IDirCostModel<TvmCell>, ITeleportProvider
+  public class TerrainVeloModel : IDirCostModel<TvmCell>, ITeleportProvider, ILockable
   {
     public IGrid<double> HeightGrid { get; }
     public IGrid<double> VelocityGrid { get; }
@@ -16,6 +16,17 @@ namespace Grid.Lcp
       VelocityGrid = velocityGrid;
 
       _teleports = new List<Teleport>();
+    }
+
+    void ILockable.LockBits()
+    {
+      (VelocityGrid as ILockable).LockBits();
+      (HeightGrid as ILockable)?.LockBits();
+    }
+    void ILockable.UnlockBits()
+    {
+      (VelocityGrid as ILockable).UnlockBits();
+      (HeightGrid as ILockable)?.UnlockBits();
     }
 
     public Basics.Geom.IBox Extent
