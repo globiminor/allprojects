@@ -141,7 +141,7 @@ namespace Basics.Geom
 
     public double GetMaxExtent(IEnumerable<int> dimensions = null) => BoxOp.GetMaxExtent(this, dimensions);
 
-    public double Dist2(IBox box, IEnumerable<int> dimensions = null) => BoxOp.Dist2(this, box, dimensions);
+    public double Dist2(IBox box, IEnumerable<int> dimensions = null) => BoxOp.GetMinDist(this, box, dimensions).OrigDist2(dimensions);
 
     public bool IsWithin(IPoint p, IEnumerable<int> dimensions = null) => BoxOp.IsWithin(this, p, dimensions);
 
@@ -251,25 +251,50 @@ namespace Basics.Geom
       return dMax;
     }
 
-    public static double Dist2(IBox x, IBox box, IEnumerable<int> dimensions = null)
+    public static Point GetMinDist(IBox x, IBox y, IEnumerable<int> dimensions = null)
     {
-      dimensions = dimensions ?? GeometryOperator.GetDimensions(x, box);
+      dimensions = dimensions ?? GeometryOperator.GetDimensions(x, y);
 
-      double d2 = 0;
+      Point minDist = Point.Create_0(x.Dimension);
       foreach (var i in dimensions)
       {
         double d;
-        if (x.Max[i] < box.Min[i])
-        { d = box.Min[i] - x.Max[i]; }
-        else if (x.Min[i] > box.Max[i])
-        { d = x.Min[i] - box.Max[i]; }
+        if (x.Max[i] < y.Min[i])
+        { d = y.Min[i] - x.Max[i]; }
+        else if (x.Min[i] > y.Max[i])
+        { d = y.Max[i] - x.Min[i]; }
         else
-        { continue; }
+        { d = 0; }
 
-        d2 += d * d;
+        minDist[i] = d;
       }
-      return d2;
+      return minDist;
     }
+
+    public static Point GetMaxDist(IBox x, IBox y, IEnumerable<int> dimensions = null)
+    {
+      dimensions = dimensions ?? GeometryOperator.GetDimensions(x, y);
+
+      Point maxDist = Point.Create_0(x.Dimension);
+      foreach (var i in dimensions)
+      {
+        double d;
+        if (x.Max[i] < y.Min[i])
+        { d = y.Max[i] - x.Min[i]; }
+        else if (x.Min[i] > y.Max[i])
+        { d = y.Min[i] - x.Max[i]; }
+        else
+        {
+          double d0 = y.Max[i] - x.Min[i];
+          double d1 = y.Min[i] - x.Max[i];
+          d = Math.Abs(d0) > Math.Abs(d1) ? d0 : d1;
+        }
+
+        maxDist[i] = d;
+      }
+      return maxDist;
+    }
+
 
     public static bool Contains(IBox x, IBox y, IEnumerable<int> dimensionList = null) => BoxOp.ExceedDimension(x, y, dimensionList) == 0;
 

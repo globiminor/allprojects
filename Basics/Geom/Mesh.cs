@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Basics.Geom.Index;
 using GeomOp = Basics.Geom.GeometryOperator;
 
 namespace Basics.Geom

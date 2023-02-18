@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace Basics.Geom
+namespace Basics.Geom.Index
 {
   partial class BoxTree
   {

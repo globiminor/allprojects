@@ -1,12 +1,9 @@
 ﻿
 using Basics;
 using Basics.Geom;
-using Grid;
+using Basics.Geom.Index;
 using Ocad;
-using Ocad.Symbol;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace OCourse.Commands
 {

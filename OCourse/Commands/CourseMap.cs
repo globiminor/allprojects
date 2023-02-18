@@ -1,5 +1,6 @@
 ﻿
 using Basics.Geom;
+using Basics.Geom.Index;
 using Ocad;
 using Ocad.Symbol;
 using System;
