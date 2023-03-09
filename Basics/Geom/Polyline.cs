@@ -618,7 +618,7 @@ namespace Basics.Geom
       { return true; }
     }
 
-    IEnumerable<IGeometry> IMultipartGeometry.Subparts() => EnumSegments();
+    IEnumerable<IGeometry> IMultipartGeometry.Subparts() => (IEnumerable<IGeometry>)_spatialIndex ?? EnumSegments();
 
     #endregion
 

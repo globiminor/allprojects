@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 
 namespace BasicsTest.Geom
 {
@@ -18,12 +19,18 @@ namespace BasicsTest.Geom
 
     private List<Point2D> _points;
     private BoxTree<Point2D> _pointTree;
+
+    private List<Line> _lines;
+    private BoxTree<Line> _lineTree;
+
     private List<Point2D> _searchPoints;
 
     private List<Point2D> Points => _points ?? (_points = InitPoints(_nPoints));
+    private List<Line> Lines => _lines ?? (_lines = InitLines(_nPoints));
     private List<Point2D> SearchPoints => _searchPoints ?? (_searchPoints = InitSearchPoints(_nSearchPoints));
 
     private BoxTree<Point2D> PointTree => _pointTree ?? (_pointTree = BoxTree.Create(Points, (p) => p, nElem: _nElem));
+    private BoxTree<Line> LineTree => _lineTree ?? (_lineTree = BoxTree.Create(Lines, (l) => l.Extent, nElem: _nElem));
     private List<Point2D> InitPoints(int nPoints = 10000)
     {
       List<Point2D> points = new List<Point2D>();
@@ -37,6 +44,22 @@ namespace BasicsTest.Geom
         points.Add(new Point2D(r.NextDouble(), r.NextDouble()));
       }
       return points;
+    }
+    private List<Line> InitLines(int nLines = 10000, double lMin = 0.01, double lMax = 0.02)
+    {
+      List<Line> lines = new List<Line>();
+      Random r = new Random();
+      for (int i = 0; i < nLines; i++)
+      {
+        Point2D p0 = new Point2D(r.NextDouble(), r.NextDouble());
+        double angle = r.NextDouble() * Math.PI * 2;
+        double sin = Math.Sin(angle);
+        double cos = Math.Cos(angle);
+        double l = (lMax - lMin) * r.NextDouble() + lMin;
+        Point d = new Point2D(sin * l, cos * l);
+        lines.Add(new Line(p0, p0 + d));
+      }
+      return lines;
     }
 
     private List<Point2D> InitSearchPoints(int nPoints = 10000, double f = 1)
@@ -82,7 +105,7 @@ namespace BasicsTest.Geom
     {
       foreach (var searchPoint in SearchPoints)
       {
-        GetMinDistByFunc(PointTree, searchPoint);
+        GetMinDistByFunc(PointTree, searchPoint, (geom, s) => PointOp.Dist2(geom, s));
       }
     }
 
@@ -93,7 +116,7 @@ namespace BasicsTest.Geom
       for (int i = 8; i < 5000; i = 2 * i)
       {
         IList<Point2D> points = InitPoints(i);
-        CanGetMinDistElemsByList(points, SearchPoints, 65, flag: 1);
+        CanGetMinDistElemsByList(points, SearchPoints, 65, flag: 1, (geom, searchPoint) => PointOp.Dist2(geom, searchPoint));
 
         Console.WriteLine();
       }
@@ -105,7 +128,7 @@ namespace BasicsTest.Geom
       for (int i = 8; i < 3000; i = 2 * i)
       {
         IList<Point2D> points = InitPoints(i);
-        CanGetMinDistElemsByList(points, SearchPoints, 65, flag: 3);
+        CanGetMinDistElemsByList(points, SearchPoints, 65, flag: 3, (geom, searchPoint) => PointOp.Dist2(geom, searchPoint));
 
         Console.WriteLine();
       }
@@ -117,7 +140,25 @@ namespace BasicsTest.Geom
       for (int i = 8; i < 1000; i = 2 * i)
       {
         IList<Point2D> points = InitPoints(i);
-        CanGetMinDistElemsByList(points, SearchPoints, 65, flag: 31);
+        CanGetMinDistElemsByList(points, SearchPoints, 65, flag: 31, (geom, searchPoint) => PointOp.Dist2(geom, searchPoint));
+
+        Console.WriteLine();
+      }
+    }
+
+    [TestMethod]
+    public void StatGetLineMinDistElemsByList15()
+    {
+      for (int i = 8; i < 1000; i = 2 * i)
+      {
+        IList<Line> lines = InitLines(i);
+        CanGetMinDistElemsByList(lines, SearchPoints, 65, flag: 18,
+          (geom, searchPoint) =>
+          {
+            IPoint closest = GeometryOperator.GetClosestPoint(searchPoint, geom);
+            double d2 = PointOp.Dist2(searchPoint, closest);
+            return d2;
+          });
 
         Console.WriteLine();
       }
@@ -127,25 +168,30 @@ namespace BasicsTest.Geom
     [TestMethod]
     public void CanGetMinDistElemsByList()
     {
-      CanGetMinDistElemsByList(Points, SearchPoints, 257, flag: 1);
+      CanGetMinDistElemsByList(Points, SearchPoints, 257, flag: 1, (geom, searchPoint) => PointOp.Dist2(geom, searchPoint));
     }
-    private static void CanGetMinDistElemsByList(IList<Point2D> points, IList<Point2D> searchPoints, int maxElems,
-      int flag)
+    private static void CanGetMinDistElemsByList<T>(IList<T> geoms, IList<Point2D> searchPoints, int maxElems,
+      int flag, Func<T,IPoint,double> minFunc) where T: IGeometry
     {
       Random r = new Random();
       for (int i = 1; i < maxElems; i = 2 * i)
       {
-        var pointTree = BoxTree.Create(points, (p) => p, nElem: i);
+        StringBuilder sb = new StringBuilder();
+        sb.Append($"nGeoms={geoms.Count}; nSearch={searchPoints.Count}; nElems={i,4}; ");
+        bool calc = false;
+
+        var pointTree = BoxTree.Create(geoms, (p) => p.Extent, nElem: i);
         if (flag / 16 % 2 == 1)
         {
           Stopwatch w = Stopwatch.StartNew();
 
           foreach (var searchPoint in searchPoints)
           {
-            GetMinDistByFunc(pointTree, searchPoint);
+            GetMinDistByFunc(pointTree, searchPoint, minFunc);
           }
           w.Stop();
-          Console.WriteLine($"FuncSearch:    nPoints={points.Count}; nSearch={searchPoints.Count}; nElems={i}; {w.ElapsedMilliseconds / 1000.0:N3}");
+          sb.Append($"F: {w.ElapsedMilliseconds / 1000.0:N3};");
+          calc= true;
         }
         if (flag / 4 % 2 == 1)
         {
@@ -154,20 +200,22 @@ namespace BasicsTest.Geom
           foreach (var searchPoint in searchPoints)
           {
             double minD2 = double.MaxValue;
-            Point2D minP = null;
+            T minP = default;
             foreach (var entry in pointTree.Search(null))
             {
-              var point = entry.Value;
-              double d2 = PointOp.Dist2(searchPoint, point);
+              var geom = entry.Value;
+
+              double d2 = minFunc(geom, searchPoint); 
               if (d2 < minD2)
               {
                 minD2 = d2;
-                minP = point;
+                minP = geom;
               }
             }
           }
           w.Stop();
-          Console.WriteLine($"NoBoxSearch  : nPoints={points.Count}; nSearch={searchPoints.Count}; nElems={i};     {w.ElapsedMilliseconds / 1000.0:N3}");
+          sb.Append($"N: {w.ElapsedMilliseconds / 1000.0:N3};");
+          calc= true;
         }
         if (flag / 8 % 2 == 1)
         {
@@ -176,20 +224,25 @@ namespace BasicsTest.Geom
           foreach (var searchPoint in searchPoints)
           {
             double minD2 = double.MaxValue;
-            Point2D minP = null;
+            T minP = default;
             foreach (var entry in pointTree.Search(new Box(new Point2D(-10, -10), new Point2D(10, 10))))
             {
-              var point = entry.Value;
-              double d2 = PointOp.Dist2(searchPoint, point);
+              var geom = entry.Value;
+              double d2 = minFunc(geom, searchPoint);
               if (d2 < minD2)
               {
                 minD2 = d2;
-                minP = point;
+                minP = geom;
               }
             }
           }
           w.Stop();
-          Console.WriteLine($"WithBoxSearch: nPoints={points.Count}; nSearch={searchPoints.Count}; nElems={i};         {w.ElapsedMilliseconds / 1000.0:N3}");
+          sb.Append($"B: {w.ElapsedMilliseconds / 1000.0:N3};");
+          calc= true;
+        }
+        if (calc)
+        {
+          Console.WriteLine(sb.ToString());
         }
       }
       if (flag / 2 % 2 == 1)
@@ -198,36 +251,37 @@ namespace BasicsTest.Geom
         foreach (var searchPoint in searchPoints)
         {
           double minD2 = double.MaxValue;
-          Point2D minP = null;
-          foreach (var point in points)
+          T minGeom = default;
+          foreach (var geom in geoms)
           {
-            double d2 = PointOp.Dist2(searchPoint, point);
+            double d2 = minFunc(geom, searchPoint);
             if (d2 < minD2)
             {
               minD2 = d2;
-              minP = point;
+              minGeom = geom;
             }
           }
         }
         w.Stop();
-        Console.WriteLine($"Simple List: nPoints={points.Count}; nSearch={searchPoints.Count}; simple list; {w.ElapsedMilliseconds / 1000.0:N3}");
+        Console.WriteLine($"nGeoms={geoms.Count}; nSearch={searchPoints.Count}; simple list; S: {w.ElapsedMilliseconds / 1000.0:N3}");
       }
     }
 
 
-    private static void GetMinDistByFunc(BoxTree<Point2D> boxTree, IPoint point)
+    private static void GetMinDistByFunc<T>(BoxTree<T> boxTree, Point point, Func<T, IPoint, double> minFunc)
+      where T : IGeometry
     {
       double minD2 = double.MaxValue;
-      IPoint nearest = null;
+      T nearest = default;
       BoxTreeMinDistSearch search = new BoxTreeMinDistSearch(point);
-      foreach (BoxTree<Point2D>.TileEntry entry in boxTree.Search(searcher: search))
+      foreach (TileEntry<T> entry in boxTree.Search(searcher: search))
       {
-        IPoint p = entry.Value;
-        double d2 = PointOp.Dist2(point, p);
+        T geom = entry.Value;
+        double d2 = minFunc(geom, point);
         if (d2 < minD2)
         {
           minD2 = d2;
-          nearest = p;
+          nearest = geom;
 
           search.SetMinDist2(d2);
         }

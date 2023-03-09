@@ -6,46 +6,51 @@ namespace Basics.Geom.Index
 {
   public class BoxTreeMinDistSearch : IBoxTreeSearch
   {
-    private readonly Point _distPt;
+    private readonly IBox _distBox;
     private IBox _box;
     private double _minDist2;
 
-    public BoxTreeMinDistSearch(IPoint distPt)
+    public BoxTreeMinDistSearch(IBox distBox)
     {
-      if (distPt == null) throw new ArgumentNullException(nameof(distPt));
-      _distPt = Point.CastOrCreate(distPt);
+      if (distBox == null) throw new ArgumentNullException(nameof(distBox));
+      _distBox =  distBox;
     }
 
     public void Init(IBox search)
     { _box = search; }
 
-    public bool ElemsBeforeChildren { get; set; }
+    public bool ChildFirst { get; set; }
 
+    public double? MinDist { get; private set; }
     public void SetMinDist2(double dist2)
     {
-      double minDist = Math.Sqrt(dist2);
-      Point pd = Point.Create_0(_distPt.Dimension);
-      for (int i = 0; i < _distPt.Dimension; i++)
+      SetMinDist(Math.Sqrt(dist2));
+      _minDist2 = dist2;
+    }
+    private void SetMinDist(double minDist)
+    {
+      Point pd = Point.Create_0(_distBox.Dimension);
+      for (int i = 0; i < _distBox.Dimension; i++)
       { pd[i] = minDist; }
-      _box = new Box(_distPt - pd, _distPt + pd);
-
+      MinDist = minDist;
+      _box = new Box(_distBox.Min - pd, _distBox.Max + pd);
     }
 
-    public IEnumerable<TileEntry> EnumEntries(BoxTile startTile, Box startBox)
+    public IEnumerable<BoxTile> EnumTiles(BoxTile startTile, Box startBox)
     {
       if (_box != null && !BoxOp.Intersects(startBox, _box))
       {
         yield break;
       }
-      if (_box != null && BoxOp.GetMinDist(_distPt, startBox).OrigDist2() > _minDist2)
+      if (_box != null && BoxOp.GetMinDist(_distBox, startBox).OrigDist2() > _minDist2)
       {
         yield break;
       }
 
-      if (ElemsBeforeChildren) foreach (var entry in EnumElems(startTile)) yield return entry;
+      if (!ChildFirst && startTile.ElemsCount > 0) yield return startTile;
 
       int splitDim = startTile.SplitDimension;
-      var children = (startTile.Child1?.MinInParentSplitDim < _distPt[splitDim])
+      var children = (startTile.Child1?.MinInParentSplitDim < _distBox.Min[splitDim])
         ? new[] { startTile.Child1, startTile.Child0 }
         : new[] { startTile.Child0, startTile.Child1 };
       foreach (var child in children)
@@ -57,24 +62,18 @@ namespace Basics.Geom.Index
         childBox.Min[splitDim] = child.MinInParentSplitDim;
         childBox.Max[splitDim] = child.MaxInParentSplitDim;
 
-        foreach (var entry in EnumEntries(child, childBox))
-        { yield return entry; }
+        foreach (var tile in EnumTiles(child, childBox))
+        { yield return tile; }
       }
 
-      if (!ElemsBeforeChildren) foreach (var entry in EnumElems(startTile)) yield return entry;
+      if (ChildFirst && startTile.ElemsCount > 0) yield return startTile;
 
     }
 
-    private IEnumerable<TileEntry> EnumElems(BoxTile tile)
+    public bool CheckExtent(IBox extent)
     {
-      foreach (TileEntry entry in tile.EnumElems())
-      {
-        if (_box != null && !BoxOp.Intersects(entry.Box, _box))
-        { continue; }
-
-        yield return entry;
-      }
-
+      bool valid = _box == null || BoxOp.Intersects(extent, _box);
+      return valid;
     }
   }
 

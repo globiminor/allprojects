@@ -8,7 +8,7 @@ namespace Basics.Geom
   /// <summary>
   /// Summary description for Area.
   /// </summary>
-  public class Area : Geometry, IGeometry, ISimpleArea
+  public class Area : Geometry, IGeometry, ISimpleArea, IRelationGeometry
   {
     private readonly PolylineCollection _border;
     BoxTree<Polyline> _spatialIndex;
@@ -24,6 +24,7 @@ namespace Basics.Geom
       _border = new PolylineCollection();
       _border.AddRange(border);
     }
+
     #region IGeometry Members
 
     IReadOnlyList<ISimplePolyline> ISimpleArea.Border => Lines;
@@ -89,6 +90,42 @@ namespace Basics.Geom
       { return true; }
       else
       { return false; }
+    }
+
+    public bool IsLinear
+    {
+      get
+      {
+        if (Dimension <= 2)
+        { return true; }
+        throw new NotImplementedException();
+      }
+    }
+    double IRelationGeometry.NormedMaxOffset
+    {
+      get
+      {
+        if (Dimension <= 2)
+        { return 0; }
+        throw new NotImplementedException();
+      }
+    }
+    Relation IRelationGeometry.GetRelation(IBox paramBox) 
+    { 
+      int n = paramBox.Dimension;
+      Relation rel = Relation.Near;
+      for (int i = 0; i < n; i++)
+      {
+        double min = paramBox.Min[i];
+        double max = paramBox.Max[i];
+        if (min > 1 || max < 0)
+        { return Relation.Disjoint; }
+      }
+      return rel;
+    }
+    IEnumerable<ParamGeometryRelation> IRelationGeometry.CreateRelations(IParamGeometry other, TrackOperatorProgress trackProgress)
+    {
+      throw new NotImplementedException();
     }
 
     private int Intersects(IPoint isInside, Point isInsideDown, ISegment curve, IBox extent,

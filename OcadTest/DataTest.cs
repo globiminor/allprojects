@@ -1,5 +1,6 @@
 using Basics.Geom;
 using Basics.Geom.Index;
+using Basics.Geom.Operator;
 using Dhm;
 using Grid;
 using laszip.net;
@@ -759,6 +760,86 @@ namespace OcadTest
     }
 
     [TestMethod]
+    public void TestClosestDistance()
+    {
+      List<Polyline> contours = new List<Polyline>();
+      using (OcadReader r = OcadReader.Open(@"C:\daten\felix\OL\schlosswald\2003\schlosswald18.ocd"))
+      {
+        foreach (var elem in r.EnumGeoElements())
+        {
+          if (elem.Symbol == 101000 || elem.Symbol == 103000)
+          {
+            Polyline polyline = (Polyline)elem.Geometry.GetGeometry();
+            Polyline generalized = polyline.Generalize(0.001);
+            Assert.IsNotNull(generalized.SpatialIndex);
+            contours.Add(generalized);
+          }
+        }
+      }
+      long ee = MeasureClosestLine(contours[10], contours[781]);
+      // TODO: chech (10, 781)
+      double maxElapsed = 0;
+      foreach (var x in contours)
+      {
+        foreach (var y in contours)
+        {
+          if (x == y)
+          { continue; }
+
+          long elapsed = MeasureClosestLine(x, y);
+          if (elapsed > maxElapsed)
+          {
+            maxElapsed = elapsed;
+
+            long e0 = MeasureClosestPoints(x, y);
+            long e1 = MeasureClosestPoints_v0(x, y);
+          }
+        }
+      }
+    }
+
+    private long MeasureClosestLine(IGeometry x, IGeometry y)
+    {
+      Stopwatch w = Stopwatch.StartNew();
+      GeometryOperator.GetClosestLine(x, y);
+      w.Stop();
+      return w.ElapsedMilliseconds;
+    }
+
+    private long MeasureClosestPoints(Polyline x, IGeometry y)
+    {
+      Stopwatch w = Stopwatch.StartNew();
+      double minD2 = double.MaxValue;
+      foreach (var p in x.Points)
+      {
+        IPoint c = GeometryOperator.GetClosestPoint(p, y, minD2);
+        if (c == null)
+        { continue; }
+        double d2 = PointOp.Dist2(c, p);
+        if (d2 < minD2)
+        { minD2 = d2; }
+      }
+      w.Stop();
+      return w.ElapsedMilliseconds;
+    }
+
+    private long MeasureClosestPoints_v0(Polyline x, IGeometry y)
+    {
+      Stopwatch w = Stopwatch.StartNew();
+      double minD2 = double.MaxValue;
+      foreach (var p in x.Points)
+      {
+        IPoint c = DistanceCalculator.GetClosestPoint_v0(p, y);
+        double d2 = PointOp.Dist2(c, p);
+        if (d2 < minD2)
+        { minD2 = d2; }
+      }
+      w.Stop();
+      return w.ElapsedMilliseconds;
+    }
+
+
+    [TestMethod]
     public void TestHiddenSegments()
     {
       using (OcadReader r = OcadReader.Open(@"C:\daten\felix\kapreolo\karten\eigental\test.ocd"))
@@ -855,13 +936,13 @@ namespace OcadTest
       w.Start();
       int nSearch = 0;
       int nNeighbor = 0;
-      foreach (var entry in Curves.EnumerateNeighborhoods(Curves, 0.1))
+      foreach (var neighborhood in Curves.EnumerateNeighborhoods(Curves, 0.1))
       {
         nSearch++;
         int n0 = nNeighbor;
-        foreach (var neighbor in entry.Neighbours)
+        foreach (var neighbor in neighborhood.Neighbours)
         { nNeighbor++; }
-        entry.Entry.Value.NbCount = nNeighbor - n0;
+        neighborhood.Entry.Value.NbCount = nNeighbor - n0;
       }
       w.Stop();
       Console.WriteLine(string.Format("{0} {1}", nSearch, nNeighbor));

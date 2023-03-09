@@ -14,17 +14,17 @@ namespace BasicsTest
       {
         Line l = new Line(new Point2D(1, 5), new Point2D(4, 5));
 
-        IPoint closest = GeometryOperator.ClosestPoint(new Point2D(2, 2), l);
+        IPoint closest = GeometryOperator.GetClosestPoint(new Point2D(2, 2), l);
         Assert.AreEqual(2, closest.X);
         Assert.AreEqual(5, closest.Y);
 
-        closest = GeometryOperator.ClosestPoint(new Point2D(5, 2), l);
+        closest = GeometryOperator.GetClosestPoint(new Point2D(5, 2), l);
         Assert.AreEqual(4, closest.X);
         Assert.AreEqual(5, closest.Y);
       }
       {
         Arc arc = new Arc(new Point2D(2, 2), 3, 0, Math.PI / 2);
-        IPoint closest = GeometryOperator.ClosestPoint(new Point2D(4, 3), arc);
+        IPoint closest = GeometryOperator.GetClosestPoint(new Point2D(4, 3), arc);
         Assert.IsNotNull(closest);
       }
 
@@ -59,6 +59,15 @@ namespace BasicsTest
       rels = GeometryOperator.CreateRelations(a, c);
     }
 
+    [TestMethod]
+    public void CanGetMinDist()
+    {
+      Area x = new Area(Polyline.Create(new Point2D[] { new Point2D(0, 0), new Point2D(0, 3), new Point2D(4, 3), new Point2D(4, 0), new Point2D(0, 0) }));
+      Area y = new Area(Polyline.Create(new Point2D[] { new Point2D(5, 1), new Point2D(6, 3), new Point2D(7, 1), new Point2D(5, 1) }));
+
+      GeometryOperator.GetClosestLine(x, y);
+
+    }
     [TestMethod]
     public void CanUseCallerMemberName()
     {

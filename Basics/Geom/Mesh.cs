@@ -514,7 +514,7 @@ namespace Basics.Geom
     public MeshLine FindLine(IPoint p)
     {
       Point box = Point.CastOrCreate(p);
-      BoxTree<MeshPoint>.TileEntry entry = _listPoint.Near(box);
+      TileEntry<MeshPoint> entry = _listPoint.Near(box);
       return FindLine(p, entry.Value);
     }
 

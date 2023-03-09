@@ -451,11 +451,29 @@ namespace Basics.Geom
       // TODO: verify
       Point p = PointOp.Sub(bezier.End, bezier.Start);
       double l2 = p.OrigDist2();
-      OrthogonalSystem sys = OrthogonalSystem.Create(new IPoint[] { p });
-      double o0 = sys.GetOrthogonal(PointOp.Sub(bezier.P1, bezier.Start)).Length2Epsi / l2;
-      double o1 = sys.GetOrthogonal(PointOp.Sub(bezier.P2, bezier.P1)).Length2Epsi / l2;
-      double o2 = sys.GetOrthogonal(PointOp.Sub(bezier.End, bezier.P2)).Length2Epsi / l2;
-      double maxOffset = Math.Sqrt(o0) + Math.Sqrt(o1) + Math.Sqrt(o2);
+      if (l2 == 0)
+      {
+        p = PointOp.Sub(bezier.P1, bezier.Start);
+        l2 = p.OrigDist2();
+      }
+      if (l2 == 0)
+      {
+        p = PointOp.Sub(bezier.P2, bezier.Start);
+        l2 = p.OrigDist2();
+      }
+      double maxOffset;
+      if (l2 > 0)
+      {
+        OrthogonalSystem sys = OrthogonalSystem.Create(new IPoint[] { p });
+        double o0 = sys.GetOrthogonal(PointOp.Sub(bezier.P1, bezier.Start)).Length2Epsi / l2;
+        double o1 = sys.GetOrthogonal(PointOp.Sub(bezier.P2, bezier.P1)).Length2Epsi / l2;
+        double o2 = sys.GetOrthogonal(PointOp.Sub(bezier.End, bezier.P2)).Length2Epsi / l2;
+        maxOffset = Math.Sqrt(o0) + Math.Sqrt(o1) + Math.Sqrt(o2);
+      }
+      else
+      { maxOffset = 0; }
+      if (double.IsNaN(maxOffset))
+      { }
       return maxOffset;
     }
 

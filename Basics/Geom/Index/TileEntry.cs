@@ -16,4 +16,18 @@ namespace Basics.Geom.Index
       return $"{BoxOp.ToString(Box, "N3")}: {BaseValue}";
     }
   }
+
+  public class TileEntry<T> : TileEntry
+  {
+    public TileEntry(IBox box, T value)
+      : base(box, value)
+    { }
+
+    [NotNull]
+    public T Value
+    {
+      get { return (T)BaseValue; }
+    }
+  }
+
 }

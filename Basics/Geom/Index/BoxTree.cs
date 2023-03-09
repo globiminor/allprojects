@@ -25,13 +25,16 @@ namespace Basics.Geom.Index
     protected const int DefaultMaxElementCountPerTile = 16; // TODO revise
     protected const bool DefaultDynamic = true;
 
-    internal BoxTree(int dimension, int nElem, bool dynamic, BoxTile mainTile)
+    protected BoxTree(int dimension, int nElem, bool dynamic, BoxTile mainTile, Type entryType)
     {
       _dimension = dimension;
       _mainTile = mainTile;
       _maxElemPerTile = nElem;
       _dynamic = dynamic;
+
+      EntryType = entryType;
     }
+    public Type EntryType { get; } 
 
     private class MyBoxComparer : IEqualityComparer<IBox>
     {
@@ -295,46 +298,20 @@ namespace Basics.Geom.Index
       IBoxTreeSearch s = searcher ?? ((search != null) ? (IBoxTreeSearch)new BoxTreeBoxSearch(search) : new BoxTreeFullSearch());
       s.Init(search);
 
-      foreach (var entry in s.EnumEntries(MainTile, MainBox))
-      {
-        yield return entry;
-      }
+      return Search(MainTile, MainBox, s);
     }
 
-    internal IEnumerable<TileEntry> Search(BoxTile startTile, Box startBox, IBox search)
+    internal IEnumerable<TileEntry> Search(BoxTile startTile, Box startBox, IBoxTreeSearch searcher)
     {
-      foreach (var tile in EnumTiles(startTile, startBox, search))
+      foreach (var tile in searcher.EnumTiles(startTile, startBox))
       {
         foreach (var entry in tile.EnumElems())
         {
-          if (search == null || BoxOp.Intersects(entry.Box, search))
-          {
-            yield return entry;
-          }
+          if (!searcher.CheckExtent(entry.Box))
+          { continue; }
+
+          yield return entry;
         }
-      }
-    }
-
-    internal IEnumerable<BoxTile> EnumTiles(BoxTile startTile, Box startBox, IBox search)
-    {
-      if (search != null && !BoxOp.Intersects(startBox, search))
-      {
-        yield break;
-      }
-      yield return startTile;
-
-      foreach (var child in new[] { startTile.Child0, startTile.Child1 })
-      {
-        if (child == null)
-        { continue; }
-
-        Box childBox = startBox.Clone();
-        int splitDim = startTile.SplitDimension;
-        childBox.Min[splitDim] = child.MinInParentSplitDim;
-        childBox.Max[splitDim] = child.MaxInParentSplitDim;
-
-        foreach (var tile in EnumTiles(child, childBox, search))
-        { yield return tile; }
       }
     }
 
@@ -658,26 +635,27 @@ namespace Basics.Geom.Index
     #endregion
   }
 
-  public partial class BoxTree<T> : BoxTree
+  public partial class BoxTree<T> : BoxTree, IEnumerable<T>
   {
     public BoxTree(int dimension, int nElem = DefaultMaxElementCountPerTile, bool dynamic = DefaultDynamic)
-      : base(dimension, nElem, dynamic, new BoxTile()) { }
+      : base(dimension, nElem, dynamic, new BoxTile<T>(), typeof(T)) { }
 
-    internal new BoxTile MainTile
+
+    internal new BoxTile<T> MainTile
     {
-      get { return (BoxTile)base.MainTile; }
+      get { return (BoxTile<T>)base.MainTile; }
     }
 
-    public TileEntry this[int index]
+    public TileEntry<T> this[int index]
     {
-      get { return MainTile[index]; }
+      get { return (TileEntry<T>)MainTile[index]; }
     }
 
     public int Add(IBox box, T value)
     {
       VerifyExtent(box);
 
-      BoxTile addTile = (BoxTile)StartFindAddTile(box, Dynamic);
+      BoxTile<T> addTile = (BoxTile<T>)StartFindAddTile(box, Dynamic);
       addTile.Add(box, value);
 
       return MainTile.Count - 1;
@@ -686,15 +664,15 @@ namespace Basics.Geom.Index
     /// <summary>
     /// Inserts a geometry at position.
     /// </summary>
-    public void Insert(int index, TileEntry entry)
+    public void Insert(int index, TileEntry<T> entry)
     {
       // TODO , only valid if just one tail exists
       MainTile.Insert(index, entry);
     }
 
-    public void Remove(TileEntry entry)
+    public void Remove(TileEntry<T> entry)
     {
-      BoxTile tile = (BoxTile)StartFindAddTile(entry.Box, false);
+      BoxTile<T> tile = (BoxTile<T>)StartFindAddTile(entry.Box, false);
       tile.Remove(entry);
 
       if (Dynamic && tile.Child0 == null && tile.Parent != null &&
@@ -705,14 +683,14 @@ namespace Basics.Geom.Index
       }
     }
 
-    public new IEnumerable<TileEntry> Search(IBox search = null, IBoxTreeSearch searcher = null)
+    public new IEnumerable<TileEntry<T>> Search(IBox search = null, IBoxTreeSearch searcher = null)
     {
       foreach (var baseEntry in base.Search(search, searcher))
       {
-        yield return (TileEntry)baseEntry;
+        yield return (TileEntry<T>)baseEntry;
       }
     }
-    public TileEntry Near(IBox box)
+    public TileEntry<T> Near(IBox box)
     {
       if (MainBox == null)
       {
@@ -722,23 +700,23 @@ namespace Basics.Geom.Index
       return Near(box, MainTile);
     }
 
-    private TileEntry Near(IBox box, BoxTile parent)
+    private TileEntry<T> Near(IBox box, BoxTile<T> parent)
     {
       if (parent.ElemList.Count > 0)
       { return parent.ElemList[0]; }
 
       int divDim;
 
-      BoxTile child0 = parent.Child0;
+      BoxTile<T> child0 = parent.Child0;
       if (child0 == null)
       { return null; }
 
-      BoxTile child1 = parent.Child1;
+      BoxTile<T> child1 = parent.Child1;
       divDim = parent.SplitDimension;
 
       if (box.Min[divDim] < child1.MinInParentSplitDim)
       {
-        TileEntry entry = Near(box, child0);
+        TileEntry<T> entry = Near(box, child0);
         if (entry != null)
         { return entry; }
         else
@@ -746,7 +724,7 @@ namespace Basics.Geom.Index
       }
       else
       {
-        TileEntry entry = Near(box, child1);
+        TileEntry<T> entry = Near(box, child1);
         if (entry != null)
         { return entry; }
         else
@@ -754,9 +732,9 @@ namespace Basics.Geom.Index
       }
     }
 
-    public bool Contains(TileEntry value)
+    public bool Contains(TileEntry<T> value)
     {
-      BoxTile tile = (BoxTile)StartFindAddTile(value.Box, false);
+      BoxTile<T> tile = (BoxTile<T>)StartFindAddTile(value.Box, false);
       if (tile == null)
       {
         return false;
@@ -764,12 +742,12 @@ namespace Basics.Geom.Index
       return tile.ElemList.Contains(value);
     }
 
-    public void Sort(IComparer<TileEntry> comparer)
+    public void Sort(IComparer<TileEntry<T>> comparer)
     {
       Sort(MainTile, comparer);
     }
 
-    private void Sort(BoxTile tile, IComparer<TileEntry> comparer)
+    private void Sort(BoxTile<T> tile, IComparer<TileEntry<T>> comparer)
     {
       if (tile == null)
       {
@@ -782,138 +760,12 @@ namespace Basics.Geom.Index
       Sort(tile.Child1, comparer);
     }
 
-
-    public class TileEntry : Index.TileEntry
+    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    private IEnumerator<T> GetEnumerator()
     {
-      public TileEntry(IBox box, T value)
-        : base(box, value)
-      { }
-
-      [NotNull]
-      public T Value
-      {
-        get { return (T)BaseValue; }
-      }
-    }
-
-    internal sealed class BoxTile : Index.BoxTile
-    {
-      private List<TileEntry> _elemList = new List<TileEntry>();
-
-      public new BoxTile Parent
-      {
-        get { return (BoxTile)base.Parent; }
-      }
-
-      public new BoxTile Child0
-      {
-        get { return (BoxTile)base.Child0; }
-      }
-
-      public new BoxTile Child1
-      {
-        get { return (BoxTile)base.Child1; }
-      }
-
-      internal override Index.BoxTile CreateEmptyTile()
-      {
-        return new BoxTile();
-      }
-
-      protected override void AddCore(Index.TileEntry entry)
-      {
-        _elemList.Add((TileEntry)entry);
-      }
-
-      protected override IEnumerable<Index.TileEntry> InitSplit()
-      {
-        List<TileEntry> toSplit = _elemList;
-        _elemList = new List<TileEntry>();
-        foreach (var splitEntry in toSplit)
-        {
-          yield return splitEntry;
-        }
-      }
-
-      public override IEnumerable<Index.TileEntry> EnumElems()
-      {
-        foreach (var entry in _elemList)
-        {
-          yield return entry;
-        }
-      }
-
-      public List<TileEntry> ElemList
-      {
-        get { return _elemList; }
-      }
-
-      internal override int ElemsCount
-      {
-        get { return _elemList.Count; }
-      }
-
-      public TileEntry this[int index]
-      {
-        get
-        {
-          if (index < _elemList.Count)
-          {
-            return _elemList[index];
-          }
-          index -= _elemList.Count;
-          if (index < Child0.Count)
-          {
-            return Child0[index];
-          }
-
-          index -= Child0.Count;
-          return Child1[index];
-        }
-      }
-
-      public void Add(IBox box, T value)
-      {
-        Add(new TileEntry(box, value), false);
-      }
-
-      protected override void AddRange(Index.BoxTile child)
-      {
-        BoxTile tile = (BoxTile)child;
-        AddRange(tile._elemList);
-      }
-
-      private void AddRange(List<TileEntry> elemList)
-      {
-        // TODO: implement sorting
-        _elemList.AddRange(elemList);
-      }
-
-      public void Insert(int index, TileEntry entry)
-      {
-        Count++;
-        _elemList.Insert(index, entry);
-
-        Index.BoxTile parent = Parent;
-        while (parent != null)
-        {
-          parent.Count++;
-          parent = parent.Parent;
-        }
-      }
-
-      public void Remove(TileEntry entry)
-      {
-        _elemList.Remove(entry);
-
-        Count--;
-        Index.BoxTile parent = Parent;
-        while (parent != null)
-        {
-          parent.Count--;
-          parent = parent.Parent;
-        }
-      }
+      foreach (var entry in Search(null))
+      { yield return entry.Value; }
     }
   }
 }

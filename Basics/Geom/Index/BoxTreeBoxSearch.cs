@@ -1,12 +1,14 @@
 ﻿
 using System.Collections.Generic;
 using System;
+using Basics.Cmd;
 
 namespace Basics.Geom.Index
 {
   public class BoxTreeBoxSearch : IBoxTreeSearch
   {
     private IBox _box;
+    public bool ChildFirst { get; set; }
     public BoxTreeBoxSearch(IBox box)
     {
       if (box == null) throw new ArgumentNullException(nameof(box));
@@ -16,20 +18,19 @@ namespace Basics.Geom.Index
     void IBoxTreeSearch.Init(IBox search) 
     { _box = search; }
 
-    public IEnumerable<TileEntry> EnumEntries(BoxTile startTile, Box startBox)
+    public bool CheckExtent(IBox extent)
+    {
+      return BoxOp.Intersects(extent, _box);
+    }
+
+    public IEnumerable<BoxTile> EnumTiles(BoxTile startTile, Box startBox)
     {
       if (!BoxOp.Intersects(startBox, _box))
       {
         yield break;
       }
 
-      foreach (TileEntry entry in startTile.EnumElems())
-      {
-        if (!BoxOp.Intersects(entry.Box, _box))
-        { continue; }
-
-        yield return entry;
-      }
+      if (!ChildFirst) yield return startTile;
 
       foreach (var child in new[] { startTile.Child0, startTile.Child1 })
       {
@@ -41,11 +42,11 @@ namespace Basics.Geom.Index
         childBox.Min[splitDim] = child.MinInParentSplitDim;
         childBox.Max[splitDim] = child.MaxInParentSplitDim;
 
-        foreach (var entry in EnumEntries(child, childBox))
-        { yield return entry; }
+        foreach (var tile in EnumTiles(child, childBox))
+        { yield return tile; }
       }
+
+      if (ChildFirst) yield return startTile;
     }
-
   }
-
 }

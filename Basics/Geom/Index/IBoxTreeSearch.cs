@@ -5,7 +5,9 @@ namespace Basics.Geom.Index
 {
   public interface IBoxTreeSearch
   {
-    IEnumerable<TileEntry> EnumEntries(BoxTile tile, Box box);
+    IEnumerable<BoxTile> EnumTiles(BoxTile tile, Box box);
+    bool CheckExtent(IBox extent);
+
     void Init(IBox search);
   }
 }

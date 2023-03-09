@@ -8,10 +8,55 @@ namespace Basics.Geom.Index
 {
   partial class BoxTree
   {
+    public NeighborhoodEnumerable EnumerateNeighborhoods([NotNull] BoxTree neighbourTree,
+      double searchDistance, [CanBeNull] IBox common = null)
+    {
+      return new NeighborhoodEnumerable(this, neighbourTree, searchDistance, common);
+    }
+
     public class Neighborhood
     {
-      public TileEntry Entry { get; set; }
-      public IEnumerable Neighbours { get; set; }
+      public Neighborhood(TileEntry entry, IEnumerable neighbours)
+      {
+        Entry = entry;
+        Neighbours = neighbours;
+      }
+
+      public TileEntry Entry { get; }
+      public IEnumerable Neighbours { get; }
+    }
+
+    public abstract class NeighborhoodEnumerableCore
+    {
+      protected BoxTree SearchingTree { get; }
+      protected BoxTree NeighbourTree { get; }
+      protected double SearchDistance { get; }
+      protected IBox Common { get; }
+
+      public NeighborhoodEnumerableCore([NotNull] BoxTree searchingTree,
+        [NotNull] BoxTree neighbourTree, double searchDistance, [CanBeNull] IBox common)
+      {
+        SearchingTree = searchingTree;
+        NeighbourTree = neighbourTree;
+        SearchDistance = searchDistance;
+        Common = common;
+      }
+    }
+
+    public class NeighborhoodEnumerable : NeighborhoodEnumerableCore, IEnumerable<Neighborhood>
+    {
+      public NeighborhoodEnumerable([NotNull] BoxTree searchingTree,
+        [NotNull] BoxTree neighbourTree, double searchDistance, [CanBeNull] IBox common)
+        : base(searchingTree, neighbourTree, searchDistance, common)
+      { }
+
+      IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+      IEnumerator<Neighborhood> IEnumerable<Neighborhood>.GetEnumerator() => GetEnumerator();
+
+      internal NeighborhoodEnumerator GetEnumerator()
+      {
+        return new NeighborhoodEnumerator(SearchingTree, NeighbourTree, SearchDistance, Common);
+      }
     }
 
     internal class NeighborhoodEnumerator : IEnumerator<Neighborhood>
@@ -20,7 +65,7 @@ namespace Basics.Geom.Index
       {
         private interface INeighbourEntryEnumerable
         {
-          IEnumerable<TileEntry> GetEntries(IBox box);
+          IEnumerable<TileEntry> GetEntries(IBoxTreeSearch searcher);
         }
 
         private class ElemsEnumerable : INeighbourEntryEnumerable
@@ -34,13 +79,13 @@ namespace Basics.Geom.Index
             _tileBox = tree.GetBox(tile);
           }
 
-          public IEnumerable<TileEntry> GetEntries(IBox box)
+          public IEnumerable<TileEntry> GetEntries(IBoxTreeSearch searcher)
           {
-            if (!BoxOp.Intersects(box, _tileBox))
+            if (!searcher.CheckExtent(_tileBox))
             { yield break; }
             foreach (var entry in _tile.EnumElems())
             {
-              if (BoxOp.Intersects(entry.Box, box))
+              if (searcher.CheckExtent(entry.Box))
               { yield return entry; }
             }
           }
@@ -59,7 +104,7 @@ namespace Basics.Geom.Index
             _tileBox = tree.GetBox(tile);
           }
 
-          public IEnumerable<TileEntry> GetEntries(IBox search)
+          public IEnumerable<TileEntry> GetEntries(IBoxTreeSearch search)
           {
             foreach (var entry in _tree.Search(_tile, _tileBox, search))
             {
@@ -187,7 +232,7 @@ namespace Basics.Geom.Index
           }
         }
 
-        private void WriteBox(StringBuilder s, string ctx, Box box, Box x, double f,
+        private void WriteBox(StringBuilder s, string ctx, IBox box, IBox x, double f,
                               double lineWidth = 1, string color = null)
         {
           Point min = (1.0 / f) * (Point.Create(box.Min) - x.Min);
@@ -238,7 +283,7 @@ namespace Basics.Geom.Index
           _master = master;
         }
 
-        internal IEnumerable<Neighborhood> GetNeighborhoods(double searchDistance)
+        internal IEnumerable<Neighborhood> GetNeighborhoods(double neighborSearch)
         {
           if (_searchingTile.ElemsCount <= 0)
           { yield break; }
@@ -252,16 +297,12 @@ namespace Basics.Geom.Index
 
           foreach (var searchEntry in _searchingTile.EnumElems())
           {
-            IBox search = GetSearchBox(searchEntry.Box, searchDistance, _master._common);
+            IBox search = GetSearchBox(searchEntry.Box, neighborSearch, _master._common);
             if (search == null)
             { continue; }
 
-            yield return new Neighborhood
-            {
-              Entry = searchEntry,
-              Neighbours =
-                GetNeighbours(search, neighbourEntryEnumerators)
-            };
+            BoxTreeBoxSearch boxSearch = new BoxTreeBoxSearch(search);
+            yield return new Neighborhood(searchEntry, GetNeighbours(boxSearch, neighbourEntryEnumerators));
           }
         }
 
@@ -308,7 +349,7 @@ namespace Basics.Geom.Index
           }
         }
 
-        private IEnumerable<TileEntry> GetNeighbours(IBox search,
+        private IEnumerable<TileEntry> GetNeighbours(IBoxTreeSearch search,
           List<INeighbourEntryEnumerable> neighbourEntryEnumerators)
         {
           foreach (var neighbourEntryEnumerator in neighbourEntryEnumerators)
@@ -320,16 +361,16 @@ namespace Basics.Geom.Index
           }
         }
 
-        private IEnumerable<TileEntry> GetNeighbours(IBox search)
+        private IEnumerable<TileEntry> GetNeighbours(IBoxTreeSearch search)
         {
           foreach (var neighbourTile in GetNeighbourTilesWithElems())
           {
-            if (!BoxOp.Intersects(_master._neighbourTree.GetBox(neighbourTile), search))
+            if (!search.CheckExtent(_master._neighbourTree.GetBox(neighbourTile)))
             { continue; }
 
             foreach (var neighbour in neighbourTile.EnumElems())
             {
-              if (BoxOp.Intersects(neighbour.Box, search))
+              if (search.CheckExtent(neighbour.Box))
               { yield return neighbour; }
             }
           }
@@ -347,7 +388,7 @@ namespace Basics.Geom.Index
         }
 
         private double[] GetSearchExtent([NotNull] BoxTree tree, [NotNull] BoxTile tile,
-          double search, [NotNull] IBox commonBox, out int splitDim)
+          double searchDistance, [NotNull] IBox commonBox, out int splitDim)
         {
           if (tile.Parent == null)
           {
@@ -357,8 +398,8 @@ namespace Basics.Geom.Index
 
           splitDim = tile.Parent.SplitDimension;
           double[] extent = tree.GetExtent(tile, splitDim);
-          extent[0] = Math.Max(extent[0] - search, commonBox.Min[splitDim]);
-          extent[1] = Math.Min(extent[1] + search, commonBox.Max[splitDim]);
+          extent[0] = Math.Max(extent[0] - searchDistance, commonBox.Min[splitDim]);
+          extent[1] = Math.Min(extent[1] + searchDistance, commonBox.Max[splitDim]);
 
           return extent;
         }
@@ -386,7 +427,7 @@ namespace Basics.Geom.Index
             { return t._searchExtent; }
             t = t._parent;
           }
-          Box b = _master._common;
+          IBox b = _master._common;
           return new double[] { b.Min[dim], b.Max[dim] };
         }
 
@@ -496,9 +537,9 @@ namespace Basics.Geom.Index
           TilesHandler next = new TilesHandler(_master);
           if (_searchingTile == null)
           {
-            IBox search = GetSearchBox(_master._searchingTree.UnitBox, _master._searchDistance,
-                                       _master._common);
-            if (search == null || !BoxOp.Intersects(search, _master._neighbourTree.UnitBox))
+            Box c = GetSearchBox(_master._searchingTree.UnitBox, _master._searchDistance, _master._common);
+            IBoxTreeSearch search = new BoxTreeBoxSearch(c);
+            if (search == null || !search.CheckExtent(_master._neighbourTree.UnitBox))
             {
               return null;
             }
@@ -551,7 +592,7 @@ namespace Basics.Geom.Index
 
       private readonly BoxTree _searchingTree;
       private readonly BoxTree _neighbourTree;
-      private readonly Box _common;
+      private readonly IBox _common;
       private readonly double _searchDistance;
 
       private TilesHandler _tilesHandler;
@@ -565,23 +606,46 @@ namespace Basics.Geom.Index
         _neighbourTree = neighbourTree;
         _searchDistance = searchDistance;
 
-        Point min = Point.Create(_searchingTree._unitBox.Min);
-        Point max = Point.Create(_searchingTree._unitBox.Max);
+        _common = GetCommonBox(_searchingTree._unitBox, _neighbourTree._unitBox, _searchDistance, common);
+
+        Reset();
+      }
+
+      [CanBeNull]
+      private static Box GetSearchBox([NotNull] IBox rawBox, double search,
+                                 [NotNull] IBox commonBox)
+      {
+        int dim = commonBox.Dimension;
+        Point min = Point.Create_0(dim);
+        Point max = Point.Create_0(dim);
+        for (int i = 0; i < dim; i++)
+        {
+          min[i] = Math.Max(rawBox.Min[i] - search, commonBox.Min[i]);
+          max[i] = Math.Min(rawBox.Max[i] + search, commonBox.Max[i]);
+
+          if (min[i] > max[i])
+          { return null; }
+        }
+        return new Box(min, max);
+      }
+      public static Box GetCommonBox(IBox x, IBox y, double searchDistance, IBox common)
+      {
+        Point min = Point.Create(x.Min);
+        Point max = Point.Create(x.Max);
         for (int i = 0; i < min.Dimension; i++)
         {
-          min[i] = Math.Max(min[i], _neighbourTree._unitBox.Min[i]);
+          min[i] = Math.Max(min[i], y.Min[i]);
           if (common != null)
           { min[i] = Math.Max(min[i], common.Min[i]); }
           min[i] -= searchDistance;
 
-          max[i] = Math.Min(max[i], _neighbourTree._unitBox.Max[i]);
+          max[i] = Math.Min(max[i], y.Max[i]);
           if (common != null)
           { max[i] = Math.Min(max[i], common.Max[i]); }
           max[i] += searchDistance;
         }
-        _common = new Box(min, max);
-
-        Reset();
+        Box result = new Box(min, max);
+        return result;
       }
 
       public void Reset()
@@ -636,41 +700,22 @@ namespace Basics.Geom.Index
         }
       }
     }
-
-    [CanBeNull]
-    private static Box GetSearchBox([NotNull] IBox rawBox, double search,
-                                     [NotNull] IBox commonBox)
-    {
-      int dim = commonBox.Dimension;
-      Point min = Point.Create_0(dim);
-      Point max = Point.Create_0(dim);
-      for (int i = 0; i < dim; i++)
-      {
-        min[i] = Math.Max(rawBox.Min[i] - search, commonBox.Min[i]);
-        max[i] = Math.Min(rawBox.Max[i] + search, commonBox.Max[i]);
-
-        if (min[i] > max[i])
-        { return null; }
-      }
-
-      return new Box(min, max);
-    }
   }
 
   partial class BoxTree<T>
   {
     public class Neighborhood<U> : BoxTree.Neighborhood
     {
-      public new BoxTree<T>.TileEntry Entry
+      public Neighborhood(TileEntry<T> entry, IEnumerable<TileEntry<U>> neighbors)
+        : base(entry, neighbors) { }
+      public new TileEntry<T> Entry
       {
-        get { return (BoxTree<T>.TileEntry)base.Entry; }
-        set { base.Entry = value; }
+        get { return (TileEntry<T>)base.Entry; }
       }
 
-      public new IEnumerable<BoxTree<U>.TileEntry> Neighbours
+      public new IEnumerable<TileEntry<U>> Neighbours
       {
-        get { return (IEnumerable<BoxTree<U>.TileEntry>)base.Neighbours; }
-        set { base.Neighbours = value; }
+        get { return (IEnumerable<TileEntry<U>>)base.Neighbours; }
       }
     }
 
@@ -680,6 +725,19 @@ namespace Basics.Geom.Index
       return new NeighborhoodEnumerable<U>(this, neighbourTree, searchDistance, common);
     }
 
+    public sealed class NeighborhoodEnumerable<U> : NeighborhoodEnumerableCore, IEnumerable<Neighborhood<U>>
+    {
+      public NeighborhoodEnumerable([NotNull] BoxTree<T> searchingTree,
+        [NotNull] BoxTree<U> neighbourTree, double searchDistance, [CanBeNull] IBox common)
+        : base(searchingTree, neighbourTree, searchDistance, common) { }
+
+      IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+      IEnumerator<Neighborhood<U>> IEnumerable<Neighborhood<U>>.GetEnumerator() => GetEnumerator();
+      private IEnumerator<Neighborhood<U>> GetEnumerator()
+      {
+        return new NeighborhoodEnumerator<U>((BoxTree<T>)SearchingTree, (BoxTree<U>)NeighbourTree, SearchDistance, Common);
+      }
+    }
     internal sealed class NeighborhoodEnumerator<U> : NeighborhoodEnumerator, IEnumerator<Neighborhood<U>>
     {
       public NeighborhoodEnumerator([NotNull] BoxTree<T> searchingTree,
@@ -693,56 +751,16 @@ namespace Basics.Geom.Index
 
       protected override void SetCurrent(Neighborhood neighborhood)
       {
-        Current = new Neighborhood<U>
-        {
-          Entry = (TileEntry)neighborhood.Entry,
-          Neighbours = GetEntries(neighborhood.Neighbours)
-        };
+        Current = new Neighborhood<U>((TileEntry<T>)neighborhood.Entry, GetEntries(neighborhood.Neighbours));
       }
 
-      private IEnumerable<BoxTree<U>.TileEntry> GetEntries(IEnumerable neighbourTileEntries)
+      private IEnumerable<TileEntry<U>> GetEntries(IEnumerable neighbourTileEntries)
       {
         foreach (var neighbourEntry in neighbourTileEntries)
         {
-          yield return (BoxTree<U>.TileEntry)neighbourEntry;
+          yield return (TileEntry<U>)neighbourEntry;
         }
       }
-    }
-
-    public class NeighborhoodEnumerable<U> : IEnumerable<Neighborhood<U>>
-    {
-      private readonly BoxTree<T> _searchingTree;
-      private readonly BoxTree<U> _neighbourTree;
-      private readonly double _searchDistance;
-      private readonly IBox _common;
-
-      public NeighborhoodEnumerable([NotNull] BoxTree<T> searchingTree,
-        [NotNull] BoxTree<U> neighbourTree, double searchDistance, [CanBeNull] IBox common)
-      {
-        _searchingTree = searchingTree;
-        _neighbourTree = neighbourTree;
-        _searchDistance = searchDistance;
-        _common = common;
-      }
-
-      #region IEnumerable Members
-
-      internal NeighborhoodEnumerator<U> GetEnumerator()
-      {
-        return new NeighborhoodEnumerator<U>(_searchingTree, _neighbourTree, _searchDistance, _common);
-      }
-
-      IEnumerator<Neighborhood<U>> IEnumerable<Neighborhood<U>>.GetEnumerator()
-      {
-        return GetEnumerator();
-      }
-
-      IEnumerator IEnumerable.GetEnumerator()
-      {
-        return GetEnumerator();
-      }
-
-      #endregion
     }
   }
 }

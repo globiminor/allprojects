@@ -318,4 +318,125 @@ namespace Basics.Geom.Index
     }
 
   }
+
+  internal sealed class BoxTile<T> : BoxTile
+  {
+    private List<TileEntry<T>> _elemList = new List<TileEntry<T>>();
+
+    public new BoxTile<T> Parent
+    {
+      get { return (BoxTile<T>)base.Parent; }
+    }
+
+    public new BoxTile<T> Child0
+    {
+      get { return (BoxTile<T>)base.Child0; }
+    }
+
+    public new BoxTile<T> Child1
+    {
+      get { return (BoxTile<T>)base.Child1; }
+    }
+
+    internal override BoxTile CreateEmptyTile()
+    {
+      return new BoxTile<T>();
+    }
+
+    protected override void AddCore(TileEntry entry)
+    {
+      _elemList.Add((TileEntry<T>)entry);
+    }
+
+    protected override IEnumerable<TileEntry> InitSplit()
+    {
+      List<TileEntry<T>> toSplit = _elemList;
+      _elemList = new List<TileEntry<T>>();
+      foreach (var splitEntry in toSplit)
+      {
+        yield return splitEntry;
+      }
+    }
+
+    public override IEnumerable<Index.TileEntry> EnumElems()
+    {
+      foreach (var entry in _elemList)
+      {
+        yield return entry;
+      }
+    }
+
+    public List<TileEntry<T>> ElemList
+    {
+      get { return _elemList; }
+    }
+
+    internal override int ElemsCount
+    {
+      get { return _elemList.Count; }
+    }
+
+    public TileEntry this[int index]
+    {
+      get
+      {
+        if (index < _elemList.Count)
+        {
+          return _elemList[index];
+        }
+        index -= _elemList.Count;
+        if (index < Child0.Count)
+        {
+          return Child0[index];
+        }
+
+        index -= Child0.Count;
+        return Child1[index];
+      }
+    }
+
+    public void Add(IBox box, T value)
+    {
+      Add(new TileEntry<T>(box, value), false);
+    }
+
+    protected override void AddRange(BoxTile child)
+    {
+      BoxTile<T> tile = (BoxTile<T>)child;
+      AddRange(tile._elemList);
+    }
+
+    private void AddRange(List<TileEntry<T>> elemList)
+    {
+      // TODO: implement sorting
+      _elemList.AddRange(elemList);
+    }
+
+    public void Insert(int index, TileEntry<T> entry)
+    {
+      Count++;
+      _elemList.Insert(index, entry);
+
+      Index.BoxTile parent = Parent;
+      while (parent != null)
+      {
+        parent.Count++;
+        parent = parent.Parent;
+      }
+    }
+
+    public void Remove(TileEntry<T> entry)
+    {
+      _elemList.Remove(entry);
+
+      Count--;
+      Index.BoxTile parent = Parent;
+      while (parent != null)
+      {
+        parent.Count--;
+        parent = parent.Parent;
+      }
+    }
+  }
+
 }

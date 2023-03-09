@@ -602,7 +602,7 @@ namespace OCourse.ViewModels
 
           // velocity of elements
           IBox mapExtent = BoxOp.ProjectRaw(geom, r.Setup.Prj2Map)?.Extent;
-          IEnumerable<BoxTree<Ocad.ElementIndex>.TileEntry> search = _idxs.Search(mapExtent);
+          IEnumerable<TileEntry<Ocad.ElementIndex>> search = _idxs.Search(mapExtent);
           List<Ocad.ElementIndex> selIndexes = search.Select(x => x.Value).ToList();
           selIndexes.Sort((x, y) => Compare(symbols, _cmp, x, y));
           foreach (var elem in r.EnumGeoElements(selIndexes))

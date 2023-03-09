@@ -801,7 +801,7 @@ namespace Basics.Geom
       }
       internal void Insert(int index, MeshPoint point)
       {
-        Insert(index, new TileEntry(Point.CastOrWrap(point.Point), point));
+        Insert(index, new TileEntry<MeshPoint>(Point.CastOrWrap(point.Point), point));
       }
     }
   }

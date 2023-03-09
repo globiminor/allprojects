@@ -113,8 +113,10 @@
     <Compile Include="Geom\Network\PolygonNet.cs" />
     <Compile Include="Geom\Network\RingGrower.cs" />
     <Compile Include="Geom\Network\TopologicalLine.cs" />
+    <Compile Include="Geom\Operator\DistanceCalculator.cs" />
     <Compile Include="Geom\Operator\GeometryOperator.cs" />
     <Compile Include="Geom\Operator\LinearIntersect.cs" />
+    <Compile Include="Geom\Operator\RelParamGeometry.cs" />
     <Compile Include="Geom\ParamGeometryRelation.cs" />
     <Compile Include="Geom\Point.cs" />
     <Compile Include="Geom\PointCollection.cs" />

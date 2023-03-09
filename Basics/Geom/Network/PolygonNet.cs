@@ -6,9 +6,9 @@ namespace Basics.Geom.Network
 {
   public class PolygonNet : IEnumerable<LineListPolygon>
   {
-    private class BoxComparer : IComparer<BoxTree<TopologicalLine>.TileEntry>
+    private class BoxComparer : IComparer<TileEntry<TopologicalLine>>
     {
-      public int Compare(BoxTree<TopologicalLine>.TileEntry x, BoxTree<TopologicalLine>.TileEntry y)
+      public int Compare(TileEntry<TopologicalLine> x, TileEntry<TopologicalLine> y)
       {
         return x.Box.Max.X.CompareTo(y.Box.Max.X);
       }
