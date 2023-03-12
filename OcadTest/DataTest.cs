@@ -781,6 +781,7 @@ namespace OcadTest
       double maxElapsed = 0;
       foreach (var x in contours)
       {
+        Trace.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")}: {contours.IndexOf(x)} of {contours.Count}");
         foreach (var y in contours)
         {
           if (x == y)
@@ -791,8 +792,8 @@ namespace OcadTest
           {
             maxElapsed = elapsed;
 
-            long e0 = MeasureClosestPoints(x, y);
-            long e1 = MeasureClosestPoints_v0(x, y);
+            //long e0 = MeasureClosestPoints(x, y);
+            //long e1 = MeasureClosestPoints_v0(x, y);
           }
         }
       }
@@ -801,7 +802,7 @@ namespace OcadTest
     private long MeasureClosestLine(IGeometry x, IGeometry y)
     {
       Stopwatch w = Stopwatch.StartNew();
-      GeometryOperator.GetClosestLine(x, y);
+      Line l = GeometryOperator.GetClosestLine(x, y);
       w.Stop();
       return w.ElapsedMilliseconds;
     }
@@ -812,7 +813,7 @@ namespace OcadTest
       double minD2 = double.MaxValue;
       foreach (var p in x.Points)
       {
-        IPoint c = GeometryOperator.GetClosestPoint(p, y, minD2);
+        IPoint c = GeometryOperator.GetClosestPoint(p, y, dimensions: null, minD2);
         if (c == null)
         { continue; }
         double d2 = PointOp.Dist2(c, p);

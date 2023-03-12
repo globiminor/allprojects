@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 
 namespace Basics.Geom
@@ -15,17 +16,17 @@ namespace Basics.Geom
     IPoint Start { get; }
     IPoint End { get; }
 
-    double Length();
-    double ParamAt(double at);
+    double Length(IReadOnlyCollection<int> dimensions = null);
+    double ParamAt(double distance, IReadOnlyCollection<int> dimensions = null);
     IPoint PointAt(double param);
-    IPoint TangentAt(double at);
+    IPoint TangentAt(double param);
     new ISegment Project(IProjection prj);
     ISegment Subpart(double t0, double t1);
 
     ISegment Clone();
     ISegment Invert();
     IInnerSegment GetInnerSegment();
-    IList<IPoint> Linearize(double maxOffset, bool includeFirstPoint = true);
+    IList<IPoint> Linearize(double maxOffset, IReadOnlyCollection<int> dimensions = null, bool includeFirstPoint = true);
   }
   public interface IMultipartSegment : IMultipartGeometry
   {
@@ -72,8 +73,9 @@ namespace Basics.Geom
 
     public override abstract bool EqualGeometry(IGeometry other);
 
-    public IList<IPoint> Linearize(double offset, bool includeFirstPoint = true) => LinearizeCore(offset, includeFirstPoint);
-    protected virtual IList<IPoint> LinearizeCore(double offset, bool includeFirstPoint)
+    public IList<IPoint> Linearize(double offset, IReadOnlyCollection<int> dimensions = null, bool includeFirstPoint = true) 
+      => LinearizeCore(offset, dimensions, includeFirstPoint);
+    protected virtual IList<IPoint> LinearizeCore(double offset, IReadOnlyCollection<int> dimensions, bool includeFirstPoint)
     {
       List<IPoint> points = new List<IPoint>();
       if (includeFirstPoint)
@@ -86,13 +88,13 @@ namespace Basics.Geom
 
         IRelationGeometry paramGeom = this;
         double normed = paramGeom.NormedMaxOffset;
-        double l2 = PointOp.Sub(End, Start).OrigDist2();
+        double l2 = PointOp.Sub(End, Start).OrigDist2(dimensions);
         if (normed * normed * l2 > d2)
         {
           Curve c0 = Subpart(0, 0.5);
           Curve c1 = Subpart(0.5, 1);
-          points.AddRange(c0.Linearize(offset, false));
-          points.AddRange(c1.Linearize(offset, false));
+          points.AddRange(c0.Linearize(offset, dimensions, false));
+          points.AddRange(c1.Linearize(offset, dimensions, false));
         }
         else
         {
@@ -120,8 +122,8 @@ namespace Basics.Geom
     IPoint ISegment.TangentAt(double param) => TangentAt(param);
     public abstract Point TangentAt(double param);
 
-    public abstract double ParamAt(double distance);
-    public abstract double Length();
+    public abstract double ParamAt(double distance, IReadOnlyCollection<int> dimensions = null);
+    public abstract double Length(IReadOnlyCollection<int> dimensions = null);
 
     ISegment ISegment.Subpart(double t0, double t1) => Subpart(t0, t1);
     public Curve Subpart(double t0, double t1) => SubpartCurve(t0, t1);

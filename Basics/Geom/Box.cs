@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Basics.Geom
 {
@@ -81,7 +82,7 @@ namespace Basics.Geom
     /// <param name="box"></param>
     public Box Include(IBox box, IEnumerable<int> dimensions = null)
     {
-      dimensions = dimensions ?? GeometryOperator.GetDimensions(this, box);
+      dimensions = dimensions ?? GeometryOperator.GetDimensionsEnum(this, box);
       foreach (int i in dimensions)
       {
         if (box.Min[i] < _min[i])
@@ -97,7 +98,7 @@ namespace Basics.Geom
     /// </summary>
     public void Include(IPoint point, IEnumerable<int> dimensions = null)
     {
-      dimensions = dimensions ?? GeometryOperator.GetDimensions(this, point);
+      dimensions = dimensions ?? GeometryOperator.GetDimensionsEnum(this, point);
       if (_min == _max)
       {
         _min = Point.Create(_min);
@@ -240,7 +241,7 @@ namespace Basics.Geom
 
     public static double GetMaxExtent(IBox box, IEnumerable<int> dimensions = null)
     {
-      dimensions = dimensions ?? GeometryOperator.GetDimensions(box);
+      dimensions = dimensions ?? GeometryOperator.GetDimensionsEnum(box);
       double dMax = 0;
       foreach (int i in dimensions)
       {
@@ -253,7 +254,7 @@ namespace Basics.Geom
 
     public static Point GetMinDist(IBox x, IBox y, IEnumerable<int> dimensions = null)
     {
-      dimensions = dimensions ?? GeometryOperator.GetDimensions(x, y);
+      dimensions = dimensions ?? GeometryOperator.GetDimensionsEnum(x, y);
 
       Point minDist = Point.Create_0(x.Dimension);
       foreach (var i in dimensions)
@@ -273,7 +274,7 @@ namespace Basics.Geom
 
     public static Point GetMaxDist(IBox x, IBox y, IEnumerable<int> dimensions = null)
     {
-      dimensions = dimensions ?? GeometryOperator.GetDimensions(x, y);
+      dimensions = dimensions ?? GeometryOperator.GetDimensionsEnum(x, y);
 
       Point maxDist = Point.Create_0(x.Dimension);
       foreach (var i in dimensions)
@@ -300,7 +301,7 @@ namespace Basics.Geom
 
     public static int ExceedDimension(IBox x, IBox y, IEnumerable<int> dimensionList = null)
     {
-      dimensionList = dimensionList ?? GeometryOperator.GetDimensions(x, y);
+      dimensionList = dimensionList ?? GeometryOperator.GetDimensionsEnum(x, y);
       foreach (var i in dimensionList)
       {
         if (y.Min[i] < x.Min[i])
@@ -313,7 +314,7 @@ namespace Basics.Geom
 
     public static BoxRelation GetRelation(IBox x, IBox y, IEnumerable<int> dimensions = null)
     {
-      dimensions = dimensions ?? GeometryOperator.GetDimensions(x, y);
+      dimensions = dimensions ?? GeometryOperator.GetDimensionsEnum(x, y);
       bool xIny = true;
       bool yInx = true;
 
@@ -383,7 +384,7 @@ namespace Basics.Geom
 
     public static bool IsWithin(IBox box, IPoint p, IEnumerable<int> dimensions = null)
     {
-      dimensions = dimensions ?? GeometryOperator.GetDimensions(box, p);
+      dimensions = dimensions ?? GeometryOperator.GetDimensionsEnum(box, p);
       foreach (int i in dimensions)
       {
         if (p[i] < box.Min[i])
@@ -393,6 +394,42 @@ namespace Basics.Geom
       }
       return true;
     }
+
+    public static Box Union(IEnumerable<IBox> boxes, IEnumerable<int> dimensions = null)
+    {
+      int[] dims = dimensions?.ToArray();
+
+      Point min = null;
+      Point max = null;
+      foreach (var box in boxes)
+      {
+        if (box == null) continue;
+
+        dims = dims ?? GeometryOperator.GetDimensionsArray(box.Min);
+
+        min = min ?? Point.Create(box.Min);
+        if (dimensions == null && dims.Length > min.Dimension)
+        { dims = GeometryOperator.GetDimensionsArray(box.Min); }
+
+        foreach (int i in dims)
+        { min[i] = Math.Min(box.Min[i], min[i]); }
+
+        max = max ?? Point.Create(box.Max);
+        foreach (int i in dims)
+        { max[i] = Math.Max(box.Max[i], max[i]); }
+      }
+      if (min == null)
+      { return null; }
+
+      if (dimensions == null && dims.Length < min.Dimension)
+      {
+        min = Point.Create(min, dims.Length);
+        max = Point.Create(max, dims.Length);
+      }
+
+      return new Box(min, max);
+    }
+
 
     public static Line ProjectRaw(IBox box, IProjection projection)
     {

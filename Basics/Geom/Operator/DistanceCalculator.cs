@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
 
 namespace Basics.Geom.Operator
 {
@@ -22,8 +21,10 @@ namespace Basics.Geom.Operator
   {
     public class Distance
     {
-      public Distance(double tolerance = 0.001, double max2 = double.MaxValue)
+      public Distance(IReadOnlyCollection<int> dimensions, double tolerance = 0.001, double max2 = double.MaxValue)
       {
+        Dimensions = dimensions;
+
         if (max2 < double.MaxValue)
         {
           _max2 = max2;
@@ -41,6 +42,8 @@ namespace Basics.Geom.Operator
       private double _tolerance;
       private double _max2;
       private double _max;
+      public IReadOnlyCollection<int> Dimensions { get; }
+
       public double Tolerance => _tolerance;
       public double Max2 => _max2;
       public double Max => _max;
@@ -66,13 +69,15 @@ namespace Basics.Geom.Operator
 
         int d;
 
-        d = x.MaxDist2.CompareTo(y.MaxDist2);
-        if (d != 0)
-        { return d; }
+        {
+          d = x.MinDist2.CompareTo(y.MinDist2);
+          if (d != 0)
+          { return d; }
 
-        d = x.MinDist2.CompareTo(y.MinDist2);
-        if (d != 0)
-        { return d; }
+          d = x.MaxDist2.CompareTo(y.MaxDist2);
+          if (d != 0)
+          { return d; }
+        }
 
         return y.Id.CompareTo(x.Id);
       }
@@ -105,7 +110,7 @@ namespace Basics.Geom.Operator
         { _maxOffset = 0; }
 
         IPoint c = GetClosestLinearPoint(_p, _paramGeometry);
-        double d = Math.Sqrt(PointOp.Dist2(_p, c));
+        double d = Math.Sqrt(PointOp.Dist2(_p, c, _common.Dimensions));
         double maxDist = d + _maxOffset;
         _maxDist2 = maxDist * maxDist;
         double min = Math.Max(0, d - _maxOffset);
@@ -162,8 +167,8 @@ namespace Basics.Geom.Operator
         _maxOffsetX = GetMaxOffset(x);
         _maxOffsetY = GetMaxOffset(y);
 
-        _line = GetClosestLinearLine(_x, _y);
-        double d = _line.Length();
+        _line = GetClosestLinearLine(_x, _y, common.Dimensions);
+        double d = _line.Length(common.Dimensions);
         double maxOffset = _maxOffsetX + _maxOffsetY;
 
         if (maxOffset < _common.Tolerance)
@@ -254,6 +259,7 @@ namespace Basics.Geom.Operator
 
     public int Id { get; }
 
+
     public DistanceCalculator(IGeometry x, IGeometry y, Distance common)
     {
       _x = x;
@@ -261,8 +267,8 @@ namespace Basics.Geom.Operator
       Id = common.Id++;
       _common = common;
 
-      _max2 = BoxOp.GetMaxDist(_x.Extent, _y.Extent).OrigDist2();
-      _min2 = BoxOp.GetMinDist(_x.Extent, _y.Extent).OrigDist2();
+      _max2 = BoxOp.GetMaxDist(_x.Extent, _y.Extent, _common.Dimensions).OrigDist2();
+      _min2 = BoxOp.GetMinDist(_x.Extent, _y.Extent, _common.Dimensions).OrigDist2();
     }
     public Line GetClosestLine()
     {
@@ -320,7 +326,7 @@ namespace Basics.Geom.Operator
           { _common.SetMax2(subCalc.MaxDist2); }
 
           _sortedEnumerators.Add(subCalc, subCalc.EnumSubCalcs().GetEnumerator());
-          if (subCalc.MaxDist2 <= calc.MaxDist2)
+          if (subCalc.MinDist2 <= calc.MinDist2)
           {
             return true;
           }
@@ -415,7 +421,133 @@ namespace Basics.Geom.Operator
       throw new NotImplementedException();
     }
 
+    private class TileGeoms : IMultipartGeometry, IEnumerable<IGeometry>
+    {
+      private readonly BoxTile _startTile;
+      private readonly Box _startBox;
+
+      private readonly Distance _common;
+
+      private IBox _neighborBox;
+      private IBox _searchBox;
+
+      private double _m;
+      public TileGeoms(BoxTile startTile, Box startBox, Distance common)
+      {
+        _startTile = startTile;
+        _startBox = startBox;
+
+        _common = common;
+        _m = double.MaxValue;
+      }
+
+      bool IMultipartGeometry.IsContinuous => false;
+      bool IMultipartGeometry.HasSubparts => true;
+      IEnumerable<IGeometry> IMultipartGeometry.Subparts() => this;
+      IEnumerator<IGeometry> IEnumerable<IGeometry>.GetEnumerator() => EnumSubs(null).GetEnumerator();
+      System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => EnumSubs(null).GetEnumerator();
+
+      bool IGeometry.IsWithin(IPoint p) => false;
+      IBox IGeometry.Extent => _startTile.UsedExtent;
+      IGeometry IGeometry.Border => throw new NotImplementedException();
+      IGeometry IGeometry.Project(IProjection projection) => throw new NotImplementedException();
+      bool IGeometry.EqualGeometry(IGeometry other) => this == other;
+      int IDimension.Dimension => _startBox.Dimension;
+      int ITopology.Topology => throw new NotImplementedException();
+
+      private void SetMinDist(double minDist)
+      {
+        if (_neighborBox == null)
+        {
+          _m = -1;
+          return;
+        }
+
+        Point pd = Point.Create_0(_neighborBox.Dimension);
+        for (int i = 0; i < _neighborBox.Dimension; i++)
+        { pd[i] = minDist; }
+        _m = minDist;
+        _searchBox = new Box(_neighborBox.Min - pd, _neighborBox.Max + pd);
+      }
+
+      public IEnumerable<IGeometry> EnumSubs(IBox neighbor, double maxExtent = -1)
+      {
+        if (maxExtent < 0 && neighbor != null)
+        {
+          double s = BoxOp.GetMaxExtent(_startTile.UsedExtent);
+          maxExtent = Math.Max(s * 0.4, BoxOp.GetMaxExtent(neighbor) * (2.0 / 3.0));
+          maxExtent = Math.Min(s * 0.9, maxExtent); // avoid that first tile is returned as a result
+        }
+
+        _m = double.MaxValue;
+        _neighborBox = neighbor;
+        return EnumSubs(_startTile, _startBox, maxExtent);
+      }
+      private IEnumerable<IGeometry> EnumSubs(BoxTile startTile, Box startBox, double maxExtent)
+      {
+        if (_m > _common.Max)
+        { SetMinDist(_common.Max); }
+
+        if (_searchBox != null && !BoxOp.Intersects(startBox, _searchBox))
+        {
+          yield break;
+        }
+        if (_searchBox != null && BoxOp.GetMinDist(_neighborBox, startBox).OrigDist2() > _common.Max2)
+        {
+          yield break;
+        }
+
+        {
+          IBox e = startTile.UsedExtent;
+          if (e != null && BoxOp.GetMaxExtent(e) < maxExtent)
+          {
+            yield return new TileGeoms(startTile, startBox, _common);
+            yield break;
+          }
+        }
+
+        int splitDim = startTile.SplitDimension;
+        var children = (startTile.Child1?.MinInParentSplitDim < _neighborBox.Min[splitDim])
+          ? new[] { startTile.Child1, startTile.Child0 }
+          : new[] { startTile.Child0, startTile.Child1 };
+        foreach (var child in children)
+        {
+          if (child == null)
+          { continue; }
+
+          Box childBox = startBox.Clone();
+          childBox.Min[splitDim] = child.MinInParentSplitDim;
+          childBox.Max[splitDim] = child.MaxInParentSplitDim;
+
+          foreach (var sub in EnumSubs(child, childBox, maxExtent))
+          { yield return sub; }
+        }
+
+        foreach (var entry in startTile.EnumElems())
+        {
+          yield return (IGeometry)entry.BaseValue;
+        }
+
+      }
+    }
+
     private IEnumerable<DistanceCalculator> EnumMultipartCalcs(IGeometry g, IMultipartGeometry mp)
+    {
+      IEnumerable<IGeometry> parts = mp.Subparts();
+      if (parts is BoxTree bt)
+      {
+        TileGeoms tileGeoms = new TileGeoms(bt.MainTile, bt.MainBox, _common);
+        parts = tileGeoms.EnumSubs(g.Extent);
+      }
+      else if (parts is TileGeoms tg)
+      {
+        parts = tg.EnumSubs(g.Extent);
+      }
+
+      return parts.Select(p => new DistanceCalculator(p, g, _common));
+    }
+
+    private IEnumerable<DistanceCalculator> EnumMultipartCalcsBoxTree(IGeometry g, IMultipartGeometry mp)
     {
       IEnumerable<IGeometry> parts = mp.Subparts();
       BoxTreeMinDistSearch search = new BoxTreeMinDistSearch(g.Extent);
@@ -445,9 +577,10 @@ namespace Basics.Geom.Operator
     public double MaxDist2 => _max2;
     public double MinDist2 => _min2;
 
-    public static IPoint GetClosestPoint(IPoint p, IGeometry g, double minD2 = double.MaxValue)
+    public static IPoint GetClosestPoint(IPoint p, IGeometry g, IReadOnlyList<int> dimensions = null, double minD2 = double.MaxValue)
     {
-      DistanceCalculator distCalc = new DistanceCalculator(Point.CastOrWrap(p), g, new Distance(max2: minD2));
+      dimensions = dimensions ?? GeometryOperator.GetDimensionsArray(p, g);
+      DistanceCalculator distCalc = new DistanceCalculator(Point.CastOrWrap(p), g, new Distance(dimensions, max2: minD2));
       Line l = distCalc.GetClosestLine();
       if (l == null)
       { return null; }
@@ -567,12 +700,12 @@ namespace Basics.Geom.Operator
       return closest;
     }
 
-    private static Line GetClosestLinearLine(RelParamGeometry x, RelParamGeometry y)
+    private static Line GetClosestLinearLine(RelParamGeometry x, RelParamGeometry y, IReadOnlyCollection<int> dimensions)
     {
       IGeometry xg = x.GetLinearGeometry();
       IGeometry yg = y.GetLinearGeometry();
 
-      DistanceCalculator linCalc = new DistanceCalculator(xg, yg, new Distance());
+      DistanceCalculator linCalc = new DistanceCalculator(xg, yg, new Distance(dimensions));
       Line l = linCalc.GetClosestLine();
 
       return l;

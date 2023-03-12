@@ -37,6 +37,9 @@ namespace Basics.Geom
     double Radius { get; }
     double DirStart { get; }
     double Angle { get; }
+
+    IPoint Start { get; }
+    IPoint End { get; }
   }
   public interface IBezier : IDimension
   {

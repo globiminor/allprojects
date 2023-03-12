@@ -12,17 +12,16 @@ namespace Basics.Geom
     public static int[] DimensionXY = new int[] { 0, 1 };
     public static int[] DimensionXYZ = new int[] { 0, 1, 2 };
 
-    public static IEnumerable<int> GetDimensions(params IDimension[] geoms)
+    public static int[] GetDimensionsArray(params IDimension[] geoms) => GetDimensionsEnum(geoms).ToArray();
+    public static IEnumerable<int> GetDimensionsEnum(params IDimension[] geoms)
     {
       int dim = int.MaxValue;
       foreach (var g in geoms)
-      { dim = Math.Min(dim, g.Dimension); }
+      {
+        if (g == null) { continue; }
+        dim = Math.Min(dim, g.Dimension);
+      }
       return Enumerable.Range(0, dim);
-    }
-
-    public static IEnumerable<int> DimensionList(int dimension)
-    {
-      return Enumerable.Range(0, dimension);
     }
 
     #region nested classes
@@ -1001,15 +1000,15 @@ namespace Basics.Geom
 
     #endregion
 
-    public static Line GetClosestLine(IGeometry x, IGeometry y)
+    public static Line GetClosestLine(IGeometry x, IGeometry y, IReadOnlyList<int> dimensions = null)
     {
-      DistanceCalculator distCalc = new DistanceCalculator(x, y, new DistanceCalculator.Distance());
+      DistanceCalculator distCalc = new DistanceCalculator(x, y, new DistanceCalculator.Distance(dimensions));
       Line line = distCalc.GetClosestLine();
       return line;
     }
-    public static IPoint GetClosestPoint(IPoint p, IGeometry geom, double minD2 = double.MaxValue)
+    public static IPoint GetClosestPoint(IPoint p, IGeometry geom, IReadOnlyList<int> dimensions = null, double minD2 = double.MaxValue)
     {
-      return DistanceCalculator.GetClosestPoint(p, geom, minD2);
+      return DistanceCalculator.GetClosestPoint(p, geom, dimensions, minD2);
     }
 
     public static bool Intersects(IGeometry x, IGeometry y)

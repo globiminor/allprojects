@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Basics.Geom
 {
@@ -48,7 +49,7 @@ namespace Basics.Geom
     protected abstract double GetL0();
     protected abstract double GetL1();
     public override bool IsLinear => false;
-    public override double Length() => KlothoideOp.Length(this);
+    public override double Length(IReadOnlyCollection<int> dimensions = null) => KlothoideOp.Length(this, dimensions);
     protected override Curve InvertCore() => KlothoideOp.Invert(this);
     public Klothoide Invert() => KlothoideOp.Invert(this);
 
@@ -66,7 +67,7 @@ namespace Basics.Geom
     protected override IBox GetExtent() => KlothoideOp.GetExtent(this);
     protected override IGeometry ProjectCore(IProjection projection) => KlothoideOp.Project(this, projection);
     protected override double NormedMaxOffsetCore => KlothoideOp.GetNormedMaxOffset(this);
-    public override double ParamAt(double distance) => KlothoideOp.ParamAt(this, distance);
+    public override double ParamAt(double distance, IReadOnlyCollection<int> dimensions = null) => KlothoideOp.ParamAt(this, distance, dimensions);
     public override Point PointAt(double param)
     {
       IPoint local = GetLocalPointAt(param);
@@ -171,12 +172,12 @@ namespace Basics.Geom
       return new Klothoide(k.K0, k.Angle, k.A, k.L1, k.L0);
     }
 
-    public static double Length(IKlothoide k)
+    public static double Length(IKlothoide k, IEnumerable<int> dimensions = null)
     {
       return Math.Abs(k.L1 - k.L0);
     }
 
-    public static double ParamAt(IKlothoide k, double distance)
+    public static double ParamAt(IKlothoide k, double distance, IReadOnlyCollection<int> dimensions = null)
     {
       return (distance - k.L0) / (k.L1 - k.L0);
     }

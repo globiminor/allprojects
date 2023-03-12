@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace Basics.Geom
 {
@@ -48,9 +49,9 @@ namespace Basics.Geom
 
     protected override Curve InvertCore() => LineOp.Invert(this);
     public Line Invert() => LineOp.Invert(this);
-    public override double Length() => LineOp.Length(this);
+    public override double Length(IReadOnlyCollection<int> dimensions = null) => LineOp.Length(this, dimensions);
     public override Point TangentAt(double t) => LineOp.TangentAt(this, t);
-    public override double ParamAt(double distance) => LineOp.ParamAt(this, distance);
+    public override double ParamAt(double distance, IReadOnlyCollection<int> dimensions = null) => LineOp.ParamAt(this, distance, dimensions);
 
     protected override IGeometry ProjectCore(IProjection projection) => LineOp.Project(this, projection);
     public Line Project(IProjection projection) => LineOp.Project(this, projection);
@@ -82,7 +83,7 @@ namespace Basics.Geom
       return base.CreateRelations(other, trackProgress);
     }
 
-    public double Distance2(IPoint point) => LineOp.Distance2(this, point);
+    public double Distance2(IPoint point, IEnumerable<int> dimensions = null) => LineOp.Distance2(this, point, dimensions);
 
     protected override IEnumerable<ParamGeometryRelation> CreateRelations(Curve other, TrackOperatorProgress trackProgress) => LineOp.CreateRelations(this, other, trackProgress);
 
@@ -138,7 +139,7 @@ namespace Basics.Geom
 
     public static Point PointAt(ILine line, double t, IEnumerable<int> dimensions = null)
     {
-      dimensions = dimensions ?? GeometryOperator.GetDimensions(line);
+      dimensions = dimensions ?? GeometryOperator.GetDimensionsEnum(line);
       List<double> coords = new List<double>();
       foreach (int i in dimensions)
       {
@@ -148,9 +149,9 @@ namespace Basics.Geom
       return p;
     }
 
-    public static double ParamAt(ILine line, double distance)
+    public static double ParamAt(ILine line, double distance, IEnumerable<int> dimensions = null)
     {
-      return distance / Length(line);
+      return distance / Length(line, dimensions);
     }
 
     public static double Length(ILine line, IEnumerable<int> dimensions = null)
@@ -241,25 +242,34 @@ namespace Basics.Geom
 
     #region IGeometry Members
 
-    public static double Distance2(ILine line, IPoint point)
+    public static double Distance2(ILine line, IPoint point, IEnumerable<int> dimensions = null)
+    {
+      IPoint closest = ClosestPoint(line, point);
+      double dist2 = PointOp.Dist2(point, closest, dimensions);
+      return dist2;
+    }
+
+    public static IPoint ClosestPoint(ILine line, IPoint point)
     {
       Point a = PointOp.Sub(line.End, line.Start);
       Point b = PointOp.Sub(point, line.Start);
 
       double scalarProd = a.SkalarProduct(b); // == |a| * |b| * cos phi
       if (scalarProd < 0)
-      { return b.OrigDist2(); }
+      { return line.Start; }
 
       double a2 = a.OrigDist2();
       if (scalarProd > a2)
-      { return PointOp.Dist2(line.End, point); }
+      { return line.End; }
 
       if (a2 == 0)
-      { return b.OrigDist2(); }
+      { return line.Start; }
 
-      double b2 = b.OrigDist2();
-      return b2 - scalarProd * scalarProd / a2;
+      double f = scalarProd / a2;
+      Point c = line.Start + PointOp.Scale(f, a);
+      return c;
     }
+
 
     public static ParamGeometryRelation CutLine(ILine x, ILine y)
     {
@@ -317,7 +327,7 @@ namespace Basics.Geom
       IPoint start = line.Start;
       IPoint end = line.End;
 
-      dimensions = dimensions ?? GeometryOperator.GetDimensions(line, box);
+      dimensions = dimensions ?? GeometryOperator.GetDimensionsArray(line, box);
       List<double> coords = new List<double>();
 
       foreach (int iDim in dimensions)

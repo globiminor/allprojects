@@ -1,6 +1,7 @@
 using Basics.Num;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace Basics.Geom
 {
@@ -120,15 +121,17 @@ namespace Basics.Geom
     {
       private readonly IBezier _bezier;
       private readonly double _distance;
+      private readonly IReadOnlyCollection<int> _dimensions;
 
-      public ParamAtFct(IBezier bezier, double distance)
+      public ParamAtFct(IBezier bezier, double distance, IReadOnlyCollection<int> dimensions = null)
       {
         _bezier = bezier;
         _distance = distance;
+        _dimensions = dimensions;
       }
       public double LengthAt(double t)
       {
-        double l0 = BezierOp.Subpart(_bezier, 0, t).Length();
+        double l0 = BezierOp.Subpart(_bezier, 0, t).Length(_dimensions);
         if (t < 0) l0 = -l0;
         double diff = l0 - _distance;
         return diff;
@@ -177,12 +180,12 @@ namespace Basics.Geom
       return BezierOp.EqualGeometry(this, o);
     }
 
-    public override double Length() => BezierOp.Length(this);
+    public override double Length(IReadOnlyCollection<int> dimensions = null) => BezierOp.Length(this, dimensions);
 
     protected override Curve InvertCore() => BezierOp.Invert(this);
     public Bezier Invert() => BezierOp.Invert(this);
 
-    public override double ParamAt(double distance) => BezierOp.ParamAt(this, distance);
+    public override double ParamAt(double distance, IReadOnlyCollection<int> dimensions) => BezierOp.ParamAt(this, distance, dimensions);
     /// <summary>
     /// Punkt bei Parameter t
     /// </summary>
@@ -270,7 +273,7 @@ namespace Basics.Geom
 
     internal Point PointAtCore(double t, IEnumerable<int> dimensions = null)
     {
-      dimensions = dimensions ?? GeometryOperator.GetDimensions(this);
+      dimensions = dimensions ?? GeometryOperator.GetDimensionsEnum(this);
       AssignParams();
       List<double> coords = new List<double>();
       foreach (int iDim in dimensions)
@@ -281,26 +284,26 @@ namespace Basics.Geom
       return Point.Create(coords.ToArray());
     }
 
-    internal double ParamAtCore(double distance)
+    internal double ParamAtCore(double distance, IReadOnlyCollection<int> dimensions = null)
     {
       Calc numMath = new Calc(1e-6);
-      ParamAtFct fct = new ParamAtFct(this, distance);
+      ParamAtFct fct = new ParamAtFct(this, distance, dimensions);
 
-      return numMath.SolveNewton(fct.LengthAt, LengthFactor, distance / BezierOp.Length(this));
+      return numMath.SolveNewton(fct.LengthAt, (t) => LengthFactor(t), distance / BezierOp.Length(this));
     }
 
 
-    internal double LengthCore()
+    internal double LengthCore(IEnumerable<int> dimensions = null)
     {
       AssignParams();
       Calc pCalc = new Calc(1e-8);
 
-      return pCalc.Integral(LengthFactor, 0, 1);
+      return pCalc.Integral((t) => LengthFactor(t, dimensions), 0, 1);
     }
 
-    private double LengthFactor(double t)
+    private double LengthFactor(double t, IEnumerable<int> dimensions = null)
     {
-      return Math.Sqrt(TangentAt(t).OrigDist2());
+      return Math.Sqrt(TangentAt(t).OrigDist2(dimensions));
     }
 
     public override InnerCurve GetInnerCurve()
@@ -312,7 +315,7 @@ namespace Basics.Geom
     {
       AssignParams();
 
-      dimensions = dimensions ?? GeometryOperator.GetDimensions(this);
+      dimensions = dimensions ?? GeometryOperator.GetDimensionsEnum(this);
       List<double> coords = new List<double>();
 
       foreach (int i in dimensions)
@@ -322,7 +325,7 @@ namespace Basics.Geom
 
     internal double RadiusAtCore(double param, IEnumerable<int> dimensions = null)
     {
-      dimensions = dimensions ?? GeometryOperator.GetDimensions(this);
+      dimensions = dimensions ?? GeometryOperator.GetDimensionsEnum(this);
       // R(t) = (x'^2 + y'^2)^3/2 / (x'y" - x"y')
 
       Point tan = TangentAtCore(param, dimensions);
@@ -485,7 +488,7 @@ namespace Basics.Geom
 
     public static bool EqualGeometry(IBezier x, IBezier o, IEnumerable<int> dimensions = null)
     {
-      dimensions = dimensions ?? GeometryOperator.GetDimensions(x, o);
+      dimensions = dimensions ?? GeometryOperator.GetDimensionsEnum(x, o);
       bool equal =
         PointOp.EqualGeometry(x.Start, o.Start, dimensions) &&
         PointOp.EqualGeometry(x.P1, o.P1, dimensions) &&
@@ -507,16 +510,16 @@ namespace Basics.Geom
       return b.PointAtCore(t, dimensions);
     }
 
-    public static double Length(IBezier bezier)
+    public static double Length(IBezier bezier, IEnumerable<int> dimensions = null)
     {
       BezierCore b = CastOrWrap(bezier);
-      return b.LengthCore();
+      return b.LengthCore(dimensions);
     }
 
-    public static double ParamAt(IBezier bezier, double distance)
+    public static double ParamAt(IBezier bezier, double distance, IReadOnlyCollection<int> dimensions = null)
     {
       BezierCore b = CastOrWrap(bezier);
-      return b.ParamAtCore(distance);
+      return b.ParamAtCore(distance, dimensions);
     }
 
     public static Bezier Project(IBezier bezier, IProjection projection)

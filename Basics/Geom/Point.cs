@@ -136,11 +136,11 @@ namespace Basics.Geom
 		public override string ToString()
 		{
 			if (Dimension > 2)
-			{ return string.Format("{0};{1};{2}", X, Y, Z); }
+			{ return $"{X:N1};{Y:N1};{Z:N1}"; }
 			else if (Dimension > 1)
-			{ return string.Format("{0};{1}", X, Y); }
+			{ return $"{X:N1};{Y:N1}"; }
 			else if (Dimension > 0)
-			{ return X.ToString(); }
+			{ return $"{X:N1}"; }
 			else
 			{ return "null"; }
 		}
@@ -217,15 +217,18 @@ namespace Basics.Geom
 			Point created = CreateCore(new double[dimension]);
 			return created;
 		}
-		public static Point Create(double[] coords)
+		public static Point Create(double[] coords, int dimension = -1)
 		{
-			Point created = CreateCore(coords);
+			Point created = CreateCore(coords, dimension);
 			return created;
 		}
 
-		internal static Point CreateCore(double[] coords)
+		internal static Point CreateCore(double[] coords, int dimension = -1)
 		{
-			int dim = coords.Length;
+			int dim = dimension <= 0 
+        ? coords.Length
+        : Math.Min(coords.Length, dimension);
+
 			if (dim == 2)
 			{ return new Point2D(coords[0], coords[1]); }
 			else if (dim == 3)
@@ -234,13 +237,14 @@ namespace Basics.Geom
 			{ return new Point(coords); }
 		}
 
-		public static Point Create(IPoint point)
+		public static Point Create(IPoint point, int dimension = -1)
 		{
 			int iDim = point.Dimension;
 			double[] coords = new double[iDim];
-			Point p = CreateCore(coords);
-			for (int i = 0; i < iDim; i++)
-			{ p[i] = point[i]; }
+      for (int i = 0; i < iDim; i++)
+      { coords[i] = point[i]; }
+
+      Point p = CreateCore(coords, dimension);
 			return p;
 		}
 
@@ -323,7 +327,7 @@ namespace Basics.Geom
 	{
     public static string ToString(IPoint p, string format = null, IEnumerable<int> dimensions = null)
     {
-      dimensions = dimensions ?? GeometryOperator.GetDimensions(p);
+      dimensions = dimensions ?? GeometryOperator.GetDimensionsEnum(p);
       System.Text.StringBuilder sb = new System.Text.StringBuilder();
 			string s = format == null
 				? "{0}"
@@ -338,7 +342,7 @@ namespace Basics.Geom
 
     public static double GetFactor(IPoint p0, IPoint p1, IEnumerable<int> dimensions = null)
 		{
-			dimensions = dimensions ?? GeometryOperator.GetDimensions(p0, p1);
+			dimensions = dimensions ?? GeometryOperator.GetDimensionsEnum(p0, p1);
 			double dMin = -1;
 			double f = 0;
 			foreach (int dim in dimensions)
@@ -355,7 +359,7 @@ namespace Basics.Geom
 
 		public static bool EqualGeometry(IPoint x, IPoint y, IEnumerable<int> dimensions = null)
 		{
-			dimensions = dimensions ?? GeometryOperator.GetDimensions(x, y);
+			dimensions = dimensions ?? GeometryOperator.GetDimensionsEnum(x, y);
 
 			foreach (int dim in dimensions)
 			{
@@ -379,7 +383,7 @@ namespace Basics.Geom
 
 		public static double OrigDist2(IPoint p0, IEnumerable<int> dimensions = null)
 		{
-			IEnumerable<int> dims = dimensions ?? GeometryOperator.GetDimensions(p0);
+			IEnumerable<int> dims = dimensions ?? GeometryOperator.GetDimensionsEnum(p0);
 			double dist2 = 0;
 			foreach (int i in dims)
 			{
@@ -390,7 +394,7 @@ namespace Basics.Geom
 		}
 		public static double Dist2(IPoint p0, IPoint p1, IEnumerable<int> dimensions = null)
 		{
-			IEnumerable<int> dims = dimensions ?? GeometryOperator.GetDimensions(p0, p1);
+			IEnumerable<int> dims = dimensions ?? GeometryOperator.GetDimensionsEnum(p0, p1);
 			double dist2 = 0;
 			foreach (int i in dims)
 			{
@@ -402,7 +406,7 @@ namespace Basics.Geom
 
 		public static Point Add(IPoint p0, IPoint p1, IEnumerable<int> dimensions = null)
 		{
-			dimensions = dimensions ?? GeometryOperator.GetDimensions(p0, p1);
+			dimensions = dimensions ?? GeometryOperator.GetDimensionsEnum(p0, p1);
 			List<double> sum = new List<double>();
 			foreach (var dim in dimensions)
 			{ sum.Add(p0[dim] + p1[dim]); }
@@ -411,7 +415,7 @@ namespace Basics.Geom
 		}
 		public static Point Sub(IPoint p0, IPoint p1, IEnumerable<int> dimensions = null)
 		{
-			dimensions = dimensions ?? GeometryOperator.GetDimensions(p0, p1);
+			dimensions = dimensions ?? GeometryOperator.GetDimensionsEnum(p0, p1);
 			List<double> diff = new List<double>();
 			foreach (var dim in dimensions)
 			{ diff.Add(p0[dim] - p1[dim]); }
@@ -420,7 +424,7 @@ namespace Basics.Geom
 		}
 		public static Point Neg(IPoint p0, IEnumerable<int> dimensions = null)
 		{
-			dimensions = dimensions ?? GeometryOperator.GetDimensions(p0);
+			dimensions = dimensions ?? GeometryOperator.GetDimensionsEnum(p0);
 			List<double> neg = new List<double>();
 			foreach (var dim in dimensions)
 			{ neg.Add(-p0[dim]); }
@@ -434,7 +438,7 @@ namespace Basics.Geom
 
 		public static Point Scale(double f, IPoint p, IEnumerable<int> dimensions = null)
 		{
-			dimensions = dimensions ?? GeometryOperator.GetDimensions(p);
+			dimensions = dimensions ?? GeometryOperator.GetDimensionsEnum(p);
 			List<double> scaled = new List<double>();
 			foreach (var dim in dimensions)
 			{ scaled.Add(f * p[dim]); }
@@ -444,7 +448,7 @@ namespace Basics.Geom
 
 		public static double SkalarProduct(IPoint p0, IPoint p1, IEnumerable<int> dimensions = null)
 		{
-			dimensions = dimensions ?? GeometryOperator.GetDimensions(p0, p1);
+			dimensions = dimensions ?? GeometryOperator.GetDimensionsEnum(p0, p1);
 			double prod = 0;
 			foreach (var dim in dimensions)
 			{ prod += p0[dim] * p1[dim]; }

@@ -16,6 +16,8 @@ namespace Basics.Geom.Index
     private double _minParentDim;
     private double _maxParentDim;
 
+    private IBox _usedExtent;
+
     //private static int _currentId;
     //private readonly int _id;
     //protected BoxTile()
@@ -60,15 +62,9 @@ namespace Basics.Geom.Index
       private set { _parent = value; }
     }
 
-    public BoxTile Child0
-    {
-      get { return _child0; }
-    }
+    public BoxTile Child0 => _child0;
 
-    public BoxTile Child1
-    {
-      get { return _child1; }
-    }
+    public BoxTile Child1 => _child1;
 
     public int SplitDimension
     {
@@ -76,6 +72,7 @@ namespace Basics.Geom.Index
       set { _splitDimension = value; }
     }
 
+    public IBox UsedExtent => _usedExtent ?? (_usedExtent = BoxOp.Union(EnumChildExtents()));
     internal abstract BoxTile CreateEmptyTile();
 
     protected abstract IEnumerable<TileEntry> InitSplit();
@@ -225,11 +222,13 @@ namespace Basics.Geom.Index
         return;
       }
       _count++;
+      _usedExtent = null;
 
       BoxTile parent = Parent;
       while (parent != null)
       {
         parent.Count++;
+        parent._usedExtent = null;
         parent = parent.Parent;
       }
     }
@@ -315,6 +314,14 @@ namespace Basics.Geom.Index
       }
       double pos = u0 + counter * u / denominator;
       return pos;
+    }
+
+    private IEnumerable<IBox> EnumChildExtents()
+    {
+      yield return _child0?.UsedExtent;
+      yield return _child1?.UsedExtent;
+      foreach (var child in EnumElems())
+      { yield return child.Box; }
     }
 
   }

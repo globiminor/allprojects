@@ -627,7 +627,7 @@ namespace Basics.Geom
     /// </summary>
     /// <param name="d">maximum offset</param>
     /// <returns></returns>
-    public Polyline Generalize(double d)
+    public Polyline Generalize(double d, IReadOnlyCollection<int> dimensions = null)
     {
       List<IPoint> points;
       if (_innerCurveList == null)
@@ -640,14 +640,14 @@ namespace Basics.Geom
         points.Add(Points[0]);
         foreach (var curve in EnumSegments())
         {
-          points.AddRange(curve.Linearize(d, false));
+          points.AddRange(curve.Linearize(d, dimensions, false));
         }
       }
       double d2 = d * d;
       int n = points.Count;
       double[] d2s = new double[n];
 
-      Generalize(points, 0, n, d2s, d2);
+      Generalize(points, 0, n, d2s, d2, dimensions);
 
       Polyline gen = new Polyline();
 
@@ -663,7 +663,7 @@ namespace Basics.Geom
       return gen;
     }
 
-    private void Generalize(List<IPoint> points, int i0, int i1, IList<double> d2, double d20)
+    private void Generalize(List<IPoint> points, int i0, int i1, IList<double> d2, double d20, IReadOnlyCollection<int> dimensions)
     {
       if (i1 - i0 < 2)
       { return; }
@@ -675,7 +675,7 @@ namespace Basics.Geom
 
       for (int i = i0 + 1; i < i1 - 1; i++)
       {
-        d2[i] = line.Distance2(points[i]);
+        d2[i] = line.Distance2(points[i], dimensions);
         if (d2[i] > d2Max)
         {
           d2Max = d2[i];
@@ -685,8 +685,8 @@ namespace Basics.Geom
 
       if (iMax != 0)
       {
-        Generalize(points, i0, iMax, d2, d20);
-        Generalize(points, iMax, i1, d2, d20);
+        Generalize(points, i0, iMax, d2, d20, dimensions);
+        Generalize(points, iMax, i1, d2, d20, dimensions);
       }
     }
 
