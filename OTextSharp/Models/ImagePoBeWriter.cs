@@ -219,7 +219,7 @@ namespace OTextSharp.Models
         }
         if (graphics.Type == SymbolGraphicsType.Area)
         {
-          foreach (var border in (((GeoElement.Area)graphics.MapGeometry).BaseGeometry).Border)
+          foreach (var border in (((GeoElement.Surface)graphics.MapGeometry).BaseGeometry).Border)
           {
             DrawCurve(border);
             Pcb.Fill();
@@ -236,7 +236,7 @@ namespace OTextSharp.Models
         }
         else if (graphics.Type == SymbolGraphicsType.Dot)
         {
-          DrawCurve(((GeoElement.Area)graphics.MapGeometry).BaseGeometry.Border[0]); 
+          DrawCurve(((GeoElement.Surface)graphics.MapGeometry).BaseGeometry.Border[0]); 
           Pcb.Fill();
         }
       }

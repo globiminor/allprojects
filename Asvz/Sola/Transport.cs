@@ -505,7 +505,7 @@ namespace Asvz.Sola
       Polyline border = new Polyline();
       foreach (var point in transportBox.Points)
       { border.Add(center + 1.5 * (point - center)); }
-      Area box = new Area(border);
+      Surface box = new Surface(border);
 
       if (_transFrom != null)
       {

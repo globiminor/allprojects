@@ -62,7 +62,7 @@ namespace OcadTest
         foreach (var element in reader.EnumGeoElements(null))
         {
           IEnumerable<int[]> cells = null;
-          if (element.Geometry is GeoElement.Area area)
+          if (element.Geometry is GeoElement.Surface area)
           {
             area.BaseGeometry.CloseBorders();
             cells = symGrid.EnumerateCells(area.BaseGeometry);

@@ -403,7 +403,7 @@ namespace Gravity
       return w;
     }
 
-    private GravityValues GetPlaneGravity(IPoint s0, ISimpleArea pl,
+    private GravityValues GetPlaneGravity(IPoint s0, ISimpleSurface pl,
       double z0, double b, double c, bool d0)
     {
       GravityValues w = new GravityValues(OnlyZ);
@@ -440,7 +440,7 @@ namespace Gravity
       return w;
     }
 
-    GravityValues GetPlaneGravity(IPoint s0, ISimpleArea pl, double rho)
+    GravityValues GetPlaneGravity(IPoint s0, ISimpleSurface pl, double rho)
     {
       IPoint[] e = new IPoint[3];
 
@@ -721,7 +721,7 @@ namespace Gravity
     }
 
 
-    public GravityValues GetVolumeGravity(IPoint s0, IVolume vm, double rho)
+    public GravityValues GetVolumeGravity(IPoint s0, IBody vm, double rho)
     {
       GravityValues w = new GravityValues(OnlyZ);
 
@@ -784,13 +784,13 @@ namespace Gravity
       return w;
     }
 
-    public GravityValues GetGravitySum(IPoint s0, Dictionary<int, IVolume> vms, IList<double> rho)
+    public GravityValues GetGravitySum(IPoint s0, Dictionary<int, IBody> vms, IList<double> rho)
     {
       GravityValues w = new GravityValues(OnlyZ);
 
       foreach (var pair in vms)
       {
-        IVolume vm = pair.Value;
+        IBody vm = pair.Value;
         GravityValues v = GetVolumeGravity(s0, vm, rho[pair.Key]);
         w = w.Add(v);
       }

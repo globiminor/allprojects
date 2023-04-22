@@ -83,6 +83,29 @@ namespace Basics.Geom.Operator
       }
     }
 
+    private class PointPointCalculator : ILineDistanceCalculator
+    {
+      private readonly Line _line;
+      private readonly double _minDist2;
+      private readonly int _id;
+      public PointPointCalculator(Line line, double minDist2, Distance common)
+      {
+        _line = line;
+        _minDist2 = minDist2;
+        _id = common.Id++;
+      }
+      public Line Line => _line;
+      int IDistanceCalculator.Id => _id;
+      double IDistanceCalculator.MinDist2 => _minDist2;
+      double IDistanceCalculator.MaxDist2 => _minDist2;
+      IEnumerable<IDistanceCalculator> IDistanceCalculator.EnumSubCalcs() { yield return this; }
+
+      public override string ToString()
+      {
+        return $"{_id}; PntPnt; {_minDist2}";
+      }
+
+    }
     private class PointCalculator : ILineDistanceCalculator
     {
       private readonly IPoint _p;
@@ -93,6 +116,10 @@ namespace Basics.Geom.Operator
 
       private readonly double _maxDist2;
       private readonly double _minDist2;
+
+      private readonly Axis _orthoAxis;
+      private readonly bool _notWithin;
+
       private readonly Line _line;
       public int Id { get; }
       public PointCalculator(IPoint p, RelParamGeometry paramGeometry, Distance common)
@@ -109,14 +136,17 @@ namespace Basics.Geom.Operator
         if (_maxOffset < common.Tolerance)
         { _maxOffset = 0; }
 
-        IPoint c = GetClosestLinearPoint(_p, _paramGeometry);
-        double d = Math.Sqrt(PointOp.Dist2(_p, c, _common.Dimensions));
-        double maxDist = d + _maxOffset;
-        _maxDist2 = maxDist * maxDist;
-        double min = Math.Max(0, d - _maxOffset);
-        _minDist2 = min * min;
+        GetLinearInfo(_p, _paramGeometry, out IPoint minPt, out IPoint maxPt, out _orthoAxis, out _notWithin);
 
-        _line = new Line(_p, c);
+        double dMin = Math.Sqrt(PointOp.Dist2(_p, minPt, _common.Dimensions));
+        double minDist = Math.Max(0, dMin - _maxOffset);
+        _minDist2 = minDist * minDist;
+
+        double dMax = Math.Sqrt(PointOp.Dist2(_p, maxPt, _common.Dimensions));
+        double maxDist = dMax + _maxOffset;
+        _maxDist2 = maxDist * maxDist;
+
+        _line = new Line(_p, minPt);
       }
 
       public override string ToString()
@@ -129,11 +159,27 @@ namespace Basics.Geom.Operator
 
       IEnumerable<IDistanceCalculator> IDistanceCalculator.EnumSubCalcs() => EnumSubCalcs();
 
-      public IEnumerable<PointCalculator> EnumSubCalcs()
+      public IEnumerable<IDistanceCalculator> EnumSubCalcs()
       {
         if (_paramGeometry.BaseGeom.IsLinear)
         {
-          yield return this;
+          bool notWith;
+          if (_notWithin)
+          {
+            notWith = true;
+          }
+          else
+          {
+            // TODO: check within
+            notWith = false;
+          }
+          if (notWith)
+          {
+            yield return new DistanceCalculator((IGeometry)_p, _paramGeometry.BaseGeom.Border, _common);
+            yield break;
+          }
+
+          yield return new PointPointCalculator(_line, _minDist2, _common);
           yield break;
         }
         foreach (var part in _paramGeometry.Split())
@@ -371,11 +417,22 @@ namespace Basics.Geom.Operator
 
       if (y is IPoint py)
       {
+        if (x is IPoint ppx) 
+        {
+          yield return new PointPointCalculator(new Line(py, ppx), _min2, _common);
+          yield break;
+        }
         yield return new PointCalculator(py, new RelParamGeometry((IRelParamGeometry)x), _common);
         yield break;
       }
       if (x is IPoint px)
       {
+        if (y is IPoint ppy)
+        {
+          yield return new PointPointCalculator(new Line(px, ppy), _min2, _common);
+          yield break;
+        }
+
         yield return new PointCalculator(px, new RelParamGeometry((IRelParamGeometry)y), _common);
         yield break;
       }
@@ -655,8 +712,8 @@ namespace Basics.Geom.Operator
         List<Tuple<double, RelParamGeometry>> candidates = new List<Tuple<double, RelParamGeometry>>();
         foreach (var part in lg.Split())
         {
-          IPoint c = GetClosestLinearPoint(p, part);
-          double d = Math.Sqrt(PointOp.Dist2(c, p));
+          GetLinearInfo(p, part, out IPoint min, out _, out _, out _);
+          double d = Math.Sqrt(PointOp.Dist2(min, p));
           candidates.Add(new Tuple<double, RelParamGeometry>(d, part));
         }
         candidates.Sort((x, y) => x.Item1.CompareTo(y.Item1));
@@ -680,24 +737,41 @@ namespace Basics.Geom.Operator
         }
         return closest;
       }
-      return GetClosestLinearPoint(p, lg);
+      GetLinearInfo(p, lg, out IPoint minPoint, out _, out _, out _);
+      return minPoint;
     }
 
-    private static IPoint GetClosestLinearPoint(IPoint p, RelParamGeometry lg)
+    private static void GetLinearInfo(IPoint p, RelParamGeometry lg, 
+      out IPoint minPoint, out IPoint maxPoint,
+      out Axis orthoAxis, out bool notWithin)
     {
       IPoint pp = PointOp.Sub(p, lg.Origin);
-      Axis a = lg.OrthoSys.GetOrthogonal(pp);
+      orthoAxis = lg.OrthoSys.GetOrthogonal(pp);
 
-      int nAx = a.Factors.Length;
-      IPoint closest = lg.Origin;
+      int nAx = orthoAxis.Factors.Length;
+      IPoint pMin = lg.Origin;
+      IPoint pMax = Point.Create(pMin);
+      notWithin = false;
       for (int iAx = 0; iAx < nAx; iAx++)
       {
-        double f = a.Factors[iAx];
-        if (f < 0) { continue; }
-        f = f > 1 ? 1 : f;
-        closest = closest + PointOp.Scale(f, lg.OrthoSys.Axes[iAx].Point);
+        double fMin = orthoAxis.Factors[iAx];
+        if (fMin < 0)
+        {
+          fMin = 0;
+          notWithin = true;
+        }
+        else if (fMin > 1)
+        {
+          notWithin = true;
+          fMin = 1;
+        }
+        double fMax = fMin < 0.5 ? 1 : 0;
+        IPoint pAx = lg.OrthoSys.Axes[iAx].Point;
+        pMin = pMin + PointOp.Scale(fMin, pAx);
+        pMax = pMax + PointOp.Scale(fMax, pAx);
       }
-      return closest;
+      minPoint = pMin;
+      maxPoint = pMax;
     }
 
     private static Line GetClosestLinearLine(RelParamGeometry x, RelParamGeometry y, IReadOnlyCollection<int> dimensions)

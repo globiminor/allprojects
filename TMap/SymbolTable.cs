@@ -113,7 +113,7 @@ namespace TMap
               else if (i == 2 && geomTerm.Equals("Area",
                 System.StringComparison.InvariantCultureIgnoreCase))
               {
-                geomType.Add(typeof(Basics.Geom.Area));
+                geomType.Add(typeof(Basics.Geom.Surface));
               }
               else
               {

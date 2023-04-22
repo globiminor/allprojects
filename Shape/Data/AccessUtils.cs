@@ -18,7 +18,7 @@ namespace Shape.Data
 
     const int _typeArea = 19;
 
-    private class AccessArea : Area
+    private class AccessArea : Surface
     {
       private byte[] _bytes;
       public AccessArea(byte[] bytes)

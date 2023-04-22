@@ -92,7 +92,7 @@ namespace OcadTest
       cmd.CommandText = string.Format("SELECT ObjectId FROM {0} WHERE ST_Intersects(Shape, :p1)", firstTable);
       DbParameter param = cmd.CreateParameter();
       param.ParameterName = "p1";
-      param.Value = new Area(new[] { Polyline.Create(new[] { box.Min, box.Max, new Point2D(box.Max.X, box.Min.Y), box.Min }) });
+      param.Value = new Surface(new[] { Polyline.Create(new[] { box.Min, box.Max, new Point2D(box.Max.X, box.Min.Y), box.Min }) });
 
       cmd.Parameters.Add(param);
 

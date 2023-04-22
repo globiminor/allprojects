@@ -144,7 +144,7 @@ namespace ArcSde.Data
       else if ((lyr.SpatialTypes & SdeType.SE_LINE_TYPE_MASK) == SdeType.SE_LINE_TYPE_MASK)
       { geom = typeof(Polyline); }
       else if ((lyr.SpatialTypes & SdeType.SE_AREA_TYPE_MASK) == SdeType.SE_AREA_TYPE_MASK)
-      { geom = typeof(Area); }
+      { geom = typeof(Surface); }
       else
       { geom = typeof(IGeometry); }
       return geom;

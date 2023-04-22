@@ -186,7 +186,7 @@ namespace OCourse.Commands
 
         double minDist = 2 * r;
         double q = minDist + r;
-        Dictionary<Area, Element> usedAreas = new Dictionary<Area, Element>();
+        Dictionary<Surface, Element> usedAreas = new Dictionary<Surface, Element>();
         Box controlSearchBox = new Box(
           new P(cp.X - w - q, cp.Y - h - q), new P(cp.X + w + q, cp.Y + h + q));
         foreach (var entry in courseMap.ControlsTree.Search(controlSearchBox))
@@ -198,7 +198,7 @@ namespace OCourse.Commands
           double dist = !courseMap.FinishSymbols.Contains(e.Elem.Symbol)
             ? minDist
             : r * 1.1;
-          usedAreas.Add(new Area(GetCirclePositions(entry.Value.P, dist, w, h)), e.Elem);
+          usedAreas.Add(new Surface(GetCirclePositions(entry.Value.P, dist, w, h)), e.Elem);
         }
 
         Box connectionSearchBox = new Box(
@@ -225,15 +225,15 @@ namespace OCourse.Commands
       private readonly CourseMap _courseMap;
 
       private readonly Polyline _nrPos;
-      private readonly Dictionary<Area, Element> _usedAreas;
+      private readonly Dictionary<Surface, Element> _usedAreas;
 
-      private readonly Dictionary<Area, List<UsedPart>> _areaSplits;
+      private readonly Dictionary<Surface, List<UsedPart>> _areaSplits;
       private double _maxFreeLength;
       private List<Polyline> _freeParts;
       private IPoint _p;
       private IPoint _position;
 
-      public IReadOnlyDictionary<Area, Element> UsedAreas => _usedAreas;
+      public IReadOnlyDictionary<Surface, Element> UsedAreas => _usedAreas;
       private List<Polyline> FreePartsCore => _freeParts ?? (_freeParts = GetPossibleParts());
       public IReadOnlyList<Polyline> FreeParts => FreePartsCore;
       public IPoint Position => _position ?? _p;
@@ -246,7 +246,7 @@ namespace OCourse.Commands
       public string ControlId { get; }
       public IBox NrBox;
       private ControlRegion(MapElement control, string controlId, IPoint p, string text, double textWidth,
-        CourseMap courseMap, Polyline nrPos, Dictionary<Area, Element> usedAreas)
+        CourseMap courseMap, Polyline nrPos, Dictionary<Surface, Element> usedAreas)
       {
         Control = control;
         ControlId = controlId;
@@ -259,7 +259,7 @@ namespace OCourse.Commands
         _text = text;
 
         NrBox = nrPos.Extent;
-        _areaSplits = new Dictionary<Area, List<UsedPart>>();
+        _areaSplits = new Dictionary<Surface, List<UsedPart>>();
         _maxFreeLength = -1;
       }
 
@@ -281,7 +281,7 @@ namespace OCourse.Commands
         _freeParts = null;
         Box b = BoxOp.Clone(area);
         b.Min.X -= _textWidth;
-        _usedAreas.Add(new Area(Polyline.Create(b)), element);
+        _usedAreas.Add(new Surface(Polyline.Create(b)), element);
       }
       private double GetMaxFreeLength()
       {
@@ -436,7 +436,7 @@ namespace OCourse.Commands
         return pos;
       }
 
-      private static Area GetConnectionArea(Polyline connection, double w, double h)
+      private static Surface GetConnectionArea(Polyline connection, double w, double h)
       {
         List<IPoint> pts = new List<IPoint> { connection.GetPoint(0), connection.GetPoint(-1) };
         pts.Sort((x, y) => x.X.CompareTo(y.X));
@@ -449,7 +449,7 @@ namespace OCourse.Commands
           : new Point[] { new P(x0 - w, y0), new P(x0 - w, y0 - h), new P(x0, y0 - h), new P(x1, y1 - h), new P(x1, y1), new P(x1 - w, y1), new P(x0 - w, y0) };
         Polyline border = Polyline.Create(ps);
 
-        Area area = new Area(border);
+        Surface area = new Surface(border);
         return area;
       }
     }

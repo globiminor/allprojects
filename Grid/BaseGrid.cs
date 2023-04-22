@@ -321,7 +321,7 @@ namespace Grid
       return line;
     }
 
-    public IEnumerable<int[]> EnumerateCells(Area area)
+    public IEnumerable<int[]> EnumerateCells(Surface area)
     {
       IList<Polyline> borders = area.Border;
       int alloc = 0;

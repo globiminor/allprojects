@@ -110,7 +110,7 @@ namespace TMap
       _projection.Scale(scale);
       Polyline l = PointLine(p, drawable);
       if (Fill)
-      { drawable.DrawArea(new Area(l), this); }
+      { drawable.DrawArea(new Surface(l), this); }
       if (Stroke)
       { drawable.DrawLine(l, this); }
     }

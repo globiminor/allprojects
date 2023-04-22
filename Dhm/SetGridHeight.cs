@@ -110,7 +110,7 @@ namespace Dhm
       w = new Point2D(w.Y, -w.X);
       double w2 = (_width * _width) / 4;
       Polyline line = Polyline.Create(new [] { start + w, start + w + d, start - w + d, start - w, start + w });
-      Area area = new Area(line);
+      Surface area = new Surface(line);
       IBox ext = area.Extent;
 
       _grid.Extent.GetNearest(ext.Min, out int xMin, out int yMax);

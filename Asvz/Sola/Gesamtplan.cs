@@ -191,7 +191,7 @@ namespace Asvz.Sola
 
         foreach (var pSanBg in _lstSanBg)
         {
-          Element pElem = new GeoElement(((GeoElement.Area)pSanBg.Geometry).BaseGeometry.Border[0]);
+          Element pElem = new GeoElement(((GeoElement.Surface)pSanBg.Geometry).BaseGeometry.Border[0]);
           pElem.Symbol = SymT.TextRahmen;
           pElem.Type = GeomType.line;
           writer.Append(pElem);
@@ -394,7 +394,7 @@ namespace Asvz.Sola
         new Point2D(xStart, ur.Y), new Point2D(xStart, ur.Y - 800),
         new Point2D(ur.X, ur.Y - 800), new Point2D(ur.X, ur.Y), new Point2D(xStart, ur.Y)
       });
-      Area poly = new Area(border);
+      Surface poly = new Surface(border);
       elem = new GeoElement(border);
       elem.Symbol = SymT.Deckweiss;
       elem.Type = GeomType.area;
@@ -446,7 +446,7 @@ namespace Asvz.Sola
           new Point2D(ll.X - off,ll.Y - off),
         });
 
-      Area area = new Area(new[] { outside, inside });
+      Surface area = new Surface(new[] { outside, inside });
 
       Element elem = new GeoElement(area);
       elem.Symbol = SymT.Deckweiss;

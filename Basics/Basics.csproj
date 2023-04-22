@@ -82,7 +82,7 @@
     <Compile Include="Data\Updater.cs" />
     <Compile Include="Data\Utils.cs" />
     <Compile Include="Geom\Arc.cs" />
-    <Compile Include="Geom\Area.cs" />
+    <Compile Include="Geom\Surface.cs" />
     <Compile Include="Geom\Axis.cs" />
     <Compile Include="Geom\Bezier.cs" />
     <Compile Include="Geom\Box.cs" />

@@ -157,7 +157,7 @@ namespace OCourse.ViewModels
       void IDrawable.BeginDraw(ISymbolPart symbolPart, DataRow dataRow) { }
       void IDrawable.Draw(MapData data) { }
 
-      void IDrawable.DrawArea(Area area, ISymbolPart symbolPart)
+      void IDrawable.DrawArea(Surface area, ISymbolPart symbolPart)
       {
         _brush.Color = symbolPart.Color;
         Basics.Forms.DrawUtils.DrawArea(_grp, area, _brush);
@@ -214,7 +214,7 @@ namespace OCourse.ViewModels
         List<Ocad.GeoElement> teleportElems = new List<Ocad.GeoElement>();
         foreach (var teleportElem in r.EnumGeoElements(teleportIdxs))
         {
-          if (teleportElem.Geometry is Ocad.GeoElement.Area)
+          if (teleportElem.Geometry is Ocad.GeoElement.Surface)
           { layerElems.Add(teleportElem); }
           if (teleportElem.Geometry is Ocad.GeoElement.Line)
           { teleportElems.Add(teleportElem); }
@@ -226,7 +226,7 @@ namespace OCourse.ViewModels
           VeloModelVm.SymbolVm sym = teleportSyms[elem.Symbol];
           double cost = sym.Teleport.Value;
 
-          ConstVeloLayer layer = new ConstVeloLayer(((Ocad.GeoElement.Area)elem.Geometry).BaseGeometry, cost);
+          ConstVeloLayer layer = new ConstVeloLayer(((Ocad.GeoElement.Surface)elem.Geometry).BaseGeometry, cost);
           Layers.Add(layer);
         }
         foreach (var elem in teleportElems)
@@ -266,13 +266,13 @@ namespace OCourse.ViewModels
       private readonly IBox _extent;
       private readonly double _cost;
 
-      public ConstVeloLayer(Area area, double cost)
+      public ConstVeloLayer(Surface area, double cost)
       {
         Area = area;
         _extent = area.Extent;
         _cost = cost;
       }
-      public Area Area { get; }
+      public Surface Area { get; }
       public IBox Extent => _extent;
       public double MinUnitCost => _cost;
 

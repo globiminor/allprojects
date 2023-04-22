@@ -174,8 +174,8 @@ namespace Ocad
       }
       else if (type == GeomType.area)
       {
-        Area pArea = GetArea(coords);
-        return new GeoElement.Area(pArea);
+        Surface pArea = GetSurface(coords);
+        return new GeoElement.Surface(pArea);
       }
       else
       { // unknown geometry type
@@ -186,10 +186,10 @@ namespace Ocad
       }
     }
 
-    public static Area GetArea(IList<Coord> coords)
+    public static Surface GetSurface(IList<Coord> coords)
     {
       int iPoint = 0;
-      Area pArea = new Area(GetPolylineCore(coords, ref iPoint));
+      Surface pArea = new Surface(GetPolylineCore(coords, ref iPoint));
       while (iPoint < coords.Count) // read holes / inner rings
       { pArea.Border.Add(GetPolylineCore(coords, ref iPoint)); }
       return pArea;
@@ -252,7 +252,7 @@ namespace Ocad
       if (geom is IPoint pt) coords = EnumCoords(pt);
       else if (geom is PointCollection pts) coords = EnumCoords(pts);
       else if (geom is Polyline line) coords = EnumCoords(line);
-      else if (geom is Area area) coords = EnumCoords(area);
+      else if (geom is Surface area) coords = EnumCoords(area);
 
       else
       {
@@ -284,7 +284,7 @@ namespace Ocad
     }
 
 
-    public static IEnumerable<Coord> EnumCoords(Area area)
+    public static IEnumerable<Coord> EnumCoords(Surface area)
     {
       bool isInnerRing = false;
       foreach (var border in area.Border)

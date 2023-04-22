@@ -8,18 +8,21 @@ namespace Basics.Geom
   /// <summary>
   /// Summary description for Area.
   /// </summary>
-  public class Area : Geometry, IGeometry, ISimpleArea, IRelationGeometry
+  public class Surface : Geometry, IGeometry, ISimpleSurface, IRelParamGeometry
   {
     private readonly PolylineCollection _border;
     BoxTree<Polyline> _spatialIndex;
 
-    public Area()
+    private IPoint _origMin;
+    private IPoint[] _origD;
+
+    public Surface()
       : this(new List<Polyline>())
     { }
-    public Area(Polyline border)
+    public Surface(Polyline border)
       : this(new[] { border })
     { }
-    public Area(IEnumerable<Polyline> border)
+    public Surface(IEnumerable<Polyline> border)
     {
       _border = new PolylineCollection();
       _border.AddRange(border);
@@ -27,7 +30,7 @@ namespace Basics.Geom
 
     #region IGeometry Members
 
-    IReadOnlyList<ISimplePolyline> ISimpleArea.Border => Lines;
+    IReadOnlyList<ISimplePolyline> ISimpleSurface.Border => Lines;
     protected virtual PolylineCollection Lines
     {
       get { return _border; }
@@ -56,6 +59,39 @@ namespace Basics.Geom
         return _spatialIndex;
       }
     }
+
+    IPoint IParamGeometry.PointAt(IPoint parameters) => OrigMin + PointOp.Scale(parameters[0], OrigD[0]) + PointOp.Scale(parameters[1], OrigD[1]);
+    IBox IParamGeometry.ParameterRange => new Box(new Point2D(0, 0), new Point2D(1, 1));
+
+    private IPoint OrigMin
+    {
+      get
+      {
+        if (_origMin == null)
+        { InitParamGeom(); }
+        return _origMin;
+      }
+    }
+    private IPoint[] OrigD
+    {
+      get
+      {
+        if (_origD == null)
+        { InitParamGeom(); }
+        return _origD;
+      }
+    }
+    private void InitParamGeom()
+    {
+      // TODO: 3D
+      _origMin = Point.Create(Extent.Min);
+      Point dx = Point.Create(Extent.Min);
+      dx.X = Extent.Max.X - Extent.Min.X;
+      Point dy = Point.Create(Extent.Min);
+      dy.Y = Extent.Max.Y - Extent.Min.Y;
+      _origD = new IPoint[] { dx, dy };
+    }
+
 
     public override bool IsWithin(IPoint p)
     {
@@ -110,8 +146,8 @@ namespace Basics.Geom
         throw new NotImplementedException();
       }
     }
-    Relation IRelationGeometry.GetRelation(IBox paramBox) 
-    { 
+    Relation IRelationGeometry.GetRelation(IBox paramBox)
+    {
       int n = paramBox.Dimension;
       Relation rel = Relation.Near;
       for (int i = 0; i < n; i++)
@@ -357,9 +393,9 @@ namespace Basics.Geom
 
     IGeometry IGeometry.Project(IProjection projection) => Project(projection);
     protected override IGeometry ProjectCore(IProjection projection) => Project(projection);
-    public Area Project(IProjection projection)
+    public Surface Project(IProjection projection)
     {
-      return new Area(Lines.Project(projection));
+      return new Surface(Lines.Project(projection));
     }
 
     #endregion
@@ -382,6 +418,37 @@ namespace Basics.Geom
       {
         Border.Remove(invalid);
       }
+    }
+  }
+
+  public static class SufaceOp
+  {
+    public static double GetArea(ISimpleSurface surface)
+    {
+      double fullArea = 0;
+      foreach (var border in surface.Border)
+      {
+        fullArea += GetArea(border);
+      }
+      return fullArea;
+    }
+
+    private static double GetArea(ISimplePolyline border)
+    {
+      IReadOnlyList<IPoint> ps = border.Points;
+      int nPoints = ps.Count;
+      int di = 1;
+      double fAll = 0;
+      for (int i = di; i < nPoints; i += 2 * di)
+      {
+        IPoint p0 = ps[i - di];
+        IPoint p1 = ps[i];
+        IPoint p2 = ps[i + 1];
+
+        double f = PointOp.SkalarProduct(PointOp.Sub(p1, p0), PointOp.Sub(p2, p0));
+        fAll += f;
+      }
+      return fAll;
     }
   }
 }

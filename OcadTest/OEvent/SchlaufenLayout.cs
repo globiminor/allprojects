@@ -1288,7 +1288,6 @@ namespace OcadTest.OEvent
       JoinPdfs(root);
     }
 
-    [TestMethod]
     public void JoinPdfs(string root)
     {
       List<PdfId> exports = new List<PdfId>();

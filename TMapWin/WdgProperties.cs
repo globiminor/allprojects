@@ -201,7 +201,7 @@ namespace TMapWin
       { sym = Symbol.DefaultPoint(); }
       else if (t == typeof(Basics.Geom.Polyline))
       { sym = Symbol.Create(1, withSymbolPart: true); }
-      else if (t == typeof(Basics.Geom.Area))
+      else if (t == typeof(Basics.Geom.Surface))
       { sym = Symbol.Create(2, withSymbolPart: true); }
       else
       {

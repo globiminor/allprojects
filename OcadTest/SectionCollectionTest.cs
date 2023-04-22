@@ -377,7 +377,6 @@ namespace OcadTest
       //      System.IO.TextReader reader = new System.IO.StreamReader(System.Diagnostics.Process.GetCurrentProcess().StandardInput.BaseStream);
     }
 
-    [TestMethod]
     public void ReducePrintFile(TextReader reader,
       string ocadName, string combinationName, string reducedName, string workDir)
     {
@@ -822,7 +821,6 @@ namespace OcadTest
 
 
     // Parse a glyph outline in native format
-    [TestMethod]
     public void GetGlyphShape(Font font, char c)
     {
       MAT2 matrix = new MAT2();

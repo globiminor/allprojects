@@ -730,7 +730,7 @@ namespace Asvz
           pReader.ReadElement(out GeoElement elem);
           while (elem != null)
           {
-            if (elem.Geometry is GeoElement.Area == false)
+            if (elem.Geometry is GeoElement.Surface == false)
             {
               _lblFormat.Text = "Kein Flächenelement";
               return;
@@ -781,13 +781,13 @@ namespace Asvz
           return;
         }
 
-        Area pAreaMax = ((GeoElement.Area)maxElement.Geometry).BaseGeometry;
+        Surface pAreaMax = ((GeoElement.Surface)maxElement.Geometry).BaseGeometry;
         foreach (var pElem in inList)
         {
           if (pElem == maxElement)
           { continue; }
 
-          Area pArea = ((GeoElement.Area)pElem.Geometry).BaseGeometry;
+          Surface pArea = ((GeoElement.Surface)pElem.Geometry).BaseGeometry;
           if (pArea.Border.Count != 1)
           {
             _lblFormat.Text = "Inneres Polygon besteht nicht aus genau einer Linie";

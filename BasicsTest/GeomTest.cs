@@ -51,7 +51,7 @@ namespace BasicsTest
       Polyline c = new Polyline();
       c.Add(new Arc(new Point2D(1, 1), 0.8, 0, 2 * Math.PI));
 
-      Area a = new Area(Polyline.Create(new Point2D[] { new Point2D(0, 0), new Point2D(4, 0), new Point2D(2, 4), new Point2D(0, 0) }));
+      Surface a = new Surface(Polyline.Create(new Point2D[] { new Point2D(0, 0), new Point2D(4, 0), new Point2D(2, 4), new Point2D(0, 0) }));
 
       var rels = GeometryOperator.CreateRelations(a, l);
       var inter = GeometryOperator.Intersection(a, l);
@@ -62,10 +62,21 @@ namespace BasicsTest
     [TestMethod]
     public void CanGetMinDist()
     {
-      Area x = new Area(Polyline.Create(new Point2D[] { new Point2D(0, 0), new Point2D(0, 3), new Point2D(4, 3), new Point2D(4, 0), new Point2D(0, 0) }));
-      Area y = new Area(Polyline.Create(new Point2D[] { new Point2D(5, 1), new Point2D(6, 3), new Point2D(7, 1), new Point2D(5, 1) }));
+      {
+        Surface x = new Surface(Polyline.Create(new Point2D[] { new Point2D(0, 0), new Point2D(0, 3), new Point2D(4, 3), new Point2D(4, 0), new Point2D(0, 0) }));
+        Surface y = new Surface(Polyline.Create(new Point2D[] { new Point2D(5, 1), new Point2D(6, 3), new Point2D(7, 1), new Point2D(5, 1) }));
 
-      GeometryOperator.GetClosestLine(x, y);
+        Line line = GeometryOperator.GetClosestLine(x, y);
+        Assert.AreEqual(1, line.Length());
+      }
+
+      {
+        Point x = new Point2D(6, 2);
+        Surface y = new Surface(Polyline.Create(new Point2D[] { new Point2D(5, 1), new Point2D(6, 3), new Point2D(7, 1), new Point2D(5, 1) }));
+
+        Line line = GeometryOperator.GetClosestLine(x, y);
+        Assert.AreEqual(0, line.Length());
+      }
 
     }
     [TestMethod]

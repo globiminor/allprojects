@@ -299,7 +299,7 @@ namespace Asvz.Forchlauf
       border.Add(new Point2D(xMin, yMax));
       border.Add(new Point2D(xMin, yMin));
 
-      Area area = new Area(border);
+      Surface area = new Surface(border);
 
       Element elem = new MapElement(Coord.EnumCoords(area));
       elem.Type = GeomType.area;

@@ -272,7 +272,7 @@ namespace OcadScratch
       Element elem;
       if (lineWidth <= 0)
       {
-        elem = new GeoElement(new Basics.Geom.Area(line));
+        elem = new GeoElement(new Basics.Geom.Surface(line));
         geomType = GeomType.area;
       }
       else

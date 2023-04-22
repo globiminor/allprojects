@@ -202,9 +202,9 @@ namespace Asvz
     private List<Polyline> _indexList;
     private List<IPoint> _verpfList;
 
-    private IList<Area> _wald;
-    private IList<Area> _siedlung;
-    private IList<Area> _teer;
+    private IList<Surface> _wald;
+    private IList<Surface> _siedlung;
+    private IList<Surface> _teer;
 
     // symbols
 
@@ -271,12 +271,12 @@ namespace Asvz
     }
     protected abstract void ReadSymbolsCore(OcadReader reader);
 
-    internal IList<Area> Siedlung
+    internal IList<Surface> Siedlung
     {
       get
       {
         if (_siedlung == null)
-        { _siedlung = new List<Area>(); }
+        { _siedlung = new List<Surface>(); }
         return _siedlung;
       }
     }
@@ -286,21 +286,21 @@ namespace Asvz
 
     protected virtual double DistIndex { get; } = 100.0;
 
-    internal IList<Area> Teer
+    internal IList<Surface> Teer
     {
       get
       {
         if (_teer == null)
-        { _teer = new List<Area>(); }
+        { _teer = new List<Surface>(); }
         return _teer;
       }
     }
-    internal IList<Area> Wald
+    internal IList<Surface> Wald
     {
       get
       {
         if (_wald == null)
-        { _wald = new List<Area>(); }
+        { _wald = new List<Surface>(); }
         return _wald;
       }
     }

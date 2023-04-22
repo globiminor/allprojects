@@ -126,11 +126,11 @@ namespace Asvz.Sola
         else if (elem.Symbol == SymT.Verpflegung)
         { VerpfList.Add(((GeoElement.Point)elem.Geometry).BaseGeometry); }
         else if (elem.Symbol == SymT.Wald)
-        { Wald.Add(((GeoElement.Area)elem.Geometry).BaseGeometry); }
+        { Wald.Add(((GeoElement.Surface)elem.Geometry).BaseGeometry); }
         else if (elem.Symbol == SymT.Siedlung)
-        { Siedlung.Add(((GeoElement.Area)elem.Geometry).BaseGeometry); }
+        { Siedlung.Add(((GeoElement.Surface)elem.Geometry).BaseGeometry); }
         else if (elem.Symbol == SymT.Teer)
-        { Teer.Add(((GeoElement.Area)elem.Geometry).BaseGeometry); }
+        { Teer.Add(((GeoElement.Surface)elem.Geometry).BaseGeometry); }
       }
       if (!(strecken.Count == Ddx.Strecken.Count)) throw new InvalidOperationException($"#strecken ({strecken.Count}) != #Ddx.Strecken ({Ddx.Strecken.Count})");
       if (!(nummern.Count == Ddx.Strecken.Count)) throw new InvalidOperationException($"#nummern ({nummern.Count}) != #Ddx.Strecken ({Ddx.Strecken.Count})");

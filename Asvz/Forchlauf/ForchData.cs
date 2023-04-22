@@ -101,11 +101,11 @@ namespace Asvz.Forchlauf
         { VerpfList.Add(((GeoElement.Point)elem.Geometry).BaseGeometry); }
 
         else if (elem.Symbol == SymF.Wald)
-        { Wald.Add(((GeoElement.Area)elem.Geometry).BaseGeometry); }
+        { Wald.Add(((GeoElement.Surface)elem.Geometry).BaseGeometry); }
         else if (elem.Symbol == SymF.Siedlung)
-        { Siedlung.Add(((GeoElement.Area)elem.Geometry).BaseGeometry); }
+        { Siedlung.Add(((GeoElement.Surface)elem.Geometry).BaseGeometry); }
         else if (elem.Symbol == SymF.Teer)
-        { Teer.Add(((GeoElement.Area)elem.Geometry).BaseGeometry); }
+        { Teer.Add(((GeoElement.Surface)elem.Geometry).BaseGeometry); }
       }
 
       GetStrecken(streckenTeile);

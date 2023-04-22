@@ -111,7 +111,7 @@ namespace TMapWin.Div
       DrawUtils.DrawLine(_graphics, line, pen);
     }
 
-    public void DrawArea(Area area, ISymbolPart symbolPart)
+    public void DrawArea(Surface area, ISymbolPart symbolPart)
     {
       Brush brush = _symbolBrushes[symbolPart];
       DrawUtils.DrawArea(_graphics, area, brush);

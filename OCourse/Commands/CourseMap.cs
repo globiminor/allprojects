@@ -36,11 +36,11 @@ namespace OCourse.Commands
     {
       public AreaElement(MapElement elem)
       {
-        A = elem.GetMapGeometry().GetGeometry() as Area;
+        A = elem.GetMapGeometry().GetGeometry() as Surface;
         Elem = elem;
       }
 
-      public Area A { get; set; }
+      public Surface A { get; set; }
       public MapElement Elem { get; }
     }
 
@@ -188,7 +188,7 @@ namespace OCourse.Commands
             {
               IPoint p = gp.BaseGeometry;
               elem.Type = GeomType.area;
-              elem.SetMapGeometry(new GeoElement.Area(new Area(Polyline.Create(new Point[] {
+              elem.SetMapGeometry(new GeoElement.Surface(new Surface(Polyline.Create(new Point[] {
                 ext.Min + p, new Point2D(ext.Max.X, ext.Min.Y) + p, ext.Max + p, new Point2D(ext.Min.X, ext.Max.Y) + p, ext.Min + p  }))));
             }
             layoutElems.Add(elem);

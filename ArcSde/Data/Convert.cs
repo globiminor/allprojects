@@ -9,7 +9,7 @@ namespace ArcSde.Data
     public static SeShape ToShape(IGeometry geom, SeLayer lyr)
     {
       SeShape shape = new SeShape(lyr.LayerInfo.CoordRef);
-      if (geom is Area area)
+      if (geom is Surface area)
       {
         List<Se_Point> points = new List<Se_Point>();
         List<int> parts = new List<int>();
@@ -108,7 +108,7 @@ namespace ArcSde.Data
       }
       else if (CApi.SE_shape_is_polygon(shape.Ptr))
       {
-        Area area = new Area(lines);
+        Surface area = new Surface(lines);
         return area;
       }
 

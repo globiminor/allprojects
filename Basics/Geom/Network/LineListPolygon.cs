@@ -45,9 +45,9 @@ namespace Basics.Geom.Network
       get { return _centroids; }
     }
 
-    public Area GetPolygon()
+    public Surface GetPolygon()
     {
-      Area polygon = new Area();
+      Surface polygon = new Surface();
       Polyline ring = new Polyline();
 
       foreach (var pRow in _mainRing.DirectedRows)

@@ -431,7 +431,7 @@ Continue?", args.Progress), "Error", MessageBoxButtons.YesNo);
 
         foreach (var tri in Calc.Mesh.Tris(draw.Extent))
         {
-          Area poly = new Area(tri.Border);
+          Surface poly = new Surface(tri.Border);
           draw.DrawArea(poly.Project(draw.Projection),
                         areaSymbol);
 

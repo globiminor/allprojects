@@ -19,7 +19,7 @@ namespace Basics.Forms
       graphics.DrawPath(pen, pntList);
     }
 
-    public static void DrawArea(Graphics graphics, Area area, Brush brush)
+    public static void DrawArea(Graphics graphics, Surface area, Brush brush)
     {
       if (area == null)
       { return; }

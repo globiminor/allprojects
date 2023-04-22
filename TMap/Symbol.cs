@@ -88,7 +88,7 @@ namespace TMap
       {
         double d = (drawable.Extent.Max.X - drawable.Extent.Min.X) / 2.0;
         double h = (drawable.Extent.Max.Y - drawable.Extent.Min.Y) / 2.0;
-        geom = new Area(Polyline.Create(new[]
+        geom = new Surface(Polyline.Create(new[]
           { new Point2D(-d + 4,-5),
             new Point2D( d - 4, -5),
             new Point2D( d - 4, 5),

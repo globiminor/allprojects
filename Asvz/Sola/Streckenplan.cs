@@ -360,7 +360,7 @@ namespace Asvz.Sola
       double x1 = p0.X + dx + (p0.X - pMin.X);
       double y1 = pMin.Y;
       double y0 = p0.Y - 0.3 * dy;
-      elem = new MapElement(Coord.EnumCoords(new Area(
+      elem = new MapElement(Coord.EnumCoords(new Surface(
         Polyline.Create(new[] { new Point2D(x0, y0), new Point2D(x1, y0),
         new Point2D(x1, y1), new Point2D(x0, y1), new Point2D(x0, y0)}))));
       elem.Symbol = SymS.RahmenStrecke;

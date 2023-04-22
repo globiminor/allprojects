@@ -17,7 +17,7 @@ namespace TMap
 
     public override void Draw(IGeometry area, IDrawable drawable)
     {
-      drawable.DrawArea((Area)area.Project(drawable.Projection), this);
+      drawable.DrawArea((Surface)area.Project(drawable.Projection), this);
     }
     public override string GetDrawExpressions() => null;
 

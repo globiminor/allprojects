@@ -292,7 +292,7 @@ namespace TMapWin
       Basics.Forms.DrawUtils.DrawLine(Graphics, line, pen);
     }
 
-    public void DrawArea(Area area, ISymbolPart symbolPart)
+    public void DrawArea(Surface area, ISymbolPart symbolPart)
     {
       if (area == null && symbolPart == null)
       {

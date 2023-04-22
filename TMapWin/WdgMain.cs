@@ -74,7 +74,7 @@ namespace TMapWin
       { get { return _map.Projection; } }
       public void DrawLine(Basics.Geom.Polyline line, ISymbolPart symbolPart)
       { _map.DrawLine(line, symbolPart); }
-      public void DrawArea(Basics.Geom.Area area, ISymbolPart symbolPart)
+      public void DrawArea(Basics.Geom.Surface area, ISymbolPart symbolPart)
       { _map.DrawArea(area, symbolPart); }
       public void DrawRaster(GridMapData raster)
       { _map.DrawRaster(raster); }

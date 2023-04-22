@@ -14,6 +14,7 @@ using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace OcadTest
 {
@@ -698,7 +699,7 @@ namespace OcadTest
         foreach (var idx in w.GetIndices())
         {
           w.ReadElement(idx, out GeoElement elem);
-          if (elem != null && elem.Geometry is GeoElement.Area)
+          if (elem != null && elem.Geometry is GeoElement.Surface)
           {
             elem.Angle = 0;
             w.Overwrite(elem, idx.Index);
@@ -762,40 +763,76 @@ namespace OcadTest
     [TestMethod]
     public void TestClosestDistance()
     {
+      List<Polyline> contours = GetGeometries(@"C:\daten\felix\OL\schlosswald\2003\schlosswald18.ocd");
+
+      for (int i = 0; i < contours.Count; i++)
+      {
+        int j = i;
+        MeasureClosestLine(j, contours);
+      }
+    }
+
+    [TestMethod]
+    public void TestClosestDistanceAsync()
+    {
+      List<Polyline> contours = GetGeometries(@"C:\daten\felix\OL\schlosswald\2003\schlosswald18.ocd");
+
+      List<Task> all = new List<Task>();
+      for (int i = 0; i < contours.Count;i++)
+      {
+        int j = i;
+        Task t = Task.Run(() => MeasureClosestLine(j, contours));
+        all.Add(t);
+      }
+      Task.WaitAll(all.ToArray());
+
+      foreach (var task in all)
+      {
+        Assert.IsTrue(task.Status == TaskStatus.RanToCompletion);
+      }
+    }
+
+
+    private List<Polyline> GetGeometries(string ocadFile)
+    {
       List<Polyline> contours = new List<Polyline>();
-      using (OcadReader r = OcadReader.Open(@"C:\daten\felix\OL\schlosswald\2003\schlosswald18.ocd"))
+      using (OcadReader r = OcadReader.Open(ocadFile))
       {
         foreach (var elem in r.EnumGeoElements())
         {
           if (elem.Symbol == 101000 || elem.Symbol == 103000)
           {
             Polyline polyline = (Polyline)elem.Geometry.GetGeometry();
+
+            //            contours.Add(polyline);
+
             Polyline generalized = polyline.Generalize(0.001);
             Assert.IsNotNull(generalized.SpatialIndex);
             contours.Add(generalized);
           }
         }
       }
-      long ee = MeasureClosestLine(contours[10], contours[781]);
-      // TODO: chech (10, 781)
-      double maxElapsed = 0;
-      foreach (var x in contours)
+      return contours;
+    }
+
+    private void MeasureClosestLine(int ix, IList<Polyline> ys)
+    {
+      Trace.WriteLine($"{DateTime.Now.ToString("HH:mm:ss:fff")} :Started {ix}");
+      try
       {
-        Trace.WriteLine($"{DateTime.Now.ToString("HH:mm:ss")}: {contours.IndexOf(x)} of {contours.Count}");
-        foreach (var y in contours)
+        Stopwatch w = Stopwatch.StartNew();
+        IGeometry x = ys[ix];
+        foreach (var y in ys)
         {
-          if (x == y)
-          { continue; }
-
-          long elapsed = MeasureClosestLine(x, y);
-          if (elapsed > maxElapsed)
-          {
-            maxElapsed = elapsed;
-
-            //long e0 = MeasureClosestPoints(x, y);
-            //long e1 = MeasureClosestPoints_v0(x, y);
-          }
+          Line l = GeometryOperator.GetClosestLine(x, y);
         }
+        w.Stop();
+        Trace.WriteLine($"{DateTime.Now.ToString("HH:mm:ss:fff")} : Finished {ix} in {w.ElapsedMilliseconds / 1000.0,-1}");
+      }
+      catch (Exception e)
+      { 
+        Trace.WriteLine($"error {ix}: {e.Message}");
+        throw;
       }
     }
 
@@ -881,7 +918,7 @@ namespace OcadTest
       {
         foreach (var geom in reader)
         {
-          Area area = (Area)geom;
+          Surface area = (Surface)geom;
           curves.InitSize(new[] { geom });
           int i = 0;
 

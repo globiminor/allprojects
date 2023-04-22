@@ -163,7 +163,7 @@ namespace TMap
           if (colors.TryGetValue(graphic.Color, out ColorInfo color))
           { part.Color = GetColor(color.Color); }
           if (graphic.MapGeometry is GeoElement.Line l) part.SymbolLine = l.BaseGeometry.Project(setup.Map2Prj);
-          else if (graphic.MapGeometry is GeoElement.Area a)
+          else if (graphic.MapGeometry is GeoElement.Surface a)
           {
             part.SymbolLine = a.BaseGeometry.Border[0].Project(setup.Map2Prj);
             part.Fill = true;

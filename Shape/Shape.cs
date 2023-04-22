@@ -333,13 +333,13 @@ namespace Shape
       else if (_shapeType == ShapeType.Line)
       { geom = Polyline.Create(ReadNextLine()[0]); }
       else if (_shapeType == ShapeType.Area)
-      { geom = new Area(ReadNextLine().Select(x => Polyline.Create(x))); }
+      { geom = new Surface(ReadNextLine().Select(x => Polyline.Create(x))); }
       else if (_shapeType == ShapeType.PointZ)
       { geom = ReadNextPointZ(); }
       else if (_shapeType == ShapeType.LineZ)
       { geom = Polyline.Create(ReadNextLineZ()[0]); }
       else if (_shapeType == ShapeType.AreaZ)
-      { geom = new Area(ReadNextLineZ().Select(x => Polyline.Create(x))); }
+      { geom = new Surface(ReadNextLineZ().Select(x => Polyline.Create(x))); }
       else
       { throw new InvalidOperationException("unhandled shape type" + _shapeType); }
       return geom;
@@ -825,7 +825,7 @@ namespace Shape
       _nRec++;
     }
 
-    private int Write(int rec, int pos, Area area)
+    private int Write(int rec, int pos, Surface area)
     /*
        the total number of points is in np[0],
        the starting point of the i. path is in np[i] (first part : i = 0)

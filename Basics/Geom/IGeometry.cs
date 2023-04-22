@@ -67,21 +67,21 @@ namespace Basics.Geom
   }
 
 
-  public interface IVolume
+  public interface IBody
   {
-    IReadOnlyList<ISignedArea> Planes { get; }
+    IReadOnlyList<ISignedSurface> Planes { get; }
   }
-  public interface ISignedArea
+  public interface ISignedSurface
   {
     int Sign { get; }
-    ISimpleArea Area { get; }
+    ISimpleSurface Area { get; }
   }
 
   public interface ISimplePolyline
   {
     IReadOnlyList<IPoint> Points { get; }
   }
-  public interface ISimpleArea
+  public interface ISimpleSurface
   {
     /// <summary>
     /// Foreach border: Last point == first point

@@ -586,7 +586,7 @@ namespace Basics.Geom
 
 		public static List<ParamGeometryRelation> Assemble(IGeometry x, IGeometry y, IList<ParamGeometryRelation> borderRelations)
 		{
-			if (!(x is Area area))
+			if (!(x is Surface area))
 			{ return null; }
 
 			List<ParamGeometryRelation> sortY = borderRelations != null
@@ -596,8 +596,8 @@ namespace Basics.Geom
 
 			List<ParamGeometryRelation> assembled = new List<ParamGeometryRelation>();
 
-			if (y is Area)
-			{
+			if (y is Surface)
+      {
 				if (borderRelations != null)
 				{
 					List<ParamGeometryRelation> childRels = new List<ParamGeometryRelation>(borderRelations.Count * 2);
@@ -623,7 +623,7 @@ namespace Basics.Geom
 						if (yRel._borderRelations == null) // Line completly within x
 						{ fullBorders.Add((Polyline)yRel.Intersection); }
 					}
-					Area intersect = BuildPolyons(borderRelations, yBorders);
+          Surface intersect = BuildPolyons(borderRelations, yBorders);
 					intersect.Border.AddRange(fullBorders);
 
 					ParamGeometryRelation rel = CreateWithin(x, y);
@@ -712,7 +712,7 @@ namespace Basics.Geom
 			}
 		}
 
-		private static Area BuildPolyons(IList<ParamGeometryRelation> xBorders,
+		private static Surface BuildPolyons(IList<ParamGeometryRelation> xBorders,
 			List<ParamGeometryRelation> yBorders)
 		{
 			EqualParamGeometry cmp = new EqualParamGeometry();
@@ -791,7 +791,7 @@ namespace Basics.Geom
 
 				borders.Add(border);
 			}
-			Area area = new Area(borders);
+      Surface area = new Surface(borders);
 			return area;
 		}
 

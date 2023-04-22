@@ -523,7 +523,7 @@ namespace Ocad
         if (elem.Type == Symbol.SymbolGraphicsType.Circle)
         { elem.MapGeometry = new GeoElement.Line(circle); }
         else if (elem.Type == Symbol.SymbolGraphicsType.Dot)
-        { elem.MapGeometry = new GeoElement.Area(new Area(circle)); }
+        { elem.MapGeometry = new GeoElement.Surface(new Surface(circle)); }
         else
         { throw new NotImplementedException(elem.Type.ToString()); }
       }

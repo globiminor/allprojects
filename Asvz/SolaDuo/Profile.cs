@@ -172,7 +172,7 @@ namespace Asvz
       {
         p.X = (p.X + sumDist) / _fHeight;
       }
-      Area area = new Area(Polyline.Create(points));
+      Surface area = new Surface(Polyline.Create(points));
 
       Element elem = new GeoElement(area);
       elem.Symbol = ProfileSymbol.Profile;
@@ -298,7 +298,7 @@ namespace Asvz
 
     private void WriteTeer(OcadWriter writer, double start, double end, int symbol)
     {
-      Element pElem = new GeoElement(new Area(Polyline.Create(new[]
+      Element pElem = new GeoElement(new Surface(Polyline.Create(new[]
         {
           new Point2D(start, _teerUnten),
           new Point2D(end, _teerUnten),
@@ -312,7 +312,7 @@ namespace Asvz
       writer.Append(pElem);
     }
 
-    private static bool[] Intersect(Polyline line, IList<Area> polygons)
+    private static bool[] Intersect(Polyline line, IList<Surface> polygons)
     {
       bool[] inside = new bool[line.Points.Count];
       int iPoint = 0;

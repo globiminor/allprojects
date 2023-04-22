@@ -14,7 +14,7 @@ namespace TMap
     bool BreakDraw { get; set; }
     IProjection Projection { get; }
     void DrawLine(Polyline line, ISymbolPart symbolPart);
-    void DrawArea(Area area, ISymbolPart symbolPart);
+    void DrawArea(Surface area, ISymbolPart symbolPart);
     void DrawRaster(GridMapData raster);
     void Draw(MapData data);
     void Flush();

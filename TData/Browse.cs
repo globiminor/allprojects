@@ -142,7 +142,7 @@ namespace TData
             { geomType = DataType.PointFc; }
             else if (typeof(Polyline).IsAssignableFrom(columnType))
             { geomType = DataType.LineFc; }
-            else if (typeof(Area).IsAssignableFrom(columnType))
+            else if (typeof(Surface).IsAssignableFrom(columnType))
             { geomType = DataType.PolyFc; }
 
             geometryType.Add(column, geomType);

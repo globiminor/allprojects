@@ -203,7 +203,7 @@ namespace Asvz.SolaDuo
         GeoElement elem;
         object geom = row[shapeCol];
         {
-          if (geom is Area a)
+          if (geom is Surface a)
           { elem = new GeoElement(a); }
           else if (geom is Polyline l)
           { elem = new GeoElement(l); }
@@ -253,7 +253,7 @@ namespace Asvz.SolaDuo
         }
         elem.Symbol = sym.GetSymbol();
 
-        if (elem.Geometry is GeoElement.Area)
+        if (elem.Geometry is GeoElement.Surface)
         { elem.Type = GeomType.area; }
         else if (elem.Geometry is GeoElement.Line)
         { elem.Type = GeomType.line; }

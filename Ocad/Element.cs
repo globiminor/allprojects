@@ -21,7 +21,7 @@ namespace Ocad
 
       public static Geom Create(object geom)
       {
-        if (geom is Basics.Geom.Area area) return new Area(area);
+        if (geom is Basics.Geom.Surface area) return new Surface(area);
         if (geom is Polyline l) return new Line(l);
         if (geom is PointCollection ps) return new Points(ps);
         if (geom is IPoint p) return new Point(p);
@@ -76,10 +76,10 @@ namespace Ocad
       protected override IBox GetExtent() => BaseGeometry.Extent;
       public override IGeometry GetGeometry() => BaseGeometry;
     }
-    public sealed class Area : Geom
+    public sealed class Surface : Geom
     {
-      public Area(Basics.Geom.Area area) { BaseGeometry = area; }
-      public Basics.Geom.Area BaseGeometry { get; }
+      public Surface(Basics.Geom.Surface area) { BaseGeometry = area; }
+      public Basics.Geom.Surface BaseGeometry { get; }
 
       public override IEnumerable<Coord> EnumCoords() => Coord.EnumCoords(BaseGeometry);
       public override IEnumerable<IPoint> EnumPoints()
@@ -90,7 +90,7 @@ namespace Ocad
       }
 
       protected override Geom ProjectCore(IProjection prj) => Project(prj);
-      public new Area Project(IProjection prj) => new Area(BaseGeometry.Project(prj));
+      public new Surface Project(IProjection prj) => new Surface(BaseGeometry.Project(prj));
       protected override IBox GetExtent() => BaseGeometry.Extent;
       public override IGeometry GetGeometry() => BaseGeometry;
     }
@@ -98,7 +98,7 @@ namespace Ocad
     public GeoElement(IPoint point) : this(new Point(point)) { Type = GeomType.point; }
     public GeoElement(PointCollection points) : this(new Points(points)) { }
     public GeoElement(Polyline line) : this(new Line(line)) { Type = GeomType.line; }
-    public GeoElement(Basics.Geom.Area area) : this(new Area(area)) { Type = GeomType.area; }
+    public GeoElement(Basics.Geom.Surface area) : this(new Surface(area)) { Type = GeomType.area; }
 
     public GeoElement(Geom geometry)
     {
@@ -305,9 +305,9 @@ namespace Ocad
         Polyline pLine = geometry as Polyline;
         return PointCount(pLine);
       }
-      else if (geometry is Area)
+      else if (geometry is Surface)
       {
-        Area pArea = geometry as Area;
+        Surface pArea = geometry as Surface;
         int nPoints = 0;
         foreach (var pLine in pArea.Border)
         { nPoints += PointCount(pLine); }

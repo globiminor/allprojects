@@ -596,7 +596,7 @@ namespace OCourse.ViewModels
           Box b = new Box(geom);
           yield return new VelocityRecord
           {
-            Geometry = new Area(Polyline.Create(b)),
+            Geometry = new Surface(Polyline.Create(b)),
             Velocity = _vm.DefaultVelocity
           };
 

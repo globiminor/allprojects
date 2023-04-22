@@ -285,15 +285,15 @@ namespace Basics.Geom.Network
       return border;
     }
 
-    public Area GetPolygon()
+    public Surface GetPolygon()
     {
-      Area poly = CombineRings();
+      Surface poly = CombineRings();
       return poly;
     }
 
-    private Area CombineRings()
+    private Surface CombineRings()
     {
-      Area polygon = new Area();
+      Surface polygon = new Surface();
       Polyline ring = new Polyline();
       foreach (var pRow in _directedRows)
       {
