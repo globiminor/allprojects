@@ -18,20 +18,20 @@ namespace Basics.Views
   }
   public abstract class PartialListView : IBindingListView, IPartialListView
   {
-    public event EventHandler DataLoading;
-    public event EventHandler DataLoaded;
+    public event EventHandler? DataLoading;
+    public event EventHandler? DataLoaded;
 
-    public event EventHandler DistinctValuesLoading;
-    public event EventHandler DistinctValuesLoaded;
+    public event EventHandler? DistinctValuesLoading;
+    public event EventHandler? DistinctValuesLoaded;
 
     private class Cache
     {
       public DateTime LastAccess { get; set; }
-      public object Value { get; set; }
+      public object? Value { get; set; }
     }
-    private Dictionary<int, Cache> _objectDict;
-    private ListSortDescriptionCollection _sortDescriptions;
-    private string _filter;
+    private Dictionary<int, Cache>? _objectDict;
+    private ListSortDescriptionCollection? _sortDescriptions;
+    private string? _filter;
 
     public int MaxCache { get; protected set; }
     public int QueryCount { get; protected set; }
@@ -42,15 +42,15 @@ namespace Basics.Views
       QueryCount = 100;
     }
 
-    object IList.this[int index] { get { return this[index]; } set { this[index] = value; } }
-    public object this[int index]
+    object? IList.this[int index] { get { return this[index]; } set { this[index] = value; } }
+    public object? this[int index]
     {
       get
       {
         if (_objectDict == null)
         { _objectDict = new Dictionary<int, Cache>(); }
 
-        if (!_objectDict.TryGetValue(index, out Cache value))
+        if (!_objectDict.TryGetValue(index, out Cache? value))
         {
           value = LoadData(index, _objectDict);
         }
@@ -98,7 +98,7 @@ namespace Basics.Views
 
     protected abstract object GetDefaultValue();
 
-    public event ListChangedEventHandler ListChanged;
+    public event ListChangedEventHandler? ListChanged;
     protected void OnListChanged(ListChangedType changeType)
     {
       if (System.Threading.Thread.CurrentThread.IsThreadPoolThread)

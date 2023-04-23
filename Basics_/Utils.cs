@@ -1,4 +1,7 @@
 
+using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -56,7 +59,7 @@ namespace Basics
       return x0;
     }
 
-    public static string GetMsg(Exception? exp, string? stackIgnore = null)
+    public static string GetMsg(Exception exp, string stackIgnore = null)
     {
       StringBuilder sb = new StringBuilder();
       while (exp != null)
@@ -70,9 +73,9 @@ namespace Basics
         }
         else
         {
-          using (TextReader r = new StringReader(exp.StackTrace!))
+          using (System.IO.TextReader r = new System.IO.StringReader(exp.StackTrace))
           {
-            string? line;
+            string line;
             while ((line = r.ReadLine()) != null)
             {
               if (line.IndexOf(stackIgnore, StringComparison.InvariantCultureIgnoreCase) >= 0)
@@ -97,27 +100,26 @@ namespace Basics
     }
 
     [DllImport("shell32.dll")]
-    private static extern int FindExecutable(string lpFile, string? lpDirectory, [Out] StringBuilder lpResult);
+    private static extern int FindExecutable(string lpFile, string lpDirectory, [Out] StringBuilder lpResult);
   }
 
   public static class Extensions
   {
     public static TM GetOrCreateValue<TK, TM>(this Dictionary<TK, TM> dict, TK key)
-      where TK : notnull
       where TM : new()
     {
-      if (!dict.TryGetValue(key, out TM? member))
+      if (!dict.TryGetValue(key, out TM member))
       {
         member = new TM();
         dict.Add(key, member);
       }
       return member;
     }
-    public static bool TryParse<T>(string text, out T? value)
+    public static bool TryParse<T>(string text, out T value)
     {
       if (string.IsNullOrEmpty(text))
       {
-        value = default;
+        value = default(T);
       }
       else
       {
@@ -128,7 +130,7 @@ namespace Basics
         }
         catch
         {
-          value = default;
+          value = default(T);
           return false;
         }
       }

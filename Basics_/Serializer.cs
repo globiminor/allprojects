@@ -1,4 +1,7 @@
-﻿using System.Xml;
+﻿
+using System.Collections.Generic;
+using System.IO;
+using System.Xml;
 using System.Xml.Serialization;
 
 namespace Basics
@@ -6,7 +9,7 @@ namespace Basics
 	public static class Serializer
 	{
 		public static void Serialize<T>(T obj, TextWriter writer,
-			bool? indent = null, bool? omitXmlDeclaration = null, Dictionary<string, string>? namespaces = null)
+			bool? indent = null, bool? omitXmlDeclaration = null, Dictionary<string, string> namespaces = null)
 		{
 			XmlWriterSettings settings = new XmlWriterSettings { Indent = indent ?? true };
 			if (omitXmlDeclaration.HasValue)
@@ -31,26 +34,26 @@ namespace Basics
 			}
 		}
 
-		public static bool TryDeserialize<T>(out T? obj, TextReader reader)
+		public static bool TryDeserialize<T>(out T obj, TextReader reader)
 		{
 			try
 			{
 				Deserialize(out obj, reader);
 				return true;
 			}
-			catch (Exception e)
+			catch (System.Exception e)
 			{
-				obj = default;
+				obj = default(T);
 				System.Diagnostics.Trace.Write(e);
 				return false;
 			}
 		}
-		public static void Deserialize<T>(out T? obj, TextReader reader)
+		public static void Deserialize<T>(out T obj, TextReader reader)
 		{
 			XmlSerializer ser = new XmlSerializer(typeof(T));
 
-			object? o = ser.Deserialize(reader);
-			obj = (T?)o;
+			object o = ser.Deserialize(reader);
+			obj = (T)o;
 		}
 	}
 }

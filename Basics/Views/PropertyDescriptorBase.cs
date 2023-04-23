@@ -19,7 +19,7 @@ namespace Basics.Views
       throw new NotImplementedException();
     }
 
-    public override void SetValue(object component, object value)
+    public override void SetValue(object? component, object? value)
     {
       throw new NotImplementedException();
     }
