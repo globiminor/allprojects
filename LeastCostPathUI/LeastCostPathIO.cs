@@ -6,6 +6,7 @@ using Shape;
 using Grid.Lcp;
 using System.Collections.Generic;
 using System.Linq;
+using Point = Basics.Geom.Point;
 
 namespace LeastCostPathUI
 {

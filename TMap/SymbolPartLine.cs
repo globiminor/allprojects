@@ -41,8 +41,8 @@ namespace TMap
     private double _angle = 0;
     private bool _scale;
 
-    [Editor("AngleEditor.AngleEditor, TMapWin", //, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-      typeof(System.Drawing.Design.UITypeEditor))]
+    //[Editor("AngleEditor.AngleEditor, TMapWin", //, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+    //  typeof(System.Drawing.Design.UITypeEditor))]
     public double Angle
     {
       get { return _angle; }

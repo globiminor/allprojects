@@ -1,89 +1,18 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{EC0A5266-C017-41EB-BD7B-917EB912B8A9}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Shape</RootNamespace>
-    <AssemblyName>Shape</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>..\bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
+    <PackageReference Include="System.Data.OleDb" Version="6.0.0" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="Data\AccessAdapter.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Data\AccessCommand.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Data\AccessConnection.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Data\AccessDbReader.cs" />
-    <Compile Include="Data\AccessUtils.cs" />
-    <Compile Include="Data\ShapeAdapter.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Data\ShapeCommand.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Data\ShapeConnection.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Data\ShapeDbReader.cs" />
-    <Compile Include="Data\ShapeTransaction.cs" />
-    <Compile Include="DBase.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Shape.cs" />
+    <ProjectReference Include="..\Basics\Basics.csproj" />
+    <ProjectReference Include="..\Stream\Stream.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Basics\Basics.csproj">
-      <Project>{200e9400-2771-4ace-a172-78ebd405b67e}</Project>
-      <Name>Basics</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Stream\Stream.csproj">
-      <Project>{2daa8561-8831-48e9-a413-bffdefc60799}</Project>
-      <Name>Stream</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>

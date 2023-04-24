@@ -5,10 +5,6 @@ using Ocad;
 using Ocad.StringParams;
 using OCourse.Route;
 using OCourse.Tracking;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
 using System.Xml;
 

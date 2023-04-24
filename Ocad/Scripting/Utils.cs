@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.Versioning;
 using System.Security.AccessControl;
 
 namespace Ocad.Scripting
@@ -76,12 +77,23 @@ namespace Ocad.Scripting
       }
       foreach (var path in Directory.GetFiles(dir))
       {
-        FileSecurity sec = File.GetAccessControl(path);
-        FileSystemAccessRule access_rule = new FileSystemAccessRule(@"Benutzer",
-            FileSystemRights.FullControl, AccessControlType.Allow);
-        sec.AddAccessRule(access_rule);
-        File.SetAccessControl(path, sec);
+        AllowAccess(path);
       }
+    }
+
+    [SupportedOSPlatform("windows")]
+    private static void AllowAccess(string filePath)
+    {
+      FileSecurity security = new FileSecurity(filePath,
+          AccessControlSections.Owner |
+          AccessControlSections.Group |
+          AccessControlSections.Access);
+
+      FileSystemAccessRule access_rule = new FileSystemAccessRule(@"Benutzer",
+        FileSystemRights.FullControl, AccessControlType.Allow);
+
+      security.ModifyAccessRule(AccessControlModification.Add,
+          access_rule, out bool modified);
     }
 
 
@@ -158,26 +170,6 @@ namespace Ocad.Scripting
         }
       }
       return exe;
-    }
-
-    private static bool RunScript(string[] args)
-    {
-      if (args == null || args.Length != 1)
-      { return false; }
-      string script = args[0];
-      if (Path.GetExtension(script) != ".xml")
-      { return false; }
-      if (!File.Exists(script))
-      { return false; }
-
-      string exe = Basics.Utils.FindExecutable(@"C:\daten\felix\OL\divers\velo_symbol.ocd");
-      FileInfo fPdf = new FileInfo(@"C:\daten\ASVZ\SOLA\2014\Exp_Uebergabe\Ue_00_01_Bucheggplatz.pdf");
-      FileInfo fGif = new FileInfo(@"C:\daten\ASVZ\SOLA\2014\Exp_Uebergabe\Ue_00_01_Bucheggplatz.gif");
-
-      FileSecurity sec = File.GetAccessControl(fPdf.FullName, AccessControlSections.All);
-      var rules = sec.GetAccessRules(true, true, typeof(System.Security.Principal.NTAccount));
-
-      return true;
     }
 
     public static void CloseOcadProcs(string ocadExe, bool force = false)

@@ -29,11 +29,11 @@
     {
       this.components = new System.ComponentModel.Container();
       this.dlgOpen = new System.Windows.Forms.OpenFileDialog();
-      this.mnuMain = new System.Windows.Forms.MainMenu(this.components);
-      this.mniSettings = new System.Windows.Forms.MenuItem();
-      this.mniOpen = new System.Windows.Forms.MenuItem();
-      this.mniSave = new System.Windows.Forms.MenuItem();
-      this.mniSaveAs = new System.Windows.Forms.MenuItem();
+      this.mnuMain = new System.Windows.Forms.MenuStrip();
+      this.mniSettings = new System.Windows.Forms.ToolStripMenuItem();
+      this.mniOpen = new System.Windows.Forms.ToolStripMenuItem();
+      this.mniSave = new System.Windows.Forms.ToolStripMenuItem();
+      this.mniSaveAs = new System.Windows.Forms.ToolStripMenuItem();
       this.btnOK = new System.Windows.Forms.Button();
       this.btnClose = new System.Windows.Forms.Button();
       this.cntConfig = new LeastCostPathUI.CntConfig();
@@ -42,13 +42,12 @@
       // 
       // mnuMain
       // 
-      this.mnuMain.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+      this.mnuMain.Items.AddRange(new System.Windows.Forms.ToolStripMenuItem[] {
             this.mniSettings});
       // 
       // mniSettings
       // 
-      this.mniSettings.Index = 0;
-      this.mniSettings.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+      this.mniSettings.DropDownItems.AddRange(new System.Windows.Forms.ToolStripMenuItem[] {
             this.mniOpen,
             this.mniSave,
             this.mniSaveAs});
@@ -56,17 +55,14 @@
       // 
       // mniOpen
       // 
-      this.mniOpen.Index = 0;
       this.mniOpen.Text = "Open";
       // 
       // mniSave
       // 
-      this.mniSave.Index = 1;
       this.mniSave.Text = "Save";
       // 
       // mniSaveAs
       // 
-      this.mniSaveAs.Index = 2;
       this.mniSaveAs.Text = "Save As";
       // 
       // btnOK
@@ -116,18 +112,18 @@
       this.Controls.Add(this.btnClose);
       this.Controls.Add(this.btnOK);
       this.Controls.Add(this.cntOutput);
-      this.Menu = this.mnuMain;
+      this.MainMenuStrip = this.mnuMain;
       this.Name = "WdgLeastCostPath";
       this.Text = "Least Cost Path";
       this.ResumeLayout(false);
 
     }
 
-    private System.Windows.Forms.MainMenu mnuMain;
-    private System.Windows.Forms.MenuItem mniSettings;
-    private System.Windows.Forms.MenuItem mniOpen;
-    private System.Windows.Forms.MenuItem mniSave;
-    private System.Windows.Forms.MenuItem mniSaveAs;
+    private System.Windows.Forms.MenuStrip mnuMain;
+    private System.Windows.Forms.ToolStripMenuItem mniSettings;
+    private System.Windows.Forms.ToolStripMenuItem mniOpen;
+    private System.Windows.Forms.ToolStripMenuItem mniSave;
+    private System.Windows.Forms.ToolStripMenuItem mniSaveAs;
     private System.Windows.Forms.OpenFileDialog dlgOpen;
     private System.Windows.Forms.Button btnOK;
     private System.Windows.Forms.Button btnClose;

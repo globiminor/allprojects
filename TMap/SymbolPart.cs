@@ -200,24 +200,24 @@ namespace TMap
   {
   }
 
-  public class TTTEditor : UITypeEditor
-  {
-    public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
-    {
-      return UITypeEditorEditStyle.Modal;
-    }
+  //public class TTTEditor : UITypeEditor
+  //{
+  //  public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
+  //  {
+  //    return UITypeEditorEditStyle.Modal;
+  //  }
 
-    public override bool GetPaintValueSupported(ITypeDescriptorContext context)
-    {
-      return true;
-    }
-    public override void PaintValue(PaintValueEventArgs e)
-    {
-      e.Graphics.FillRectangle(new SolidBrush(Color.Red), e.Bounds);
-    }
-  }
+  //  public override bool GetPaintValueSupported(ITypeDescriptorContext context)
+  //  {
+  //    return true;
+  //  }
+  //  public override void PaintValue(PaintValueEventArgs e)
+  //  {
+  //    e.Graphics.FillRectangle(new SolidBrush(Color.Red), e.Bounds);
+  //  }
+  //}
 
-  [Editor(typeof(TTTEditor), typeof(UITypeEditor))]
+//  [Editor(typeof(TTTEditor), typeof(UITypeEditor))]
   [TypeConverter(typeof(TTTExpandableObjectConverter))]
   public class TTT
   {

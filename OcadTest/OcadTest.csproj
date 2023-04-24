@@ -1,237 +1,25 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{2D8C5548-55FB-4F44-837F-9C3EDAC94D04}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>OcadTest</RootNamespace>
-    <AssemblyName>OcadTest</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
-    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-    <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
-    <IsCodedUITest>False</IsCodedUITest>
-    <TestProjectType>UnitTest</TestProjectType>
-    <TargetFrameworkProfile />
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <PlatformTarget>x64</PlatformTarget>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="itextsharp">
-      <HintPath>..\libs\itextsharp.dll</HintPath>
-    </Reference>
-    <Reference Include="laszip.net">
-      <HintPath>..\libs\laszip.net.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Data.Sqlite, Version=3.1.32.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Data.Sqlite.Core.3.1.32\lib\netstandard2.0\Microsoft.Data.Sqlite.dll</HintPath>
-    </Reference>
-    <Reference Include="SQLitePCLRaw.batteries_v2, Version=2.0.0.581, Culture=neutral, PublicKeyToken=8226ea5df37bcae9, processorArchitecture=MSIL">
-      <HintPath>..\packages\SQLitePCLRaw.bundle_e_sqlite3.2.0.0\lib\net461\SQLitePCLRaw.batteries_v2.dll</HintPath>
-    </Reference>
-    <Reference Include="SQLitePCLRaw.core, Version=2.1.2.1721, Culture=neutral, PublicKeyToken=1488e028ca7ab535, processorArchitecture=MSIL">
-      <HintPath>..\packages\SQLitePCLRaw.core.2.1.2\lib\netstandard2.0\SQLitePCLRaw.core.dll</HintPath>
-    </Reference>
-    <Reference Include="SQLitePCLRaw.nativelibrary, Version=2.0.0.581, Culture=neutral, PublicKeyToken=502ed628492ab262, processorArchitecture=MSIL">
-      <HintPath>..\packages\SQLitePCLRaw.bundle_e_sqlite3.2.0.0\lib\net461\SQLitePCLRaw.nativelibrary.dll</HintPath>
-    </Reference>
-    <Reference Include="SQLitePCLRaw.provider.dynamic_cdecl, Version=2.0.0.581, Culture=neutral, PublicKeyToken=b68184102cba0b3b, processorArchitecture=MSIL">
-      <HintPath>..\packages\SQLitePCLRaw.provider.dynamic_cdecl.2.0.0\lib\netstandard2.0\SQLitePCLRaw.provider.dynamic_cdecl.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Buffers, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Buffers.4.4.0\lib\netstandard2.0\System.Buffers.dll</HintPath>
-    </Reference>
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.IO.Compression" />
-    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Memory.4.5.3\lib\netstandard2.0\System.Memory.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors, Version=4.1.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Numerics.Vectors.4.4.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.5.2\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
-    </Reference>
-    <Reference Include="System.XML" />
-    <Reference Include="UIAutomationClient" />
-    <Reference Include="UIAutomationTypes" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.2.10" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.2.10" />
+    <PackageReference Include="coverlet.collector" Version="3.1.2" />
   </ItemGroup>
-  <Choose>
-    <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-      </ItemGroup>
-    </When>
-    <Otherwise>
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework" />
-      </ItemGroup>
-    </Otherwise>
-  </Choose>
+
   <ItemGroup>
-    <Compile Include="AsvzTest.cs" />
-    <Compile Include="CourseTest.cs" />
-    <Compile Include="DataTest.cs" />
-    <Compile Include="OEvent\Events.cs" />
-    <Compile Include="OEvent\FuenferStaffel.cs" />
-    <Compile Include="LcpTest.cs" />
-    <Compile Include="OEvent\Iof.cs" />
-    <Compile Include="OEvent\SchlaufenLayout.cs" />
-    <Compile Include="OEvent\Utils.cs" />
-    <Compile Include="OscratchTest.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SchartenhoeheTest.cs" />
-    <Compile Include="SdeDataTest.cs" />
-    <Compile Include="SectionCollectionTest.cs" />
-    <Compile Include="ShapeDataTest.cs" />
-    <Compile Include="SqliteTest.cs" />
+    <ProjectReference Include="..\Basics\Basics.csproj" />
+    <ProjectReference Include="..\Grid\Grid.csproj" />
+    <ProjectReference Include="..\Ocad\Ocad.csproj" />
+    <ProjectReference Include="..\OCourse\OCourse.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ArcSde\ArcSde.csproj">
-      <Project>{7a5011bb-8649-40e8-9f98-8ac314ee93d1}</Project>
-      <Name>ArcSde</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Asvz\Asvz.csproj">
-      <Project>{d15a3272-818c-4a86-afba-1424ae2e00d4}</Project>
-      <Name>Asvz</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Basics\Basics.csproj">
-      <Project>{200e9400-2771-4ace-a172-78ebd405b67e}</Project>
-      <Name>Basics</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Dhm\Dhm.csproj">
-      <Project>{f53900bd-0968-4632-9765-c614b2c9046d}</Project>
-      <Name>Dhm</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Grid\Grid.csproj">
-      <Project>{feeca61e-39ed-442e-b8d9-740ec097dcc2}</Project>
-      <Name>Grid</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\LeastCostPathUI\LeastCostPathUI.csproj">
-      <Project>{8972d218-e70f-4428-9eb4-ddfe61dd7848}</Project>
-      <Name>LeastCostPathUI</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Macro\Macro.csproj">
-      <Project>{BB7DE197-D752-4378-8F2D-AF7F1AB343C0}</Project>
-      <Name>Macro</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\OcadScratch\OcadScratch.csproj">
-      <Project>{4b5672ef-fdc6-4fdf-9425-07a0d6ecbbe8}</Project>
-      <Name>OcadScratch</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Ocad\Ocad.csproj">
-      <Project>{39b4f02a-e890-4afe-b00b-11d1e7ed5634}</Project>
-      <Name>Ocad</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\OCourse.Cmd\OCourse.Cmd.csproj">
-      <Project>{4ce916b4-9c9f-4ff0-8481-5d861d7dab37}</Project>
-      <Name>OCourse.Cmd</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\OCourse\OCourse.csproj">
-      <Project>{35ea7231-ad8b-4dc0-9e48-b9a577d777c2}</Project>
-      <Name>OCourse</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\OTextSharp\OTextSharp.csproj">
-      <Project>{01CF73D5-AF53-4FB8-B60B-CFAA372C6695}</Project>
-      <Name>OTextSharp</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Shape\Shape.csproj">
-      <Project>{ec0a5266-c017-41eb-bd7b-917eb912b8a9}</Project>
-      <Name>Shape</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Stream\Stream.csproj">
-      <Project>{2DAA8561-8831-48E9-A413-BFFDEFC60799}</Project>
-      <Name>Stream</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Service References\" />
-  </ItemGroup>
-  <ItemGroup>
-    <COMReference Include="PortableDeviceApiLib">
-      <Guid>{1F001332-1A57-4934-BE31-AFFC99F4EE0A}</Guid>
-      <VersionMajor>1</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>tlbimp</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </COMReference>
-    <COMReference Include="PortableDeviceTypesLib">
-      <Guid>{2B00BA2F-E750-4BEB-9235-97142EDE1D3E}</Guid>
-      <VersionMajor>1</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>tlbimp</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </COMReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="_Readme.PortableDeviceApiLib.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <Choose>
-    <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.QualityTools.CodedUITestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-          <Private>False</Private>
-        </Reference>
-        <Reference Include="Microsoft.VisualStudio.TestTools.UITest.Common, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-          <Private>False</Private>
-        </Reference>
-        <Reference Include="Microsoft.VisualStudio.TestTools.UITest.Extension, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-          <Private>False</Private>
-        </Reference>
-        <Reference Include="Microsoft.VisualStudio.TestTools.UITesting, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-          <Private>False</Private>
-        </Reference>
-      </ItemGroup>
-    </When>
-  </Choose>
-  <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.0\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets" Condition="Exists('..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.0\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.0\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.0\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets'))" />
-  </Target>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>
